@@ -686,8 +686,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
 
-            StateHasChanged();
             _sosHub = await SOSHubServices.GetSOSHub(SOSHubId, true, true, true, true, true, true, true, true, includePeople: true, includeDocuments: true, includeCollections: true, includeModel: true);
+            StateHasChanged();
 
             if(_sosHub.StationId != 0)
                 _sosHub.Station = _stations.Find(s => s.StationId == _sosHub.StationId);

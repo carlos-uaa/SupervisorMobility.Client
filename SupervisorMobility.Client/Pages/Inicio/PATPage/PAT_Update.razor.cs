@@ -1,11 +1,7 @@
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Drawing;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -86,9 +82,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private double?[] monthsDistributionPercentage = new double?[12];
         private double?[] monthsUsersPercentage = new double?[12];
 
+        bool Dev_env { get; set; }
+
 
         protected async override Task OnInitializedAsync()
         {
+            Dev_env = Environment.IsDevelopment();
+
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
@@ -128,6 +128,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 StateHasChanged();
             }
 
+          
+
+            if ((int)_pat.AplicationYear > DateTime.Now.Year)
+            {
+                LastdayYear = new DateTime((int)_pat.AplicationYear, 12, 31);
+                _yearMonth = new DateTime((int)_pat.AplicationYear, 1, 1);
+                FirstdayYear = new DateTime((int)_pat.AplicationYear, 1, 1);
+                date = new DateTime((int)_pat.AplicationYear, 1, 1);
+            }
+            else
+            {
+                LastdayYear = new DateTime((int)_pat.AplicationYear, 12, 31);
+                _yearMonth = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
+                FirstdayYear = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
+                date = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day).AddMonths(-1);
+            }
 
         }
 
@@ -673,6 +689,259 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
         }
 
+        #region Calendario
+        //Montly
+        bool MonthlyView = false;
+        DateTime? _yearMonth;
+        public DateTime? date;
+        DateTime FirstdayYear = DateTime.Now;
+        DateTime LastdayYear = DateTime.Now;
+        private string month;
+        private string year;
+        private async void MontlyTab()
+        {
+            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            //DistSelect? tmpSuggdist = null;
+            //if (tmpdist == null)
+            //{
+            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+            //    Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
+            //}
+            //else
+            //{
+            //    _distributions.ForEach(d => d.ShowDetails = false);
+            //}
+            StateHasChanged();
+
+            MonthlyView = true;
+            //SuggestionMode = false;
+
+            //if (tmpdist != null)
+            //{
+            //    await PrepareDataTable(tmpdist.DistributionId);
+            //    tmpdist.ShowDetails = true;
+            //}
+            //else if (tmpSuggdist != null)
+            //{
+            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+            //    tmpSuggdist.distribution.ShowDetails = true;
+            //}
+            //else if (!SuggestionMode)
+            //{
+            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+            //    await PrepareDataTable();
+            //}
+            //else
+            //{
+            //    await PrepareSuggestDataTable();
+            //}
+
+            StateHasChanged();
+        }
+        private async void OnDateChanged(DateTime? value)
+        {
+            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            //DistSelect? tmpSuggdist = null;
+            //if (tmpdist == null)
+            //{
+            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+            //    if (tmpSuggdist != null)
+            //    {
+            //        tmpSuggdist.distribution.ShowDetails = false;
+            //    }
+            //}
+            //else
+            //{
+            //    tmpdist.ShowDetails = false;
+            //}
+            //ShowLoading = true;
+            //loadingData = true;
+            //StateHasChanged();
+
+            _yearMonth = value;
+            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
+
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+
+            //startDate = new DateTime(yearIndex, monthIndex, 1);
+            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+            //if (tmpdist != null)
+            //{
+            //    await PrepareDataTable(tmpdist.DistributionId);
+            //    tmpdist.ShowDetails = true;
+            //}
+            //else if (tmpSuggdist != null)
+            //{
+            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+            //    tmpSuggdist.distribution.ShowDetails = true;
+            //}
+            //else if (!SuggestionMode)
+            //{
+            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+            //    await PrepareDataTable();
+            //}
+            //else
+            //{
+            //    await PrepareSuggestDataTable();
+            //}
+
+            //if (ScheduleView)
+            //{
+            //    GenerateCalendarHead();
+            //    GenerateCalendarBody();
+            //    if (SuggestionMode)
+            //    {
+            //        await PrepareSuggestDataTable();
+            //    }
+            //    else
+            //    {
+            //        await PrepareDataTable();
+            //    }
+            //}
+
+
+
+            //ShowLoading = false;
+            //loadingData = false;
+            StateHasChanged();
+        }
+
+        public async Task LastMonth()
+        {
+            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            //DistSelect? tmpSuggdist = null;
+            //if (tmpdist == null)
+            //{
+            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+            //    if (tmpSuggdist != null)
+            //    {
+            //        tmpSuggdist.distribution.ShowDetails = false;
+            //    }
+            //}
+            //else
+            //{
+            //    tmpdist.ShowDetails = false;
+            //}
+            //ShowLoading = true;
+            //loadingData = true;
+            //StateHasChanged();
+
+            _yearMonth = _yearMonth?.AddMonths(-1);
+            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
+
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+
+
+
+            //startDate = new DateTime(yearIndex, monthIndex, 1);
+            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+
+            //if (tmpdist != null)
+            //{
+            //    await PrepareDataTable(tmpdist.DistributionId);
+            //    tmpdist.ShowDetails = true;
+            //}
+            //else if (tmpSuggdist != null)
+            //{
+            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+            //    tmpSuggdist.distribution.ShowDetails = true;
+            //}
+            //else if (!SuggestionMode)
+            //{
+            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+            //    await PrepareDataTable();
+            //}
+            //else
+            //{
+            //    await PrepareSuggestDataTable();
+            //}
+
+            //if (ScheduleView)
+            //{
+            //    GenerateCalendarHead();
+            //    GenerateCalendarBody();
+            //}
+            //ShowLoading = false;
+            //loadingData = false;
+            StateHasChanged();
+        }
+
+        public async Task NextMonth()
+        {
+            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+
+            //DistSelect? tmpSuggdist = null;
+            //if (tmpdist == null)
+            //{
+            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
+            //    if (tmpSuggdist != null)
+            //    {
+            //        tmpSuggdist.distribution.ShowDetails = false;
+            //    }
+            //}
+            //else
+            //{
+            //    tmpdist.ShowDetails = false;
+            //}
+
+            //loadingData = true;
+            //ShowLoading = true;
+
+            //StateHasChanged();
+            _yearMonth = _yearMonth?.AddMonths(1);
+            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
+
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+
+
+            //startDate = new DateTime(yearIndex, monthIndex, 1);
+            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+            //if (tmpdist != null)
+            //{
+            //    await PrepareDataTable(tmpdist.DistributionId);
+            //    tmpdist.ShowDetails = true;
+            //}
+            //else if (tmpSuggdist != null)
+            //{
+            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
+            //    tmpSuggdist.distribution.ShowDetails = true;
+            //}
+            //else if (!SuggestionMode)
+            //{
+            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
+            //    await PrepareDataTable();
+            //}
+            //else
+            //{
+            //    await PrepareSuggestDataTable();
+            //}
+
+            //if (ScheduleView)
+            //{
+            //    GenerateCalendarHead();
+            //    GenerateCalendarBody();
+            //}
+
+            //ShowLoading = false;
+            //loadingData = false;
+            StateHasChanged();
+        }
+        #endregion
 
     }//end class pat details
 

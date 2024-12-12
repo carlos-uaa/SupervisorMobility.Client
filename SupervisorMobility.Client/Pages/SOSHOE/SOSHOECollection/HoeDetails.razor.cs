@@ -162,6 +162,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             await SetUserInfo();
             ShowLoading = false;
+            StateHasChanged();
         }
 
 
@@ -267,8 +268,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
             cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
-
-            StateHasChanged();
+            
 
             //_sosHub.AppliedModel = _products.Find(p => p.ProductId == _sosHub.AppliedModelId);
 
@@ -297,6 +297,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 Documents.Add(sequence);
             }
 
+            StateHasChanged();
             //faltan añadir los diagramas
 
             return new AsyncVoidMethodBuilder();
