@@ -68,6 +68,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private int distribution_id { get; set; }
         private int operator_id { get; set; }
+        private int supervisor_id { get; set; }
         private string ProgrammedStartDate { get; set; }
 
 
@@ -456,7 +457,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         void CreateJobObservation(int distributionId, int operatorId)
         {
             distribution_id = distributionId;
+
             operator_id = operatorId;
+
+            if (operator_id == _pat.SupervisorId)
+            {
+                supervisor_id = (int) _pat.Supervisor.SuperiorId;
+            }
+            else
+            {
+                supervisor_id = _pat.SupervisorId;
+            }
+
+
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
