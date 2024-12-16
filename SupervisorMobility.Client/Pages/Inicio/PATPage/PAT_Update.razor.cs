@@ -689,8 +689,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
         }
 
+        private async void DownloadExcel()
+        {
+            //if (_pat.KnowledgePercentage != null || _pat.KnowledgePercentage != 0)
+            //{
+            //    await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+            //}
+            //else
+            //{
+            //    Snackbar.Add($"First fill the rotation target", Severity.Warning);
+            //}
+        }
+
+
+        // Zoom
+        private bool IsZoomed = false;
+        private string dynamicStyle => $"overflow-x: auto; height: {viewHeigh}vh;";
+
+        public int viewHeigh = 82;
+        private async Task ToggleZoom()
+        {
+            IsZoomed = !IsZoomed;
+            viewHeigh = IsZoomed ? 105 : 82;
+            var zoomLevel = IsZoomed ? "0.75" : "1.0";
+            await JSRuntime.InvokeVoidAsync("setZoom", zoomLevel);
+        }
+
         #region Calendario
         //Montly
+        bool AllHistory = false;
         bool MonthlyView = false;
         DateTime? _yearMonth;
         public DateTime? date;

@@ -105,7 +105,6 @@
 
 @if (ShowTable)
 {
-
     <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
         <thead>
             <tr>
@@ -118,7 +117,6 @@
                 <th>@Localizer["applicationYear"]</th>
                 <th>Supervisor</th>
                 <th>SSV</th>
-                <th>@Localizer["date"]</th>
                 <th rowspan="2">
                 </th>
             </tr>
@@ -129,11 +127,12 @@
                     @_pat?.Area?.Code - @_pat?.Area?.Description
                 </td>
                 <td>
-                    @if (MonthlyView)
+                
+                @if (MonthlyView)
                     {
                         <MudItem Style="display: flex;  align-items: center">
                             <MudTooltip Text=@Localizer["lastMonth"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                                @if (_yearMonth.Value.Month >= 2 && _yearMonth.Value.Year > DateTime.Now.Year)
+                                @if (_yearMonth.Value.Month >= 2 || (_yearMonth.Value.Year > DateTime.Now.Year && _yearMonth.Value.Month >= 2))
                                 {
                                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBackIosNew" Color="Color.Info" @onclick="@(()=>LastMonth())" OnTouch="@(()=>LastMonth())" Class="mr-4"></MudIconButton>
                                 }
@@ -149,12 +148,11 @@
                     }
                     else
                     {
-
+                        @_pat?.AplicationYear
                     }
                 </td>
                 <td>@_pat?.Supervisor?.Name</td>
                 <td>@_pat?.SSVresponsible?.Name</td>
-                <td>@_pat?.CreationDate?.ToShortDateString()</td>
                 <td>
                     <MudItem Style="justify-content: end" Class="ml-auto">
                         <MudItem Class="d-flex">
@@ -179,10 +177,6 @@
                                     <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
                                     break;
                             }
-                            @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status != 2)
-                            {
-                                <MudButton @onclick="(() => OpenSignComment())" StartIcon="@Icons.Material.Filled.BorderColor" IconColor="Color.Info">@Localizer["approvePAT"]</MudButton>
-                            }
 
                             <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="ml-5">
                                 <ActivatorContent>
@@ -197,24 +191,25 @@
                                     <MudMenuItem Icon="@Icons.Material.Filled.ChangeHistory" IconColor="Color.Dark">@Localizer["personnelInTrainingPeriod"]</MudMenuItem>
                                 </ChildContent>
                             </MudMenu>
+                            <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" Size="Size.Small" OnClick="DownloadExcel" Class="ml-5 my-2">Export</MudButton>
+                            <MudToggleIconButton Toggled="IsZoomed"
+                                                 Class="ml-5"
+                                                 Icon="@Icons.Material.Filled.ZoomIn"
+                                                 Color="@Color.Info"
+                                                 ToggledIcon="@Icons.Material.Filled.ZoomOut"
+                                                 ToggledColor="@Color.Primary"
+                                                 ToggledChanged="@(async (_) => await ToggleZoom())" />
+
                         </MudItem>
-                    </MudItem>
-                    <MudItem Class="ml-auto mt-4">
-                        @if (_pat.Status != 6)
-                        {
-                            if (user.UserType == 1 || user.UserType == 3)
-                            {
-                                <MudButton StartIcon="@Icons.Material.Filled.StopCircle" @onclick="() => SaveProgressPat()" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["saveProgress"]</MudButton>
-                            }
-                        }
                     </MudItem>
                 </td>
             </tr>
         </tbody>
     </MudSimpleTable>
 
+
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
-        <MudTabPanel Text="Yearly">
+        <MudTabPanel Text="Yearly" OnClick="@(() => MonthlyView = false)">
             <div class="table-container mb-10">
                 <div class="scrollable-columns">
                     <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="overflow-x: auto; height: 82vh" Elevation="0">
@@ -851,7 +846,7 @@
                                                 <table style="border: none">
                                                     <tbody>
                                                         @{
-                                                            var latestContext = context.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                            var latestContext = context.Where(d => d.AcquisitionDate.Value.Month == _yearMonth.Value.Month).OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
                                                             string ILULevelNumber = "§";
                                                             @if (latestContext != null)
                                                             {
@@ -1285,12 +1280,23 @@ else
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudTextField ReadOnly="true" Value="@_UserOfArea.Find(u => u.UserId == auxILU_UseId).Name" Label=@Localizer["name"]> </MudTextField>
                 <MudTextField ReadOnly="true" Value="@_UserOfArea.Find(u => u.UserId == auxILU_UseId).Payroll" Label=@Localizer["payroll"]> </MudTextField>
+
+                <MudToggleIconButton @bind-Toggled="AllHistory"
+                     Icon="@Icons.Material.Filled.FilterAltOff"
+                     Color="@Color.Error"
+                     ToggledIcon="@Icons.Material.Filled.FilterAlt"
+                     ToggledColor="@Color.Success"
+                     title="@(AllHistory ? "On" : "Off")" />
+
+                <span>Show All History: @(AllHistory ? "On" : "Off")</span>
+
             </MudItem>
 
-            @if (AllRegistersOperationsInUser?.Count > 0)
+            @if(MonthlyView && !AllHistory){
+                @if (AllRegistersOperationsInUser?.Count > 0)
             {
                 <MudTable Hover="true" Breakpoint="Breakpoint.Sm" FixedHeader="true"
-                          Items="@AllRegistersOperationsInUser"
+                          Items="@AllRegistersOperationsInUser.Where(a => a.AcquisitionDate.Value.Month == _yearMonth.Value.Month)"
                           GroupBy="@OperationsInUser"
                           GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"
                           GroupFooterClass="mb-4">
@@ -1334,7 +1340,55 @@ else
                 </MudTable>
 
             }
+            }else if(AllHistory){
+                @if (AllRegistersOperationsInUser?.Count > 0)
+                {
+                    <MudTable Hover="true" Breakpoint="Breakpoint.Sm" FixedHeader="true"
+                              Items="@AllRegistersOperationsInUser"
+                              GroupBy="@OperationsInUser"
+                              GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"
+                              GroupFooterClass="mb-4">
+                        <ColGroup>
 
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                        </ColGroup>
+                        <HeaderContent>
+                            <MudTh>Id</MudTh>
+                            <MudTh>@Localizer["level"]</MudTh>
+                            <MudTh>@Localizer["descriptionLevel"]</MudTh>
+                            <MudTh>@Localizer["adquisitionDate"]</MudTh>
+                        </HeaderContent>
+                        <GroupHeaderTemplate>
+                            <MudTh Class="mud-table-cell-custom-group" colspan="4">
+                                @($"{context.GroupName}: {_distributions.Find(o => o.DistributionId == (int)context.Key).Description}")
+                            </MudTh>
+                        </GroupHeaderTemplate>
+                        <RowTemplate>
+                            <MudTd DataLabel="Id">@context.ILURegisterid</MudTd>
+                            <MudTd DataLabel=@Localizer["level"]>
+                                <MudText Typo="Typo.subtitle1">
+                                    <b>
+                                        @_LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelCode
+                                    </b>
+                                </MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["descriptionLevel"] Class="animationContainer">
+                                <MudText Class="animationtext">
+                                    @_LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelDescription
+                                </MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["adquisitionDate"]>@context.AcquisitionDate?.ToString("dd/MM/yyyy")</MudTd>
+                        </RowTemplate>
+                        <GroupFooterTemplate>
+                            <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" colspan="4">@Localizer["mostRecentRegistrationTo"] @_distributions.Find(o => o.DistributionId == (int)context.Key).Description @Localizer["is"]: @context.Items.OrderByDescending(e => e.AcquisitionDate).First().AcquisitionDate?.ToString("dd/MM/yyyy") </MudTh>
+                        </GroupFooterTemplate>
+                    </MudTable>
+
+                }
+            }
         </MudContainer>
     </DialogContent>
     <DialogActions>
@@ -1354,9 +1408,70 @@ else
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudTextField ReadOnly="true" Value="@_distributions.Find(u => u.DistributionId == auxILU_OpId).Code" Label=@Localizer["code"]> </MudTextField>
                 <MudTextField ReadOnly="true" Value="@_distributions.Find(u => u.DistributionId == auxILU_OpId).Description" Label=@Localizer["description"]> </MudTextField>
+                <MudToggleIconButton @bind-Toggled="AllHistory"
+                                     Icon="@Icons.Material.Filled.FilterAltOff"
+                                     Color="@Color.Error"
+                                     ToggledIcon="@Icons.Material.Filled.FilterAlt"
+                                     ToggledColor="@Color.Success"
+                                     title="@(AllHistory ? "On" : "Off")" />
+
+                <span>Show All History: @(AllHistory ? "On" : "Off")</span>
+
             </MudItem>
 
+            @if(MonthlyView && !AllHistory){
 
+
+            @if (AllRegistersUsersInOperation?.Count > 0)
+            {
+                <MudTable Hover="true" Breakpoint="Breakpoint.Sm" FixedHeader="true"
+                          Items="@AllRegistersUsersInOperation.Where(a => a.AcquisitionDate.Value.Month == _yearMonth.Value.Month)"
+                          GroupBy="@UserInOperations"
+                          GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"
+                          GroupFooterClass="mb-4">
+                    <ColGroup>
+
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                    </ColGroup>
+                    <HeaderContent>
+                        <MudTh>Id</MudTh>
+                        <MudTh>@Localizer["level"]</MudTh>
+                        <MudTh>@Localizer["descriptionLevel"]</MudTh>
+                        <MudTh>@Localizer["adquisitionDate"]</MudTh>
+                    </HeaderContent>
+                    <GroupHeaderTemplate>
+                        <MudTh Class="mud-table-cell-custom-group" colspan="4">
+                            @($"{context.GroupName}: {_UserOfArea.Find(o => o.UserId == (int)context.Key).Name}")
+                        </MudTh>
+                    </GroupHeaderTemplate>
+                    <RowTemplate>
+                        <MudTd DataLabel="Id">@context.ILURegisterid</MudTd>
+                        <MudTd DataLabel=@Localizer["level"]>
+                            <MudText Typo="Typo.subtitle1">
+                                <b>
+                                    @_LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelCode
+                                </b>
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel=@Localizer["descriptionLevel"] Class="">
+                            <div class="animationContainer">
+                                <MudText Class="animationtext">
+                                    @_LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelDescription
+                                </MudText>
+                            </div>
+                        </MudTd>
+                        <MudTd DataLabel=@Localizer["adquisitionDate"]>@context.AcquisitionDate?.ToString("dd/MM/yyyy")</MudTd>
+                    </RowTemplate>
+
+                </MudTable>
+
+                }
+            }else if (AllHistory)
+            {
+                
             @if (AllRegistersUsersInOperation?.Count > 0)
             {
                 <MudTable Hover="true" Breakpoint="Breakpoint.Sm" FixedHeader="true"
@@ -1402,6 +1517,8 @@ else
                     </RowTemplate>
 
                 </MudTable>
+
+            }
 
             }
 
