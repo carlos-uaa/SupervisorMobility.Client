@@ -68,6 +68,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private int distribution_id { get; set; }
         private int operator_id { get; set; }
+        private int supervisor_id { get; set; }
         private string ProgrammedStartDate { get; set; }
 
 
@@ -456,7 +457,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         void CreateJobObservation(int distributionId, int operatorId)
         {
             distribution_id = distributionId;
+
             operator_id = operatorId;
+
+            if (operator_id == _pat.SupervisorId)
+            {
+                supervisor_id = (int) _pat.Supervisor.SuperiorId;
+            }
+            else
+            {
+                supervisor_id = _pat.SupervisorId;
+            }
+
+
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -706,8 +719,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
         }
 
+        private async void DownloadExcel()
+        {
+            //if (_pat.KnowledgePercentage != null || _pat.KnowledgePercentage != 0)
+            //{
+            //    await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+            //}
+            //else
+            //{
+            //    Snackbar.Add($"First fill the rotation target", Severity.Warning);
+            //}
+        }
+
+
+        // Zoom
+        private bool IsZoomed = false;
+        private string dynamicStyle => $"overflow-x: auto; height: {viewHeigh}vh;";
+
+        public int viewHeigh = 82;
+        private async Task ToggleZoom()
+        {
+            IsZoomed = !IsZoomed;
+            viewHeigh = IsZoomed ? 105 : 82;
+            var zoomLevel = IsZoomed ? "0.75" : "1.0";
+            await JSRuntime.InvokeVoidAsync("setZoom", zoomLevel);
+        }
+
         #region Calendario
         //Montly
+        bool AllHistory = false;
         bool MonthlyView = false;
         DateTime? _yearMonth;
         public DateTime? date;
