@@ -194,8 +194,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             _LevelsILU = await ILUServices.GetLevelsILU();
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
-            _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
-            _UserOfArea.Insert(0, _pat.Supervisor);
+
+            foreach (User sv in _pat.Supervisors)
+            {
+
+                _UserOfArea.AddRange(await UsersServices.GetSubordinates(sv.UserId));
+                _UserOfArea.Insert(0, sv);
+            }
+
             //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
             //_UserOfArea = await UsersServices.GetUsersWhitCollections();
 

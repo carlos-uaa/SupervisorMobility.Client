@@ -2104,7 +2104,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         {
             if (ssvId != 0)
             {
-                _pat.SSVresponsibleID = ssvId;
+                //_pat.SSVresponsibleID = ssvId;
             }
 
             if(_pat.PATid == 0)
