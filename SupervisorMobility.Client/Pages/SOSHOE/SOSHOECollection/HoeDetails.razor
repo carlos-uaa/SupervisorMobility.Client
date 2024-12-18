@@ -840,7 +840,7 @@ else
                         </MudSimpleTable>
                     </ChildContent>
                 </MudExpansionPanel>
-                <MudExpansionPanel Text="" Style="min-width: 100%" IsInitiallyExpanded>
+                <MudExpansionPanel Style="min-width: 100%" IsInitiallyExpanded>
                     <TitleContent>
                         <div class="d-flex" style="align-items: center; justify-content:center;">
                             <MudText Typo="Typo.h6" Style="text-align: center;">
@@ -955,9 +955,6 @@ else
                                     <i></i>
                                 </MudButton>
                             </MudItem>
-                            @if (_sosHub.SOSDistribution.Count() > 0)
-                            {
-
                                 <MudItem xs="4">
                                     <MudButton Class="custom-button-card" Style="--clr:#c4c4c4" OnClick="@(() => GoToPageGenerate(0))">
                                         <MudCard>
@@ -979,7 +976,6 @@ else
                                         <i></i>
                                     </MudButton>
                                 </MudItem>
-                            }
                         </MudGrid>
 
                     </ChildContent>
@@ -1636,76 +1632,7 @@ else
                     <MudItem Class="ma-5" Style="width: 100%;">
                         @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 6)
                         {
-                            <MudCard>
-                                <MudCardHeader>
-                                    <CardHeaderContent>
-                                        <MudText Typo="Typo.h6"> @Localizer["createPAT"]</MudText>
-                                    </CardHeaderContent>
-                                    <CardHeaderActions>
-                                        <MudChip Variant="Variant.Text" Color="Color.Success"> @Localizer["new"] PAT</MudChip>
-                                    </CardHeaderActions>
-                                </MudCardHeader>
-                                <MudCardContent>
-
-                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.PlantId" ReadOnly>
-
-                                        <MudSelectItem Value="_pat.Plant.PlantId">@($"{_pat.Plant.Code} - {_pat.Plant.Description}")</MudSelectItem>
-                                    </MudSelect>
-
-
-
-
-                                    @*Mud select for Areas for Admin *@
-                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" ReadOnly>
-                                        <MudSelectItem Value="_pat.Area.AreaId">@($"{_pat.Area.Code} - {_pat.Area.Description}")</MudSelectItem>
-                                    </MudSelect>
-
-
-
-                                    <MudDatePicker @bind-Date="_pat.AplicationDate" Label=@Localizer["applicationDate"] PickerVariant="PickerVariant.Dialog" DateFormat="yyyy" FixMonth="@DateTime.Today.Month" FixDay="@DateTime.Today.Day" AutoClose="true" OpenTo="OpenTo.Year" Color="Color.Info" AdornmentColor="Color.Info" Class="mt-3" />
-
-
-                                    @*Mud select for SSV for Admin *@
-                                    <MudSelect T="int" Label="SSV" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnSSV"]</MudSelectItem>
-                                        @foreach (var ssv in _sosHub.ApproverOwners)
-                                        {
-                                            <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                    @if (ssvId != 0)
-                                    {
-                                        @if (_sosHub.ReviewerEditors.Count > 0)
-                                        {
-                                            <MudSelect T="int" Label="Supervisor" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" >
-                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
-                                                @foreach (var sv in _sosHub.ReviewerEditors)
-                                                {
-                                                    <MudSelectItem Value="sv.UserId">
-                                                        @($"{sv.Name}")
-                                                    </MudSelectItem>
-                                                }
-                                            </MudSelect>
-                                        }
-                                        else
-                                        {
-                                            <MudAlert Severity="Severity.Info" Class="mt-5">
-                                                @Localizer["thisSSVDoesNotHaveSubordinates"]
-                                            </MudAlert>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <MudSelect T="int" Label="Supervisor" Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" >
-                                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnSSV"]</MudSelectItem>
-                                        </MudSelect>
-                                    }
-
-
-
-                                </MudCardContent>
-
-                            </MudCard>
+                            <SupervisorMobility.Client.Pages.Inicio.PATPage.CreatePAT is_Hoe="true" _pat="_pat" SOSHubId="_sosHub.SOSHubId" _plants="_plants" _areas="_areas" Plant_Id="(int)_sosHub.PlantId" Area_Id="(int)_sosHub.AreaId" _supervisors="_sosHub.ReviewerEditors"  ></SupervisorMobility.Client.Pages.Inicio.PATPage.CreatePAT>
                         }
                         else
                         {
@@ -1731,14 +1658,7 @@ else
                                         </td>
                                         <td>@_pat?.CreationDate?.Year</td>
                                         <td>
-                                            @foreach (User sv in _pat.Supervisors)
-                                            {
-                                                <MudText>@sv.Name</MudText>
-                                                @if (!(sv == _pat.Supervisors.Last()))
-                                                {
-                                                    <MudIcon Icon="@Icons.Material.Filled.UnfoldLess" />
-                                                }
-                                            }
+                                           <MudText>@string.Join(" / ", _pat.Supervisors.Select(s => s.Name))</MudText>
                                         </td>
                                         <td></td>
                                         <td>
@@ -3791,7 +3711,7 @@ else
             case 0:
                 @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 6)
                 {
-                    <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  CreatePatAsync())" Color="Color.Primary">
+                    <MudButton Disabled="@(_pat.Supervisors?.Count() == 0)" Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() =>  CreatePatAsync())" Color="Color.Primary">
                         <MudText>@Localizer["create"] PAT</MudText>
                     </MudButton>
                 }
