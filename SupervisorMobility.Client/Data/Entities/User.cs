@@ -50,7 +50,9 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? GroupId { get; set; }
         public Group? Group { get; set; }
 
-      
+        public int? HciId { get; set; }
+        public HCI? Hci { get; set; }
+
         public int? DistributionId { get; set; }
         public Distribution? Distribution { get; set; }
 

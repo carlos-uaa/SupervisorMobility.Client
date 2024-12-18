@@ -52,7 +52,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
 
             if (HCIID == null)
             {
-                if(userId == 0)
+                if(userId != 0)
                 {
                     _hci.User = await UsrsService.GetUser(userId);
                     _hci.UserId = userId;
