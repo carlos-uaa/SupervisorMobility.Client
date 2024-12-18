@@ -40,9 +40,9 @@
 @*Form*@
 <EditForm Model="_pat" OnValidSubmit="CreatePatAsync">
     <DataAnnotationsValidator />
-    <MudGrid Class="d-flex " Style="flex-direction: column; align-content: center;">
+    <MudGrid Class="d-flex" Style="flex-direction: column; align-content: center;">
         <MudItem>
-            <MudCard Style="min-width: 50vw">
+            <MudCard Style="min-width: 45vw" Class="ma-2">
                 <MudCardHeader>
                     <CardHeaderContent>
                             <MudText Typo="Typo.h6"> @Localizer["createPAT"]</MudText>
@@ -55,7 +55,7 @@
                     @if (user.UserType == 1)
                     {
                         @*Mud select for Plants for Admin*@
-                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text"  Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.PlantId" For="@(() => _pat.PlantId)" SelectedValuesChanged="ShowAreas">
+                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" ReadOnly="is_Hoe"  Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.PlantId" For="@(() => _pat.PlantId)" SelectedValuesChanged="ShowAreas">
                             <MudSelectItem Disabled="true" Value="0">@Localizer["selectAPlant"]</MudSelectItem>
                             @foreach (var type in _plants)
                             {
@@ -66,7 +66,7 @@
                     else
                     {
                         @*Mud select for Plants *@
-                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text"  Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.PlantId" For="@(() => _pat.PlantId)" SelectedValuesChanged="ShowAreas">
+                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" ReadOnly="is_Hoe" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.PlantId" For="@(() => _pat.PlantId)" SelectedValuesChanged="ShowAreas">
                             @foreach (var type in _plants)
                             {
                                 if (type.PlantId == user.PlantId)
@@ -81,7 +81,7 @@
                     @if (_pat.PlantId != 0 && user.UserType == 1)
                     {
                         @*Mud select for Areas for Admin *@
-                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" For="@(() => _pat.AreaId)" SelectedValuesChanged="ShowDistributions">
+                            <MudSelect T="int" Label=@Localizer["area"] ReadOnly="is_Hoe" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" For="@(() => _pat.AreaId)">
                             <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
                             @foreach (var type in _areas)
                             {
@@ -92,7 +92,7 @@
                     else if (_pat.PlantId != 0 && user.UserType == 2)
                     {
                         @*Mud select for Areas for SSV *@
-                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" For="@(() => _pat.AreaId)" SelectedValuesChanged="ShowDistributions">
+                            <MudSelect T="int" Label=@Localizer["area"] ReadOnly="is_Hoe" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" For="@(() => _pat.AreaId)">
                             <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
                             @foreach (var type in user.Areas)
                             {
@@ -103,7 +103,7 @@
                     else if (_pat.PlantId != 0)
                     {
                         @*Mud select for Areas for SV *@
-                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" For="@(() => _pat.AreaId)" SelectedValuesChanged="ShowDistributions">
+                            <MudSelect T="int" Label=@Localizer["area"] ReadOnly="is_Hoe" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" For="@(() => _pat.AreaId)">
                             <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnArea"]</MudSelectItem>
                             @foreach (var type in _areas)
                             {
@@ -117,95 +117,126 @@
                     else
                     {
                         @*Mud select for Areas *@
-                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" For="@(() => _pat.AreaId)" SelectedValuesChanged="ShowDistributions">
+                            <MudSelect T="int" Label=@Localizer["area"] ReadOnly="is_Hoe" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" For="@(() => _pat.AreaId)">
                             <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
                         </MudSelect>
                     }
 
-                    @*Mud select for Distribution *@
-                   @*  @if (_pat.AreaId != 0)
-                    {
-                        <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.DistributionId" For="@(() => _pat.DistributionId)">
-                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectADistribution"]</MudSelectItem>
-                            @foreach (var type in _distributions)
-                            {
-                                <MudSelectItem Value="type.DistributionId">
-                                    @(
-                                $"{type.Code} - {type.Description}"
-                                )
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
-                    else
-                    {
-                        <MudSelect T="int" Label=@Localizer["distribution"] Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.DistributionId" For="@(() => _pat.DistributionId)">
-                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
-                        </MudSelect>
-                    } *@
+                        @* <MudDatePicker DateChanged="@((args) => HandleDateChanged(args))" Label=@Localizer["applicationDate"] PickerVariant="PickerVariant.Dialog" DateFormat="yyyy" FixMonth="@DateTime.Today.Month" FixDay="@DateTime.Today.Day" AutoClose="true" OpenTo="OpenTo.Year" Color="Color.Info" AdornmentColor="Color.Info" Class="mt-3" /> *@
+                        <MudDatePicker @bind-Date="_pat.AplicationDate" Label=@Localizer["applicationDate"] PickerVariant="PickerVariant.Dialog" DateFormat="yyyy" FixMonth="@DateTime.Today.Month" FixDay="@DateTime.Today.Day" AutoClose="true" OpenTo="OpenTo.Year" Color="Color.Info" AdornmentColor="Color.Info" Class="mt-3" />
 
-                    <MudDatePicker @bind-Date="_pat.AplicationDate" Label=@Localizer["applicationDate"] PickerVariant="PickerVariant.Dialog" DateFormat="yyyy" FixMonth="@DateTime.Today.Month" FixDay="@DateTime.Today.Day" AutoClose="true" OpenTo="OpenTo.Year" Color="Color.Info" AdornmentColor="Color.Info" Class="mt-3" />
-
-                    @if(user.UserType == 1){
-                        @if(_pat.PlantId != 0 && _pat.AreaId != 0)
+                        @if (_pat.Supervisors?.Count > 0)
                         {
-                            @*Mud select for SSV for Admin *@
-                            <MudSelect T="int" Label="SSV" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" For="@(() => ssvId)" SelectedValuesChanged="ShowSupervisors">
-                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnSSV"]</MudSelectItem>
-                                @foreach (var ssv in _SSVs)
+
+                            <MudItem Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
+                                @foreach (User item in _pat.Supervisors)
                                 {
-                                    <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
+
+                                    <MudCard Elevation="1" Class="mr-5" Style="width: 300px; flex: 0 0 calc(28%-1rem);">
+                                        <MudCardHeader>
+                                            <CardHeaderActions>
+                                                @switch (item.UserType)
+                                                {
+                                                    case 3:
+                                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                                                        @if (user.UserType != 3)
+                                                        {
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSupervisorList(item))" />
+                                                        }
+                                                        break;
+                                                }
+
+                                            </CardHeaderActions>
+
+                                        </MudCardHeader>
+                                        <MudCardContent>
+
+                                            <div class="font-weight-bold"><b>@Localizer["UserId"]:</b>  @item.UserId</div>
+                                            <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @item.Name</div>
+
+                                            @if (item.AreaId != 0 || item.AreaId != null)
+                                            {
+                                                <div class="font-weight-bold"><b>@Localizer1["UsersAssignedArea"]:</b></div>
+                                                <div class="d-flex justify-content-between justify-center">
+
+                                                    <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@item.Area?.Code - @item.Area?.Description </MudChip>
+
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.button">@Localizer["UsersNoAreasSSV"]</MudText>
+                                            }
+
+
+
+                                        </MudCardContent>
+
+
+                                    </MudCard>
                                 }
-                            </MudSelect>
-                            @if (ssvId != 0)
+                            </MudItem>
+                        }
+
+                        @*Mud select for SSV A,B, C for Admin*@
+                        @if (user.UserType < 4)
+                        {
+                            @if (_pat.PlantId != 0 && _pat.AreaId != 0)
                             {
-                                @if (_supervisors.Count > 0)
-                                {
-                                   @*  <MudSelect T="int" Label="Supervisor" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.SupervisorId" For="@(() => _pat.SupervisorId)">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
-                                        @foreach (var sv in _supervisors)
-                                        {
-                                            <MudSelectItem Value="sv.UserId">
-                                                @($"{sv.Name}")
-                                            </MudSelectItem>
-                                        }
-                                    </MudSelect> *@
-                                }
-                                else
-                                {
-                                    <MudAlert Severity="Severity.Info" Class="mt-5">
-                                        @Localizer["thisSSVDoesNotHaveSubordinates"]
-                                    </MudAlert>
-                                }
+                                <MudItem class="d-flex d-flex-column justify-center ma-1">
+
+                                    @if (_supervisors?.Count > 0)
+                                    {
+                                        <MudItem xs="12" sm="12" md="12">
+                                            <MudAutocomplete Clearable T="User" Label="@Localizer1["UsersSupervisor"]" ValueChanged="@(selectedUser => OnSelectedSuperiorFunction(selectedUser, 4))"
+                                                            SearchFunc="@SearchSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer["UsersPHSupervisor"]}" : $"[{e.UserId}] - {e.Name} Group:[{e.Group?.Description}]")"
+                                                            Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.Person" ResetValueOnEmptyText
+                                                            ShowProgressIndicator="true" MaxItems="null">
+                                                <ItemTemplate Context="e">
+                                                    <MudItem Style="text-align: center">
+                                                        @switch (e.UserType)
+                                                        {
+                                                            case 3:
+                                                                <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-5"> @Localizer1["UsersSupervisor"] </MudChip>
+                                                                break;
+                                                        }
+                                                    </MudItem>
+                                                    <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @e.UserId</div>
+                                                    <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @e.Name</div>
+                                                    <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @e.Group?.Description</div>
+
+
+                                                    <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                                                    <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
+
+                                                </ItemTemplate>
+                                            </MudAutocomplete>
+                                            <MudItem Style="float:right">
+                                                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisor(selectedSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large" Class="mr-2 mt-2"> Add SV</MudButton>
+                                            </MudItem>
+                                        </MudItem>
+                                    }
+
+
+                                </MudItem>
                             }
                             else
                             {
-                                <MudSelect T="int" Label="Supervisor" Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnSSV"]</MudSelectItem>
+                                <MudSelect T="int" Label="Supervisor" Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
                                 </MudSelect>
                             }
+
+
                         }
-                    else
-                    {
-                        @*Mud select for SSV *@
-                        <MudSelect T="int" Label="SSV" Variant="Variant.Text" Disabled Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId" For="@(() => ssvId)">
-                                <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
-                        </MudSelect>
-                    }
-
-
-
-                    }
-                    else if(user.UserType == 3){
-                        <MudTextField T="string" @bind-Value="user.Name" Label="Supervisor" Class="mt-3" />
-                        <MudTextField T="string" @bind-Value="SupervisorName" Label="SSV" Class="mt-3" />
-
-                    }
-
+ 
+                    
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["create"] PAT</MudButton>
-                    <MudButton Href="/PAT" Variant="Variant.Filled" Class="ml-4">@Localizer["cancel"]</MudButton>
+                    @if(!is_Hoe){
+                        <MudButton ButtonType="ButtonType.Submit" Disabled="cantCreate" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["create"] PAT</MudButton>
+                        <MudButton Href="/PAT" Variant="Variant.Filled" Class="ml-4">@Localizer["cancel"]</MudButton>
+                    }
                 </MudCardActions>
             </MudCard>
         </MudItem>

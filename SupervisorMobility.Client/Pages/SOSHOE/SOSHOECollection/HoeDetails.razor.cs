@@ -2,7 +2,7 @@ using BlazorCameraStreamer;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using MudBlazor;
-using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -146,7 +146,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 {
                     new BreadcrumbItem(text: Localizer["home"], href: "/soshoe"),
                     new BreadcrumbItem(text: Localizer["hoe"], href: "/soshoe/Hub"),
-                    new BreadcrumbItem(text: Localizer["details"] + SOSHubId, href: "", disabled: true)
+                    new BreadcrumbItem(text: Localizer["details"] + " Collection: " + SOSHubId, href: "", disabled: true)
                 };
             BreadcrumbServices.UpdateBreadcrumbs(_links);
             await GetUserAsync();
@@ -1087,18 +1087,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         #region PAT
 
+        
+
+        private async Task OnAplicationDateChanged(DateTime? newDate)
+        {
+            _pat.AplicationDate = newDate;
+            StateHasChanged();
+        }
+
         async void CreatePatAsync()
         {
-            if (ssvId != 0)
-            {
-                //_pat.SSVresponsibleID = ssvId;
-            }
 
-            if(_pat.PATid == 0)
+            Console.WriteLine( JsonSerializer.Serialize(_pat) );
+
+            if (_pat.PATid == 0)
             {
 
-            _pat.Status = 1;
-            _pat.AplicationYear = _pat.AplicationDate.Value.Year;
+                _pat.Status = 1;
+                _pat.AplicationYear = _pat.AplicationDate.Value.Year;
             }
 
             var result = await SOSHubServices.GeneratePat(_sosHub.SOSHubId, _pat);

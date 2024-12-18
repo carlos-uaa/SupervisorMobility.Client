@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
@@ -10,20 +11,31 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
         // Objects
-        PAT _pat = new();
-        List<Plant> _plants { get; set; } = new();
-        List<Product> _products { get; set; } = new();
-        List<Area> _areas = new();
-        //List<Distribution> _distributions = new();
+        [Parameter]
+        public PAT _pat { get; set; } = new();
 
-        List<User> _allSSVs = new();
-        List<User> _SSVs = new();
-        List<User> _supervisors = new();
-        List<User> _allSupervisors = new();
+        [Parameter]
+        public List<Plant> _plants { get; set; } = new();
 
-        public int ssvId;
+        [Parameter]
+        public List<Area> _areas { get; set; } = new();
 
-        public string SupervisorName = string.Empty;
+        [Parameter]
+        public List<User> _supervisors { get; set; } = new();
+
+        [Parameter]
+        public int Plant_Id { get; set; } = 0;
+        [Parameter]
+        public int Area_Id { get; set; } = 0;
+        [Parameter]
+        public int SOSHubId { get; set; } = 0;
+
+        [Parameter]
+        public bool is_Hoe { get; set; } = false;
+
+        [Parameter]
+        public EventCallback<DateTime?> OnAplicationDateChanged { get; set; }
+
 
         //User
         private string json = string.Empty;
@@ -33,6 +45,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         bool ShowLoading = true;
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+
+        //Supervisors elements
+        public bool cantCreate = true;
+        private User selectedSupervisorOfList = null;
+        private bool ActiveAddSubordinated = false;
 
 
         // Initialization
@@ -53,12 +70,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
-            _links = new List<BreadcrumbItem>
+            if (!is_Hoe)
             {
-                new BreadcrumbItem(text: Localizer["home"], href: "/"),
-                new BreadcrumbItem("PAT", href: "/PAT"),
-                new BreadcrumbItem(text: Localizer["new"] + " PAT", href: "", disabled: true)
-            };
+
+                _links = new List<BreadcrumbItem>
+                {
+                    new BreadcrumbItem(text: Localizer["home"], href: "/"),
+                    new BreadcrumbItem("PAT", href: "/PAT"),
+                    new BreadcrumbItem(text: Localizer["new"] + " PAT", href: "", disabled: true)
+                };
+            }
+            else
+            {
+                _links = new List<BreadcrumbItem>
+                {
+                    new BreadcrumbItem(text: Localizer["home"], href: "/soshoe"),
+                    new BreadcrumbItem(text: Localizer["hoe"], href: "/soshoe/Hub"),
+                    new BreadcrumbItem(text: Localizer["details"] + SOSHubId, href: "", disabled: true),
+                    new BreadcrumbItem("PAT", href: "/PAT"),
+                    new BreadcrumbItem(text: Localizer["new"] + " PAT", href: "", disabled: true)
+                };
+            }
             BreadcrumbService.UpdateBreadcrumbs(_links);
 
             logged = await HasPropertyAsync();
@@ -72,8 +104,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             else
             {
                 await GetUserAsync();
-                
-                _plants = await PlantServices.GetPlants();
+
+                if (_plants is null || _plants.Count() == 0)
+                {
+                    _plants = await PlantServices.GetPlants();
+                }
+
                 _pat.AplicationDate = DateTime.Now;
                 _pat.CreationDate = DateTime.Now;
 
@@ -81,34 +117,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 {
                     if (user.UserType == 1)
                     {
-                        _pat.PlantId = 0;
-                        _pat.AreaId = 0;
+                        _pat.PlantId = Plant_Id;
+                        _pat.AreaId = Area_Id;
 
-                        _allSSVs = await UsersService.GetUsersByType(2, true, false);
-                        _allSupervisors = await UsersService.GetUsersByType(3, true, false);
+                        //_allSSVs = await UsersService.GetUsersByType(2, true, false);
+                        //_allSupervisors = await UsersService.GetUsersByType(3, true, false);
 
                     }
                     else if (user.UserType == 3)
                     {
-                        _pat.PlantId = (int)user.PlantId;
-                        _areas = await AreaServices.GetAreas(_pat.PlantId); 
-                        
-                        _pat.AreaId = (int)user.AreaId;
-                        //_distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
-
-
-                        //_pat.SupervisorId = user.UserId;
-
-                        if(user.Superior != null)
+                        if (Plant_Id == 0)
                         {
-                            //_pat.SSVresponsibleID = user.SuperiorId;
-                            SupervisorName = user.Superior.Name;
+                            _pat.PlantId = (int)user.PlantId;
                         }
                         else
                         {
-                            SupervisorName = "This user does not have a Superior";
+                            _pat.PlantId = Plant_Id;
                         }
 
+                        if (_areas is null || _areas.Count() == 0)
+                        {
+                            _areas = await AreaServices.GetAreas(_pat.PlantId);
+                        }
+
+                        if (Area_Id == 0)
+                        {
+                            _pat.AreaId = Area_Id;
+                        }
+                        else
+                        {
+                            _pat.AreaId = (int)user.AreaId;
+                        }
 
                     }
                 }
@@ -117,6 +156,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             StateHasChanged();
         }
 
+
+        //Aplication Year
+        private async Task HandleDateChanged(DateTime? args)
+        {
+            if (is_Hoe)
+            {
+                await OnAplicationDateChanged.InvokeAsync(args);
+            }
+            else
+            {
+                _pat.AplicationDate = args;
+            }
+            StateHasChanged();
+        }
 
         //Local storage user
         private async Task GetUserAsync()
@@ -147,80 +200,47 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private async void ShowAreas()
         {
             _supervisors.Clear();
-            //_pat.SupervisorId = 0;
-            _SSVs.Clear();
-            ssvId = 0;
             _pat.AreaId = 0;
-            //_pat.DistributionId = 0;
             _areas = await AreaServices.GetAreas(_pat.PlantId);
 
         }
 
-        private async void ShowDistributions()
-        {
-            _SSVs.Clear();
-            ssvId = 0;
-
-            _supervisors.Clear();
-            //_pat.SupervisorId = 0;
-
-            //_pat.DistributionId = 0;
-            //_distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
-
-
-            foreach (User ssv in _allSSVs)
-            {
-                if (ssv.PlantId == _pat.PlantId && ssv.Areas?.ToList().FindIndex(a => a.AreaId == _pat.AreaId) != -1)
-                {
-                    _SSVs.Add(ssv);
-                }
-            }
-
-
-
-            StateHasChanged();
-
-
-
-
-        }
 
         private void ShowSupervisors()
         {
             _supervisors.Clear();
-            //_pat.SupervisorId = 0;
 
             User SeniorSV = new();
-            foreach (User usr in _allSSVs)
-            {
-                if (usr.UserId == ssvId)
-                {
-                    SeniorSV = usr;
-                }
-            }
+            //foreach (User usr in _allSSVs)
+            //{
+            //    if (usr.UserId == ssvId)
+            //    {
+            //        SeniorSV = usr;
+            //    }
+            //}
 
-            foreach (User sv in _allSupervisors)
-            {
-                if (sv.SuperiorId == ssvId && sv.AreaId == _pat.AreaId)
-                    _supervisors.Add(sv);
-            }
+            //foreach (User sv in _allSupervisors)
+            //{
+            //    if (sv.SuperiorId == ssvId && sv.AreaId == _pat.AreaId)
+            //        _supervisors.Add(sv);
+            //}
             StateHasChanged();
         }
 
         // Create Pat
         async void CreatePatAsync()
         {
-            if(user.UserType == 1)
+            if (user.UserType == 1)
             {
                 //_pat.SSVresponsibleID = ssvId;
             }
 
             _pat.CreationDate = DateTime.UtcNow;
-            _pat.AplicationYear =  _pat.AplicationDate.Value.Year;
+            _pat.AplicationYear = _pat.AplicationDate.Value.Year;
             _pat.Status = 1;
 
             var result = await PATsServices.CreatePat(_pat);
-            if(result != null)
+            if (result != null)
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -233,7 +253,65 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Error in Pat", Severity.Error);
             }
- 
         }
+
+        private async Task<IEnumerable<User>> SearchSV(string value)
+        {
+            // In real life use an asynchronous function for fetching data from an api.
+            // await Task.Delay(1000);
+
+            // if text is null or empty, show complete list
+            if (string.IsNullOrEmpty(value))
+                return _supervisors;
+
+            return _supervisors.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        private async void OnSelectedSuperiorFunction(User element, int type)
+        {
+
+            selectedSupervisorOfList = element;
+
+
+            if (selectedSupervisorOfList != new User())
+            {
+                ActiveAddSubordinated = false;
+            }
+            else
+            {
+                ActiveAddSubordinated = true;
+            }
+
+        }
+
+        private void DeleteSupervisorList(User selection)
+        {
+            _pat.Supervisors?.Remove(selection);
+            _supervisors.Add(selection);
+            cantCreate = _pat.Supervisors.Count == 0;
+            StateHasChanged();
+        }
+
+        private void AddSupervisor(User selection)
+        {
+            if (_pat.Supervisors == null)
+            {
+                _pat.Supervisors = new List<User>();
+            }
+
+
+            if (selectedSupervisorOfList != null && !_pat.Supervisors.Contains(selection))
+            {
+                _pat.Supervisors.Add(selection);
+                _supervisors.Remove(selection);
+                selectedSupervisorOfList = null;
+                ActiveAddSubordinated = true;
+            }
+
+            cantCreate = _pat.Supervisors.Count == 0;
+            StateHasChanged();
+        }
+
+
     }
 }
