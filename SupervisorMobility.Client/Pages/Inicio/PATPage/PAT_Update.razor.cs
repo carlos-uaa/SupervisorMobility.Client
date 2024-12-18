@@ -14,7 +14,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private List<Distribution> _distributions { get; set; } = new();
         private List<User> _UserOfArea { get; set; } = new();
         private List<ILULevel> _LevelsILU { get; set; } = new();
-        //private ILURegister[,] ILU_Matrix { get; set; } = new ILURegister[0,0];
         private Dictionary<(int, int), List<ILURegister>?> ILU_Matrix { get; set; } = new Dictionary<(int, int), List<ILURegister>?>();
 
 
@@ -194,8 +193,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             _LevelsILU = await ILUServices.GetLevelsILU();
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
-            _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
-            _UserOfArea.Insert(0, _pat.Supervisor);
+            foreach(User sv in _pat.Supervisors)
+            {
+                
+                _UserOfArea.AddRange(await UsersServices.GetSubordinates(sv.UserId));
+                _UserOfArea.Insert(0, sv);
+            }
             //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
             //_UserOfArea = await UsersServices.GetUsersWhitCollections();
 
@@ -460,13 +463,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             operator_id = operatorId;
 
-            if (operator_id == _pat.SupervisorId)
+            if (_pat.Supervisors.Any(sv => sv.UserId == operatorId))
             {
-                supervisor_id = (int) _pat.Supervisor.SuperiorId;
+                supervisor_id = (int)_pat.Supervisors.ToList().Find(sv => sv.UserId == operatorId).SuperiorId;
             }
             else
             {
-                supervisor_id = _pat.SupervisorId;
+                supervisor_id = (int)_UserOfArea.Find(u => u.UserId == operator_id).SuperiorId;
             }
 
 

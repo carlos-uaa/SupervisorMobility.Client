@@ -97,11 +97,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         //_distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
 
 
-                        _pat.SupervisorId = user.UserId;
+                        //_pat.SupervisorId = user.UserId;
 
                         if(user.Superior != null)
                         {
-                            _pat.SSVresponsibleID = user.SuperiorId;
+                            //_pat.SSVresponsibleID = user.SuperiorId;
                             SupervisorName = user.Superior.Name;
                         }
                         else
@@ -147,7 +147,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private async void ShowAreas()
         {
             _supervisors.Clear();
-            _pat.SupervisorId = 0;
+            //_pat.SupervisorId = 0;
             _SSVs.Clear();
             ssvId = 0;
             _pat.AreaId = 0;
@@ -162,7 +162,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             ssvId = 0;
 
             _supervisors.Clear();
-            _pat.SupervisorId = 0;
+            //_pat.SupervisorId = 0;
 
             //_pat.DistributionId = 0;
             //_distributions = await DistributionService.GetDistributionsWithCollections(_pat.PlantId, _pat.AreaId);
@@ -188,7 +188,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private void ShowSupervisors()
         {
             _supervisors.Clear();
-            _pat.SupervisorId = 0;
+            //_pat.SupervisorId = 0;
 
             User SeniorSV = new();
             foreach (User usr in _allSSVs)
@@ -212,7 +212,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         {
             if(user.UserType == 1)
             {
-                _pat.SSVresponsibleID = ssvId;
+                //_pat.SSVresponsibleID = ssvId;
             }
 
             _pat.CreationDate = DateTime.UtcNow;
