@@ -397,10 +397,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         async void CreatePatAsync()
         {
-            if (ssvId != 0)
-            {
-                _pat.SSVresponsibleID = ssvId;
-            }
+
+            Console.WriteLine(JsonSerializer.Serialize(_pat));
 
             if (_pat.PATid == 0)
             {

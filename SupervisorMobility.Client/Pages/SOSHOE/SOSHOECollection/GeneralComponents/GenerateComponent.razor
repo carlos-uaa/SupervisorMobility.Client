@@ -194,143 +194,76 @@
             @switch (selectedIndexPageGenerate)
             {
                 case 0:
-                    <div class="d-flex" style="max-height: auto">
-                        <MudItem Class="ma-5" Style="width: 100%;">
-                            @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 6)
-                            {
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Typo="Typo.h6"> @Localizer["createPAT"]</MudText>
-                                        </CardHeaderContent>
-                                        <CardHeaderActions>
-                                            <MudChip Variant="Variant.Text" Color="Color.Success"> @Localizer["new"] PAT</MudChip>
-                                        </CardHeaderActions>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-
-                                        <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.PlantId" ReadOnly>
-
-                                            <MudSelectItem Value="_pat.Plant.PlantId">@($"{_pat.Plant.Code} - {_pat.Plant.Description}")</MudSelectItem>
-                                        </MudSelect>
-
-
-
-
-                                        @*Mud select for Areas for Admin *@
-                                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.AreaId" ReadOnly>
-                                            <MudSelectItem Value="_pat.Area.AreaId">@($"{_pat.Area.Code} - {_pat.Area.Description}")</MudSelectItem>
-                                        </MudSelect>
-
-
-
-                                        <MudDatePicker @bind-Date="_pat.AplicationDate" Label=@Localizer["applicationDate"] PickerVariant="PickerVariant.Dialog" DateFormat="yyyy" FixMonth="@DateTime.Today.Month" FixDay="@DateTime.Today.Day" AutoClose="true" OpenTo="OpenTo.Year" Color="Color.Info" AdornmentColor="Color.Info" Class="mt-3" />
-
-
-                                        @*Mud select for SSV for Admin *@
-                                        <MudSelect T="int" Label="SSV" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@ssvId">
-                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnSSV"]</MudSelectItem>
-                                            @foreach (var ssv in _sosHub.ApproverOwners)
-                                            {
-                                                <MudSelectItem Value="ssv.UserId">@($"{ssv.Name}")</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                        @if (ssvId != 0)
-                                        {
-                                            @if (_sosHub.ReviewerEditors.Count > 0)
-                                            {
-                                                <MudSelect T="int" Label="Supervisor" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.SupervisorId" For="@(() => _pat.SupervisorId)">
-                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectASupervisor"]</MudSelectItem>
-                                                    @foreach (var sv in _sosHub.ReviewerEditors)
-                                                    {
-                                                        <MudSelectItem Value="sv.UserId">
-                                                            @($"{sv.Name}")
-                                                        </MudSelectItem>
-                                                    }
-                                                </MudSelect>
-                                            }
-                                            else
-                                            {
-                                                <MudAlert Severity="Severity.Info" Class="mt-5">
-                                                    @Localizer["thisSSVDoesNotHaveSubordinates"]
-                                                </MudAlert>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <MudSelect T="int" Label="Supervisor" Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.SupervisorId" For="@(() => _pat.SupervisorId)">
-                                                <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnSSV"]</MudSelectItem>
-                                            </MudSelect>
-                                        }
-
-
-
-                                    </MudCardContent>
-
-                                </MudCard>
-                            }
-                            else
-                            {
-                                <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
-                                    <thead>
-                                        <tr>
-                                            <th>
+                <div class="d-flex" style="max-height: auto">
+                    <MudItem Class="ma-5" Style="width: 100%;">
+                        @if (_sosHub.PATs?.Count == 0 || _sosHub.PATs?.Last().Status == 6)
+                        {
+                            <SupervisorMobility.Client.Pages.Inicio.PATPage.CreatePAT is_Hoe="true" _pat="_pat" SOSHubId="_sosHub.SOSHubId" _plants="_plants" _areas="_areas" Plant_Id="(int)_sosHub.PlantId" Area_Id="(int)_sosHub.AreaId" _supervisors="_sosHub.ReviewerEditors"  ></SupervisorMobility.Client.Pages.Inicio.PATPage.CreatePAT>
+                        }
+                        else
+                        {
+                            <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto;" Dense>
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <MudItem Class="d-flex">
+                                                <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
+                                                <MudText Class="ml-2">@Localizer["area"]</MudText>
+                                            </MudItem>
+                                        </th>
+                                        <th>@Localizer["applicationYear"]</th>
+                                        <th>Supervisor</th>
+                                        <th>SSV</th>
+                                        <th>@Localizer["status"]</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            @_pat?.Area?.Code - @_pat?.Area?.Description
+                                        </td>
+                                        <td>@_pat?.CreationDate?.Year</td>
+                                        <td>
+                                           <MudText>@string.Join(" / ", _pat.Supervisors.Select(s => s.Name))</MudText>
+                                        </td>
+                                        <td></td>
+                                        <td>
+                                            <MudItem Style="justify-content: end" Class="ml-auto">
                                                 <MudItem Class="d-flex">
-                                                    <MudIcon Icon="@Icons.Material.Filled.Business"> </MudIcon>
-                                                    <MudText Class="ml-2">@Localizer["area"]</MudText>
+                                                    @switch (_pat.Status)
+                                                    {
+                                                        case 1:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
+                                                            break;
+                                                        case 2:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                                            break;
+                                                        case 3:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                                            break;
+                                                        case 4:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                                            break;
+                                                        case 5:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                                            break;
+                                                        case 6:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                                            break;
+                                                    }
                                                 </MudItem>
-                                            </th>
-                                            <th>@Localizer["applicationYear"]</th>
-                                            <th>Supervisor</th>
-                                            <th>SSV</th>
-                                            <th>@Localizer["status"]</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                @_pat?.Area?.Code - @_pat?.Area?.Description
-                                            </td>
-                                            <td>@_pat?.CreationDate?.Year</td>
-                                            <td>@_pat?.Supervisor?.Name</td>
-                                            <td>@_pat?.SSVresponsible?.Name</td>
-                                            <td>
-                                                <MudItem Style="justify-content: end" Class="ml-auto">
-                                                    <MudItem Class="d-flex">
-                                                        @switch (_pat.Status)
-                                                        {
-                                                            case 1:
-                                                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
-                                                                break;
-                                                            case 2:
-                                                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
-                                                                break;
-                                                            case 3:
-                                                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
-                                                                break;
-                                                            case 4:
-                                                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
-                                                                break;
-                                                            case 5:
-                                                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
-                                                                break;
-                                                            case 6:
-                                                                <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
-                                                                break;
-                                                        }
-                                                    </MudItem>
-                                                </MudItem>
-                                            </td>
-                                        </tr>
+                                            </MudItem>
+                                        </td>
+                                    </tr>
 
-                                    </tbody>
-                                </MudSimpleTable>
+                                </tbody>
+                            </MudSimpleTable>
 
-                            }
+                        }
 
-                        </MudItem>
-                    </div>
-                    break;
+                    </MudItem>
+                </div>
+                break;
                 case 1:
                     <div class="d-flex" style="min-height:40vh; max-height: auto">
                         <MudItem Class="ma-5">

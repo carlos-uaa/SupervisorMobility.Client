@@ -1095,35 +1095,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             StateHasChanged();
         }
 
-        async void CreatePatAsync()
-        {
-
-            Console.WriteLine( JsonSerializer.Serialize(_pat) );
-
-            if (_pat.PATid == 0)
-            {
-
-                _pat.Status = 1;
-                _pat.AplicationYear = _pat.AplicationDate.Value.Year;
-            }
-
-            var result = await SOSHubServices.GeneratePat(_sosHub.SOSHubId, _pat);
-            if (result != null)
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"New PAT Created", Severity.Info);
-                NavigationManager.NavigateTo($"/PAT/{result}");
-
-            }
-            else
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Error in Pat", Severity.Error);
-            }
-
-        }
+        
         #endregion
     }
 }
