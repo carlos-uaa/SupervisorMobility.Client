@@ -347,6 +347,18 @@
                                         <MudMenu AnchorOrigin="Origin.BottomCenter">
                                             <ActivatorContent>
                                                 @op.Description &nbsp;
+                                                @switch (op.CriticalType)
+                                                {
+                                                    case 1:
+                                                        <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                        break;
+                                                    case 2:
+                                                        <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                        break;
+                                                    case 3:
+                                                        <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                        break;
+                                                }
                                                 <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon>
                                             </ActivatorContent>
                                             <ChildContent>
@@ -362,6 +374,18 @@
                             {
                                 <th class="fixed-column dynamic-left" colspan="2" style="background-color:#fbe8ce;color:#ff9800">
                                     @op.Description &nbsp;
+                                    @switch (op.CriticalType)
+                                    {
+                                        case 1:
+                                            <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                            break;
+                                        case 2:
+                                            <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                            break;
+                                        case 3:
+                                            <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                            break;
+                                    }
                                 </th>
                             }
 
@@ -721,10 +745,15 @@
                                 {
                                         <span class="mr-2">@($"{percentage.Value:F2}%")</span>               
                                 }
-                                else{
-
-                                    <MudInput T="double?" ReadOnly /> <span>%</span>
+                                else if (_pat.KnowledgePercentage is not null)
+                                {
+                                    <span class="mr-2">@(_pat.KnowledgePercentage ?? 0)%</span>
                                 }
+                                else
+                                {
+                                    <MudInput T="double?" ReadOnly />
+                                }
+
                                  @Localizer["in"] 1 x
                                 <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly/>
                             </div>
@@ -809,6 +838,18 @@
                                         <MudMenu AnchorOrigin="Origin.BottomCenter">
                                             <ActivatorContent>
                                                 @op.Description &nbsp;
+                                                @switch (op.CriticalType)
+                                                {
+                                                    case 1:
+                                                        <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                        break;
+                                                    case 2:
+                                                        <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                        break;
+                                                    case 3:
+                                                        <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                        break;
+                                                }
                                                 <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon>
                                             </ActivatorContent>
                                             <ChildContent>
@@ -824,6 +865,18 @@
                             {
                                 <th class="fixed-column dynamic-left" colspan="2" style="background-color:#fbe8ce;color:#ff9800">
                                     @op.Description &nbsp;
+                                    @switch (op.CriticalType)
+                                    {
+                                        case 1:
+                                            <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                            break;
+                                        case 2:
+                                            <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                            break;
+                                        case 3:
+                                            <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                            break;
+                                    }
                                 </th>
                             }
 
@@ -963,11 +1016,13 @@
                                 </div>
                             </div>
                         </td>
-                        @{
-                            int index = 0;
-                        }
+
                         <Virtualize Context="usr" Items="_UserOfArea">
-                            <td style="text-align: center;" colspan="2">
+                            @{
+                                int index = _UserOfArea.IndexOf(usr);
+                            }
+
+                            <td colspan="2" style="text-align: center;">
 
                                 @{
                                     var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
@@ -978,27 +1033,28 @@
 
                                 @if(_pat.KnowledgePercentage != null){
 
-                                    @if (!(_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is not null) && _pat.SaveLeader == "S" ||
-                                            (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
-                                            && _pat.SaveLeader == "C")
+                                    var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
+                                    var isSaveLeaderS = _pat.SaveLeader == "S";
+                                    var isSaveLeaderC = _pat.SaveLeader == "C";
+                                    var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                                    @if ((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC))
                                     {
                                         @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                                         {
-                                            <span style="color:red"><b>X</b></span>
+                                        <span style="color:red; text-align: center;"><b>X</b></span>
                                         }
                                         else if (meetsKnowledge)
                                         {
-                                            <span><b>O</b></span>
+                                        <span style="text-align: center;"><b>O</b></span>
                                         }
 
                                     }
                                 }
                             </td>
-                            @{
-                                index++;
-                            }
-                        </Virtualize>
-                        <td style="text-align: center;" ></td>
+                    </Virtualize>
+
+                    <td style="text-align: center;"></td>
                         <td  style="text-align: center;">Nivel de habilidad Tecnica</td>
                     </tr>
                     <tr>
@@ -1153,7 +1209,7 @@ else
 
 <MudDialog DisableSidePadding="false" @bind-IsVisible="ILUHistoryDialog" Options="dialogOptions">
     <DialogContent>
-        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction:row" Class="gap-4">
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction:row; justify-content: center;" Class="gap-4">
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudText Typo="Typo.h6">
                     @Localizer["ILUHistoryOfOperationsInUser"]
@@ -1162,14 +1218,18 @@ else
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudTextField ReadOnly="true" Value="@_UserOfArea.Find(u => u.UserId == auxILU_UseId).Name" Label=@Localizer["name"]> </MudTextField>
                 <MudTextField ReadOnly="true" Value="@_UserOfArea.Find(u => u.UserId == auxILU_UseId).Payroll" Label=@Localizer["payroll"]> </MudTextField>
-                <MudToggleIconButton @bind-Toggled="AllHistory"
-                                     Icon="@Icons.Material.Filled.FilterAltOff"
-                                     Color="@Color.Error"
-                                     ToggledIcon="@Icons.Material.Filled.FilterAlt"
-                                     ToggledColor="@Color.Success"
-                                     title="@(AllHistory ? "On" : "Off")" />
+                @if(UserHasHci){
+                    <MudButton Href=@($"/HCI/Update/{auxILU_UseId}") Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">HCI</MudButton>
+                }
 
-                <span>Show All History: @(AllHistory ? "On" : "Off")</span>
+                <MudToggleIconButton @bind-Toggled="AllHistory"
+                                     Icon="@Icons.Material.Filled.FilterAlt"
+                                     Color="@Color.Info"
+                                     ToggledIcon="@Icons.Material.Filled.FilterAltOff"
+                                     ToggledColor="@Color.Success"
+                                      />
+
+                <span>Show All History: @(AllHistory ? "No" : "Yes")</span>
 
             </MudItem>
             @if(MonthlyView && !AllHistory)
@@ -1295,20 +1355,20 @@ else
                 <MudTextField ReadOnly="true" Value="@_distributions.Find(u => u.DistributionId == auxILU_OpId).Code" Label=@Localizer["code"]> </MudTextField>
                 <MudTextField ReadOnly="true" Value="@_distributions.Find(u => u.DistributionId == auxILU_OpId).Description" Label=@Localizer["description"]> </MudTextField>
                 <MudToggleIconButton @bind-Toggled="AllHistory"
-         Icon="@Icons.Material.Filled.FilterAltOff"
-         Color="@Color.Error"
-         ToggledIcon="@Icons.Material.Filled.FilterAlt"
+         Icon="@Icons.Material.Filled.FilterAlt"
+         Color="@Color.Info"
+         ToggledIcon="@Icons.Material.Filled.FilterAltOff"
          ToggledColor="@Color.Success"
-         title="@(AllHistory ? "On" : "Off")" />
+          />
 
-    <span>Show All History: @(AllHistory ? "On" : "Off")</span>
+            <span>Show All History: @(AllHistory ? "No" : "True")</span>
             </MudItem>
 
             @if(MonthlyView && !AllHistory){
                 
             @if (AllRegistersUsersInOperation?.Count > 0)
             {
-                <MudTable Hover="true" Breakpoint="Breakpoint.Sm" FixedHeader="true"
+                <MudTable Hover="true" Breakpoint="Breakpoint.Sm" FixedHeader="true" 
                           Items="@AllRegistersUsersInOperation"
                           GroupBy="@UserInOperations"
                           GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"

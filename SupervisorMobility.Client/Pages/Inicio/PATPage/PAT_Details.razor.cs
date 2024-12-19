@@ -36,6 +36,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private List<ILURegister> AllRegistersOfPat { get; set; } = new();
         private int auxILU_Level = 0;
         private int auxILU_UseId = 0;
+        private bool UserHasHci = false;
         private int auxILU_OpId = 0;
 
         private List<ILURegister> AllRegistersOperationsInUser { get; set; } = new();
@@ -320,6 +321,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private async void OpenHistoryILU(int ID_User)
         {
+            UserHasHci = false;
             auxILU_UseId = ID_User;
 
             AllRegistersOperationsInUser?.Clear();
@@ -334,6 +336,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         AllRegistersOperationsInUser.AddRange(latestContext);
                     }
                 }
+            }
+
+            if(_UserOfArea.Where( u=> u.UserId == auxILU_UseId && u.HciId != null && u.HciId != 0).Any()){
+                UserHasHci = true;
             }
             ILUHistoryDialog = true;
             StateHasChanged();
@@ -464,7 +470,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 {
                     countUserO++;
                 }
-                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
+                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                 {
                     countUserX++;
                 }
@@ -481,8 +487,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             countDistO = 0;
             countDistX = 0;
 
+            int index = 0;
+
             foreach (var usr in _UserOfArea)
             {
+                var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
+                var isSaveLeaderS = _pat.SaveLeader == "S";
+                var isSaveLeaderC = _pat.SaveLeader == "C";
+                var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                if(!((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC)))
+                {
+                    index++;
+                    continue;
+                }
+
                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
                 var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
                 var meetsKnowledge = sum >= _pat.KnowledgePercentage;
@@ -491,10 +510,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 {
                     countDistO++;
                 }
-                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
+                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                 {
                     countDistX++;
                 }
+                index++;
+
             }
 
             return (countDistO + countDistO) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
