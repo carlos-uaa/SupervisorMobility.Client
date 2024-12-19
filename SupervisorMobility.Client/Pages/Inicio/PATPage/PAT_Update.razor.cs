@@ -7,6 +7,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
     public partial class PAT_Update
     {
+
         [Parameter]
         public int patID { get; set; }
 
@@ -236,9 +237,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         .Where(r => r.DistributionId == op.DistributionId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
                         .OrderByDescending(r => r.AcquisitionDate)
                         .ToList();
+                    if (matchingRegisters?.Count() > 0)
+                    {
+                        AllRegistersOfPat?.AddRange(matchingRegisters.ToList());
+                    }
 
-                    AllRegistersOfPat.AddRange(matchingRegisters?.ToList());
-                    ILU_Matrix.Add((op.DistributionId, usr.UserId), matchingRegisters);
+                    ILU_Matrix?.Add((op.DistributionId, usr.UserId), matchingRegisters);
                     // Almacenar los registros en la
                     //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
 
