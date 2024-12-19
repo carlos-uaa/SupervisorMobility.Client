@@ -79,11 +79,11 @@
         left: 0;
     }
     /*
-                    table {
-                        border-collapse: collapse;
-                        min-width: 100%;
-                        border-radius: var(--mud-default-borderradius);
-                    } */
+                                    table {
+                                        border-collapse: collapse;
+                                        min-width: 100%;
+                                        border-radius: var(--mud-default-borderradius);
+                                    } */
 
     th,
     td {
@@ -117,7 +117,11 @@
                 <th>@Localizer["applicationYear"]</th>
                 <th>Supervisor</th>
                 <th>SSV</th>
-                <th rowspan="2">
+                <th>
+                </th>
+                <th>
+                </th>
+                <th>
                 </th>
             </tr>
         </thead>
@@ -155,7 +159,7 @@
                     <MudText>@string.Join(" / ", _pat.Supervisors.Select(s => s.Name))</MudText>
                 </td>
                 <td>
-                  
+                    <MudText>@string.Join(" / ", _pat.Supervisors.Select(s => s.Superior?.Name).Where(name => name != null).Distinct())</MudText>
                 </td>
                 <td>
                     <MudItem Style="justify-content: end" Class="ml-auto">
@@ -182,30 +186,58 @@
                                     break;
                             }
 
-                            <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="ml-5">
-                                <ActivatorContent>
-                                    <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["showAllSymbols"]</MudButton>
-                                </ActivatorContent>
-                                <ChildContent>
-                                    <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-12">I</span>@Localizer["canDoItWithHelp"]</MudMenuItem>
-                                    <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-11">L</span>@Localizer["canDoItYourself"]</MudMenuItem>
-                                    <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-10">U</span> @Localizer["canInstructOthers"]</MudMenuItem>
-                                    <MudMenuItem><span style="font-weight: bold" class="mr-14"></span> @Localizer["inexperiencedOperator"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Outlined.Circle" IconColor="Color.Dark">@Localizer["incumbentOperator"]</MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.ChangeHistory" IconColor="Color.Dark">@Localizer["personnelInTrainingPeriod"]</MudMenuItem>
-                                </ChildContent>
-                            </MudMenu>
-                            <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" Size="Size.Small" OnClick="DownloadExcel" Class="ml-5 my-2">Export</MudButton>
-                            <MudToggleIconButton Toggled="IsZoomed"
-                                                 Class="ml-5"
-                                                 Icon="@Icons.Material.Filled.ZoomIn"
-                                                 Color="@Color.Info"
-                                                 ToggledIcon="@Icons.Material.Filled.ZoomOut"
-                                                 ToggledColor="@Color.Primary"
-                                                 ToggledChanged="@(async (_) => await ToggleZoom())" />
-
                         </MudItem>
                     </MudItem>
+
+                </td>
+                <td>
+                       <MudItem Class="ml-auto">
+                        @if ((user.UserType == 1 || user.UserType == 2) && _pat?.Status != 2)
+                        {
+                            <MudButton @onclick="(() => OpenSignComment())" StartIcon="@Icons.Material.Filled.BorderColor" IconColor="Color.Info">@Localizer["approvePAT"]</MudButton>
+                        }
+                    </MudItem>
+                </td>
+                <td>
+                    <MudItem Class="ml-auto">
+
+                        @if (Dev_env)
+                        {
+
+                            <MudSelect Style="float: left; margin-bottom: 10px;" T="int" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_pat.Status">
+                                <MudSelectItem Value="1">
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
+                                </MudSelectItem>
+                                <MudSelectItem Value="2">
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                </MudSelectItem>
+                                <MudSelectItem Value="3">
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                </MudSelectItem>
+                                <MudSelectItem Value="4">
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                </MudSelectItem>
+                                <MudSelectItem Value="5">
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                </MudSelectItem>
+                                <MudSelectItem Value="6">
+                                    <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                </MudSelectItem>
+
+                            </MudSelect>
+
+                        }
+                    </MudItem>
+                    <MudItem Class="ml-auto">
+                        @if (_pat.Status != 6)
+                        {
+                            if (user.UserType == 1 || user.UserType == 3)
+                            {
+                                <MudButton StartIcon="@Icons.Material.Filled.StopCircle" @onclick="() => SaveProgressPat()" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["saveProgress"]</MudButton>
+                            }
+                        }
+                    </MudItem>
+
                 </td>
             </tr>
         </tbody>
@@ -213,6 +245,31 @@
 
 
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+         <Header>
+            <MudItem Class="ml-auto" Style="display: flex; ">
+                <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" Size="Size.Small" OnClick="DownloadExcel" Class="mr-10 my-2">Export</MudButton>
+                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Class="ml-5">
+                    <ActivatorContent>
+                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer["showAllSymbols"]</MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-12">I</span>@Localizer["canDoItWithHelp"]</MudMenuItem>
+                        <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-11">L</span>@Localizer["canDoItYourself"]</MudMenuItem>
+                        <MudMenuItem><span style="font-weight: bold; text-align: center" class="mr-10">U</span> @Localizer["canInstructOthers"]</MudMenuItem>
+                        <MudMenuItem><span style="font-weight: bold" class="mr-14"></span> @Localizer["inexperiencedOperator"]</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Outlined.Circle" IconColor="Color.Dark">@Localizer["incumbentOperator"]</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.ChangeHistory" IconColor="Color.Dark">@Localizer["personnelInTrainingPeriod"]</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+
+                <MudToggleIconButton Toggled="IsZoomed" Class="mx-5" Icon="@Icons.Material.Filled.ZoomIn" Color="@Color.Info"
+                                    ToggledIcon="@Icons.Material.Filled.ZoomOut" ToggledColor="@Color.Primary" ToggledChanged="@(async (_) => await ToggleZoom())" />
+            </MudItem>
+
+                                            </Header>
+                                            <ChildContent>
+
+
         <MudTabPanel Text="Yearly" OnClick="@(() => MonthlyView = false)">
             <div class="table-container mb-10">
                 <div class="scrollable-columns">
@@ -255,7 +312,7 @@
                                         }
                                         @if (percentage.HasValue)
                                         {
-                                                <span class="mr-2">@($"{percentage.Value:F2}%")</span>               
+                                            <span class="mr-2">@($"{percentage.Value:F2}%")</span>
                                         }
                                         else if (_pat.KnowledgePercentage is not null)
                                         {
@@ -400,7 +457,7 @@
                                                 <table style="border: none">
                                                     <tbody>
                                                         @{
-                                                            var latestContext = context.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                            var latestContext = context?.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
                                                             string ILULevelNumber = "§";
                                                             @if (latestContext != null)
                                                             {
@@ -408,7 +465,7 @@
                                                             }
                                                         }
 
-                                                        @if (context.Count > 0 && latestContext != null)
+                                                        @if (latestContext != null)
                                                         {
                                                             <tr style="border: none; display: flex; justify-content: space-between;">
                                                                 @if (ILULevelNumber != "§")
@@ -479,26 +536,30 @@
                                                         }
                                                         else if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
                                                         {
+                                                            <tr style="border: none; display: flex; justify-content: space-between;">
+                                                                <td style="border: none">
+                                                                </td>
+                                                                <td colspan="2">
+                                                                    <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
+                                                                            @Localizer["createJobObservation"]
+                                                                        </MudMenuItem>
+                                                                        <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
+                                                                            <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
+                                                                        </MudMenuItem>
+                                                                    </MudMenu>
+                                                                </td>
+                                                            </tr>
 
-                                                        <td colspan="2">
-                                                            <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
-                                                                        @Localizer["createJobObservation"]
-                                                                </MudMenuItem>
-                                                                <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
-                                                                    <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
-                                                                </MudMenuItem>
-                                                            </MudMenu>
-                                                        </td>
 
                                                         }
-                                </tbody>
-                                </table>
+                                                    </tbody>
+                                                </table>
                                             }
 
-                            </td>
-                            </Virtualize>
-                            <td>
+                                        </td>
+                                    </Virtualize>
+                                    <td>
                                         @{
                                             var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
                                             var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
@@ -509,48 +570,48 @@
                                         {
                                             @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
                                             {
-                                        <span style="color:red"><b>X</b></span>
+                                                <span style="color:red"><b>X</b></span>
                                             }
                                             else if (meetsKnowledge)
                                             {
-                                        <span><b>O</b></span>
+                                                <span><b>O</b></span>
                                             }
                                         }
-                            </td>
-                            <td>
+                                    </td>
+                                    <td>
                                         @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
                                         {
                                             var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
-                                    <MudTextField @bind-Value="currentComment.Comment"
-                                                  Variant="Variant.Outlined"
-                                                  Margin="Margin.Dense"
-                                                  Lines="2"
-                                                  Class="mr-2">
-                                    </MudTextField>
+                                            <MudTextField @bind-Value="currentComment.Comment"
+                                                          Variant="Variant.Outlined"
+                                                          Margin="Margin.Dense"
+                                                          Lines="2"
+                                                          Class="mr-2">
+                                            </MudTextField>
                                         }
-                            </td>
-                            </tr>
+                                    </td>
+                                </tr>
                             }
-                        <tr>
-                            <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
-                                <b>RTO</b> @Distributions_Knolowed.Count
-                            </td>
-                            <td colspan="2" class="fixed-column">
-                                <div style="display:flex;">
-                                    <div style="display:flex; align-items: center" class="mr-2">
-                                        1 x <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly />
+                            <tr>
+                                <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                                    <b>RTO</b> @Distributions_Knolowed.Count
+                                </td>
+                                <td colspan="2" class="fixed-column">
+                                    <div style="display:flex;">
+                                        <div style="display:flex; align-items: center" class="mr-2">
+                                            1 x <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly />
+                                        </div>
+                                        <div style="display:flex; align-items: center">
+                                            <MudInput T="int" Class="ml-2" @bind-Value="countDistO" ReadOnly /> Personas
+                                        </div>
                                     </div>
-                                    <div style="display:flex; align-items: center">
-                                        <MudInput T="int" Class="ml-2" @bind-Value="countDistO" ReadOnly /> Personas
-                                    </div>
-                                </div>
-                            </td>
-                            <Virtualize Context="usr" Items="_UserOfArea">
-                                @{
-                                    int index = _UserOfArea.IndexOf(usr);
-                                }
+                                </td>
+                                <Virtualize Context="usr" Items="_UserOfArea">
+                                    @{
+                                        int index = _UserOfArea.IndexOf(usr);
+                                    }
 
-                                <td style="text-align: center;" colspan="2">
+                                    <td style="text-align: center;" colspan="2">
 
                                         @{
                                             var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
@@ -559,151 +620,151 @@
                                         }
 
 
-                                    @if(_pat.KnowledgePercentage != null)
-                                    {
-
-                                        var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
-                                        var isSaveLeaderS = _pat.SaveLeader == "S";
-                                        var isSaveLeaderC = _pat.SaveLeader == "C";
-                                        var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
-
-                                        @if ((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC))
+                                        @if (_pat.KnowledgePercentage != null)
                                         {
-                                            @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
-                                            {
-                                            <span style="color:red; text-align: center;"><b>X</b></span>
-                                            }
-                                            else if (meetsKnowledge)
-                                            {
-                                            <span style="text-align: center;"><b>O</b></span>
-                                            }
 
+                                            var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
+                                            var isSaveLeaderS = _pat.SaveLeader == "S";
+                                            var isSaveLeaderC = _pat.SaveLeader == "C";
+                                            var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                                            @if ((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC))
+                                            {
+                                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                                {
+                                                    <span style="color:red; text-align: center;"><b>X</b></span>
+                                                }
+                                                else if (meetsKnowledge)
+                                                {
+                                                    <span style="text-align: center;"><b>O</b></span>
+                                                }
+
+                                            }
                                         }
-                                    }
+                                    </td>
+                                </Virtualize>
+                                <td style="text-align: center;"></td>
+                                <td style="text-align: center;">Nivel de habilidad Tecnica</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                                    <b>
+                                        Ops a Nivel L & U por Operador
+                                    </b>
                                 </td>
-                            </Virtualize>
-                            <td style="text-align: center;"></td>
-                            <td style="text-align: center;">Nivel de habilidad Tecnica</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
-                                <b>
-                                    Ops a Nivel L & U por Operador
-                                </b>
-                            </td>
-                            <td colspan="2" class="fixed-column dynamic-left">
-                            </td>
-                            <Virtualize Context="usr" Items="_UserOfArea">
-                                <td style="text-align: center;" colspan="2">
+                                <td colspan="2" class="fixed-column dynamic-left">
+                                </td>
+                                <Virtualize Context="usr" Items="_UserOfArea">
+                                    <td style="text-align: center;" colspan="2">
                                         @{
                                             var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
                                             @sum
                                         }
+                                    </td>
+                                </Virtualize>
+                                <td style="text-align: center;"></td>
+                                <td style="text-align: center;">Histórico año actual</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" rowspan="4" style="max-width:60px;width:50px;" class="fixed-column">
+                                    <p style="text-align: center; font-size: 11px">
+                                        <b>NOTAS<br>RELACIONADAS CON LOS<br> OPERADORES</b><br>
+                                        (REPROGRAMACIÓN / VACACIONES<br> / BAJAS /PLAN DE SUCESIÓN /<br> LIBERACIONES)
+                                    </p>
                                 </td>
-                            </Virtualize>
-                            <td style="text-align: center;"></td>
-                            <td style="text-align: center;">Histórico año actual</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" rowspan="4" style="max-width:60px;width:50px;" class="fixed-column">
-                                <p style="text-align: center; font-size: 11px">
-                                    <b>NOTAS<br>RELACIONADAS CON LOS<br> OPERADORES</b><br>
-                                    (REPROGRAMACIÓN / VACACIONES<br> / BAJAS /PLAN DE SUCESIÓN /<br> LIBERACIONES)
-                                </p>
-                            </td>
 
-                            <td colspan="2" class="fixed-column dynamic-left">
-                            </td>
+                                <td colspan="2" class="fixed-column dynamic-left">
+                                </td>
                                 @if (_pat?.PatUserRoles != null)
                                 {
-                                <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
-                                    <td style="text-align: center;" colspan="2" rowspan="2">
-                                        <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
-                                        <MudSelect @bind-Value="patUserRole.Role"
-                                                   Variant="Variant.Outlined"
-                                                   Margin="Margin.Dense"
-                                                   Dense
-                                                   Class="mr-2"
-                                                   Placeholder="Select Role">
+                                    <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
+                                        <td style="text-align: center;" colspan="2" rowspan="2">
+                                            <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
+                                            <MudSelect @bind-Value="patUserRole.Role"
+                                                       Variant="Variant.Outlined"
+                                                       Margin="Margin.Dense"
+                                                       Dense
+                                                       Class="mr-2"
+                                                       Placeholder="Select Role">
 
                                                 @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
                                                 {
-                                                <MudSelectItem Value="role">
+                                                    <MudSelectItem Value="role">
                                                         @if (role is not null)
                                                     {
                                                         @role
                                                     }
-                                            </MudSelectItem>
+                                                </MudSelectItem>
                                                 }
-                                        </MudSelect>
-                                    </td>
-                                </Virtualize>
-                                <td style="text-align: center;" rowspan="2"></td>
-                                <td style="text-align: center;" rowspan="2">
-                                    <MudSimpleTable>
-                                        <thead>
-                                            <tr>
-                                                <th>MES</th>
+                                            </MudSelect>
+                                        </td>
+                                    </Virtualize>
+                                    <td style="text-align: center;" rowspan="2"></td>
+                                    <td style="text-align: center;" rowspan="2">
+                                        <MudSimpleTable>
+                                            <thead>
+                                                <tr>
+                                                    <th>MES</th>
                                                     @for (int i = 0; i < 6; i++)
                                                     {
-                                                    <th>@monthsNames[i]</th>
+                                                        <th>@monthsNames[i]</th>
                                                     }
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr class="gray-color">
-                                                <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[0]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[1]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[2]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[3]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[4]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[5]"></MudInput></td>
-                                            </tr>
-                                            <tr class="gray-color">
-                                                <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[0]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[1]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[2]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[3]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[4]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[5]"></MudInput></td>
-                                            </tr>
-                                        </tbody>
-                                        <thead>
-                                            <tr>
-                                                <th>MES</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="gray-color">
+                                                    <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[0]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[1]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[2]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[3]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[4]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[5]"></MudInput></td>
+                                                </tr>
+                                                <tr class="gray-color">
+                                                    <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[0]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[1]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[2]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[3]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[4]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[5]"></MudInput></td>
+                                                </tr>
+                                            </tbody>
+                                            <thead>
+                                                <tr>
+                                                    <th>MES</th>
                                                     @for (int i = 6; i < 12; i++)
                                                     {
-                                                    <th>@monthsNames[i]</th>
+                                                        <th>@monthsNames[i]</th>
                                                     }
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr class="gray-color">
-                                                <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[6]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[7]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[8]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[9]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[10]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsDistributionPercentage[11]"></MudInput></td>
-                                            </tr>
-                                            <tr class="gray-color">
-                                                <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[6]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[7]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[8]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[9]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[10]"></MudInput></td>
-                                                <td><MudInput @bind-Value="monthsUsersPercentage[11]"></MudInput></td>
-                                            </tr>
-                                        </tbody>
-                                    </MudSimpleTable>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="gray-color">
+                                                    <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[6]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[7]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[8]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[9]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[10]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[11]"></MudInput></td>
+                                                </tr>
+                                                <tr class="gray-color">
+                                                    <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[6]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[7]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[8]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[9]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[10]"></MudInput></td>
+                                                    <td><MudInput @bind-Value="monthsUsersPercentage[11]"></MudInput></td>
+                                                </tr>
+                                            </tbody>
+                                        </MudSimpleTable>
 
-                                </td>
+                                    </td>
                                 }
-                        </tr>
+                            </tr>
                         </tbody>
                     </MudSimpleTable>
                 </div>
@@ -871,14 +932,12 @@
 
                                         <Virtualize Context="usr" Items="_UserOfArea">
                                             <td style="text-align: end;" colspan="2">
-
-
                                                 @if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
                                                 {
                                                     <table style="border: none">
                                                         <tbody>
                                                             @{
-                                                                var latestContext = context.Where(d => d.AcquisitionDate.Value.Month == _yearMonth.Value.Month).OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                                var latestContext = context?.Where(d => d.AcquisitionDate.Value.Month == _yearMonth.Value.Month).OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
                                                                 string ILULevelNumber = "§";
                                                                 @if (latestContext != null)
                                                                 {
@@ -886,7 +945,7 @@
                                                                 }
                                                             }
 
-                                                            @if (context.Count > 0 && latestContext != null)
+                                                            @if (latestContext != null)
                                                             {
                                                                 <tr style="border: none; display: flex; justify-content: space-between;">
                                                                     <td style="border: none">
@@ -957,26 +1016,38 @@
                                                             }
                                                             else if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
                                                             {
+                                                                <tr style="border: none; display: flex; justify-content: space-between;">
 
-                                                            <td colspan="2">
-                                                                <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                    <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
-                                                                            @Localizer["createJobObservation"]
-                                                                    </MudMenuItem>
-                                                                    <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
-                                                                        <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
-                                                                    </MudMenuItem>
-                                                                </MudMenu>
-                                                            </td>
-
+                                                                    <td style="border: none">
+                                                                    </td>
+                                                                    <td>
+                                                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
+                                                                                @Localizer["createJobObservation"]
+                                                                            </MudMenuItem>
+                                                                            <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
+                                                                                <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
+                                                                            </MudMenuItem>
+                                                                        </MudMenu>
+                                                                    </td>
+                                                                </tr>
                                                             }
-                                    </tbody>
-                                    </table>
+                                                            else
+                                                            {
+                                                                <tr style="border: none; display: flex; justify-content: space-between;">
+                                                                    <td colspan="2">
+                                                                    </td>
+                                                                    <td style="border: none">
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
                                                 }
 
-                                </td>
-                                </Virtualize>
-                                <td>
+                                            </td>
+                                        </Virtualize>
+                                        <td>
                                             @{
                                                 var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
                                                 var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
@@ -987,47 +1058,47 @@
                                             {
                                                 @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0)
                                                 {
-                                            <span style="color:red"><b>X</b></span>
+                                                    <span style="color:red"><b>X</b></span>
                                                 }
                                                 else if (meetsKnowledge)
                                                 {
-                                            <span><b>O</b></span>
+                                                    <span><b>O</b></span>
                                                 }
                                             }
-                                </td>
-                                <td>
+                                        </td>
+                                        <td>
                                             @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
                                             {
                                                 var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
-                                        <MudTextField @bind-Value="currentComment.Comment"
-                                                      Variant="Variant.Outlined"
-                                                      Margin="Margin.Dense"
-                                                      Lines="2"
-                                                      Class="mr-2">
-                                        </MudTextField>
+                                                <MudTextField @bind-Value="currentComment.Comment"
+                                                              Variant="Variant.Outlined"
+                                                              Margin="Margin.Dense"
+                                                              Lines="2"
+                                                              Class="mr-2">
+                                                </MudTextField>
                                             }
-                                </td>
-                                </tr>
+                                        </td>
+                                    </tr>
                                 }
-                            <tr>
-                                <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
-                                    <b>RTO</b> @Distributions_Knolowed.Count
-                                </td>
-                                <td colspan="2" class="fixed-column">
-                                    <div style="display:flex;">
-                                        <div style="display:flex; align-items: center" class="mr-2">
-                                            1 x <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly />
+                                <tr>
+                                    <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                                        <b>RTO</b> @Distributions_Knolowed.Count
+                                    </td>
+                                    <td colspan="2" class="fixed-column">
+                                        <div style="display:flex;">
+                                            <div style="display:flex; align-items: center" class="mr-2">
+                                                1 x <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly />
+                                            </div>
+                                            <div style="display:flex; align-items: center">
+                                                <MudInput T="int" Class="ml-2" @bind-Value="countDistO" ReadOnly /> Personas
+                                            </div>
                                         </div>
-                                        <div style="display:flex; align-items: center">
-                                            <MudInput T="int" Class="ml-2" @bind-Value="countDistO" ReadOnly /> Personas
-                                        </div>
-                                    </div>
-                                </td>
+                                    </td>
                                     @{
                                         int index = 0;
                                     }
-                                <Virtualize Context="usr" Items="_UserOfArea">
-                                    <td style="text-align: center;" colspan="2">
+                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                        <td style="text-align: center;" colspan="2">
 
                                             @{
                                                 var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
@@ -1045,148 +1116,149 @@
                                                 {
                                                     @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                                                     {
-                                                    <span style="color:red"><b>X</b></span>
+                                                        <span style="color:red"><b>X</b></span>
                                                     }
                                                     else if (meetsKnowledge)
                                                     {
-                                                    <span><b>O</b></span>
+                                                        <span><b>O</b></span>
                                                     }
 
                                                 }
                                             }
-                                    </td>
+                                        </td>
                                         @{
                                             index++;
                                         }
-                                </Virtualize>
-                                <td style="text-align: center;"></td>
-                                <td style="text-align: center;">Nivel de habilidad Tecnica</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
-                                    <b>
-                                        Ops a Nivel L & U por Operador
-                                    </b>
-                                </td>
-                                <td colspan="2" class="fixed-column dynamic-left">
-                                </td>
-                                <Virtualize Context="usr" Items="_UserOfArea">
-                                    <td style="text-align: center;" colspan="2">
+                                    </Virtualize>
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: center;">Nivel de habilidad Tecnica</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                                        <b>
+                                            Ops a Nivel L & U por Operador
+                                        </b>
+                                    </td>
+                                    <td colspan="2" class="fixed-column dynamic-left">
+                                    </td>
+                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                        <td style="text-align: center;" colspan="2">
                                             @{
                                                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
                                                 @sum
                                             }
+                                        </td>
+                                    </Virtualize>
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: center;">Histórico año actual</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" rowspan="4" style="max-width:60px;width:50px;" class="fixed-column">
+                                        <p style="text-align: center; font-size: 11px">
+                                            <b>NOTAS<br>RELACIONADAS CON LOS<br> OPERADORES</b><br>
+                                            (REPROGRAMACIÓN / VACACIONES<br> / BAJAS /PLAN DE SUCESIÓN /<br> LIBERACIONES)
+                                        </p>
                                     </td>
-                                </Virtualize>
-                                <td style="text-align: center;"></td>
-                                <td style="text-align: center;">Histórico año actual</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" rowspan="4" style="max-width:60px;width:50px;" class="fixed-column">
-                                    <p style="text-align: center; font-size: 11px">
-                                        <b>NOTAS<br>RELACIONADAS CON LOS<br> OPERADORES</b><br>
-                                        (REPROGRAMACIÓN / VACACIONES<br> / BAJAS /PLAN DE SUCESIÓN /<br> LIBERACIONES)
-                                    </p>
-                                </td>
 
-                                <td colspan="2" class="fixed-column dynamic-left">
-                                </td>
+                                    <td colspan="2" class="fixed-column dynamic-left">
+                                    </td>
                                     @if (_pat?.PatUserRoles != null)
                                     {
-                                    <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
-                                        <td style="text-align: center;" colspan="2" rowspan="2">
-                                            <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
-                                            <MudSelect @bind-Value="patUserRole.Role"
-                                                       Variant="Variant.Outlined"
-                                                       Margin="Margin.Dense"
-                                                       Dense
-                                                       Class="mr-2"
-                                                       Placeholder="Select Role">
+                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
+                                            <td style="text-align: center;" colspan="2" rowspan="2">
+                                                <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
+                                                <MudSelect @bind-Value="patUserRole.Role"
+                                                           Variant="Variant.Outlined"
+                                                           Margin="Margin.Dense"
+                                                           Dense
+                                                           Class="mr-2"
+                                                           Placeholder="Select Role">
 
                                                     @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
                                                     {
-                                                    <MudSelectItem Value="role">
+                                                        <MudSelectItem Value="role">
                                                             @if (role is not null)
                                                         {
                                                             @role
                                                         }
-                                                </MudSelectItem>
+                                                    </MudSelectItem>
                                                     }
-                                            </MudSelect>
-                                        </td>
-                                    </Virtualize>
-                                    <td style="text-align: center;" rowspan="2"></td>
-                                    <td style="text-align: center;" rowspan="2">
-                                        <MudSimpleTable>
-                                            <thead>
-                                                <tr>
-                                                    <th>MES</th>
+                                                </MudSelect>
+                                            </td>
+                                        </Virtualize>
+                                        <td style="text-align: center;" rowspan="2"></td>
+                                        <td style="text-align: center;" rowspan="2">
+                                            <MudSimpleTable>
+                                                <thead>
+                                                    <tr>
+                                                        <th>MES</th>
                                                         @for (int i = 0; i < 6; i++)
                                                         {
-                                                        <th>@monthsNames[i]</th>
+                                                            <th>@monthsNames[i]</th>
                                                         }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr class="gray-color">
-                                                    <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[0]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[1]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[2]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[3]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[4]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[5]"></MudInput></td>
-                                                </tr>
-                                                <tr class="gray-color">
-                                                    <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[0]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[1]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[2]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[3]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[4]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[5]"></MudInput></td>
-                                                </tr>
-                                            </tbody>
-                                            <thead>
-                                                <tr>
-                                                    <th>MES</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="gray-color">
+                                                        <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[0]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[1]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[2]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[3]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[4]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[5]"></MudInput></td>
+                                                    </tr>
+                                                    <tr class="gray-color">
+                                                        <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[0]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[1]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[2]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[3]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[4]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[5]"></MudInput></td>
+                                                    </tr>
+                                                </tbody>
+                                                <thead>
+                                                    <tr>
+                                                        <th>MES</th>
                                                         @for (int i = 6; i < 12; i++)
                                                         {
-                                                        <th>@monthsNames[i]</th>
+                                                            <th>@monthsNames[i]</th>
                                                         }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr class="gray-color">
-                                                    <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[6]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[7]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[8]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[9]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[10]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsDistributionPercentage[11]"></MudInput></td>
-                                                </tr>
-                                                <tr class="gray-color">
-                                                    <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[6]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[7]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[8]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[9]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[10]"></MudInput></td>
-                                                    <td><MudInput @bind-Value="monthsUsersPercentage[11]"></MudInput></td>
-                                                </tr>
-                                            </tbody>
-                                        </MudSimpleTable>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="gray-color">
+                                                        <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[6]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[7]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[8]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[9]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[10]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsDistributionPercentage[11]"></MudInput></td>
+                                                    </tr>
+                                                    <tr class="gray-color">
+                                                        <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[6]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[7]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[8]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[9]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[10]"></MudInput></td>
+                                                        <td><MudInput @bind-Value="monthsUsersPercentage[11]"></MudInput></td>
+                                                    </tr>
+                                                </tbody>
+                                            </MudSimpleTable>
 
-                                    </td>
+                                        </td>
                                     }
-                            </tr>
+                                </tr>
                             </tbody>
                         </MudSimpleTable>
                     </div>
                 </div>
             }
         </MudTabPanel>
+                                            </ChildContent>
     </MudTabs>
 
 }
