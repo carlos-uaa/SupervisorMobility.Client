@@ -533,10 +533,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         #region Create SOSHUB
         private string ValidateSosHubForm()
         {
-            if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0)
-            {
-                return "Write down at least one analysis first";
-            }
+            //if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0)
+            //{
+            //    return "Write down at least one analysis first";
+            //}
+
             if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
             {
                 return "Write down the Process Sheet plan first";
@@ -579,17 +580,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 return "First select a Distribution!";
             }
 
-            if (_sosHub.ApproverOwners.Count == 0)
+            if (_sosHub.ApproverOwners?.Count == 0)
             {
                 return "First add one Owner!";
             }
 
-            if (_sosHub.ReviewerEditors.Count == 0)
+            if (_sosHub.ReviewerEditors?.Count == 0)
             {
                 return "First add one Editor!";
             }
 
-            if (_sosHub.AppliedModels.Count == 0)
+            if (_sosHub.AppliedModels?.Count == 0)
             {
                 return "First add one Product!";
             }
