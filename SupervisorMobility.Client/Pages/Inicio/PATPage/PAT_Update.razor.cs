@@ -2,6 +2,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -307,6 +308,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     };
 
                     _pat.PatUserRoles.Add(newPatUserRole);
+                }
+            }
+            var newSubordinates = _UserOfArea
+                .Where(user => !_pat.PatSubordinates.Any(ps => ps.UserId == user.UserId))
+                    .ToList();
+
+            foreach (var user in newSubordinates)
+            {
+                _pat.PatSubordinates.Add(new PatSubordinate
+                {
+                    PatId = _pat.PATid,
+                    UserId = user.UserId,
+                    StartDate = DateTime.Now,
+                    EndDate = null
+                });
+            }
+
+
+            foreach (var patSubordinate in _pat.PatSubordinates)
+            {
+                if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate == null)
+                {
+                    patSubordinate.EndDate = DateTime.Now;
                 }
             }
 
