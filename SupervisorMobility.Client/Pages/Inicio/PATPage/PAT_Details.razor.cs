@@ -126,6 +126,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 await GetUserAsync();
 
                 _pat = await PATsServices.getPat(patID);
+                _LevelsILU = await ILUServices.GetLevelsILU();
+
 
                 await PrepareDataTable();
                 StateHasChanged();
@@ -189,23 +191,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             ILU_Matrix?.Clear();
             Distributions_Knolowed?.Clear();
             User_Knolowed?.Clear();
-            _LevelsILU?.Clear();
             _distributions?.Clear();
             _UserOfArea?.Clear();
 
-            _LevelsILU = await ILUServices.GetLevelsILU();
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
 
             foreach (User sv in _pat.Supervisors)
             {
-
                 _UserOfArea.AddRange(await UsersServices.GetSubordinates(sv.UserId));
                 _UserOfArea.Insert(0, sv);
             }
 
-            //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
-            //_UserOfArea = await UsersServices.GetUsersWhitCollections();
-
+            
             try
             {
                 if (!string.IsNullOrWhiteSpace(_pat.HistoricalAbility))
@@ -240,9 +237,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         .Where(r => r.DistributionId == op.DistributionId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
                         .OrderByDescending(r => r.AcquisitionDate)
                         .ToList();
+                    
+                    if(matchingRegisters?.Count() > 0)
+                    {
+                        AllRegistersOfPat?.AddRange(matchingRegisters.ToList());
+                    }
 
-                    AllRegistersOfPat.AddRange(matchingRegisters?.ToList());
-                    ILU_Matrix.Add((op.DistributionId, usr.UserId), matchingRegisters);
+                    ILU_Matrix?.Add((op.DistributionId, usr.UserId), matchingRegisters);
                     // Almacenar los registros en la
                     //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
 
