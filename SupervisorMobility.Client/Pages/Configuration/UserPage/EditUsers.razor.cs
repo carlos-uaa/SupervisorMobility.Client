@@ -93,6 +93,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
         MudMessageBox ReasignUsersBox { get; set; }
 
+        List<Department> _departments = new();
+        public int departmentId = 0;
 
         protected async override Task OnInitializedAsync()
         {
@@ -115,6 +117,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             auxPlant = _user.PlantId != null ? (int)_user.PlantId : 0;
             auxArea = _user.AreaId != null ? (int)_user.AreaId : 0;
             auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
+            _departments = await DepartmentServices.GetDepartments();
+            if(_user.UserType == 4)
+            {
+                departmentId = (int)_user.DepartmentId;
+            }
 
             _plants = await PlantServices.GetPlants();
             if (auxPlant != 0)
@@ -1147,6 +1154,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 _user.SuperiorId = _user.Superior.UserId;
             }
 
+            if(departmentId != 0)
+            {
+                _user.DepartmentId = departmentId;
+            }
 
             switch (_user.UserType)
             {
