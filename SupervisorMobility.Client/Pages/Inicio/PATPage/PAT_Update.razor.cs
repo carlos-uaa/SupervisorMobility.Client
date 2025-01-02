@@ -198,7 +198,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
             foreach(User sv in _pat.Supervisors)
             {
-                
                 _UserOfArea.AddRange(await UsersServices.GetSubordinates(sv.UserId));
                 _UserOfArea.Insert(0, sv);
             }
@@ -232,8 +231,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     _UserOfArea.Add(await UsersServices.GetUserAndCollection(patSubordinate.UserId));
                 }
             }
-
-            Console.WriteLine("Valitation");
             StateHasChanged();
 
 
@@ -714,7 +711,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _pat.SaveLeader = leader;
 
             SetHistoricalAbility();
-            Console.WriteLine(_pat.HistoricalAbility);
 
             var result = await PATsServices.UpdatePat(_pat);
 
@@ -800,16 +796,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private string year;
         private async void MontlyTab()
         {
-
-
             FilterUserMonth();
-
-            Console.WriteLine("Montly tab Ids: " + JsonSerializer.Serialize(_visibleSubordinateIds));
-
+          
             StateHasChanged();
 
             MonthlyView = true;
-           
 
             StateHasChanged();
         }
@@ -825,8 +816,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
 
             FilterUserMonth();
-            Console.WriteLine("On Date Chnge Ids: " + JsonSerializer.Serialize(_visibleSubordinateIds));
-
+           
             StateHasChanged();
         }
 
@@ -843,7 +833,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             StateHasChanged();
 
-            Console.WriteLine("Last Ids: " + JsonSerializer.Serialize(_visibleSubordinateIds));
         }
 
         public async Task NextMonth()
@@ -858,8 +847,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
 
 
-            Console.WriteLine("Mext Ids: " + JsonSerializer.Serialize(_visibleSubordinateIds));
-
 
             StateHasChanged();
         }
@@ -867,7 +854,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private void FilterUserMonth()
         {
             _visibleSubordinateIds = _pat.PatSubordinates
-                .Where(ps => (_yearMonth.Value.Date >= ps.StartDate.Date) && (ps.EndDate == null || _yearMonth.Value.Month <= ps.EndDate.Value.Month))
+                .Where(ps => (_yearMonth.Value.Date >= ps.StartDate.Date || _yearMonth.Value.Date.Month >= ps.StartDate.Date.Month) && (ps.EndDate == null || _yearMonth.Value.Month <= ps.EndDate.Value.Month))
                 .Select(ps => ps.UserId)
                 .ToList();
         }
