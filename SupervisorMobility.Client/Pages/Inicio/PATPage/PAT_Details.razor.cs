@@ -85,7 +85,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         };
         private double?[] monthsDistributionPercentage = new double?[12];
         private double?[] monthsUsersPercentage = new double?[12];
-
+        private List<int> _visibleSubordinateIds;
         bool Dev_env { get; set; }
 
         protected async override Task OnInitializedAsync()
@@ -202,7 +202,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 _UserOfArea.Insert(0, sv);
             }
 
-            
+            var newSubordinates = _UserOfArea
+              .Where(user => !_pat.PatSubordinates.Any(ps => ps.UserId == user.UserId))
+                  .ToList();
+
+            foreach (var user in newSubordinates)
+            {
+                _pat.PatSubordinates.Add(new PatSubordinate
+                {
+                    PatId = _pat.PATid,
+                    UserId = user.UserId,
+                    StartDate = DateTime.Now,
+                    EndDate = null
+                });
+            }
+
+
+            foreach (var patSubordinate in _pat.PatSubordinates)
+            {
+                if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate == null)
+                {
+                    patSubordinate.EndDate = DateTime.Now;
+                }
+                else if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate != null)
+                {
+                    _UserOfArea.Add(await UsersServices.GetUserAndCollection(patSubordinate.UserId));
+                }
+            }
+            StateHasChanged();
+
             try
             {
                 if (!string.IsNullOrWhiteSpace(_pat.HistoricalAbility))
@@ -560,249 +588,61 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private string year;
         private async void MontlyTab()
         {
-            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
+            FilterUserMonth();
 
-            //DistSelect? tmpSuggdist = null;
-            //if (tmpdist == null)
-            //{
-            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
-            //    Dist_Manager.ForEach(d => d.distribution.ShowDetails = false);
-            //}
-            //else
-            //{
-            //    _distributions.ForEach(d => d.ShowDetails = false);
-            //}
             StateHasChanged();
 
             MonthlyView = true;
-            //SuggestionMode = false;
-
-            //if (tmpdist != null)
-            //{
-            //    await PrepareDataTable(tmpdist.DistributionId);
-            //    tmpdist.ShowDetails = true;
-            //}
-            //else if (tmpSuggdist != null)
-            //{
-            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
-            //    tmpSuggdist.distribution.ShowDetails = true;
-            //}
-            //else if (!SuggestionMode)
-            //{
-            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
-            //    await PrepareDataTable();
-            //}
-            //else
-            //{
-            //    await PrepareSuggestDataTable();
-            //}
 
             StateHasChanged();
         }
         private async void OnDateChanged(DateTime? value)
         {
-            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
-
-            //DistSelect? tmpSuggdist = null;
-            //if (tmpdist == null)
-            //{
-            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
-            //    if (tmpSuggdist != null)
-            //    {
-            //        tmpSuggdist.distribution.ShowDetails = false;
-            //    }
-            //}
-            //else
-            //{
-            //    tmpdist.ShowDetails = false;
-            //}
-            //ShowLoading = true;
-            //loadingData = true;
-            //StateHasChanged();
+            
 
             _yearMonth = value;
-            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
-
+            
             month = $"{_yearMonth?.ToString("MMMM")}";
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+            FilterUserMonth();
 
-            //startDate = new DateTime(yearIndex, monthIndex, 1);
-            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
-
-            //if (tmpdist != null)
-            //{
-            //    await PrepareDataTable(tmpdist.DistributionId);
-            //    tmpdist.ShowDetails = true;
-            //}
-            //else if (tmpSuggdist != null)
-            //{
-            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
-            //    tmpSuggdist.distribution.ShowDetails = true;
-            //}
-            //else if (!SuggestionMode)
-            //{
-            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
-            //    await PrepareDataTable();
-            //}
-            //else
-            //{
-            //    await PrepareSuggestDataTable();
-            //}
-
-            //if (ScheduleView)
-            //{
-            //    GenerateCalendarHead();
-            //    GenerateCalendarBody();
-            //    if (SuggestionMode)
-            //    {
-            //        await PrepareSuggestDataTable();
-            //    }
-            //    else
-            //    {
-            //        await PrepareDataTable();
-            //    }
-            //}
-
-
-
-            //ShowLoading = false;
-            //loadingData = false;
             StateHasChanged();
         }
 
         public async Task LastMonth()
         {
-            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
-
-            //DistSelect? tmpSuggdist = null;
-            //if (tmpdist == null)
-            //{
-            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
-            //    if (tmpSuggdist != null)
-            //    {
-            //        tmpSuggdist.distribution.ShowDetails = false;
-            //    }
-            //}
-            //else
-            //{
-            //    tmpdist.ShowDetails = false;
-            //}
-            //ShowLoading = true;
-            //loadingData = true;
-            //StateHasChanged();
-
             _yearMonth = _yearMonth?.AddMonths(-1);
-            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
-
+           
             month = $"{_yearMonth?.ToString("MMMM")}";
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
 
 
-
-            //startDate = new DateTime(yearIndex, monthIndex, 1);
-            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
-
-
-            //if (tmpdist != null)
-            //{
-            //    await PrepareDataTable(tmpdist.DistributionId);
-            //    tmpdist.ShowDetails = true;
-            //}
-            //else if (tmpSuggdist != null)
-            //{
-            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
-            //    tmpSuggdist.distribution.ShowDetails = true;
-            //}
-            //else if (!SuggestionMode)
-            //{
-            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
-            //    await PrepareDataTable();
-            //}
-            //else
-            //{
-            //    await PrepareSuggestDataTable();
-            //}
-
-            //if (ScheduleView)
-            //{
-            //    GenerateCalendarHead();
-            //    GenerateCalendarBody();
-            //}
-            //ShowLoading = false;
-            //loadingData = false;
             StateHasChanged();
         }
 
         public async Task NextMonth()
         {
-            //Distribution? tmpdist = _distributions?.Find(d => d.ShowDetails == true);
-
-            //DistSelect? tmpSuggdist = null;
-            //if (tmpdist == null)
-            //{
-            //    tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
-            //    if (tmpSuggdist != null)
-            //    {
-            //        tmpSuggdist.distribution.ShowDetails = false;
-            //    }
-            //}
-            //else
-            //{
-            //    tmpdist.ShowDetails = false;
-            //}
-
-            //loadingData = true;
-            //ShowLoading = true;
-
-            //StateHasChanged();
             _yearMonth = _yearMonth?.AddMonths(1);
-            //daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
 
             month = $"{_yearMonth?.ToString("MMMM")}";
             year = $"{_yearMonth?.ToString("yyyy")}";
             int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
 
-
-            //startDate = new DateTime(yearIndex, monthIndex, 1);
-            //endDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
-
-            //if (tmpdist != null)
-            //{
-            //    await PrepareDataTable(tmpdist.DistributionId);
-            //    tmpdist.ShowDetails = true;
-            //}
-            //else if (tmpSuggdist != null)
-            //{
-            //    await PrepareSuggestDataTable(tmpSuggdist.distribution.DistributionId);
-            //    tmpSuggdist.distribution.ShowDetails = true;
-            //}
-            //else if (!SuggestionMode)
-            //{
-            //    //aqui manda a llamar al servicio y actualizamos los datos necesarios unicamente
-            //    await PrepareDataTable();
-            //}
-            //else
-            //{
-            //    await PrepareSuggestDataTable();
-            //}
-
-            //if (ScheduleView)
-            //{
-            //    GenerateCalendarHead();
-            //    GenerateCalendarBody();
-            //}
-
-            //ShowLoading = false;
-            //loadingData = false;
             StateHasChanged();
         }
         #endregion
-
+        private void FilterUserMonth()
+        {
+            _visibleSubordinateIds = _pat.PatSubordinates
+                .Where(ps => (_yearMonth.Value.Date >= ps.StartDate.Date || _yearMonth.Value.Date.Month >= ps.StartDate.Date.Month) && (ps.EndDate == null || _yearMonth.Value.Month <= ps.EndDate.Value.Month))
+                .Select(ps => ps.UserId)
+                .ToList();
+        }
     }//end class pat details
 
 
