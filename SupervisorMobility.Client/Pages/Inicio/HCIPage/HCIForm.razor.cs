@@ -58,7 +58,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                     _hci.UserId = userId;
                     _hci.Transactions = new List<HCITransaction>();
                     _hci.Categories = new List<HCICategory>();
-                    _hci.Comments = new List<Commentary>();
+                    _hci.Commentaries = new List<Commentary>();
                     _hci.CareerPaths = new List<UserCareerPath>();
                     _hci.ILUs = new List<HCIILU>();
                 }
@@ -76,7 +76,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                 careers = _hci.CareerPaths ?? new();
                 expertise = _hci.ILUs ?? new();
                 categories = _hci.Categories ?? new();
-                comments = _hci.Comments ?? new();
+                comments = _hci.Commentaries ?? new();
             }
 
             dataloaded = true;
@@ -91,7 +91,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             _hci.CareerPaths = careers;
             _hci.ILUs = expertise;
             _hci.Categories = categories;
-            _hci.Comments = comments;
+            _hci.Commentaries = comments;
 
             if (HCIID == null)
             {

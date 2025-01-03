@@ -14,7 +14,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public List<HCIILU>? ILUs { get; set; }
         public List<UserCareerPath>? CareerPaths { get; set; }
 
-        public List<Commentary>? Comments { get; set; }
+        public List<Commentary>? Commentaries { get; set; }
         public bool? IsActive { get; set; }
     }
 }
