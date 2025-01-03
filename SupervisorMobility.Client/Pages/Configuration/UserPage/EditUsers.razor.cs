@@ -118,7 +118,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             auxArea = _user.AreaId != null ? (int)_user.AreaId : 0;
             auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
             _departments = await DepartmentServices.GetDepartments();
-            if(_user.UserType == 4)
+            if(_user.UserType == 4 && _user.DepartmentId != 0 && _user.DepartmentId != null)
             {
                 departmentId = (int)_user.DepartmentId;
             }
