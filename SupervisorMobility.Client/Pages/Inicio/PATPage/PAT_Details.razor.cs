@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Mvc;
+using DocumentFormat.OpenXml.InkML;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -643,6 +645,46 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 .Select(ps => ps.UserId)
                 .ToList();
         }
+
+
+
+        #region HCI
+
+
+        private async void UpdateHci()
+        {
+            foreach (PatSubordinate patSubordinate in _pat.PatSubordinates)
+            {
+                List<ILURegister> allRegistersOperationsInUser = new();
+
+                foreach (var op in _distributions)
+                {
+                    if (ILU_Matrix.TryGetValue((op.DistributionId, patSubordinate.UserId), out var context))
+                    {
+                        var latestContext = context?.OrderByDescending(c => c.AcquisitionDate);
+
+                        if (latestContext?.Count() > 0)
+                        {
+                            allRegistersOperationsInUser.AddRange(latestContext);
+                        }
+                    }
+                }
+                Console.WriteLine("User: " + patSubordinate.UserId);
+                foreach(var context in allRegistersOperationsInUser)
+                {
+                    Console.WriteLine(context.AcquisitionDate?.ToString("dd/MM/yyyy"));
+                    Console.WriteLine(context.DistributionId);
+                    Console.WriteLine(_LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelCode);
+                }
+                Console.WriteLine("--------");
+            }
+        }
+
+        #endregion
+
+
+
+
     }//end class pat details
 
 

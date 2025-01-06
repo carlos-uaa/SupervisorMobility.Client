@@ -10,6 +10,7 @@
 @inject IOperationService OperationsServices
 @inject IDistributionService DistributionsServices
 @inject IPATService PATsServices
+@inject IHCIService HCIServices
 @inject IJSRuntime JSRuntime
 @inject IILUService ILUServices
 @inject ISnackbar Snackbar
@@ -203,6 +204,7 @@
                                 </ChildContent>
                             </MudMenu>
                             <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" Size="Size.Small" OnClick="DownloadExcel" Class="ml-5 my-2">Export</MudButton>
+                            <MudButton Color="Color.Info" StartIcon="@Icons.Material.Filled.Autorenew" Variant="Variant.Filled" Size="Size.Small" OnClick="UpdateHci" Class="ml-5 my-2">HCI</MudButton>
                             <MudToggleIconButton Toggled="IsZoomed"
                                                  Class="ml-5"
                                                  Icon="@Icons.Material.Filled.ZoomIn"
@@ -464,7 +466,7 @@
                                                                     </td>
                                                                 }
                                                                 <td style="border: none">
-                                                                    @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()[..^1]
+                                                                    @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()
                                                                 </td>
                                                             </tr>
                                                         }
@@ -957,7 +959,7 @@
                                                                         </td>
                                                                     }
                                                                     <td style="border: none">
-                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()[..^1]
+                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()
                                                                     </td>
                                                                 </tr>
                                                             }
@@ -977,36 +979,36 @@
                                 </td>
                                 </Virtualize>
                                 <td>
-                                            @{
-                                                var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                                                var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                                                var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
-                                            }
+                                    @{
+                                        var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                                        var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                                        var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
+                                    }
 
-                                            @if (_pat.KnowledgePercentage != null)
-                                            {
-                                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
-                                                {
-                                            <span style="color:red"><b>X</b></span>
-                                                }
-                                                else if (meetsKnowledge)
-                                                {
-                                            <span><b>O</b></span>
-                                                }
-                                            }
+                                    @if (_pat.KnowledgePercentage != null)
+                                    {
+                                        @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                        {
+                                    <span style="color:red"><b>X</b></span>
+                                        }
+                                        else if (meetsKnowledge)
+                                        {
+                                    <span><b>O</b></span>
+                                        }
+                                    }
                                 </td>
                                 <td>
-                                            @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
-                                            {
-                                                var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
+                                    @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
+                                    {
+                                        var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
                                         <MudTextField @bind-Value="currentComment.Comment"
-                                                      ReadOnly
-                                                      Variant="Variant.Outlined"
-                                                      Margin="Margin.Dense"
-                                                      Lines="2"
-                                                      Class="mr-2">
+                                                        ReadOnly
+                                                        Variant="Variant.Outlined"
+                                                        Margin="Margin.Dense"
+                                                        Lines="2"
+                                                        Class="mr-2">
                                         </MudTextField>
-                                            }
+                                    }
                                 </td>
                                 </tr>
                                 }
