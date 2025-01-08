@@ -28,15 +28,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         [Parameter]
         public bool details { get; set; }
         [Parameter]
-        public List<HCIILU> ExpertiseTable { get; set; }
+        public List<ILURegister> ExpertiseTable { get; set; }
 
 
         [Parameter]
-        public EventCallback<HCIILU> Add { get; set; }
+        public EventCallback<ILURegister> Add { get; set; }
         [Parameter]
         public EventCallback<int> Del { get; set; }
         [Parameter]
-        public EventCallback<(HCIILU, int)> Upd { get; set; }
+        public EventCallback<(ILURegister, int)> Upd { get; set; }
+
+        private List<ILULevel> _LevelsILU { get; set; } = new();
+        private ILURegister _newIlu { get; set; } = new();
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -47,25 +51,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                     ExpertiseTable.Add( new());
                 }
             }
+            _LevelsILU = await ILUServices.GetLevelsILU();
+
+            StateHasChanged();
             await base.OnInitializedAsync();
         }
 
         private void DateChanged(DateRange range, int index)
         {
-            ExpertiseTable[index].Start = range.Start;
-            ExpertiseTable[index].End = range.End;
+            ExpertiseTable[index].AcquisitionDate = range.Start;
+            ExpertiseTable[index].EndDate = range.End;
             Upd.InvokeAsync((ExpertiseTable[index], index));
         }
-        private void TextChanged(string val, int idx)
-        {
-            ExpertiseTable[idx].Description = val;
-            Upd.InvokeAsync((ExpertiseTable[idx], idx));
-        }
-        private void LevelChanged(string val, int idx)
-        {
-            ExpertiseTable[idx].level = val;
-            Upd.InvokeAsync((ExpertiseTable[idx], idx));
-        }
+        //private void TextChanged(string val, int idx)
+        //{
+        //    ExpertiseTable[idx].Description = val;
+        //    Upd.InvokeAsync((ExpertiseTable[idx], idx));
+        //}
+        //private void LevelChanged(string val, int idx)
+        //{
+        //    ExpertiseTable[idx].ILULevelId = val;
+        //    Upd.InvokeAsync((ExpertiseTable[idx], idx));
+        //}
 
         private void Delete(int index)
         {
@@ -75,9 +82,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 
         private void AddHere()
         {
-            HCIILU niu = new HCIILU();
+            ILURegister newILU = new ILURegister();
             //KnowledgeTable.Add(niu);
-            Add.InvokeAsync(niu);
+            Add.InvokeAsync(newILU);
+        }
+
+        private void updateILULevel(int auxIluLevelId)
+        {
+            _newIlu.ILULevelId = auxIluLevelId;
         }
     }
 }

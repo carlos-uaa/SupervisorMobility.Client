@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc;
 using DocumentFormat.OpenXml.InkML;
+using SupervisorMobility.Client.Pages.Inicio.HCIPage.Components;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -650,34 +651,57 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         #region HCI
 
+        public List<HCIILU> userExpertise { get; set; } = new();
+        public HCI _hci = new();
 
         private async void UpdateHci()
         {
-            foreach (PatSubordinate patSubordinate in _pat.PatSubordinates)
-            {
-                List<ILURegister> allRegistersOperationsInUser = new();
+            //foreach (PatSubordinate patSubordinate in _pat.PatSubordinates)
+            //{
+            //    userExpertise = new();
+            //    List<ILURegister> allRegistersOperationsInUser = new();
 
-                foreach (var op in _distributions)
-                {
-                    if (ILU_Matrix.TryGetValue((op.DistributionId, patSubordinate.UserId), out var context))
-                    {
-                        var latestContext = context?.OrderByDescending(c => c.AcquisitionDate);
+            //    foreach (var op in _distributions)
+            //    {
+            //        if (ILU_Matrix.TryGetValue((op.DistributionId, patSubordinate.UserId), out var context))
+            //        {
+            //            var latestContext = context?.OrderByDescending(c => c.AcquisitionDate);
 
-                        if (latestContext?.Count() > 0)
-                        {
-                            allRegistersOperationsInUser.AddRange(latestContext);
-                        }
-                    }
-                }
-                Console.WriteLine("User: " + patSubordinate.UserId);
-                foreach(var context in allRegistersOperationsInUser)
-                {
-                    Console.WriteLine(context.AcquisitionDate?.ToString("dd/MM/yyyy"));
-                    Console.WriteLine(context.DistributionId);
-                    Console.WriteLine(_LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelCode);
-                }
-                Console.WriteLine("--------");
-            }
+            //            if (latestContext?.Count() > 0)
+            //            {
+            //                allRegistersOperationsInUser.AddRange(latestContext);
+            //            }
+            //        }
+            //    }
+            //    Console.WriteLine("User: " + patSubordinate.UserId);
+            //    foreach(var context in allRegistersOperationsInUser)
+            //    {
+            //        userExpertise.Add(new HCIILU
+            //        {
+            //            Start = context.AcquisitionDate,
+            //            Description = context.DistributionId.ToString(),
+            //            level = _LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelCode,
+            //            RegisterILURegisterid = context.ILURegisterid
+            //        });
+
+            //        Console.WriteLine(context.AcquisitionDate?.ToString("dd/MM/yyyy"));
+            //        Console.WriteLine(context.DistributionId);
+            //        Console.WriteLine(_LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelCode);
+            //    }
+
+            //    _hci = await HCIServices.GetHCI(patSubordinate.UserId);
+            //    _hci.ILUs = userExpertise;
+
+            //    if (await HCIServices.UpdateHCI(_hci))
+            //    {
+            //        Snackbar.Add("Updated succesfully", Severity.Success);
+            //    }
+            //    else
+            //    {
+            //        Snackbar.Add("Error", Severity.Error);
+            //    }
+            //    Console.WriteLine("--------");
+            //}
         }
 
         #endregion

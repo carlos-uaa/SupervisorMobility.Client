@@ -11,7 +11,7 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public List<HCITransaction>? Transactions { get; set; }
         public List<HCICategory>? Categories { get; set; }
-        public List<HCIILU>? ILUs { get; set; }
+        public List<ILURegister>? ILUs { get; set; }
         public List<UserCareerPath>? CareerPaths { get; set; }
 
         public List<Commentary>? Commentaries { get; set; }

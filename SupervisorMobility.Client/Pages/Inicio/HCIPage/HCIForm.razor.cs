@@ -41,7 +41,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         public List<HCITransaction> companyCap = new();
         public List<HCITransaction> titles = new();
         public List<UserCareerPath> careers = new();
-        public List<HCIILU> expertise = new();
+        public List<ILURegister> expertise = new();
         public List<HCICategory> categories = new();
         public List<Commentary> comments = new();
 
@@ -60,7 +60,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                     _hci.Categories = new List<HCICategory>();
                     _hci.Commentaries = new List<Commentary>();
                     _hci.CareerPaths = new List<UserCareerPath>();
-                    _hci.ILUs = new List<HCIILU>();
+                    _hci.ILUs = new List<ILURegister>();
                 }
                 else
                 {
@@ -211,30 +211,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         //----------------------
 
         //Expertise Control
-        public async void AddExpert(HCIILU reg)
+        public async void AddExpert(ILURegister reg)
         {
             expertise.Add(reg);
         }
         public async void RemoveExpert(int idx)
         {
-            if (expertise[idx].Register != null || (expertise[idx].RegisterILURegisterid != null && expertise[idx].RegisterILURegisterid != 0))
+            if (expertise[idx] != null || (expertise[idx].ILURegisterid != null && expertise[idx].ILURegisterid != 0))
             {
                 Snackbar.Add(Localizer["RemExpertice"], Severity.Warning);
                 return;
             }
 
-            if (expertise[idx].ID == 0)
+            if (expertise[idx].ILURegisterid == 0)
             {
                 expertise.RemoveAt(idx);
             }
             else
             {
-                expertise[idx].IsActive = false;
+                expertise[idx].isActive = false;
             }
-            if (!expertise.Where(p => p.IsActive == true).Any())
-                expertise.Add(new HCIILU { IsActive = true });
+            if (!expertise.Where(p => p.isActive == true).Any())
+                expertise.Add(new ILURegister { isActive = true });
         }
-        public async void ModifyExpertEntry(HCIILU reg, int idx)
+        public async void ModifyExpertEntry(ILURegister reg, int idx)
         {
             expertise[idx] = reg;
         }
@@ -300,7 +300,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             //{
             //    if (checkExpertise(expertise[i])) expertise.RemoveAt(i);
             //}
-            expertise.RemoveAll(p=>p.Description.IsNullOrEmpty() && p.ID == 0);
+            //expertise.RemoveAll(p=>p.Description.IsNullOrEmpty() && p.ID == 0);
             categories.RemoveAll(p=>p.ChosenCategoryDepartmentId == 0 && p.HCICategoryId == 0);
             comments.RemoveAll(p => p.Comment.IsNullOrEmpty() && p.CommentaryId == 0);
         }

@@ -1,4 +1,6 @@
 ﻿@inject IStringLocalizer<Resource> Localizer
+@inject IILUService ILUServices
+
 <MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
     <TitleContent>
         <div Style="align-items: center; display: flex;">
@@ -18,25 +20,83 @@
             <tbody>
                 @foreach (var item in ExpertiseTable.Select((value, index) => new { index, value }))
                 {
-                    if (item.value.IsActive)
+                    if (item.value.isActive)
                     {
-                        var period = new DateRange(item.value.Start, item.value.End);
+                        var period = new DateRange(item.value.AcquisitionDate, item.value.EndDate);
                         <tr>
                             <td style="width:25%">
-                                <MudDateRangePicker DateRange="period" DateRangeChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details" />
+                                <MudDateRangePicker DateRange="period" DateRangeChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly />
                             </td>
                             <td>
-                                <MudTextField T="string" Value="item.value.Description" ValueChanged="(val)=>TextChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
+                                <MudTextField T="string" Value="item.value.Distribution?.Description"  Variant="Variant.Text" FullWidth ReadOnly></MudTextField>
+                                @* <MudTextField T="string" Value="item.value.Distribution.Description" ValueChanged="(val)=>TextChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField> *@
                             </td>
                             <td style="width:10%">
-                                <MudTextField Value="item.value.level" ValueChanged="(string? val)=>LevelChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
+                                @{
+                                    var auxIluLevelId = (int)item.value.ILULevelId;
+                                }
+                                <MudSelect T="int?" Label="ILU" Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="item.value.ILULevelId" ReadOnly>
+                                    <MudSelectItem T="int?" Disabled="true" Value="null">@Localizer["selectALevel"]</MudSelectItem>
+                                    @foreach (var type in _LevelsILU)
+                                    {
+                                        <MudSelectItem T="int?" Value="type.ILULevelId">
+                                            @{
+                                                string imageSrc = "";
+                                                switch (type.ILULevelCode)
+                                                {
+                                                    case "ITrainee":
+                                                        imageSrc = "Images/ITrainee.png";
+                                                        break;
+                                                    case "I":
+                                                        imageSrc = "Images/I.png";
+                                                        break;
+                                                    case "ILeader":
+                                                        imageSrc = "Images/ILeader.png";
+                                                        break;
+                                                    case "LTrainee":
+                                                        imageSrc = "Images/LTrainee.png";
+                                                        break;
+                                                    case "LTraineeLeader":
+                                                        imageSrc = "Images/LTraineeLeader.png";
+                                                        break;
+                                                    case "L":
+                                                        imageSrc = "Images/L.png";
+                                                        break;
+                                                    case "LLeader":
+                                                        imageSrc = "Images/LLeader.png";
+                                                        break;
+                                                    case "UTrainee":
+                                                        imageSrc = "Images/UTrainee.png";
+                                                        break;
+                                                    case "ULeaderTrainee":
+                                                        imageSrc = "Images/ULeaderTrainee.png";
+                                                        break;
+                                                    case "ULeader":
+                                                        imageSrc = "Images/ULeader.png";
+                                                        break;
+                                                    case "U":
+                                                        imageSrc = "Images/U.png";
+                                                        break;
+                                                    default:
+                                                        imageSrc = "Images/default.png";
+                                                        break;
+                                                }
+                                            }
+                                            <div class="d-flex align-items-center">
+                                                <MudImage Src="@imageSrc" Alt="ILU Image" Height="30" Class="rounded-lg" Style="margin-top: -5px" />
+                                            </div>
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                                @* <MudTextField Value="item.value.ILULevel?.ILULevelCode" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField> *@
+                                @* <MudTextField Value="item.value.ILULevel.ILULevelCode" ValueChanged="(string? val)=>LevelChanged(val, item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField> *@
                             </td>
                             <td style="width:10%">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="()=>Delete(item.index)"></MudIconButton>
-                                @if (item.value.Equals(ExpertiseTable.LastOrDefault(p => p.IsActive == true)))
+@*                                 <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="()=>Delete(item.index)"></MudIconButton>
+                                @if (item.value.Equals(ExpertiseTable.LastOrDefault(p => p.isActive == true)))
                                 {
                                     <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" OnClick="()=>AddHere()"></MudIconButton>
-                                }
+                                } *@
                             </td>
                         </tr>
                     }
