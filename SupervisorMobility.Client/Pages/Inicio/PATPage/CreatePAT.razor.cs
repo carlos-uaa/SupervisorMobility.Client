@@ -206,26 +206,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         }
 
 
-        private void ShowSupervisors()
-        {
-            _supervisors.Clear();
-
-            User SeniorSV = new();
-            //foreach (User usr in _allSSVs)
-            //{
-            //    if (usr.UserId == ssvId)
-            //    {
-            //        SeniorSV = usr;
-            //    }
-            //}
-
-            //foreach (User sv in _allSupervisors)
-            //{
-            //    if (sv.SuperiorId == ssvId && sv.AreaId == _pat.AreaId)
-            //        _supervisors.Add(sv);
-            //}
-            StateHasChanged();
-        }
+      
 
         // Create Pat
         async void CreatePatAsync()

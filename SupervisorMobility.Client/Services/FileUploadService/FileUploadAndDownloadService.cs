@@ -35,7 +35,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
                  }
         public async Task PlantStructureFormat()
         {
-            var response = await _http.GetAsync($"File/MassiveUploadTreeDataExample");
+            var response = await _http.GetAsync($"assycharts/DownloadAssyChartFormat");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -45,7 +45,7 @@ namespace SupervisorMobility.Client.Services.FileUploadAndDownloadService
             {
                 var fileStream = response.Content.ReadAsStreamAsync();
                 using var streamRef = new DotNetStreamReference(stream: await fileStream);
-                await _js.InvokeVoidAsync("downloadFileFromStream", "TreeDataExample.xlsx", streamRef);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "Blank_workload.xlsx", streamRef);
             }
         }
         //Paths Upload

@@ -556,7 +556,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         {
             if (_pat.KnowledgePercentage != null || _pat.KnowledgePercentage != 0) 
             {
-                await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+                if (MonthlyView)
+                {
+                    //aqui funcion par exportar al mes
+                    //await Exportation.Export
+
+                }
+                else
+                {
+                    await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+                }
             }
             else
             {
