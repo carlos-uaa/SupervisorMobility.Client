@@ -8,6 +8,7 @@
 
         Task<bool> UpdateHeadCount(HeadCount ToUpdate, int HeadId);
 
+        Task DownloadFormat();
         //HeadCount Process
         Task<HeadCountProcess> CreateHeadCountPorcess(HeadCountProcess ToCreate);
         Task<List<HeadCountProcess>> GetAllHeadCountProcesses();

@@ -1,5 +1,6 @@
 ﻿using Blazorise.Extensions;
 using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Vml.Spreadsheet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.JSInterop;
@@ -171,7 +172,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
 
 
-       
+            _jobObservation.StepsNumber = string.Join("|", _jobObservation.StepsNumber);
+            _jobObservation.DoubleManagment = string.Join("|", _jobObservation.DoubleManagment);
+            _jobObservation.Waiting = string.Join("|", _jobObservation.Waiting);
+            _jobObservation.HOEStandardTimes = "0";
+            _jobObservation.ProductIds = "0|0|0|0|0";
+            _jobObservation.ProductSpecifications = "||||";
             ShowLoading = false;
         }
 
