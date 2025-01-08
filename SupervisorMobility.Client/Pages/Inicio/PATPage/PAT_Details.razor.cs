@@ -557,6 +557,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 if (MonthlyView)
                 {
                     //aqui funcion par exportar al mes
+                    //await Exportation.Export
+
                 }
                 else
                 {
