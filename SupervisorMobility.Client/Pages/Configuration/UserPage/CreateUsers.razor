@@ -6,6 +6,7 @@
 @inject IDistributionService DistributionsServices
 @inject IUserService UserServices
 @inject IGroupService GroupServices
+@inject IHCIService HCIServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
@@ -851,7 +852,7 @@
 @code {
     private List<BreadcrumbItem> _links;
 
- 
+
     private User _user = new User();
     private User selectedSeniorSupervisorOfList = new User();
     private User selectedSupervisorOfList = new User();
@@ -900,6 +901,7 @@
     private string areaInfo = "First select a superior";
     private string grupInfo = "First select a superior";
 
+    public Data.Entities.HCI _hci = new ();
 
     protected async override Task OnInitializedAsync()
     {
@@ -1145,7 +1147,7 @@
             case 5: RemoveSuperiorUser(); break;
             case 6: RemoveSuperiorUser(); break;
             case 7: RemoveSuperiorUser(); break;
-                
+
         }
 
 
@@ -1395,6 +1397,17 @@
                     json = JsonSerializer.Serialize<User>(LogedUser);
                     await JS.InvokeVoidAsync("localStorage.setItem", "user", json);
                 }
+            }
+            _hci.User = await UserServices.GetUser(result.UserId);
+            _hci.UserId = result.UserId;
+
+            if (await HCIServices.CreateHCI(_hci))
+            {
+                Snackbar.Add("HCI Created succesfully", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Error", Severity.Error);
             }
             NavigationManager.NavigateTo("/usersmanagement");
         }

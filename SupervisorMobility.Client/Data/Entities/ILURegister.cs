@@ -8,6 +8,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int ILURegisterid { get; set; }
 
         public DateTime? AcquisitionDate { get; set; } = DateTime.Now;
+        public DateTime? EndDate { get; set; }
 
         //public int? OperationId { get; set; }
         //public Operation? Operation { get; set; }

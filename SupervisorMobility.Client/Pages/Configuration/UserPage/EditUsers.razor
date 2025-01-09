@@ -4,6 +4,7 @@
 @inject IPlantService PlantServices
 @inject IAreaService AreaServices
 @inject IDistributionService DistributionsServices
+@inject IDepartmentService DepartmentServices
 @inject IFileUploadAndDownloadService FileUpDoServices
 @inject IUserService UsersServices
 @inject IGroupService GroupServices
@@ -12,6 +13,7 @@
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource1> Localizer
+@inject IStringLocalizer<Resource> Localizer1
 @using ObjectCloner;
 @using System.ComponentModel.DataAnnotations
 
@@ -285,7 +287,19 @@
                                     @if (_user.UserType == 4 && _user.Superior != null)
                                     {
                                         <MudAutocomplete ResetValueOnEmptyText Clearable MaxItems="null" T="Distribution" Label="@Localizer["UsersDistribution"]" ToStringFunc="@(e=> e.Description == null || e.Description == "" ? $"{Localizer["UsersPHDistribution"]}" : $"{e.Code} {e.Description}")" SearchFunc="@SearchDistribution" Variant="Variant.Outlined" ShowProgressIndicator="true" ValueChanged="@((item) => SetDistribution(item))" />
+                                        <MudSelect T="int" Label=@Localizer1["department"] Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
+                                            <MudSelectItem Value="0">@Localizer1["selectADepartment"]</MudSelectItem>
+                                                @foreach (var type in _departments)
+                                                {
+                                                    <MudSelectItem Value="type.DepartmentId">@($"{type.Description}")</MudSelectItem>
+                                                }
+                                        </MudSelect>
+                                        <MudTextField @bind-Value="_user.Management" Label="@Localizer1["Management"]" Variant="Variant.Text" ></MudTextField>
+                                        <MudTextField @bind-Value="_user.Process" Label="@Localizer1["SectionProcess"]" Variant="Variant.Text" ></MudTextField>
+                                        <MudDatePicker @bind-Date="_user.BirthDate" Label="@Localizer1["BirthDate"]" Variant="Variant.Text" ></MudDatePicker>
+
                                     }
+
                                     @* Areas Managed*@
 
 

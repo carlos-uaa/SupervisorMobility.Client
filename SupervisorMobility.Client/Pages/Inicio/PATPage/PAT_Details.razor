@@ -10,6 +10,7 @@
 @inject IOperationService OperationsServices
 @inject IDistributionService DistributionsServices
 @inject IPATService PATsServices
+@inject IHCIService HCIServices
 @inject IJSRuntime JSRuntime
 @inject IILUService ILUServices
 @inject ISnackbar Snackbar
@@ -203,6 +204,7 @@
                                 </ChildContent>
                             </MudMenu>
                             <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" Size="Size.Small" OnClick="DownloadExcel" Class="ml-5 my-2">Export</MudButton>
+                            <MudButton Color="Color.Info" StartIcon="@Icons.Material.Filled.Autorenew" Variant="Variant.Filled" Size="Size.Small" OnClick="UpdateHci" Class="ml-5 my-2">HCI</MudButton>
                             <MudToggleIconButton Toggled="IsZoomed"
                                                  Class="ml-5"
                                                  Icon="@Icons.Material.Filled.ZoomIn"
@@ -464,7 +466,7 @@
                                                                     </td>
                                                                 }
                                                                 <td style="border: none">
-                                                                    @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()[..^1]
+                                                                    @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()
                                                                 </td>
                                                             </tr>
                                                         }
@@ -531,10 +533,11 @@
                                         </div>
                                     </div>
                                 </td>
-                                @{
-                                    int index = 0;
-                                }
+
                                 <Virtualize Context="usr" Items="_UserOfArea">
+                                    @{
+                                        int index = _UserOfArea.IndexOf(usr);
+                                    }
                                     <td style="text-align: center;" colspan="2">
 
                                         @{
@@ -956,7 +959,7 @@
                                                                         </td>
                                                                     }
                                                                     <td style="border: none">
-                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()[..^1]
+                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper()
                                                                     </td>
                                                                 </tr>
                                                             }
@@ -976,36 +979,36 @@
                                 </td>
                                 </Virtualize>
                                 <td>
-                                            @{
-                                                var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                                                var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                                                var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
-                                            }
+                                    @{
+                                        var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                                        var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                                        var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
+                                    }
 
-                                            @if (_pat.KnowledgePercentage != null)
-                                            {
-                                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
-                                                {
-                                            <span style="color:red"><b>X</b></span>
-                                                }
-                                                else if (meetsKnowledge)
-                                                {
-                                            <span><b>O</b></span>
-                                                }
-                                            }
+                                    @if (_pat.KnowledgePercentage != null)
+                                    {
+                                        @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                        {
+                                    <span style="color:red"><b>X</b></span>
+                                        }
+                                        else if (meetsKnowledge)
+                                        {
+                                    <span><b>O</b></span>
+                                        }
+                                    }
                                 </td>
                                 <td>
-                                            @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
-                                            {
-                                                var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
+                                    @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
+                                    {
+                                        var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
                                         <MudTextField @bind-Value="currentComment.Comment"
-                                                      ReadOnly
-                                                      Variant="Variant.Outlined"
-                                                      Margin="Margin.Dense"
-                                                      Lines="2"
-                                                      Class="mr-2">
+                                                        ReadOnly
+                                                        Variant="Variant.Outlined"
+                                                        Margin="Margin.Dense"
+                                                        Lines="2"
+                                                        Class="mr-2">
                                         </MudTextField>
-                                            }
+                                    }
                                 </td>
                                 </tr>
                                 }
@@ -1227,9 +1230,8 @@ else
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudTextField ReadOnly="true" Value="@_UserOfArea.Find(u => u.UserId == auxILU_UseId).Name" Label=@Localizer["name"]> </MudTextField>
                 <MudTextField ReadOnly="true" Value="@_UserOfArea.Find(u => u.UserId == auxILU_UseId).Payroll" Label=@Localizer["payroll"]> </MudTextField>
-                @if (UserHasHci)
-                {
-                    <MudButton Href=@($"/HCI/Update/{auxILU_UseId}") Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">HCI</MudButton>
+                @if(UserHasHci){
+                    <MudButton Href=@($"/HCI/details/{auxILU_UseId}") Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Wysiwyg" EndIcon="@Icons.Material.Filled.ArrowForward">HCI</MudButton>
                 }
 
                 <MudToggleIconButton @bind-Toggled="AllHistory"
