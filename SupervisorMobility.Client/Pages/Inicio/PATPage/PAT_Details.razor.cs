@@ -560,7 +560,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 if (MonthlyView)
                 {
                     //aqui funcion par exportar al mes
-                    await Exportation.ExportMonthlyPATToExcel(_pat.PATid);
+                    await Exportation.ExportMonthlyPATToExcel(_pat.PATid, _yearMonth.Value.Month);
 
                 }
                 else
