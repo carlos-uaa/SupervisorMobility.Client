@@ -499,10 +499,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         {
 
 
-            if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0 && _sosHub.SOSDistribution.Count == 0)
-            {
-                return "Write down at least one analysis first";
-            }
+            //if (RawAnalisis.Count == 0 && _sosHub.Sections.Count == 0 && _sosHub.SOSDistribution.Count == 0)
+            //{
+            //    return "Write down at least one analysis first";
+            //}
 
             if (string.IsNullOrEmpty(_sosHub.ProcessSheet))
             {

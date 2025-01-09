@@ -474,7 +474,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
                 }
 
-                if (searchAssychart && _assychart.RoutesProductsAssyChart?.Count > 0)
+                if (searchAssychart && _assychart.RoutesProductsAssyChart?.Count() > 0  && _jobObservation.Operations?.Count() > 0 )
                 {
                     listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operations?.FirstOrDefault()?.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                     FilterOperation = true;

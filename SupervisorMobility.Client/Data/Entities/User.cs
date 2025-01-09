@@ -17,7 +17,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public int UserType { get; set; }
 
         public string? Management { get; set; }
-        public string? Department { get; set; }
         public string? Process { get; set; }
 
         public int? SuperiorId { get; set; }
@@ -50,7 +49,12 @@ namespace SupervisorMobility.Client.Data.Entities
         public int? GroupId { get; set; }
         public Group? Group { get; set; }
 
-      
+        public int? DepartmentId { get; set; }
+        public Department? Department { get; set; }
+
+        public int? HciId { get; set; }
+        public HCI? Hci { get; set; }
+
         public int? DistributionId { get; set; }
         public Distribution? Distribution { get; set; }
 

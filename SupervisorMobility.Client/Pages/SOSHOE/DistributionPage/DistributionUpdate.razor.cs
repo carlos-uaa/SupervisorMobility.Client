@@ -16,7 +16,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         [Parameter]
         public int? DistributionId { get; set; }
 
-        SOSDistribution _sosDistribution { get; set; } = new();
+        SOSDistribution  _sosDistribution { get; set; } = new();
         private List<SOSDistributionLogbook> mostRecentLogs = new List<SOSDistributionLogbook>();
         private int logCount = 0;
         private int totalLogbooks = 0;
@@ -162,7 +162,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         public async Task<AsyncVoidMethodBuilder> SetUserInfo()
         {
 
-            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeCollections: true);
+            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeCollections: true, includeTimes: true);
             if (_sosDistribution.DistributionLogbooks != null)
             {
                 mostRecentLogs = _sosDistribution.DistributionLogbooks

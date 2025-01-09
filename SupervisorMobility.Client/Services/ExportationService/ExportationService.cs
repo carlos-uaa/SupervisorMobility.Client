@@ -84,5 +84,39 @@ namespace SupervisorMobility.Client.Services.ExportationService
                 await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
             }
         }
+
+        public async Task ExportMonthlyPATToExcel(int idPAT, int month)
+        {
+            var response = await _http.GetAsync($"Exportation/Excel/PATMonthly/{idPAT}?AplicationMonth={month}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                snackbar.Add("Error while exporting, could not download file", Severity.Error);
+            }
+            else
+            {
+                var filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            }
+        }
+
+        public async Task ExportHCIToExcel(int idHCI)
+        {
+            var response = await _http.GetAsync($"Exportation/Excel/HCI/{idHCI}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                snackbar.Add("Error while exporting, could not download file", Severity.Error);
+            }
+            else
+            {
+                var filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            }
+        }
     }
 }

@@ -1,12 +1,13 @@
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Drawing;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Mvc;
+using DocumentFormat.OpenXml.InkML;
+using SupervisorMobility.Client.Pages.Inicio.HCIPage.Components;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -38,6 +39,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private List<ILURegister> AllRegistersOfPat { get; set; } = new();
         private int auxILU_Level = 0;
         private int auxILU_UseId = 0;
+        private bool UserHasHci = false;
         private int auxILU_OpId = 0;
 
         private List<ILURegister> AllRegistersOperationsInUser { get; set; } = new();
@@ -86,10 +88,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         };
         private double?[] monthsDistributionPercentage = new double?[12];
         private double?[] monthsUsersPercentage = new double?[12];
-
+        private List<int> _visibleSubordinateIds;
+        bool Dev_env { get; set; }
 
         protected async override Task OnInitializedAsync()
         {
+            Dev_env = Environment.IsDevelopment();
+
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
@@ -124,11 +129,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 await GetUserAsync();
 
                 _pat = await PATsServices.getPat(patID);
+                _LevelsILU = await ILUServices.GetLevelsILU();
+
 
                 await PrepareDataTable();
                 StateHasChanged();
             }
 
+            if ((int)_pat.AplicationYear > DateTime.Now.Year)
+            {
+                LastdayYear = new DateTime((int)_pat.AplicationYear, 12, 31);
+                _yearMonth = new DateTime((int)_pat.AplicationYear, 1, 1);
+                FirstdayYear = new DateTime((int)_pat.AplicationYear, 1, 1);
+                date = new DateTime((int)_pat.AplicationYear, 1, 1);
+            }
+            else
+            {
+                LastdayYear = new DateTime((int)_pat.AplicationYear, 12, 31);
+                _yearMonth = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
+                FirstdayYear = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
+                date = new DateTime((int)_pat.AplicationYear, DateTime.Now.Month, DateTime.Now.Day).AddMonths(-1);
+            }
+            StateHasChanged();
 
         }
 
@@ -172,16 +194,45 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             ILU_Matrix?.Clear();
             Distributions_Knolowed?.Clear();
             User_Knolowed?.Clear();
-            _LevelsILU?.Clear();
             _distributions?.Clear();
             _UserOfArea?.Clear();
 
-            _LevelsILU = await ILUServices.GetLevelsILU();
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
-            _UserOfArea = await UsersServices.GetSubordinates((int)_pat.Supervisor.UserId);
-            _UserOfArea.Insert(0, _pat.Supervisor);
-            //_operations = await OperationsServices.GetOperations(_pat.PlantId, _pat.AreaId, _pat.DistributionId);
-            //_UserOfArea = await UsersServices.GetUsersWhitCollections();
+
+            foreach (User sv in _pat.Supervisors)
+            {
+                _UserOfArea.AddRange(await UsersServices.GetSubordinates(sv.UserId));
+                _UserOfArea.Insert(0, sv);
+            }
+
+            var newSubordinates = _UserOfArea
+              .Where(user => !_pat.PatSubordinates.Any(ps => ps.UserId == user.UserId))
+                  .ToList();
+
+            foreach (var user in newSubordinates)
+            {
+                _pat.PatSubordinates.Add(new PatSubordinate
+                {
+                    PatId = _pat.PATid,
+                    UserId = user.UserId,
+                    StartDate = DateTime.Now,
+                    EndDate = null
+                });
+            }
+
+
+            foreach (var patSubordinate in _pat.PatSubordinates)
+            {
+                if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate == null)
+                {
+                    patSubordinate.EndDate = DateTime.Now;
+                }
+                else if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate != null)
+                {
+                    _UserOfArea.Add(await UsersServices.GetUserAndCollection(patSubordinate.UserId));
+                }
+            }
+            StateHasChanged();
 
             try
             {
@@ -217,9 +268,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         .Where(r => r.DistributionId == op.DistributionId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
                         .OrderByDescending(r => r.AcquisitionDate)
                         .ToList();
+                    
+                    if(matchingRegisters?.Count() > 0)
+                    {
+                        AllRegistersOfPat?.AddRange(matchingRegisters.ToList());
+                    }
 
-                    AllRegistersOfPat.AddRange(matchingRegisters?.ToList());
-                    ILU_Matrix.Add((op.DistributionId, usr.UserId), matchingRegisters);
+                    ILU_Matrix?.Add((op.DistributionId, usr.UserId), matchingRegisters);
                     // Almacenar los registros en la
                     //ILU_Matrix[op.OperationId, usr.UserId] = matchingRegisters;
 
@@ -298,6 +353,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private async void OpenHistoryILU(int ID_User)
         {
+            UserHasHci = false;
             auxILU_UseId = ID_User;
 
             AllRegistersOperationsInUser?.Clear();
@@ -312,6 +368,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         AllRegistersOperationsInUser.AddRange(latestContext);
                     }
                 }
+            }
+
+            if(_UserOfArea.Where( u=> u.UserId == auxILU_UseId && u.HciId != null && u.HciId != 0).Any()){
+                UserHasHci = true;
             }
             ILUHistoryDialog = true;
             StateHasChanged();
@@ -497,7 +557,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         {
             if (_pat.KnowledgePercentage != null || _pat.KnowledgePercentage != 0) 
             {
-                await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+                if (MonthlyView)
+                {
+                    //aqui funcion par exportar al mes
+                    await Exportation.ExportMonthlyPATToExcel(_pat.PATid, _yearMonth.Value.Month);
+
+                }
+                else
+                {
+                    await Exportation.ExportYearlyPATToExcel(_pat.PATid);
+                }
             }
             else
             {
@@ -518,6 +587,135 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             var zoomLevel = IsZoomed ? "0.75" : "1.0";
             await JSRuntime.InvokeVoidAsync("setZoom", zoomLevel);
         }
+
+        #region Calendario
+        //Montly
+        bool AllHistory = false;
+        bool MonthlyView = false;
+        DateTime? _yearMonth;
+        public DateTime? date;
+        DateTime FirstdayYear = DateTime.Now;
+        DateTime LastdayYear = DateTime.Now;
+        private string month;
+        private string year;
+        private async void MontlyTab()
+        {
+            FilterUserMonth();
+
+            StateHasChanged();
+
+            MonthlyView = true;
+
+            StateHasChanged();
+        }
+        private async void OnDateChanged(DateTime? value)
+        {
+            
+
+            _yearMonth = value;
+            
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+            FilterUserMonth();
+
+            StateHasChanged();
+        }
+
+        public async Task LastMonth()
+        {
+            _yearMonth = _yearMonth?.AddMonths(-1);
+           
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+
+
+            StateHasChanged();
+        }
+
+        public async Task NextMonth()
+        {
+            _yearMonth = _yearMonth?.AddMonths(1);
+
+            month = $"{_yearMonth?.ToString("MMMM")}";
+            year = $"{_yearMonth?.ToString("yyyy")}";
+            int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+            int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+
+            StateHasChanged();
+        }
+        #endregion
+        private void FilterUserMonth()
+        {
+            _visibleSubordinateIds = _pat.PatSubordinates
+                .Where(ps => (_yearMonth.Value.Date >= ps.StartDate.Date || _yearMonth.Value.Date.Month >= ps.StartDate.Date.Month) && (ps.EndDate == null || _yearMonth.Value.Month <= ps.EndDate.Value.Month))
+                .Select(ps => ps.UserId)
+                .ToList();
+        }
+
+
+
+        #region HCI
+
+        public List<HCIILU> userExpertise { get; set; } = new();
+        public HCI _hci = new();
+
+        private async void UpdateHci()
+        {
+            //foreach (PatSubordinate patSubordinate in _pat.PatSubordinates)
+            //{
+            //    userExpertise = new();
+            //    List<ILURegister> allRegistersOperationsInUser = new();
+
+            //    foreach (var op in _distributions)
+            //    {
+            //        if (ILU_Matrix.TryGetValue((op.DistributionId, patSubordinate.UserId), out var context))
+            //        {
+            //            var latestContext = context?.OrderByDescending(c => c.AcquisitionDate);
+
+            //            if (latestContext?.Count() > 0)
+            //            {
+            //                allRegistersOperationsInUser.AddRange(latestContext);
+            //            }
+            //        }
+            //    }
+            //    Console.WriteLine("User: " + patSubordinate.UserId);
+            //    foreach(var context in allRegistersOperationsInUser)
+            //    {
+            //        userExpertise.Add(new HCIILU
+            //        {
+            //            Start = context.AcquisitionDate,
+            //            Description = context.DistributionId.ToString(),
+            //            level = _LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelCode,
+            //            RegisterILURegisterid = context.ILURegisterid
+            //        });
+
+            //        Console.WriteLine(context.AcquisitionDate?.ToString("dd/MM/yyyy"));
+            //        Console.WriteLine(context.DistributionId);
+            //        Console.WriteLine(_LevelsILU.Find(u => u.ILULevelId == context.ILULevelId).ILULevelCode);
+            //    }
+
+            //    _hci = await HCIServices.GetHCI(patSubordinate.UserId);
+            //    _hci.ILUs = userExpertise;
+
+            //    if (await HCIServices.UpdateHCI(_hci))
+            //    {
+            //        Snackbar.Add("Updated succesfully", Severity.Success);
+            //    }
+            //    else
+            //    {
+            //        Snackbar.Add("Error", Severity.Error);
+            //    }
+            //    Console.WriteLine("--------");
+            //}
+        }
+
+        #endregion
+
+
 
 
     }//end class pat details

@@ -8,13 +8,7 @@ namespace SupervisorMobility.Client.Data.Entities
     {
         public int PATid { get; set; }
         public int Status { get; set; }
-        public int SupervisorId { get; set; }
-        public User? Supervisor { get; set; }
-
-
-        public int? SSVresponsibleID { get; set; }
-        public User? SSVresponsible { get; set; }
-
+        public ICollection<User>? Supervisors { get; set; }
         public int PlantId { get; set; }
         public Plant? Plant { get; set; }   
 
@@ -23,7 +17,8 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public ICollection<PatUserRole>? PatUserRoles { get; set; }
         public ICollection<PatDistributionComment>? PatDistributionComments { get; set; }
-
+        public ICollection<PatSubordinate> PatSubordinates { get; set; }
+      
         public int? KnowledgePercentage { get; set; }
 
         public DateTime? AplicationDate { get; set; }

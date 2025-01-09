@@ -75,10 +75,10 @@ else
                 <MudTableSortLabel SortBy="new Func<PAT, object>(x=>x.AplicationYear)">@Localizer["year"]</MudTableSortLabel>
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<PAT, object>(x=>x.SSVresponsible?.Name)">SSV</MudTableSortLabel>
+               SSV
             </MudTh>
             <MudTh>
-                <MudTableSortLabel SortBy="new Func<PAT, object>(x=>x.Supervisor?.Name)">Supervisor</MudTableSortLabel>
+                Supervisor
             </MudTh>
             <MudTh>
                 <MudTableSortLabel SortBy="new Func<PAT, object>(x=>x.Area?.Description)">@Localizer["area"]</MudTableSortLabel>
@@ -101,10 +101,14 @@ else
                 <MudText Align="Align.Center">@context.AplicationYear</MudText>
             </MudTd>
             <MudTd DataLabel="SSV">
-                <MudText Align="Align.Center">@context.SSVresponsible?.Name</MudText>
+                <MudText Align="Align.Center">
+                    <MudText>@string.Join(" / ", context.Supervisors?.Select(s => s.Superior?.Name).Where(name => name != null).Distinct())</MudText>
+                </MudText>
             </MudTd>
             <MudTd DataLabel="Supervisor">
-                <MudText Align="Align.Center">@context.Supervisor?.Name</MudText>
+                <MudText Align="Align.Center">
+                    <MudText>@string.Join(" / ", context.Supervisors?.Select(s => s.Name))</MudText>
+                </MudText>
             </MudTd>
             <MudTd DataLabel=@Localizer["area"]>
                 <MudText Align="Align.Center">@context.Area?.Description</MudText>
@@ -317,17 +321,17 @@ else
             return true;
         if (element.PATid.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if (element.SSVresponsible.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (element.Supervisor.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
+        // if (element.SSVresponsible.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        if (element.Supervisors.Any(s => s.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)))
+             return true;
         if (element.AplicationYear.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         if (element.Area.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         // if (element.Distribution.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
         //     return true;
-        if ($"{element.PATid} {element.SSVresponsible.Name} {element.Supervisor.Name} {element.AplicationYear} {element.Area.Description} ".Contains(searchString))
+        if ($"{element.PATid} {element.AplicationYear} {element.Area.Description} ".Contains(searchString))
             return true;
         return false;
     }

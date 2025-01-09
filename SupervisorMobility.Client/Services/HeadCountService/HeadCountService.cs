@@ -135,5 +135,21 @@ namespace SupervisorMobility.Client.Services.HeadCountService
 
             return false;
         }
+
+        public async Task DownloadFormat()
+        {
+            var response = await _http.GetAsync($"File/Headcount/example");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await _js.InvokeVoidAsync("alert", "Error File Download");
+            }
+            else
+            {
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", "HC_Example.xlsx", streamRef);
+            }
+        }
     }
 }

@@ -43,7 +43,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 
         protected async override Task OnInitializedAsync()
         {
-            ExistingCategories = await DepartmentService.GetDepartments();
+            ExistingCategories = await DepartmentService.GetDepartments() ?? new();
             if (!CategoryTable.Any())
             {
                 for (int i = 0; i < 5; i++)

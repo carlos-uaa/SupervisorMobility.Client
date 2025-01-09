@@ -6,5 +6,7 @@
         Task ExportSequenceToExcel(int idSequence);
         Task ExportDistributionToExcel(int idDistribution);
         Task ExportYearlyPATToExcel(int idPAT);
+        Task ExportMonthlyPATToExcel(int idPAT, int month);
+        Task ExportHCIToExcel(int idHCI);
     }
 }
