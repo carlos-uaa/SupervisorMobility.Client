@@ -351,6 +351,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _newIlu.ILULevelId = auxILU_Level;
         }
 
+        public int userHciId = 0;
+
         private async void OpenHistoryILU(int ID_User)
         {
             UserHasHci = false;
@@ -371,6 +373,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
 
             if(_UserOfArea.Where( u=> u.UserId == auxILU_UseId && u.HciId != null && u.HciId != 0).Any()){
+                userHciId = (int)_UserOfArea.Find(u => u.UserId == ID_User).HciId;
                 UserHasHci = true;
             }
             ILUHistoryDialog = true;
@@ -560,7 +563,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 if (MonthlyView)
                 {
                     //aqui funcion par exportar al mes
-                    await Exportation.ExportMonthlyPATToExcel(_pat.PATid);
+                    await Exportation.ExportMonthlyPATToExcel(_pat.PATid, _yearMonth.Value.Month);
 
                 }
                 else
