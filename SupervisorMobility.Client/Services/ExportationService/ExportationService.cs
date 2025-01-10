@@ -1,4 +1,5 @@
 ﻿
+using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -85,7 +86,7 @@ namespace SupervisorMobility.Client.Services.ExportationService
             }
         }
 
-        public async Task ExportMonthlyPATToExcel(int idPAT)
+        public async Task ExportMonthlyPATToExcel(int idPAT, int month)
         {
             var response = await _http.GetAsync($"Exportation/Excel/PATMonthly/{idPAT}?AplicationMonth={month}");
 
