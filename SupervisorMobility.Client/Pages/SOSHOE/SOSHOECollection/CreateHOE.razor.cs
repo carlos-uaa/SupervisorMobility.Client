@@ -745,7 +745,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _Seniorsupervisors = new();
                 _Seniorsupervisors = await UsersService.GetUsersByUserTypeInPlant(plantId, 2, true, false);
                 _Seniorsupervisors = _Seniorsupervisors
-                     .Where(s => s.Areas != null && s.Areas.Any(a => a.AreaId == areaId))
+                     .Where(s => s.Areas != null)
                      .OrderBy(s => s.Name)
                      .ToList();
                 _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(plantId, areaId, 3, true, false);
