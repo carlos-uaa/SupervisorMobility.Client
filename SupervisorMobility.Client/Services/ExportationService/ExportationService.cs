@@ -85,7 +85,7 @@ namespace SupervisorMobility.Client.Services.ExportationService
             }
         }
 
-        public async Task ExportMonthlyPATToExcel(int idPAT, int month)
+        public async Task ExportMonthlyPATToExcel(int idPAT)
         {
             var response = await _http.GetAsync($"Exportation/Excel/PATMonthly/{idPAT}");
 
