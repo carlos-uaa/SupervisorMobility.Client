@@ -221,7 +221,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
 
             foreach (var patSubordinate in _pat.PatSubordinates)
-            {
+            { 
                 if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate == null)
                 {
                     patSubordinate.EndDate = DateTime.Now;
