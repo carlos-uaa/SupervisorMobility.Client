@@ -39,8 +39,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private List<ILURegister> AllRegistersOfPat { get; set; } = new();
         private int auxILU_Level = 0;
         private int auxILU_UseId = 0;
-        private bool UserHasHci = false;
         private int auxILU_OpId = 0;
+        public int userHciId = 0;
+        private bool UserHasHci = false;
 
         private List<ILURegister> AllRegistersOperationsInUser { get; set; } = new();
         private List<ILURegister> AllRegistersUsersInOperation { get; set; } = new();
@@ -351,6 +352,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             _newIlu.ILULevelId = auxILU_Level;
         }
 
+
         private async void OpenHistoryILU(int ID_User)
         {
             UserHasHci = false;
@@ -371,6 +373,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
 
             if(_UserOfArea.Where( u=> u.UserId == auxILU_UseId && u.HciId != null && u.HciId != 0).Any()){
+                userHciId = (int)_UserOfArea.Find(u => u.UserId == ID_User).HciId;
                 UserHasHci = true;
             }
             ILUHistoryDialog = true;
