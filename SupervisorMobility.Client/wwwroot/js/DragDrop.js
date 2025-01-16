@@ -13,10 +13,15 @@ let selectedIndex = 0;
 
 let isDrawing = false;
 let isPencilSelected = false;
+let isArrowSelected = false;
 let drawColor = "#000000";
+let arrowColor = "#000000";
 let drawPathData = [];
 let drawings = [];
 let actionHistory = [];
+
+let movableArrows = [];
+let arrowStartPoint = null;
 
 window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     const canvas = canvasRef;
@@ -56,8 +61,29 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
         }
     });
 
-    canvas.addEventListener("mousedown", function (e) {
-        if (isPencilSelected) {
+    canvas.addEventListener("mousedown", async function (e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+
+        if (isArrowSelected) {
+            if (!arrowStartPoint) {
+                arrowStartPoint = { x, y };
+            } else {
+                const arrowEndPoint = { x, y };
+                movableArrows.push({
+                    start: arrowStartPoint,
+                    end: arrowEndPoint,
+                    color: arrowColor,
+                });
+
+                arrowStartPoint = null;
+                actionHistory.push({ type: "addArrow" });
+                await dotNetObjectRef.invokeMethodAsync('OnArrowAdded');
+                redrawCanvas(ctx, canvas);
+            }
+        } else if (isPencilSelected) {
             isDrawing = true;
             ctx.strokeStyle = drawColor;
             ctx.lineWidth = 2;
@@ -257,6 +283,11 @@ window.togglePencilState = function (state) {
     isPencilSelected = state;
 };
 
+window.toggleArrowState = function (state) {
+    isArrowSelected = state;
+};
+
+
 
 window.onDragStartJs = function (imageId) {
     if (draggedImageElement) {
@@ -440,6 +471,8 @@ window.undoLastAction = function (canvasRef) {
             movableImages.pop();
         } else if (lastAction.type === "addDrawing" && drawings.length > 0) {
             drawings.pop();
+        } else if (lastAction.type === "addArrow" && movableArrows.length > 0) {
+            movableArrows.pop();
         }
 
         const canvas = canvasRef;
@@ -490,6 +523,14 @@ function redrawCanvas(ctx, canvas) {
         ctx.stroke();
     });
 
+    movableArrows.forEach(arrow => {
+        ctx.strokeStyle = arrow.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(arrow.start.x, arrow.start.y);
+        ctx.lineTo(arrow.end.x, arrow.end.y);
+        ctx.stroke();
+    });
 
     movableImages.forEach(img => {
         ctx.save();
@@ -560,5 +601,9 @@ function updateImagePositionAfterRotation(image) {
 
 window.setPencilColor = function (color) {
     drawColor = color;
+}
+
+window.setArrowColor = function (color) {
+    arrowColor = color;
 }
 
