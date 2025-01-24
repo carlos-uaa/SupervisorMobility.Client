@@ -37,9 +37,9 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSCombinationServices
             return SOSCombinationsRetorned;
         }
 
-        public async Task<SOSCombination> GetSOSCombination(int SOSCombinationId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false)
+        public async Task<SOSCombination> GetSOSCombination(int SOSCombinationId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeProcess = false)
         {
-            var response = await _http.GetAsync($"SOS/Combination/{SOSCombinationId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}");
+            var response = await _http.GetAsync($"SOS/Combination/{SOSCombinationId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}&includeProcess={includeProcess}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -53,9 +53,10 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSCombinationServices
 
         public async Task<SOSCombination> UpdateSOSCombination(SOSCombination SosEntity)
         {
+            SosEntity.SOSHub.SOSCombination.Clear();
             var response = await _http.PutAsJsonAsync($"SOS/Combination/{SosEntity.SOSCombinationId}", SosEntity);
             var content = await response.Content.ReadAsStringAsync();
-
+         
             if (!response.IsSuccessStatusCode)
             {
                 return null;
