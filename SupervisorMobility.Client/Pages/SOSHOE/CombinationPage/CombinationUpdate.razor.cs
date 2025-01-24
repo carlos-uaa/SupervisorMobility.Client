@@ -74,6 +74,20 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
             //Validacion de que se creen los tiempos en caso de que no esten
 
+            foreach(var section in _sosCombination.SOSHub?.Sections)
+            {
+                if(!_sosCombination.SOSCombinationOperationSequence.Any(sc => sc.SectionId == section.SectionId))
+                {
+                    SOSCombinationOperationSequence newToAdd = new SOSCombinationOperationSequence();
+                    newToAdd.SectionId = section.SectionId;
+                    newToAdd.ProcessName = section.Step;
+                    newToAdd.IsActive = true;
+
+                    _sosCombination.SOSCombinationOperationSequence.Add(newToAdd);
+                }
+            }
+
+
             if (_sosCombination.Illustrations != null && _sosCombination.Illustrations.Any())
             {
 
