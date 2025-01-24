@@ -14,18 +14,28 @@ let selectedIndex = 0;
 let isDrawing = false;
 let isPencilSelected = false;
 let isArrowSelected = false;
+let isArrowheadSelected = false;
 let drawColor = "#000000";
 let arrowColor = "#000000";
+let arrowheadColor = "#000000";
 let drawPathData = [];
 let drawings = [];
 let actionHistory = [];
 
 let movableArrows = [];
 let arrowStartPoint = null;
+let previewArrowEndPoint = null;
+let dotNetObjectRef = null;
 
-window.setupCanvas = function (canvasRef, dotNetObjectRef) {
+let isTextSelected = false;
+let textStartPoint = null;
+let movableTexts = [];
+let textInputElement = null;
+
+window.setupCanvas = function (canvasRef, dotNetRef) {
     const canvas = canvasRef;
     const ctx = canvas.getContext("2d");
+    dotNetObjectRef = dotNetRef;
 
     canvas.addEventListener("dragover", (e) => e.preventDefault());
 
@@ -66,8 +76,133 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
+        const clickedText = movableTexts.find(text =>
+            x >= text.x &&
+            x <= text.x + ctx.measureText(text.text).width &&
+            y >= text.y - 16 && // Altura del texto estimada
+            y <= text.y
+        );
 
-        if (isArrowSelected) {
+        if (clickedText && isTextSelected) {
+            isTextSelected = false; 
+            await dotNetObjectRef.invokeMethodAsync('DeselectText');
+
+            textStartPoint = { x: clickedText.x, y: clickedText.y };
+
+            if (!textInputElement) {
+                textInputElement = document.createElement("textarea");
+                textInputElement.value = clickedText.text; // Mostrar el texto actual
+                textInputElement.style.position = "absolute";
+                textInputElement.style.left = `${rect.left + clickedText.x - 5}px`;
+                textInputElement.style.top = `${rect.top + clickedText.y - 22}px`;
+                textInputElement.style.zIndex = 1000;
+                textInputElement.style.fontSize = "16px";
+                textInputElement.style.lineHeight = "1.5";
+                textInputElement.style.border = "1px dashed gray";
+                textInputElement.style.resize = "none";
+                textInputElement.style.padding = "4px";
+                textInputElement.style.backgroundColor = "transparent";
+
+                textInputElement.addEventListener("blur", function () {
+                    if (textInputElement.value.trim() !== "") {
+                        // Actualizar el texto existente
+                        clickedText.text = textInputElement.value;
+                        redrawCanvas(ctx, canvas); // Redibujar el canvas
+                    }
+                    textInputElement.remove();
+                    textInputElement = null;
+                });
+
+                textInputElement.addEventListener("keydown", function (event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        textInputElement.blur(); // Finalizar edición
+                    }
+                });
+
+                actionHistory.push({ type: "editText" });
+                await dotNetObjectRef.invokeMethodAsync('OnTextEdited');
+
+                document.body.appendChild(textInputElement);
+                setTimeout(() => {
+                    textInputElement.focus();
+                }, 0);
+            }
+        } else if (isTextSelected) {
+            // Crear nuevo texto si no se clicó sobre un texto existente
+
+            if (!textInputElement) {
+                textStartPoint = { x, y };
+                textInputElement = document.createElement("textarea");
+                textInputElement.style.position = "absolute";
+                textInputElement.style.left = `${e.clientX}px`;
+                textInputElement.style.top = `${e.clientY}px`;
+                textInputElement.style.zIndex = 1000;
+                textInputElement.style.fontSize = "16px";
+                textInputElement.style.lineHeight = "1.5";
+                textInputElement.style.border = "1px dashed gray";
+                textInputElement.style.resize = "none";
+                textInputElement.style.padding = "4px";
+                textInputElement.style.backgroundColor = "transparent";
+
+                textInputElement.addEventListener("blur", function () {
+                    if (textInputElement.value.trim() !== "") {
+                        movableTexts.push({
+                            text: textInputElement.value,
+                            x: textStartPoint.x + 5,
+                            y: textStartPoint.y + 22,
+                            color: "#000", // Ajusta el color si es necesario
+                        });
+                        redrawCanvas(ctx, canvas);
+                    }
+                    textInputElement.remove();
+                    textInputElement = null;
+                });
+
+                textInputElement.addEventListener("keydown", function (event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        textInputElement.blur();
+                    }
+                });
+
+                actionHistory.push({ type: "addText" });
+                await dotNetObjectRef.invokeMethodAsync('OnTextAdded');
+
+                document.body.appendChild(textInputElement);
+                setTimeout(() => {
+                    textInputElement.focus();
+                }, 0);
+            }
+        }
+
+        else if (isArrowheadSelected) {
+            if (!arrowStartPoint) {
+                arrowStartPoint = { x, y };
+            } else {
+                const arrowEndPoint = { x, y };
+
+                movableArrows.push({
+                    start: arrowStartPoint,
+                    end: arrowEndPoint,
+                    color: arrowheadColor,
+                    hasHead: true, 
+                });
+
+                arrowStartPoint = null;
+                previewArrowEndPoint = null;
+
+                actionHistory.push({ type: "addArrowhead" });
+
+                await dotNetObjectRef.invokeMethodAsync('OnArrowheadAdded');
+
+                redrawCanvas(ctx, canvas);
+            }
+            return;
+
+        }
+
+        else if (isArrowSelected) {
             if (!arrowStartPoint) {
                 arrowStartPoint = { x, y };
             } else {
@@ -79,10 +214,15 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
                 });
 
                 arrowStartPoint = null;
+                previewArrowEndPoint = null;
+
                 actionHistory.push({ type: "addArrow" });
+
                 await dotNetObjectRef.invokeMethodAsync('OnArrowAdded');
                 redrawCanvas(ctx, canvas);
             }
+            return;
+
         } else if (isPencilSelected) {
             isDrawing = true;
             ctx.strokeStyle = drawColor;
@@ -90,7 +230,6 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
             ctx.beginPath();
             ctx.moveTo(e.offsetX, e.offsetY);
             drawPathData = [[e.offsetX, e.offsetY]];
-
         } else {
 
             const rect = canvas.getBoundingClientRect();
@@ -123,6 +262,17 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     });
 
     canvas.addEventListener("mousemove", function (e) {
+        if ((isArrowSelected || isArrowheadSelected) && arrowStartPoint) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            previewArrowEndPoint = { x, y };
+
+            redrawCanvas(ctx, canvas);
+            drawPreviewArrow(ctx, arrowStartPoint, previewArrowEndPoint, arrowColor, isArrowheadSelected);
+
+        }
         if (isPencilSelected && isDrawing) {
             ctx.lineTo(e.offsetX, e.offsetY);
             ctx.stroke();
@@ -145,6 +295,7 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     });
 
     canvas.addEventListener("mouseup", async function () {
+
         if (isPencilSelected) {
             isDrawing = false;
             drawings.push({ path: drawPathData.slice(), color: drawColor });
@@ -280,6 +431,7 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
 };
 
 window.togglePencilState = function (state) {
+
     isPencilSelected = state;
 };
 
@@ -287,6 +439,9 @@ window.toggleArrowState = function (state) {
     isArrowSelected = state;
 };
 
+window.toggleArrowheadState = function (state) {
+    isArrowheadSelected = state;
+};
 
 
 window.onDragStartJs = function (imageId) {
@@ -471,8 +626,10 @@ window.undoLastAction = function (canvasRef) {
             movableImages.pop();
         } else if (lastAction.type === "addDrawing" && drawings.length > 0) {
             drawings.pop();
-        } else if (lastAction.type === "addArrow" && movableArrows.length > 0) {
+        } else if ((lastAction.type === "addArrow" || lastAction.type === "addArrowhead") && movableArrows.length > 0) {
             movableArrows.pop();
+        } else if ((lastAction.type === "addText" || lastAction.type === "editText") && movableTexts.length > 0) {
+            movableTexts.pop();
         }
 
         const canvas = canvasRef;
@@ -526,11 +683,27 @@ function redrawCanvas(ctx, canvas) {
     movableArrows.forEach(arrow => {
         ctx.strokeStyle = arrow.color;
         ctx.lineWidth = 2;
+
         ctx.beginPath();
         ctx.moveTo(arrow.start.x, arrow.start.y);
         ctx.lineTo(arrow.end.x, arrow.end.y);
         ctx.stroke();
+
+        if (arrow.hasHead) {
+            drawArrowhead(ctx, arrow.start, arrow.end, arrow.color);
+        }
     });
+
+    if (arrowStartPoint && previewArrowEndPoint) {
+        ctx.strokeStyle = isArrowheadSelected ? arrowheadColor : arrowColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(arrowStartPoint.x, arrowStartPoint.y);
+        ctx.lineTo(previewArrowEndPoint.x, previewArrowEndPoint.y);
+        ctx.stroke();
+        ctx.setLineDash([]); 
+    }
+
 
     movableImages.forEach(img => {
         ctx.save();
@@ -544,6 +717,47 @@ function redrawCanvas(ctx, canvas) {
         }
         ctx.restore();
     });
+
+    movableTexts.forEach(textItem => {
+        ctx.fillStyle = textItem.color;
+        ctx.font = "16px Arial";
+        ctx.fillText(textItem.text, textItem.x, textItem.y);
+    });
+
+}
+
+function drawPreviewArrow(ctx, start, end, color, withHead) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+
+    if (withHead) {
+        drawArrowhead(ctx, start, end, color);
+    }
+}
+
+function drawArrowhead(ctx, start, end, color) {
+    const angle = Math.atan2(end.y - start.y, end.x - start.x);
+    const headLength = 10; 
+
+    ctx.fillStyle = color;
+
+    ctx.beginPath();
+    ctx.moveTo(end.x, end.y);
+    ctx.lineTo(
+        end.x - headLength * Math.cos(angle - Math.PI / 6),
+        end.y - headLength * Math.sin(angle - Math.PI / 6)
+    );
+    ctx.lineTo(
+        end.x - headLength * Math.cos(angle + Math.PI / 6),
+        end.y - headLength * Math.sin(angle + Math.PI / 6)
+    );
+    ctx.closePath();
+    ctx.fill();
 }
 
 function drawPath(ctx) {
@@ -587,6 +801,11 @@ window.rotateImage = function (canvasRef, newRotation) {
     }
 };
 
+window.toggleTextState = function (state) {
+    isTextSelected = state;
+};
+
+
 
 function updateImagePositionAfterRotation(image) {
     const centerX = image.x + image.width / 2;
@@ -607,3 +826,32 @@ window.setArrowColor = function (color) {
     arrowColor = color;
 }
 
+window.setArrowheadColor = function (color) {
+    arrowheadColor = color;
+}
+
+
+document.addEventListener("mousedown", async function (e) {
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const isOutsideCanvas =
+        e.clientX < rect.left || e.clientX > rect.right ||
+        e.clientY < rect.top || e.clientY > rect.bottom;
+
+    if (isOutsideCanvas) {
+        isArrowSelected = false;
+        isArrowheadSelected = false;
+        isPencilSelected = false;
+        previewArrowheadPoint = null;
+        arrowStartPoint = null;
+
+
+        redrawCanvas(canvas.getContext("2d"), canvas);
+        await dotNetObjectRef.invokeMethodAsync('SetPencilState', false);
+        await dotNetObjectRef.invokeMethodAsync('DeselectArrow');
+        await dotNetObjectRef.invokeMethodAsync('DeselectText');
+    }
+});
