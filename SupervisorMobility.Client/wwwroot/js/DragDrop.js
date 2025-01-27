@@ -103,9 +103,37 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 textInputElement.style.padding = "4px";
                 textInputElement.style.backgroundColor = "transparent";
 
+                redrawCanvas(ctx, canvas, clickedText);
+                // Habilitar movimiento del textarea
+                let isDragging = false;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                textInputElement.addEventListener("mousedown", function (e) {
+                    isDragging = true;
+                    offsetX = e.clientX - textInputElement.offsetLeft;
+                    offsetY = e.clientY - textInputElement.offsetTop;
+                });
+
+                document.addEventListener("mousemove", function (e) {
+                    if (isDragging) {
+                        textInputElement.style.left = `${e.clientX - offsetX}px`;
+                        textInputElement.style.top = `${e.clientY - offsetY}px`;
+                    }
+                });
+
+                document.addEventListener("mouseup", function () {
+                    if (isDragging) {
+                        isDragging = false;
+                    }
+                });
+
+
                 textInputElement.addEventListener("blur", function () {
                     if (textInputElement.value.trim() !== "") {
                         // Actualizar el texto existente
+                        clickedText.x = parseFloat(textInputElement.style.left) - rect.left + 5; // Ajustar para el borde
+                        clickedText.y = parseFloat(textInputElement.style.top) - rect.top + 22; // Ajustar para la altura
                         clickedText.text = textInputElement.value;
                         redrawCanvas(ctx, canvas); // Redibujar el canvas
                     }
@@ -127,9 +155,11 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 setTimeout(() => {
                     textInputElement.focus();
                 }, 0);
+                isTextSelected = true; 
+                await dotNetObjectRef.invokeMethodAsync('SelectText');
+
             }
         } else if (isTextSelected) {
-            // Crear nuevo texto si no se clicó sobre un texto existente
 
             if (!textInputElement) {
                 textStartPoint = { x, y };
@@ -232,11 +262,6 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
             drawPathData = [[e.offsetX, e.offsetY]];
         } else {
 
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-
             redrawCanvas(ctx, canvas);
             selectedImage = movableImages.find(img => isPointInImage(x, y, img));
 
@@ -249,8 +274,8 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
 
                 redrawCanvas(ctx, canvas);
 
-
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
+                dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedRotateSlider', (selectedImage.rotation * 180 / Math.PI) + 180);
 
 
@@ -663,7 +688,7 @@ window.updateImageSize = function (canvasRef, newSize) {
 };
 
 
-function redrawCanvas(ctx, canvas) {
+function redrawCanvas(ctx, canvas, excludeText = null) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (fixedImage) {
@@ -719,9 +744,11 @@ function redrawCanvas(ctx, canvas) {
     });
 
     movableTexts.forEach(textItem => {
-        ctx.fillStyle = textItem.color;
-        ctx.font = "16px Arial";
-        ctx.fillText(textItem.text, textItem.x, textItem.y);
+        if (textItem !== excludeText) {
+            ctx.fillStyle = textItem.color;
+            ctx.font = "16px Arial";
+            ctx.fillText(textItem.text, textItem.x, textItem.y);
+        }
     });
 
 }
