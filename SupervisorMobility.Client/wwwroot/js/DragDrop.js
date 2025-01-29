@@ -32,6 +32,11 @@ let textStartPoint = null;
 let movableTexts = [];
 let textInputElement = null;
 
+let isDraggingStart = false;
+let isDraggingEnd = false;
+let isEditingArrow = false;
+let selectedArrow = null;
+
 window.setupCanvas = function (canvasRef, dotNetRef) {
     const canvas = canvasRef;
     const ctx = canvas.getContext("2d");
@@ -76,12 +81,60 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
+
+
         const clickedText = movableTexts.find(text =>
             x >= text.x &&
             x <= text.x + ctx.measureText(text.text).width &&
             y >= text.y - 16 && // Altura del texto estimada
             y <= text.y
         );
+
+        const clickedArrow = movableArrows.find(arrow => {
+            const near = isPointNearArrow(x, y, arrow);
+            return near.isNearStart || near.isNearEnd || near.isNearLine;
+        });
+
+
+
+        if (!clickedArrow) {
+            selectedArrow = null;
+            isEditingArrow = false;
+            redrawCanvas(ctx, canvas); 
+        }
+
+        if (isEditingArrow) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Detectar si se hizo clic en el punto inicial o final
+            const near = isPointNearArrow(x, y, selectedArrow);
+            if (near.isNearStart) {
+                isDraggingStart = true;
+            } else if (near.isNearEnd) {
+                isDraggingEnd = true;
+            }
+        }
+
+        if (!isArrowSelected && !isArrowheadSelected) {
+            const clickedArrow = movableArrows.find(arrow => {
+                const near = isPointNearArrow(x, y, arrow);
+                return near.isNearStart || near.isNearEnd || near.isNearLine;
+            });
+
+            if (clickedArrow) {
+                selectedArrow = clickedArrow;
+                redrawCanvas(ctx, canvas);
+
+                drawControlPoint(ctx, clickedArrow.start.x, clickedArrow.start.y);
+                drawControlPoint(ctx, clickedArrow.end.x, clickedArrow.end.y);
+
+                isEditingArrow = true;
+                return;
+            }
+        }
+
 
         if (clickedText && isTextSelected) {
             isTextSelected = false; 
@@ -287,6 +340,25 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
     });
 
     canvas.addEventListener("mousemove", function (e) {
+
+        if (isEditingArrow && (isDraggingStart || isDraggingEnd)) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (isDraggingStart) {
+                selectedArrow.start.x = x;
+                selectedArrow.start.y = y;
+            } else if (isDraggingEnd) {
+                selectedArrow.end.x = x;
+                selectedArrow.end.y = y;
+            }
+
+            redrawCanvas(ctx, canvas);
+
+            drawControlPoint(ctx, selectedArrow.start.x, selectedArrow.start.y);
+            drawControlPoint(ctx, selectedArrow.end.x, selectedArrow.end.y);
+        }
         if ((isArrowSelected || isArrowheadSelected) && arrowStartPoint) {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -321,6 +393,11 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
 
     canvas.addEventListener("mouseup", async function () {
 
+        if (isEditingArrow) {
+            isDraggingStart = false;
+            isDraggingEnd = false;
+
+        }
         if (isPencilSelected) {
             isDrawing = false;
             drawings.push({ path: drawPathData.slice(), color: drawColor });
@@ -717,6 +794,11 @@ function redrawCanvas(ctx, canvas, excludeText = null) {
         if (arrow.hasHead) {
             drawArrowhead(ctx, arrow.start, arrow.end, arrow.color);
         }
+
+        if (arrow === selectedArrow) {
+            drawControlPoint(ctx, arrow.start.x, arrow.start.y);
+            drawControlPoint(ctx, arrow.end.x, arrow.end.y);
+        }
     });
 
     if (arrowStartPoint && previewArrowEndPoint) {
@@ -857,6 +939,58 @@ window.setArrowheadColor = function (color) {
     arrowheadColor = color;
 }
 
+function isPointNearArrow(x, y, arrow, tolerance = 10) {
+    const { start, end } = arrow;
+
+    const isNearStart = Math.hypot(x - start.x, y - start.y) <= tolerance;
+    const isNearEnd = Math.hypot(x - end.x, y - end.y) <= tolerance;
+
+    const isNearLine = isPointNearLine(x, y, start.x, start.y, end.x, end.y, tolerance);
+
+
+    return { isNearStart, isNearEnd, isNearLine };
+}
+
+function isPointNearLine(px, py, x1, y1, x2, y2, tolerance) {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+
+    if (lenSq !== 0) {
+        param = dot / lenSq;
+    }
+
+    let nearestX, nearestY;
+
+    if (param < 0) {
+        nearestX = x1;
+        nearestY = y1;
+    } else if (param > 1) {
+        nearestX = x2;
+        nearestY = y2;
+    } else {
+        nearestX = x1 + param * C;
+        nearestY = y1 + param * D;
+    }
+
+    // Distancia del punto al punto más cercano en la línea
+    const dx = px - nearestX;
+    const dy = py - nearestY;
+    return Math.hypot(dx, dy) <= tolerance;
+}
+
+function drawControlPoint(ctx, x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = "#5fa0e7";
+    ctx.fill();
+    ctx.closePath();
+}
 
 document.addEventListener("mousedown", async function (e) {
 
@@ -867,6 +1001,8 @@ document.addEventListener("mousedown", async function (e) {
     const isOutsideCanvas =
         e.clientX < rect.left || e.clientX > rect.right ||
         e.clientY < rect.top || e.clientY > rect.bottom;
+
+
 
     if (isOutsideCanvas) {
         isArrowSelected = false;
@@ -882,3 +1018,5 @@ document.addEventListener("mousedown", async function (e) {
         await dotNetObjectRef.invokeMethodAsync('DeselectText');
     }
 });
+
+
