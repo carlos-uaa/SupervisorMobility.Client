@@ -1,4 +1,7 @@
-﻿namespace SupervisorMobility.Client.Data.Entities.SOS_Process
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 {
     public class SOSCombination
     {
@@ -12,11 +15,8 @@
         public int? ReviewerHSId { get; set; }
         public User? ReviewerHS { get; set; }
         public FileUpload? ReviewerHSSignatureImage { get; set; } = new();
-            
-       
 
         public ICollection<Turn>? Turns { get; set; }
-
         public DateTime? ApplicationMonth { get; set; }
 
         public string? ProductionVolumePerShift { get; set; }
@@ -26,8 +26,8 @@
         public ICollection<FileUpload>? Illustrations { get; set; } = new List<FileUpload>();
 
         public DateTime? CreatedAt { get; set; }
-        public int? SOSCombinationOperationSequenceId { get; set; }
         public ICollection<SOSCombinationOperationSequence>? SOSCombinationOperationSequence { get; set; }
+
         public int SOSHubId { get; set; }
         public SOSHub? SOSHub { get; set; }
     }

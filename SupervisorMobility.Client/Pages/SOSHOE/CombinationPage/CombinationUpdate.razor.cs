@@ -1,17 +1,10 @@
 using MudBlazor;
-using System.Text.RegularExpressions;
-using System.Text;
-using System.Globalization;
-using SupervisorMobility.Client.Data.Entities.SOS_Process;
-using Blazorise;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Drawing;
-using DocumentFormat.OpenXml.Wordprocessing;
-using SupervisorMobility.Client.Data.Entities.IS;
+using Microsoft.JSInterop;
+
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 {
-    public partial class CombinationDetails
+    public partial class CombinationUpdate
     {
         [Parameter]
         public int? CombinationId { get; set; }
@@ -46,6 +39,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         public bool ShowLoading = true;
+        public bool UpdateButton = false;
 
         protected async override Task OnInitializedAsync()
         {
@@ -78,6 +72,20 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             remainingLogs = 3 - logCount;
             logbookIds = mostRecentLogs.Select(log => log.SOSCombinationLogbookId).ToList();
 
+            //Validacion de que se creen los tiempos en caso de que no esten
+
+            foreach(var section in _sosCombination.SOSHub?.Sections)
+            {
+                if(!_sosCombination.SOSCombinationOperationSequence.Any(sc => sc.SectionId == section.SectionId))
+                {
+                    SOSCombinationOperationSequence newToAdd = new SOSCombinationOperationSequence();
+                    newToAdd.SectionId = section.SectionId;
+                    newToAdd.ProcessName = section.Step;
+                    newToAdd.IsActive = true;
+
+                    _sosCombination.SOSCombinationOperationSequence.Add(newToAdd);
+                }
+            }
 
 
             if (_sosCombination.Illustrations != null && _sosCombination.Illustrations.Any())
@@ -179,6 +187,55 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         private async void DownloadExcel()
         {
             //await Exportation.ExportCombinationToExcel(CombinationId.Value);
+        }
+
+        private async Task MoveStepsProcess(int index, int direction)
+        {
+
+            int newIndex = index + direction;
+
+            if (newIndex < 0 || newIndex >= _sosCombination.SOSCombinationOperationSequence.Count)
+            {
+                Console.WriteLine("Into Return move");
+
+                return;
+            }
+
+            var StepsProcess = _sosCombination.SOSCombinationOperationSequence.ToList();
+            var temp = StepsProcess[index];
+            StepsProcess[index] = StepsProcess[newIndex];
+            StepsProcess[newIndex] = temp;
+
+            for (int i = 0; i < StepsProcess.Count; i++)
+            {
+                StepsProcess[i].SequenceId = i + 1;
+            }
+
+            _sosCombination.SOSCombinationOperationSequence = StepsProcess;
+           
+        }
+
+        private async Task UpdateCombination()
+        {
+            Snackbar.Clear();
+            UpdateButton = true;
+        
+            var result = await SOSCombinationServices.UpdateSOSCombination(_sosCombination);
+
+            if (result != null)
+            {
+                Snackbar.Add($"Combination Updated!", Severity.Info);
+
+                _sosCombination = result;
+                //_ = await UploadEvidence();
+
+                NavigationManager.NavigateTo("/SOSHOE/Combination");
+            }
+            else
+                await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
+            
+            UpdateButton = false;
+
         }
     }
 }
