@@ -1,5 +1,5 @@
-using MudBlazor;
 using Microsoft.JSInterop;
+using MudBlazor;
 
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
@@ -41,6 +41,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         public bool ShowLoading = true;
         public bool UpdateButton = false;
 
+        private double _CellSize { get; set; } = 0.02;
+        private double _CellSize_Slider { get; set; } = 0.02;
+        private double _HalfCellSize { get; set; } = 0.02;
+        private int _Celdas { get; set; } = 100;
+        private double result_tackTime;
+        string[] _labels_CellSize = new string[] { "0.02", "0.05", "0.1", "0.2", "0.5", "1.0", "2.0", "5.0" };
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -74,9 +80,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
             //Validacion de que se creen los tiempos en caso de que no esten
 
-            foreach(var section in _sosCombination.SOSHub?.Sections)
+            foreach (var section in _sosCombination.SOSHub?.Sections)
             {
-                if(!_sosCombination.SOSCombinationOperationSequence.Any(sc => sc.SectionId == section.SectionId))
+                if (!_sosCombination.SOSCombinationOperationSequence.Any(sc => sc.SectionId == section.SectionId))
                 {
                     SOSCombinationOperationSequence newToAdd = new SOSCombinationOperationSequence();
                     newToAdd.SectionId = section.SectionId;
@@ -98,6 +104,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 }
             }
             cycleId = _sosCombination.SOSHub?.TrainingTime != null ? GetCycleId(_sosCombination.SOSHub.TrainingTime) : 0;
+
+            UpdateTableValues();
+
+
+
 
             ShowLoading = false;
             StateHasChanged();
@@ -236,6 +247,62 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             
             UpdateButton = false;
 
+        }
+
+        private void UpdateTableValues()
+        {
+            switch (_CellSize_Slider)
+            {
+                case 12.5:
+                    _CellSize = 0.05;
+                    break;
+                case 25:
+                    _CellSize = 0.1;
+                    break;
+                case 37.5:
+                    _CellSize = 0.2;
+                    break;
+                case 50:
+                    _CellSize = 0.5;
+                    break;
+                case 62.5:
+                    _CellSize = 1.0;
+                    break; 
+                case 75:
+                    _CellSize = 2.0;
+                    break; 
+                case 87.5:
+                    _CellSize = 5.0;
+                    break;
+                default: _CellSize = 0.02;
+                    break;
+            }
+
+
+            double tackTime = 0;
+            double.TryParse(_sosCombination.TackTime?.Replace(",", ".") ?? "0", System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out tackTime);
+
+            if (tackTime > 0)
+            {
+                double decimalPart = tackTime - Math.Floor(tackTime);
+
+                if (decimalPart <= 0.5)
+                {
+                    result_tackTime = (tackTime == 0.5) ? 1.0 : Math.Floor(tackTime) + 0.5;
+                }
+                else
+                {
+                    result_tackTime = Math.Ceiling(tackTime); 
+                }
+
+                _Celdas = (int)(result_tackTime / _CellSize);
+                _HalfCellSize =  Math.Round(_CellSize / 2, 3); 
+            }
+            else
+            {
+                _HalfCellSize = Math.Round(_CellSize / 2, 3);
+                _Celdas = 100;
+            }
         }
     }
 }
