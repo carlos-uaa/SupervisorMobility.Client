@@ -148,13 +148,15 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 textInputElement.style.position = "absolute";
                 textInputElement.style.left = `${rect.left + clickedText.x - 5}px`;
                 textInputElement.style.top = `${rect.top + clickedText.y - 22}px`;
-                textInputElement.style.zIndex = 1000;
+                textInputElement.style.zIndex = 1050;
                 textInputElement.style.fontSize = "16px";
                 textInputElement.style.lineHeight = "1.5";
                 textInputElement.style.border = "1px dashed gray";
                 textInputElement.style.resize = "none";
                 textInputElement.style.padding = "4px";
                 textInputElement.style.backgroundColor = "transparent";
+
+
 
                 redrawCanvas(ctx, canvas, clickedText);
                 // Habilitar movimiento del textarea
@@ -204,7 +206,13 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 actionHistory.push({ type: "editText" });
                 await dotNetObjectRef.invokeMethodAsync('OnTextEdited');
 
-                document.body.appendChild(textInputElement);
+                const dialog = document.querySelector(".mud-dialog");
+                if (dialog) {
+                    dialog.appendChild(textInputElement);
+                } else {
+                    document.body.appendChild(textInputElement);
+                }
+
                 setTimeout(() => {
                     textInputElement.focus();
                 }, 0);
@@ -220,7 +228,7 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 textInputElement.style.position = "absolute";
                 textInputElement.style.left = `${e.clientX}px`;
                 textInputElement.style.top = `${e.clientY}px`;
-                textInputElement.style.zIndex = 1000;
+                textInputElement.style.zIndex = 1050;
                 textInputElement.style.fontSize = "16px";
                 textInputElement.style.lineHeight = "1.5";
                 textInputElement.style.border = "1px dashed gray";
@@ -252,7 +260,12 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 actionHistory.push({ type: "addText" });
                 await dotNetObjectRef.invokeMethodAsync('OnTextAdded');
 
-                document.body.appendChild(textInputElement);
+                const dialog = document.querySelector(".mud-dialog");
+                if (dialog) {
+                    dialog.appendChild(textInputElement);
+                } else {
+                    document.body.appendChild(textInputElement);
+                }
                 setTimeout(() => {
                     textInputElement.focus();
                 }, 0);
@@ -993,6 +1006,11 @@ function drawControlPoint(ctx, x, y) {
 }
 
 document.addEventListener("mousedown", async function (e) {
+    const canvas = document.getElementById("canvas");
+    if (!canvas) return; // Si no hay canvas, no ejecutar la función
+
+    // Si el clic es dentro del canvas, salir de la función
+    if (canvas.contains(e.target)) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;

@@ -207,11 +207,33 @@ else
                     {
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
+                                @foreach (var (image, index) in PreviousImages.Select((image, index) => (image, index)))
+                                {
+                                <MudItem Class=" mr-8 mb-4">
+                                    <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                        <MudTooltip Text="Edit photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                            <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Info" @onclick="() => OpenEditImageDialog(true, index, image.Item1, image.Item2)" />
+                                        </MudTooltip>
+                                     @*    <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveOldImage(image.Item1)"></MudIcon>
+                                        </MudTooltip> *@
+                                    </MudItem>
+                                    <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image.Item2 Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index)" />
+                                </MudItem>
+                                }
                                 @foreach (var (image, index) in capturedImages.Select((image, index) => (image, index)))
                                 {
-                                    <MudItem Class="mb-2 mr-2">
-                                        <MudImage ObjectFit="ObjectFit.Contain" Height="160" Width="260" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" @onclick="() => OpenEvidenceDialog(index)" Style="cursor:pointer" />
+                                <MudItem Class=" mr-8 mb-4">
+                                    <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                        <MudTooltip Text="Edit photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                            <MudIcon Icon="@Icons.Material.Filled.Edit" Color="Color.Info" @onclick="() => OpenEditImageDialog(false, index, 0, image)" />
+                                        </MudTooltip>
+                                   @*      <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImage(index, 1)"></MudIcon>
+                                        </MudTooltip> *@
                                     </MudItem>
+                                    <MudImage ObjectFit="ObjectFit.Contain" Height="80" Width="130" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="() => OpenEvidenceDialog(index)" />
+                                </MudItem>
                                 }
                             </MudItem>
                         </div>
@@ -221,6 +243,14 @@ else
                         <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
                             @Localizer["There are no images"]
                         </MudAlert>
+                        <MudButton Style="float: right;"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Image"
+                                    @onclick="(() => OpenEditImageDialog(false))"
+                                    >
+                            Load picture
+                        </MudButton>
                     }
                 </MudItem>
             </td>
@@ -1131,4 +1161,13 @@ else
         <MudButton OnClick="CloseLogbookDialog" Variant="Variant.Filled">@Localizer["close"]</MudButton>
     </DialogActions>
 
+</MudDialog>
+
+<MudDialog @bind-IsVisible="visibleEditImage" Options="dialogEditImagesOptions">
+    <DialogContent>
+        <UpdateCombinationImage @ref="updateImageComponent" IsPrevious="IsPreviousPhoto" UpdatePhoto="@((args)=> UpdatePhoto(args.Item1, args.Item2, args.Item3))"></UpdateCombinationImage>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseEditImageDialog" Variant="Variant.Filled">@Localizer["cancel"]</MudButton>
+    </DialogActions>
 </MudDialog>

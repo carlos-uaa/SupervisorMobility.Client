@@ -1,5 +1,6 @@
 using MudBlazor;
 using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
 
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
@@ -40,6 +41,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         public bool ShowLoading = true;
         public bool UpdateButton = false;
+
+        //Edit Image
+        private bool visibleEditImage = false;
+        private DialogOptions dialogEditImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, DisableBackdropClick = true };
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -87,16 +93,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 }
             }
 
-
-            if (_sosCombination.Illustrations != null && _sosCombination.Illustrations.Any())
+            if (_sosCombination.Illustrations?.Any() ?? false)
             {
 
                 foreach (var combinationImage in _sosCombination.Illustrations)
                 {
                     var image = await SOSCombinationServices.ShowIlustrationSOSCombination(combinationImage.FileUploadId);
-                    capturedImages.Add(image);
+                    PreviousImages.Add((combinationImage.FileUploadId, image));
                 }
             }
+
+
             cycleId = _sosCombination.SOSHub?.TrainingTime != null ? GetCycleId(_sosCombination.SOSHub.TrainingTime) : 0;
 
             ShowLoading = false;
@@ -237,5 +244,62 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             UpdateButton = false;
 
         }
+
+        #region EditImage
+        private UpdateCombinationImage updateImageComponent;
+        public int ImageIndex;
+        public bool IsPreviousPhoto;
+        public int FileUploadIndex = 0;
+        private List<int> OldImageRemoved = new();
+        private List<(int, string)> PreviousImages = new List<(int, string)>();//id, b64 string
+
+        private async Task OpenEditImageDialog(bool isPreviousPhoto, int index = 0, int fileUploadIndex = 0, string imageBase64 = "")
+        {
+            ImageIndex = index == 0 ? 1 : index;
+            IsPreviousPhoto = isPreviousPhoto;
+            visibleEditImage = true;
+            FileUploadIndex = fileUploadIndex;
+
+            while (updateImageComponent == null || !updateImageComponent.IsReady)
+            {
+                await Task.Delay(50);
+            }
+
+            if (updateImageComponent != null)
+            {
+                if (imageBase64 == "")
+                {
+                    var imagePath = "Images/CombinationSymbols/canvasImage.png";
+                    imageBase64 = imagePath;
+                    capturedImages.Add(imageBase64);
+                }
+                await updateImageComponent.LoadImageFromBase64Async(imageBase64);
+            }
+        }
+
+        private void CloseEditImageDialog()
+        {
+            visibleEditImage = false;
+            updateImageComponent = null;
+        }
+
+        public void UpdatePhoto(string updatedImage, int index, bool isPrevious)
+        {
+            if (isPrevious)
+            {
+                OldImageRemoved.Add(FileUploadIndex);
+                PreviousImages.RemoveAt(index);
+                FileUploadIndex = 0;
+            }
+            else
+            {
+                capturedImages.RemoveAt(index);
+            }
+            capturedImages.Add(updatedImage);
+            CloseEditImageDialog();
+            StateHasChanged();
+        }
+
+        #endregion
     }
 }
