@@ -77,7 +77,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
-            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true);
+            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeTimes: true);
             if (_sosDistribution.DistributionLogbooks != null)
             {
                 mostRecentLogs = _sosDistribution.DistributionLogbooks

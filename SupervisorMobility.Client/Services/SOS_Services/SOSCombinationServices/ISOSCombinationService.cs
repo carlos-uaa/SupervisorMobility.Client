@@ -4,7 +4,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSCombinationServices
     public interface ISOSCombinationService
     {
        
-        Task<SOSCombination> GetSOSCombination(int SOSCombinationId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
+        Task<SOSCombination> GetSOSCombination(int SOSCombinationId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeProcess = false);
         Task<List<SOSCombination>> GetAllSOSCombination(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<SOSCombination> UpdateSOSCombination(SOSCombination SosEntity);
         Task<bool> DeleteSOSCombination(int SosEntity_id);

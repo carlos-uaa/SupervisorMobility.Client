@@ -35,6 +35,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private int auxILU_Level = 0;
         private int auxILU_UseId = 0;
         private int auxILU_OpId = 0;
+        public int userHciId = 0;
+        private bool UserHasHci = false;
 
         private List<ILURegister> AllRegistersOperationsInUser { get; set; } = new();
         private List<ILURegister> AllRegistersUsersInOperation { get; set; } = new();
@@ -221,14 +223,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
 
             foreach (var patSubordinate in _pat.PatSubordinates)
-            {
+            { 
+               
+
+                // Si el usuario no está en _UserOfArea y no tiene fecha final, asignarla
                 if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate == null)
                 {
                     patSubordinate.EndDate = DateTime.Now;
                 }
-                else if(!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate != null)
+                // Si el usuario no está en _UserOfArea pero ya tiene una fecha final, agregarlo a _UserOfArea
+                else if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate != null)
                 {
                     _UserOfArea.Add(await UsersServices.GetUserAndCollection(patSubordinate.UserId));
+                }
+                //reactivarlo si la fecha actual está dentro del rango del año de aplicación y ya tiene fecha final
+                else if (_UserOfArea.Any(user => user.UserId == patSubordinate.UserId)
+                         && patSubordinate.EndDate != null
+                         && DateTime.Now.Year == _pat.AplicationDate.Value.Year)
+                {
+                    patSubordinate.EndDate = null;
                 }
             }
             StateHasChanged();
@@ -356,6 +369,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private async void OpenHistoryILU(int ID_User)
         {
+            UserHasHci = false;
             auxILU_UseId = ID_User;
 
             AllRegistersOperationsInUser?.Clear();
@@ -370,6 +384,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         AllRegistersOperationsInUser.AddRange(latestContext);
                     }
                 }
+            }
+
+            if (_UserOfArea.Where(u => u.UserId == auxILU_UseId && u.HciId != null && u.HciId != 0).Any())
+            {
+                userHciId = (int)_UserOfArea.Find(u => u.UserId == ID_User).HciId;
+                UserHasHci = true;
             }
             ILUHistoryDialog = true;
             StateHasChanged();
