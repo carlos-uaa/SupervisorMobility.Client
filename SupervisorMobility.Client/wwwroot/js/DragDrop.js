@@ -25,7 +25,6 @@ let actionHistory = [];
 let movableArrows = [];
 let arrowStartPoint = null;
 let previewArrowEndPoint = null;
-let dotNetObjectRef = null;
 
 let isTextSelected = false;
 let textStartPoint = null;
@@ -36,6 +35,7 @@ let isDraggingStart = false;
 let isDraggingEnd = false;
 let isEditingArrow = false;
 let selectedArrow = null;
+let dotNetObjectRef = null;
 
 window.setupCanvas = function (canvasRef, dotNetRef) {
     const canvas = canvasRef;
@@ -146,8 +146,8 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 textInputElement = document.createElement("textarea");
                 textInputElement.value = clickedText.text; // Mostrar el texto actual
                 textInputElement.style.position = "absolute";
-                textInputElement.style.left = `${rect.left + clickedText.x - 5}px`;
-                textInputElement.style.top = `${rect.top + clickedText.y - 22}px`;
+                textInputElement.style.left = `${rect.left + clickedText.x - 30}px`;
+                textInputElement.style.top = `${rect.top + clickedText.y - 60}px`;
                 textInputElement.style.zIndex = 1050;
                 textInputElement.style.fontSize = "16px";
                 textInputElement.style.lineHeight = "1.5";
@@ -187,8 +187,8 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 textInputElement.addEventListener("blur", function () {
                     if (textInputElement.value.trim() !== "") {
                         // Actualizar el texto existente
-                        clickedText.x = parseFloat(textInputElement.style.left) - rect.left + 5; // Ajustar para el borde
-                        clickedText.y = parseFloat(textInputElement.style.top) - rect.top + 22; // Ajustar para la altura
+                        clickedText.x = parseFloat(textInputElement.style.left) - rect.left + 30; // Ajustar para el borde
+                        clickedText.y = parseFloat(textInputElement.style.top) - rect.top + 60; // Ajustar para la altura
                         clickedText.text = textInputElement.value;
                         redrawCanvas(ctx, canvas); // Redibujar el canvas
                     }
@@ -226,8 +226,8 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
                 textStartPoint = { x, y };
                 textInputElement = document.createElement("textarea");
                 textInputElement.style.position = "absolute";
-                textInputElement.style.left = `${e.clientX}px`;
-                textInputElement.style.top = `${e.clientY}px`;
+                textInputElement.style.left = `${e.clientX -30}px`;
+                textInputElement.style.top = `${e.clientY - 40}px`;
                 textInputElement.style.zIndex = 1050;
                 textInputElement.style.fontSize = "16px";
                 textInputElement.style.lineHeight = "1.5";
@@ -543,6 +543,7 @@ window.setupCanvas = function (canvasRef, dotNetRef) {
         }
     });
 
+    console.log(dotNetObjectRef);
 };
 
 window.togglePencilState = function (state) {
@@ -710,6 +711,44 @@ window.clearCanvas = function (canvasRef) {
     const ctx = canvas.getContext("2d");
     movableImages = [];
     drawings = [];
+    draggedImageId = null;
+    draggedImageElement = null;
+    initialTouchX = 0;
+    initialTouchY = 0;
+    iewImageElement = null;
+    offsetX = 0;
+    offsetY = 0;
+    movableImages = [];
+    fixedImage = null;
+    selectedImage = null;
+    imageIndex = 0;
+    selectedIndex = 0;
+
+    isDrawing = false;
+    isPencilSelected = false;
+    isArrowSelected = false;
+    isArrowheadSelected = false;
+    drawColor = "#000000";
+    arrowColor = "#000000";
+    arrowheadColor = "#000000";
+    drawPathData = [];
+    drawings = [];
+    actionHistory = [];
+
+    movableArrows = [];
+    arrowStartPoint = null;
+    previewArrowEndPoint = null;
+
+    isTextSelected = false;
+    textStartPoint = null;
+    movableTexts = [];
+    textInputElement = null;
+
+    isDraggingStart = false;
+    isDraggingEnd = false;
+    isEditingArrow = false;
+    selectedArrow = null;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
@@ -1011,6 +1050,8 @@ document.addEventListener("mousedown", async function (e) {
 
     // Si el clic es dentro del canvas, salir de la función
     if (canvas.contains(e.target)) return;
+
+    if (dotNetObjectRef === null) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;

@@ -1,6 +1,9 @@
 using MudBlazor;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using Microsoft.AspNetCore.Components.Forms;
+using System.Runtime.CompilerServices;
+using System.Net.Http.Headers;
 
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
@@ -234,7 +237,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 Snackbar.Add($"Combination Updated!", Severity.Info);
 
                 _sosCombination = result;
-                //_ = await UploadEvidence();
+                _ = await UploadEvidence();
 
                 NavigationManager.NavigateTo("/SOSHOE/Combination");
             }
@@ -300,6 +303,168 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             StateHasChanged();
         }
 
+        #endregion
+
+
+        #region Upload Images
+        private async Task<AsyncVoidMethodBuilder> UploadEvidence()
+        {
+            await UploadImages();
+            await UpdateRemovedFiles();
+
+            return new AsyncVoidMethodBuilder();
+        }
+
+        private async Task UploadImages()
+        {
+
+            List<string> images = capturedImages;
+            int combinationId = _sosCombination.SOSCombinationId;
+
+            if (images.Count > 0)
+            {
+                foreach (var imageData in images)
+                {
+                    if (string.IsNullOrEmpty(imageData))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("No image data to upload", Severity.Warning);
+                        continue;
+                    }
+
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
+
+                    if (!IsValidBase64String(base64Data))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Invalid image data", Severity.Error);
+                        continue;
+                    }
+
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(fileContent, "\"file\"", "evidenceSosHub.png");
+
+
+                    var result = await SOSCombinationServices.AddIllustrationToSOSCombination(content, combinationId);
+
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Image Added to Combination", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Failed to upload Image to Combination", Severity.Error);
+                    }
+
+                }
+
+                images.Clear();
+            }
+
+        }
+
+        private bool IsValidBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private async Task AddImages(InputFileChangeEventArgs e)
+        {
+            foreach (var file in e.GetMultipleFiles())
+            {
+                if (file.ContentType.StartsWith("image/"))
+                {
+                    using (Stream mediaStream = file.OpenReadStream(file.Size))
+                    {
+                        MemoryStream ms = new();
+                        await mediaStream.CopyToAsync(ms);
+                        string mediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                        capturedImages.Add(mediaUri);
+                    }
+                }
+            }
+        }
+
+        private async Task UpdateRemovedFiles()
+        {
+            Snackbar.Clear();
+            if (OldImageRemoved.Any())
+            {
+                foreach (var file in OldImageRemoved)
+                {
+                    var result = await SOSCombinationServices.RemoveIlustrationFromSOSData(_sosCombination.SOSCombinationId, file);
+                    if (!result)
+                    {
+                        Snackbar.Add($"Error removing the image", Severity.Error);
+                    }
+                }
+            }
+
+        }
+
+        private void RemoveOldImage(int fileId)
+        {
+            OldImageRemoved.Add(fileId);
+            PreviousImages.RemoveAll(p => p.Item1 == fileId);
+        }
+
+        private void RemoveImage(int index, int imgIndex)
+        {
+
+            if (index >= 0 && index < capturedImages.Count)
+            {
+                if (imgIndex == 1)
+                {
+                    capturedImages.RemoveAt(index);
+                }
+            }
+        }
         #endregion
     }
 }
