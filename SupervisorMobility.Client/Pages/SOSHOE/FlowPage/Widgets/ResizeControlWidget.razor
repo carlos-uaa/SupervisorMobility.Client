@@ -1,0 +1,158 @@
+﻿@using Blazor.Diagrams.Core.Geometry
+@using Blazor.Diagrams.Core.Models.Base;
+@using Blazor.Diagrams.Core.Models;
+@inject IJSRuntime JS
+
+<rect fill="none" stroke="gray" stroke-width="1" stroke-dasharray="5" pointer-events="none" class="boundary" 
+    width="@(GlobalNode.Width + 30)" height="@(GlobalNode.Height+30)">
+
+</rect>
+
+
+<circle cx="@(0)" cy="@(0)" r="5" fill="blue"
+        style="cursor: nwse-resize;"
+        @onmousedown="(args)=>StartResize(args, 5)"
+        @onmousedown:stopPropagation="true" />
+<circle cx="@((GlobalNode.Width + 30)/2)" cy="@(0)" r="5" fill="blue"
+        style="cursor: nwse-resize;"
+        @onmousedown="(args)=>StartResize(args, 4)"
+        @onmousedown:stopPropagation="true" />
+<circle cx="@(GlobalNode.Width+30)" cy="@(0)" r="5" fill="blue"
+        style="cursor: nwse-resize;"
+        @onmousedown="(args)=>StartResize(args, 6)"
+        @onmousedown:stopPropagation="true" />
+<circle cx="@(GlobalNode.Width+30)" cy="@((GlobalNode.Height + 30)/2)" r="5" fill="blue"
+        style="cursor: nwse-resize;"
+        @onmousedown="(args)=>StartResize(args, 1)"
+        @onmousedown:stopPropagation="true" />
+<circle cx="@(GlobalNode.Width + 30)" cy="@(GlobalNode.Height + 30)" r="5" fill="blue"
+        style="cursor: nwse-resize;"
+        @onmousedown="(args)=>StartResize(args, 8)"
+        @onmousedown:stopPropagation="true" />
+<circle cx="@((GlobalNode.Width + 30)/2)" cy="@(GlobalNode.Height + 30)" r="5" fill="blue"
+        style="cursor: nwse-resize;"
+        @onmousedown="(args)=>StartResize(args, 3)"
+        @onmousedown:stopPropagation="true" />
+<circle cx="@(0)" cy="@(GlobalNode.Height + 30)" r="5" fill="blue"
+        style="cursor: nwse-resize;"
+        @onmousedown="(args)=>StartResize(args, 7)"
+        @onmousedown:stopPropagation="true" />
+<circle cx="@(0)" cy="@((GlobalNode.Height + 30)/2)" r="5" fill="blue"
+        style="cursor: nwse-resize;"
+        @onmousedown="(args)=>StartResize(args, 2)"
+        @onmousedown:stopPropagation="true" />
+
+@code
+{
+    [Parameter]
+    public ResizeControl Control { get; set; } = null!;
+
+    [Parameter]
+    public Model Model { get; set; } = null!;
+
+    public NodeModel Node => (Model as NodeModel)!;
+    public ICmpAnchors GlobalNode => (Node as ICmpAnchors)!;
+
+    private IJSObjectReference? _module;
+
+    private bool _resizing;
+    private Point _lastMousePosition;
+
+    private int resizingPosition = 0;
+
+    private async Task StartResize(MouseEventArgs e, int pos)
+    {
+        _resizing = true;
+        GlobalNode.IsResizing = true;
+        GlobalNode.HideLinks();
+        resizingPosition = pos;
+        _lastMousePosition = new Point(e.ClientX, e.ClientY);
+        Console.WriteLine($"Node Previous Size: {GlobalNode.Width}x{GlobalNode.Height}");
+
+        await JS.InvokeVoidAsync("addResizeListeners", DotNetObjectReference.Create(this));
+    }
+
+    [JSInvokable]
+    public void HandleResize(double clientX, double clientY)
+    {
+        if (!_resizing) return;
+
+        var dx = clientX - _lastMousePosition.X;
+        var dy = clientY - _lastMousePosition.Y;
+
+        double newWidth = GlobalNode.Width;
+        double newHeight = GlobalNode.Height;
+        double newX = Node.Position.X;
+        double newY = Node.Position.Y;
+
+        // Check which edge is being dragged (assume _resizeDirection is set on mouse down)
+        switch (resizingPosition)
+        {
+            case 1: //Right
+                newWidth += dx;
+                break;
+            case 2: //Left
+                newWidth -= dx;
+                newX += dx; // Move node to keep the left edge fixed
+                break;
+            case 3: //Bottom
+                newHeight += dy;
+                break;
+            case 4: //Top
+                newHeight -= dy;
+                newY += dy; // Move node to keep the top edge fixed
+                break;
+            case 5: //TopLeft
+                newWidth -= dx;
+                newHeight -= dy;
+                newX += dx;
+                newY += dy;
+                break;
+            case 6: //TopRight
+                newWidth += dx;
+                newHeight -= dy;
+                newY += dy;
+                break;
+            case 7: //BottomLeft
+                newWidth -= dx;
+                newHeight += dy;
+                newX += dx;
+                break;
+            case 8: //BottomRight
+                newWidth += dx;
+                newHeight += dy;
+                break;
+        }
+
+        // Ensure size doesn't become negative
+        if (newWidth < 10) newWidth = 10;
+        if (newHeight < 10) newHeight = 10;
+
+        // Apply new size and position
+        Node.Size = new Blazor.Diagrams.Core.Geometry.Size(newWidth, newHeight);
+        Node.Position = new Point(newX, newY);
+
+        if (Node is ICmpAnchors GlobalFlowNode)
+        {
+            GlobalFlowNode.Width = newWidth;
+            GlobalFlowNode.Height = newHeight;
+            GlobalFlowNode.ReubicateAnchors();
+        }
+
+        _lastMousePosition = new Point(clientX, clientY);
+
+        StateHasChanged();
+        Node.Refresh();
+    }
+
+    [JSInvokable]
+    public async Task StopResize()
+    {
+        _resizing = false;
+        GlobalNode.IsResizing = false;
+        GlobalNode.ShowLinks();
+        Node.Refresh();
+        Console.WriteLine("Resize stopped.");
+        await JS.InvokeVoidAsync("removeResizeListeners");
+    }
+}
