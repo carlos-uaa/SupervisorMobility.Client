@@ -100,6 +100,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             }
             cycleId = _sosCombination.SOSHub?.TrainingTime != null ? GetCycleId(_sosCombination.SOSHub.TrainingTime) : 0;
 
+
+            UpdateTableValues();
+
             if (_sosCombination.TackTime != "")
             {
                 double closestCellSize = _labels_CellSize
