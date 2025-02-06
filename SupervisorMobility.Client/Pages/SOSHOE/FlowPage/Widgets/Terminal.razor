@@ -1,0 +1,119 @@
+﻿@using Blazor.Diagrams
+@using Blazor.Diagrams.Components.Renderers;
+@using Blazor.Diagrams.Core.Anchors
+@using Blazor.Diagrams.Core.Geometry
+@using Blazor.Diagrams.Core.Models
+@using Blazor.Diagrams.Core.Models.Base
+@using Blazor.Diagrams.Core.Positions
+@inject IJSRuntime JSRuntime
+
+<g @ondblclick="EnableEditing"
+    @onclick:stopPropagation>
+    <rect x="0" y="0" width="@Node.Width" height="@Node.Height" rx="@Rx" ry="@Ry" fill="none" stroke="rgb(0, 0, 0)" stroke-width="1.3"
+    ></rect>  
+
+    @if (!Node.IsEditing)
+    {
+        @((MarkupString)$"<text x=\"{Node.Width / 2}\" y=\"{Node.Height / 2}\" text-anchor=\"middle\" alignment-baseline=\"middle\" font-size=\"14\" fill=\"black\">{Node.Title}</text>");
+    }
+    else
+    {
+        <foreignObject x="0" y="0" width="@Node.Width" height="@Node.Height">
+            <div xmlns="http://www.w3.org/1999/xhtml"
+                 contenteditable="true"
+                 class="editable-text"
+                 @onblur="SaveTitle"
+                 @onkeydown="OnInputTextChanged"
+                 @ref="editDivRef">
+                @Node.Title
+            </div>
+        </foreignObject>
+    }
+
+    @if(!Node.IsResizing){
+        @foreach (var port in Node.Ports)
+        {
+            (double cx, double cy) point = port.Alignment switch
+            {
+                PortAlignment.Left => (0, Node.Height / 2),
+                PortAlignment.Top => (Node.Width / 2, 0),
+                PortAlignment.Right => (Node.Width, Node.Height / 2),
+                PortAlignment.Bottom => (Node.Width / 2, Node.Height),
+                _ => (0, 0)
+            };
+            // In case you have any ports to show
+            // IMPORTANT: You are always in charge of rendering ports
+            <PortRenderer @key="(port, Node.Selected)" Port="port">
+                <circle cx="@point.cx" cy="@point.cy" r="10" class="@(Node.Selected?"flow-port":"port-hidden")" />
+            </PortRenderer>
+        }
+    }
+
+</g>
+
+@code {
+    [Parameter] public TerminalNode Node { get; set; } = null!;
+
+    private ElementReference editDivRef;
+
+    const double DefaultWidth = 84.7;
+    const double DefaultHeight = 42.3;
+    const double Dradius = 28;
+
+    double scaleFactorWidth => Node.Width / DefaultWidth;
+    double scaleFactorHeight => Node.Height / DefaultHeight;
+
+    double Rx => Dradius * scaleFactorWidth;
+    double Ry => Dradius * scaleFactorHeight;
+
+    private async Task EnableEditing()
+    {
+        Node.IsEditing = true;
+        Node.Refresh();
+        StateHasChanged();
+
+        await Task.Delay(50);
+        await editDivRef.FocusAsync();
+    }
+
+    private async Task SaveTitle(FocusEventArgs args)
+    {
+        if (editDivRef.Context != null)
+        {
+            // Invoke the JavaScript function to retrieve the updated text
+            var newText = await JSRuntime.InvokeAsync<string>("getDivText", editDivRef);
+            Node.Title = newText.Trim(); // Update Node.Title
+            Console.WriteLine($"Title saved: {Node.Title}");
+        }
+        else
+        {
+            Console.WriteLine("editDivRef is NULL!");
+        }
+
+        Node.IsEditing = false;
+        StateHasChanged();
+    }
+
+    private async Task OnInputTextChanged(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            Console.WriteLine("Enter key pressed, triggering blur...");
+            if (editDivRef.Context != null)
+            {
+                // Trigger the onblur event programmatically
+                await JSRuntime.InvokeVoidAsync("triggerBlur", editDivRef);
+            }
+        }
+        // if (editDivRef.Context != null)
+        // {
+        //     // Fetch live text and update Node.Title
+        //     var newText = await JSRuntime.InvokeAsync<string>("getDivText", editDivRef);
+        //     Node.Title = newText.Trim();
+        //     Console.WriteLine($"Text updated: {Node.Title}");
+        // }
+
+    }
+
+}
+
