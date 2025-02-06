@@ -47,6 +47,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         public bool ShowLoading = true;
 
+
+        private double _CellSize { get; set; } = 0.02;
+        private double _CellSize_Slider { get; set; } = 0.02;
+        private double _HalfCellSize { get; set; } = 0.02;
+        private int _Celdas { get; set; } = 100;
+        private double result_tackTime;
+        double targetCells = 60;
+        string[] _labels_CellSize = new string[] { "0.02", "0.05", "0.1", "0.2", "0.5", "1.0", "2.0", "5.0" };
+        private double _tackTimePosition = 0;
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -61,7 +70,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
-            _sosCombination = await SOSCombinationServices.GetSOSCombination((int)CombinationId, true, true, true, true, true);
+            _sosCombination = await SOSCombinationServices.GetSOSCombination((int)CombinationId, true, true, true, true, true, true);
             if (_sosCombination.CombinationLogbooks != null)
             {
                 mostRecentLogs = _sosCombination.CombinationLogbooks
@@ -90,6 +99,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 }
             }
             cycleId = _sosCombination.SOSHub?.TrainingTime != null ? GetCycleId(_sosCombination.SOSHub.TrainingTime) : 0;
+
+
+            UpdateTableValues();
+
+            if (_sosCombination.TackTime != "")
+            {
+                double closestCellSize = _labels_CellSize
+                   .Select(double.Parse)
+                   .OrderBy(cellSize => Math.Abs((result_tackTime / cellSize) - targetCells))
+                   .First();
+
+                _CellSize = closestCellSize;
+
+                if (double.TryParse(_sosCombination.TackTime, out double tackTime))
+                {
+                    _tackTimePosition = tackTime;
+                }
+            }
 
             ShowLoading = false;
             StateHasChanged();
@@ -179,6 +206,97 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         private async void DownloadExcel()
         {
             //await Exportation.ExportCombinationToExcel(CombinationId.Value);
+        }
+
+        private void UpdateTableValues()
+        {
+            switch (_CellSize_Slider)
+            {
+                case 12.5:
+                    _CellSize = 0.05;
+                    break;
+                case 25:
+                    _CellSize = 0.1;
+                    break;
+                case 37.5:
+                    _CellSize = 0.2;
+                    break;
+                case 50:
+                    _CellSize = 0.5;
+                    break;
+                case 62.5:
+                    _CellSize = 1.0;
+                    break;
+                case 75:
+                    _CellSize = 2.0;
+                    break;
+                case 87.5:
+                    _CellSize = 5.0;
+                    break;
+                default:
+                    _CellSize = 0.02;
+                    break;
+            }
+
+            GetLastValidOperationIndex();
+
+
+            if (result_tackTime > 0)
+            {
+                _Celdas = (int)(result_tackTime / _CellSize);
+                _HalfCellSize = Math.Round(_CellSize / 2, 3);
+            }
+            else
+            {
+                _HalfCellSize = Math.Round(_CellSize / 2, 3);
+                _Celdas = 100;
+            }
+
+            switch (_CellSize)
+            {
+                case 0.05:
+                    _CellSize_Slider = 12.5;
+                    break;
+                case 0.1:
+                    _CellSize_Slider = 25;
+                    break;
+                case 0.2:
+                    _CellSize_Slider = 37.5;
+                    break;
+                case 0.5:
+                    _CellSize_Slider = 50;
+                    break;
+                case 1.0:
+                    _CellSize_Slider = 62.5;
+                    break;
+                case 2.0:
+                    _CellSize_Slider = 75;
+                    break;
+                case 5.0:
+                    _CellSize_Slider = 87.5;
+                    break;
+                default:
+                    _CellSize_Slider = 0.02;
+                    break;
+            }
+        }
+        int lastValidOperationIndex = -1;
+        private void GetLastValidOperationIndex()
+        {
+            lastValidOperationIndex = -1; // Inicializar a -1 para el caso en que no se encuentre ninguna operación válida
+
+            foreach (var (operation, index) in _sosCombination.SOSCombinationOperationSequence.Select((operation, index) => (operation, index)))
+            {
+                if (string.IsNullOrEmpty(operation.ManualOperationTime) &&
+                    string.IsNullOrEmpty(operation.ManualOperationTimeWithMachineInAutomatic) &&
+                    string.IsNullOrEmpty(operation.AutomaticMachineOperationTime) &&
+                    string.IsNullOrEmpty(operation.StepsToNextProcess) &&
+                    string.IsNullOrEmpty(operation.PartsPerCycle))
+                {
+                    lastValidOperationIndex = index - 1;
+                    break; // Salir del bucle una vez que se encuentra la primera operación vacía
+                }
+            }
         }
     }
 }

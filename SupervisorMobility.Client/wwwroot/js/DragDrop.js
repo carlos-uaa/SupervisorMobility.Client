@@ -13,14 +13,34 @@ let selectedIndex = 0;
 
 let isDrawing = false;
 let isPencilSelected = false;
+let isArrowSelected = false;
+let isArrowheadSelected = false;
 let drawColor = "#000000";
+let arrowColor = "#000000";
+let arrowheadColor = "#000000";
 let drawPathData = [];
 let drawings = [];
 let actionHistory = [];
 
-window.setupCanvas = function (canvasRef, dotNetObjectRef) {
+let movableArrows = [];
+let arrowStartPoint = null;
+let previewArrowEndPoint = null;
+
+let isTextSelected = false;
+let textStartPoint = null;
+let movableTexts = [];
+let textInputElement = null;
+
+let isDraggingStart = false;
+let isDraggingEnd = false;
+let isEditingArrow = false;
+let selectedArrow = null;
+let dotNetObjectRef = null;
+
+window.setupCanvas = function (canvasRef, dotNetRef) {
     const canvas = canvasRef;
     const ctx = canvas.getContext("2d");
+    dotNetObjectRef = dotNetRef;
 
     canvas.addEventListener("dragover", (e) => e.preventDefault());
 
@@ -56,21 +76,257 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
         }
     });
 
-    canvas.addEventListener("mousedown", function (e) {
-        if (isPencilSelected) {
+    canvas.addEventListener("mousedown", async function (e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+
+
+        const clickedText = movableTexts.find(text =>
+            x >= text.x &&
+            x <= text.x + ctx.measureText(text.text).width &&
+            y >= text.y - 16 && // Altura del texto estimada
+            y <= text.y
+        );
+
+        const clickedArrow = movableArrows.find(arrow => {
+            const near = isPointNearArrow(x, y, arrow);
+            return near.isNearStart || near.isNearEnd || near.isNearLine;
+        });
+
+
+
+        if (!clickedArrow) {
+            selectedArrow = null;
+            isEditingArrow = false;
+            redrawCanvas(ctx, canvas); 
+        }
+
+        if (isEditingArrow) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Detectar si se hizo clic en el punto inicial o final
+            const near = isPointNearArrow(x, y, selectedArrow);
+            if (near.isNearStart) {
+                isDraggingStart = true;
+            } else if (near.isNearEnd) {
+                isDraggingEnd = true;
+            }
+        }
+
+        if (!isArrowSelected && !isArrowheadSelected) {
+            const clickedArrow = movableArrows.find(arrow => {
+                const near = isPointNearArrow(x, y, arrow);
+                return near.isNearStart || near.isNearEnd || near.isNearLine;
+            });
+
+            if (clickedArrow) {
+                selectedArrow = clickedArrow;
+                redrawCanvas(ctx, canvas);
+
+                drawControlPoint(ctx, clickedArrow.start.x, clickedArrow.start.y);
+                drawControlPoint(ctx, clickedArrow.end.x, clickedArrow.end.y);
+
+                isEditingArrow = true;
+                return;
+            }
+        }
+
+
+        if (clickedText && isTextSelected) {
+            isTextSelected = false; 
+            await dotNetObjectRef.invokeMethodAsync('DeselectText');
+
+            textStartPoint = { x: clickedText.x, y: clickedText.y };
+
+            if (!textInputElement) {
+                textInputElement = document.createElement("textarea");
+                textInputElement.value = clickedText.text; // Mostrar el texto actual
+                textInputElement.style.position = "absolute";
+                textInputElement.style.left = `${rect.left + clickedText.x - 30}px`;
+                textInputElement.style.top = `${rect.top + clickedText.y - 60}px`;
+                textInputElement.style.zIndex = 1050;
+                textInputElement.style.fontSize = "16px";
+                textInputElement.style.lineHeight = "1.5";
+                textInputElement.style.border = "1px dashed gray";
+                textInputElement.style.resize = "none";
+                textInputElement.style.padding = "4px";
+                textInputElement.style.backgroundColor = "transparent";
+
+
+
+                redrawCanvas(ctx, canvas, clickedText);
+                // Habilitar movimiento del textarea
+                let isDragging = false;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                textInputElement.addEventListener("mousedown", function (e) {
+                    isDragging = true;
+                    offsetX = e.clientX - textInputElement.offsetLeft;
+                    offsetY = e.clientY - textInputElement.offsetTop;
+                });
+
+                document.addEventListener("mousemove", function (e) {
+                    if (isDragging) {
+                        textInputElement.style.left = `${e.clientX - offsetX}px`;
+                        textInputElement.style.top = `${e.clientY - offsetY}px`;
+                    }
+                });
+
+                document.addEventListener("mouseup", function () {
+                    if (isDragging) {
+                        isDragging = false;
+                    }
+                });
+
+
+                textInputElement.addEventListener("blur", function () {
+                    if (textInputElement.value.trim() !== "") {
+                        // Actualizar el texto existente
+                        clickedText.x = parseFloat(textInputElement.style.left) - rect.left + 30; // Ajustar para el borde
+                        clickedText.y = parseFloat(textInputElement.style.top) - rect.top + 60; // Ajustar para la altura
+                        clickedText.text = textInputElement.value;
+                        redrawCanvas(ctx, canvas); // Redibujar el canvas
+                    }
+                    textInputElement.remove();
+                    textInputElement = null;
+                });
+
+                textInputElement.addEventListener("keydown", function (event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        textInputElement.blur(); // Finalizar edición
+                    }
+                });
+
+                actionHistory.push({ type: "editText" });
+                await dotNetObjectRef.invokeMethodAsync('OnTextEdited');
+
+                const dialog = document.querySelector(".mud-dialog");
+                if (dialog) {
+                    dialog.appendChild(textInputElement);
+                } else {
+                    document.body.appendChild(textInputElement);
+                }
+
+                setTimeout(() => {
+                    textInputElement.focus();
+                }, 0);
+                isTextSelected = true; 
+                await dotNetObjectRef.invokeMethodAsync('SelectText');
+
+            }
+        } else if (isTextSelected) {
+
+            if (!textInputElement) {
+                textStartPoint = { x, y };
+                textInputElement = document.createElement("textarea");
+                textInputElement.style.position = "absolute";
+                textInputElement.style.left = `${e.clientX -30}px`;
+                textInputElement.style.top = `${e.clientY - 40}px`;
+                textInputElement.style.zIndex = 1050;
+                textInputElement.style.fontSize = "16px";
+                textInputElement.style.lineHeight = "1.5";
+                textInputElement.style.border = "1px dashed gray";
+                textInputElement.style.resize = "none";
+                textInputElement.style.padding = "4px";
+                textInputElement.style.backgroundColor = "transparent";
+
+                textInputElement.addEventListener("blur", function () {
+                    if (textInputElement.value.trim() !== "") {
+                        movableTexts.push({
+                            text: textInputElement.value,
+                            x: textStartPoint.x + 5,
+                            y: textStartPoint.y + 22,
+                            color: "#000", // Ajusta el color si es necesario
+                        });
+                        redrawCanvas(ctx, canvas);
+                    }
+                    textInputElement.remove();
+                    textInputElement = null;
+                });
+
+                textInputElement.addEventListener("keydown", function (event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        textInputElement.blur();
+                    }
+                });
+
+                actionHistory.push({ type: "addText" });
+                await dotNetObjectRef.invokeMethodAsync('OnTextAdded');
+
+                const dialog = document.querySelector(".mud-dialog");
+                if (dialog) {
+                    dialog.appendChild(textInputElement);
+                } else {
+                    document.body.appendChild(textInputElement);
+                }
+                setTimeout(() => {
+                    textInputElement.focus();
+                }, 0);
+            }
+        }
+
+        else if (isArrowheadSelected) {
+            if (!arrowStartPoint) {
+                arrowStartPoint = { x, y };
+            } else {
+                const arrowEndPoint = { x, y };
+
+                movableArrows.push({
+                    start: arrowStartPoint,
+                    end: arrowEndPoint,
+                    color: arrowheadColor,
+                    hasHead: true, 
+                });
+
+                arrowStartPoint = null;
+                previewArrowEndPoint = null;
+
+                actionHistory.push({ type: "addArrowhead" });
+
+                await dotNetObjectRef.invokeMethodAsync('OnArrowheadAdded');
+
+                redrawCanvas(ctx, canvas);
+            }
+            return;
+
+        }
+
+        else if (isArrowSelected) {
+            if (!arrowStartPoint) {
+                arrowStartPoint = { x, y };
+            } else {
+                const arrowEndPoint = { x, y };
+                movableArrows.push({
+                    start: arrowStartPoint,
+                    end: arrowEndPoint,
+                    color: arrowColor,
+                });
+
+                arrowStartPoint = null;
+                previewArrowEndPoint = null;
+
+                actionHistory.push({ type: "addArrow" });
+
+                await dotNetObjectRef.invokeMethodAsync('OnArrowAdded');
+                redrawCanvas(ctx, canvas);
+            }
+            return;
+
+        } else if (isPencilSelected) {
             isDrawing = true;
             ctx.strokeStyle = drawColor;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(e.offsetX, e.offsetY);
             drawPathData = [[e.offsetX, e.offsetY]];
-
         } else {
-
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
 
             redrawCanvas(ctx, canvas);
             selectedImage = movableImages.find(img => isPointInImage(x, y, img));
@@ -84,8 +340,8 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
 
                 redrawCanvas(ctx, canvas);
 
-
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedImage', selectedImage.element.id);
+                dotNetObjectRef.invokeMethodAsync('UpdateSelectedSizeSlider', selectedImage.width);
                 dotNetObjectRef.invokeMethodAsync('UpdateSelectedRotateSlider', (selectedImage.rotation * 180 / Math.PI) + 180);
 
 
@@ -97,6 +353,36 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     });
 
     canvas.addEventListener("mousemove", function (e) {
+
+        if (isEditingArrow && (isDraggingStart || isDraggingEnd)) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (isDraggingStart) {
+                selectedArrow.start.x = x;
+                selectedArrow.start.y = y;
+            } else if (isDraggingEnd) {
+                selectedArrow.end.x = x;
+                selectedArrow.end.y = y;
+            }
+
+            redrawCanvas(ctx, canvas);
+
+            drawControlPoint(ctx, selectedArrow.start.x, selectedArrow.start.y);
+            drawControlPoint(ctx, selectedArrow.end.x, selectedArrow.end.y);
+        }
+        if ((isArrowSelected || isArrowheadSelected) && arrowStartPoint) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            previewArrowEndPoint = { x, y };
+
+            redrawCanvas(ctx, canvas);
+            drawPreviewArrow(ctx, arrowStartPoint, previewArrowEndPoint, arrowColor, isArrowheadSelected);
+
+        }
         if (isPencilSelected && isDrawing) {
             ctx.lineTo(e.offsetX, e.offsetY);
             ctx.stroke();
@@ -119,6 +405,12 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
     });
 
     canvas.addEventListener("mouseup", async function () {
+
+        if (isEditingArrow) {
+            isDraggingStart = false;
+            isDraggingEnd = false;
+
+        }
         if (isPencilSelected) {
             isDrawing = false;
             drawings.push({ path: drawPathData.slice(), color: drawColor });
@@ -251,10 +543,20 @@ window.setupCanvas = function (canvasRef, dotNetObjectRef) {
         }
     });
 
+    console.log(dotNetObjectRef);
 };
 
 window.togglePencilState = function (state) {
+
     isPencilSelected = state;
+};
+
+window.toggleArrowState = function (state) {
+    isArrowSelected = state;
+};
+
+window.toggleArrowheadState = function (state) {
+    isArrowheadSelected = state;
 };
 
 
@@ -409,6 +711,44 @@ window.clearCanvas = function (canvasRef) {
     const ctx = canvas.getContext("2d");
     movableImages = [];
     drawings = [];
+    draggedImageId = null;
+    draggedImageElement = null;
+    initialTouchX = 0;
+    initialTouchY = 0;
+    iewImageElement = null;
+    offsetX = 0;
+    offsetY = 0;
+    movableImages = [];
+    fixedImage = null;
+    selectedImage = null;
+    imageIndex = 0;
+    selectedIndex = 0;
+
+    isDrawing = false;
+    isPencilSelected = false;
+    isArrowSelected = false;
+    isArrowheadSelected = false;
+    drawColor = "#000000";
+    arrowColor = "#000000";
+    arrowheadColor = "#000000";
+    drawPathData = [];
+    drawings = [];
+    actionHistory = [];
+
+    movableArrows = [];
+    arrowStartPoint = null;
+    previewArrowEndPoint = null;
+
+    isTextSelected = false;
+    textStartPoint = null;
+    movableTexts = [];
+    textInputElement = null;
+
+    isDraggingStart = false;
+    isDraggingEnd = false;
+    isEditingArrow = false;
+    selectedArrow = null;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
@@ -440,6 +780,10 @@ window.undoLastAction = function (canvasRef) {
             movableImages.pop();
         } else if (lastAction.type === "addDrawing" && drawings.length > 0) {
             drawings.pop();
+        } else if ((lastAction.type === "addArrow" || lastAction.type === "addArrowhead") && movableArrows.length > 0) {
+            movableArrows.pop();
+        } else if ((lastAction.type === "addText" || lastAction.type === "editText") && movableTexts.length > 0) {
+            movableTexts.pop();
         }
 
         const canvas = canvasRef;
@@ -473,7 +817,7 @@ window.updateImageSize = function (canvasRef, newSize) {
 };
 
 
-function redrawCanvas(ctx, canvas) {
+function redrawCanvas(ctx, canvas, excludeText = null) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (fixedImage) {
@@ -490,6 +834,35 @@ function redrawCanvas(ctx, canvas) {
         ctx.stroke();
     });
 
+    movableArrows.forEach(arrow => {
+        ctx.strokeStyle = arrow.color;
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(arrow.start.x, arrow.start.y);
+        ctx.lineTo(arrow.end.x, arrow.end.y);
+        ctx.stroke();
+
+        if (arrow.hasHead) {
+            drawArrowhead(ctx, arrow.start, arrow.end, arrow.color);
+        }
+
+        if (arrow === selectedArrow) {
+            drawControlPoint(ctx, arrow.start.x, arrow.start.y);
+            drawControlPoint(ctx, arrow.end.x, arrow.end.y);
+        }
+    });
+
+    if (arrowStartPoint && previewArrowEndPoint) {
+        ctx.strokeStyle = isArrowheadSelected ? arrowheadColor : arrowColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(arrowStartPoint.x, arrowStartPoint.y);
+        ctx.lineTo(previewArrowEndPoint.x, previewArrowEndPoint.y);
+        ctx.stroke();
+        ctx.setLineDash([]); 
+    }
+
 
     movableImages.forEach(img => {
         ctx.save();
@@ -503,6 +876,49 @@ function redrawCanvas(ctx, canvas) {
         }
         ctx.restore();
     });
+
+    movableTexts.forEach(textItem => {
+        if (textItem !== excludeText) {
+            ctx.fillStyle = textItem.color;
+            ctx.font = "16px Arial";
+            ctx.fillText(textItem.text, textItem.x, textItem.y);
+        }
+    });
+
+}
+
+function drawPreviewArrow(ctx, start, end, color, withHead) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+
+    if (withHead) {
+        drawArrowhead(ctx, start, end, color);
+    }
+}
+
+function drawArrowhead(ctx, start, end, color) {
+    const angle = Math.atan2(end.y - start.y, end.x - start.x);
+    const headLength = 10; 
+
+    ctx.fillStyle = color;
+
+    ctx.beginPath();
+    ctx.moveTo(end.x, end.y);
+    ctx.lineTo(
+        end.x - headLength * Math.cos(angle - Math.PI / 6),
+        end.y - headLength * Math.sin(angle - Math.PI / 6)
+    );
+    ctx.lineTo(
+        end.x - headLength * Math.cos(angle + Math.PI / 6),
+        end.y - headLength * Math.sin(angle + Math.PI / 6)
+    );
+    ctx.closePath();
+    ctx.fill();
 }
 
 function drawPath(ctx) {
@@ -546,6 +962,11 @@ window.rotateImage = function (canvasRef, newRotation) {
     }
 };
 
+window.toggleTextState = function (state) {
+    isTextSelected = state;
+};
+
+
 
 function updateImagePositionAfterRotation(image) {
     const centerX = image.x + image.width / 2;
@@ -561,4 +982,100 @@ function updateImagePositionAfterRotation(image) {
 window.setPencilColor = function (color) {
     drawColor = color;
 }
+
+window.setArrowColor = function (color) {
+    arrowColor = color;
+}
+
+window.setArrowheadColor = function (color) {
+    arrowheadColor = color;
+}
+
+function isPointNearArrow(x, y, arrow, tolerance = 10) {
+    const { start, end } = arrow;
+
+    const isNearStart = Math.hypot(x - start.x, y - start.y) <= tolerance;
+    const isNearEnd = Math.hypot(x - end.x, y - end.y) <= tolerance;
+
+    const isNearLine = isPointNearLine(x, y, start.x, start.y, end.x, end.y, tolerance);
+
+
+    return { isNearStart, isNearEnd, isNearLine };
+}
+
+function isPointNearLine(px, py, x1, y1, x2, y2, tolerance) {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+
+    if (lenSq !== 0) {
+        param = dot / lenSq;
+    }
+
+    let nearestX, nearestY;
+
+    if (param < 0) {
+        nearestX = x1;
+        nearestY = y1;
+    } else if (param > 1) {
+        nearestX = x2;
+        nearestY = y2;
+    } else {
+        nearestX = x1 + param * C;
+        nearestY = y1 + param * D;
+    }
+
+    // Distancia del punto al punto más cercano en la línea
+    const dx = px - nearestX;
+    const dy = py - nearestY;
+    return Math.hypot(dx, dy) <= tolerance;
+}
+
+function drawControlPoint(ctx, x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = "#5fa0e7";
+    ctx.fill();
+    ctx.closePath();
+}
+
+document.addEventListener("mousedown", async function (e) {
+    const canvas = document.getElementById("canvas");
+    if (!canvas) return; // Si no hay canvas, no ejecutar la función
+
+    // Si el clic es dentro del canvas, salir de la función
+    if (canvas.contains(e.target)) return;
+
+    if (dotNetObjectRef === null) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const isOutsideCanvas =
+        e.clientX < rect.left || e.clientX > rect.right ||
+        e.clientY < rect.top || e.clientY > rect.bottom;
+
+
+
+    if (isOutsideCanvas) {
+        isArrowSelected = false;
+        isArrowheadSelected = false;
+        isPencilSelected = false;
+        previewArrowheadPoint = null;
+        arrowStartPoint = null;
+
+
+        redrawCanvas(canvas.getContext("2d"), canvas);
+        await dotNetObjectRef.invokeMethodAsync('SetPencilState', false);
+        await dotNetObjectRef.invokeMethodAsync('DeselectArrow');
+        await dotNetObjectRef.invokeMethodAsync('DeselectText');
+    }
+});
+
 
