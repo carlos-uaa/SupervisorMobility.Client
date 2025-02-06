@@ -1,20 +1,14 @@
 using Blazor.Diagrams;
 using Blazor.Diagrams.Core.Anchors;
-using Blazor.Diagrams.Core.Controls.Default;
 using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
 using Blazor.Diagrams.Core.PathGenerators;
-using Blazor.Diagrams.Core.Positions;
 using Blazor.Diagrams.Core.Routers;
 using Blazor.Diagrams.Options;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.Presentation;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Pages.SOSHOE.FlowPage.Widgets;
-using System.Dynamic;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 {
@@ -52,35 +46,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             Diagram.RegisterComponent<TerminalNode, Widgets.Terminal>();
             Diagram.RegisterComponent<ResizeControl, Widgets.ResizeControlWidget>();
 
-            var node1 = new NodeModel(new Point(50, 50));
-            var node2 = new NodeModel(new Point(300, 50));
-            var node3 = new NodeModel(new Point(300, 100));
-            var node4 = new NodeModel(new Point(300, 200));
-
-            node1.AddPort(PortAlignment.Right);
-            node1.AddPort(PortAlignment.Left);
-
-            node2.AddPort(PortAlignment.Right);
-            node2.AddPort(PortAlignment.Left);
-
-            node3.AddPort(PortAlignment.Top);
-            node3.AddPort(PortAlignment.Bottom);
-
-            node4.AddPort(PortAlignment.Top);
-            node4.AddPort(PortAlignment.Bottom);
-
-            Diagram.Nodes.Add(node1);
-            Diagram.Controls.AddFor(node1).Add(new BoundaryControl());
-            Diagram.Nodes.Add(node2);
-            Diagram.Nodes.Add(node3);
-            Diagram.Nodes.Add(node4);
-
-            var link = new LinkModel(new SinglePortAnchor(node1.GetPort(PortAlignment.Right)), new SinglePortAnchor(node2.GetPort(PortAlignment.Left))) // Right of node1 to Left of node2
-            {
-                TargetMarker = LinkMarker.Arrow
-            };
-            Diagram.Links.Add(link);
-
+           
+          
             Diagram.Links.Added += OnLinkAdded;
             Diagram.Nodes.Added += OnNodeAdded;
             Diagram.PointerUp += (mdl, args) =>
