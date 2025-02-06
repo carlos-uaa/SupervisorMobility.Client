@@ -1,9 +1,9 @@
-using MudBlazor;
 using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using Microsoft.AspNetCore.Components.Forms;
 using System.Runtime.CompilerServices;
 using System.Net.Http.Headers;
+using MudBlazor;
 
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
@@ -49,6 +49,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         private bool visibleEditImage = false;
         private DialogOptions dialogEditImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, DisableBackdropClick = true };
 
+        private double _CellSize { get; set; } = 0.02;
+        private double _CellSize_Slider { get; set; } = 0.02;
+        private double _HalfCellSize { get; set; } = 0.02;
+        private int _Celdas { get; set; } = 100;
+
+        private double result_tackTime;
+        double targetCells = 60;
+        string[] _labels_CellSize = new string[] { "0.02", "0.05", "0.1", "0.2", "0.5", "1.0", "2.0", "5.0" };
+        private double _tackTimePosition = 0;
 
         protected async override Task OnInitializedAsync()
         {
@@ -83,9 +92,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
             //Validacion de que se creen los tiempos en caso de que no esten
 
-            foreach(var section in _sosCombination.SOSHub?.Sections)
+            foreach (var section in _sosCombination.SOSHub?.Sections)
             {
-                if(!_sosCombination.SOSCombinationOperationSequence.Any(sc => sc.SectionId == section.SectionId))
+                if (!_sosCombination.SOSCombinationOperationSequence.Any(sc => sc.SectionId == section.SectionId))
                 {
                     SOSCombinationOperationSequence newToAdd = new SOSCombinationOperationSequence();
                     newToAdd.SectionId = section.SectionId;
@@ -109,37 +118,30 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
             cycleId = _sosCombination.SOSHub?.TrainingTime != null ? GetCycleId(_sosCombination.SOSHub.TrainingTime) : 0;
 
+            UpdateTableValues();
+
+            if(_sosCombination.TackTime != "")
+            {
+                double closestCellSize = _labels_CellSize
+                   .Select(double.Parse)
+                   .OrderBy(cellSize => Math.Abs((result_tackTime / cellSize) - targetCells))
+                   .First();
+
+                _CellSize = closestCellSize;
+
+                if (double.TryParse(_sosCombination.TackTime, out double tackTime))
+                {
+                    _tackTimePosition = tackTime;
+                }
+            }
+
+
+
             ShowLoading = false;
             StateHasChanged();
         }
 
-        private List<string> GetRevisionNumbers()
-        {
-            List<string> revisionNumbers = new List<string> { "", "", "" };
-
-            if (totalLogbooks <= 3)
-            {
-                for (int i = 0; i < totalLogbooks; i++)
-                {
-                    if (i == 0)
-                    {
-                        revisionNumbers[0] = "N";
-                    }
-                    else
-                    {
-                        revisionNumbers[i] = (i).ToString();
-                    }
-                }
-            }
-            else
-            {
-                revisionNumbers[0] = (totalLogbooks - 3).ToString();
-                revisionNumbers[1] = (totalLogbooks - 2).ToString();
-                revisionNumbers[2] = (totalLogbooks - 1).ToString();
-            }
-
-            return revisionNumbers;
-        }
+     
 
         public static int GetCycleId(string trainingTime)
         {
@@ -466,5 +468,122 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             }
         }
         #endregion
+        private void UpdateTacKTime()
+        {
+            double tackTime = 0;
+            double.TryParse(_sosCombination.TackTime?.Replace(",", ".") ?? "0", System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out tackTime);
+
+            double decimalPart = tackTime - Math.Floor(tackTime);
+
+            if (decimalPart <= 0.5)
+            {
+                result_tackTime = (tackTime == 0.5) ? 1.0 : Math.Floor(tackTime) + 0.5;
+            }
+            else
+            {
+                result_tackTime = Math.Ceiling(tackTime);
+            }
+
+            double closestCellSize = _labels_CellSize
+               .Select(double.Parse)
+               .OrderBy(cellSize => Math.Abs((result_tackTime / cellSize) - targetCells))
+               .First();
+
+            _CellSize = closestCellSize;
+
+            _tackTimePosition = tackTime;
+            UpdateTableValues();
+        }
+
+        private void UpdateTableValues()
+        {
+            switch (_CellSize_Slider)
+            {
+                case 12.5:
+                    _CellSize = 0.05;
+                    break;
+                case 25:
+                    _CellSize = 0.1;
+                    break;
+                case 37.5:
+                    _CellSize = 0.2;
+                    break;
+                case 50:
+                    _CellSize = 0.5;
+                    break;
+                case 62.5:
+                    _CellSize = 1.0;
+                    break;
+                case 75:
+                    _CellSize = 2.0;
+                    break;
+                case 87.5:
+                    _CellSize = 5.0;
+                    break;
+                default:
+                    _CellSize = 0.02;
+                    break;
+            }
+
+            GetLastValidOperationIndex();
+           
+
+            if (result_tackTime > 0)
+            {
+                _Celdas = (int)(result_tackTime / _CellSize);
+                _HalfCellSize = Math.Round(_CellSize / 2, 3);
+            }
+            else
+            {
+                _HalfCellSize = Math.Round(_CellSize / 2, 3);
+                _Celdas = 100;
+            }
+
+            switch (_CellSize)
+            {
+                case 0.05:
+                    _CellSize_Slider = 12.5;
+                    break;
+                case 0.1:
+                    _CellSize_Slider = 25;
+                    break;
+                case 0.2:
+                    _CellSize_Slider = 37.5;
+                    break;
+                case 0.5:
+                    _CellSize_Slider = 50;
+                    break;
+                case 1.0:
+                    _CellSize_Slider = 62.5;
+                    break;
+                case 2.0:
+                    _CellSize_Slider = 75;
+                    break;
+                case 5.0:
+                    _CellSize_Slider = 87.5;
+                    break;
+                default:
+                    _CellSize_Slider = 0.02;
+                    break;
+            }
+        }
+        int lastValidOperationIndex = -1;
+        private void GetLastValidOperationIndex()
+        {
+            lastValidOperationIndex = -1; // Inicializar a -1 para el caso en que no se encuentre ninguna operaci�n v�lida
+
+            foreach (var (operation, index) in _sosCombination.SOSCombinationOperationSequence.Select((operation, index) => (operation, index)))
+            {
+                if (string.IsNullOrEmpty(operation.ManualOperationTime) &&
+                    string.IsNullOrEmpty(operation.ManualOperationTimeWithMachineInAutomatic) &&
+                    string.IsNullOrEmpty(operation.AutomaticMachineOperationTime) &&
+                    string.IsNullOrEmpty(operation.StepsToNextProcess) &&
+                    string.IsNullOrEmpty(operation.PartsPerCycle))
+                {
+                    lastValidOperationIndex = index-1;
+                    break; // Salir del bucle una vez que se encuentra la primera operaci�n vac�a
+                }
+            }
+        }
     }
 }
