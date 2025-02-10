@@ -455,37 +455,41 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 foreach (var op in filteredDistributions)
                 {
-                    var leaders = _UserOfArea
-                        .Where(usr => ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context.Any())
-                        .Select(usr => new
-                        {
-                            User = usr,
-                            LatestContext = ILU_Matrix[(op.DistributionId, usr.UserId)]
-                                .OrderByDescending(c => c.AcquisitionDate)
-                                .FirstOrDefault()
-                        })
-                        .Where(x => x.LatestContext != null)
-                        .Select(x => new
-                        {
-                            x.User,
-                            ILULevelNumber = _LevelsILU
-                                .Find(u => u.ILULevelId == x.LatestContext.ILULevelId)?.ILULevelCode
-                        })
-                        .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "§" && x.User.UserId != _newIlu.OperatorId)
-                        .ToList();
 
-                    var firstLeader = leaders.FirstOrDefault(x =>
-                                x.ILULevelNumber == "ILeader" ||
-                                x.ILULevelNumber == "LTraineeLeader" ||
-                                x.ILULevelNumber == "LLeader" ||
-                                x.ILULevelNumber == "ULeaderTrainee" ||
-                                x.ILULevelNumber == "ULeader");
-
-                    if (firstLeader != null)
+                    if (_UserOfArea != null && ILU_Matrix != null)
                     {
-                        leaderName = firstLeader.User.Name;
-                        hasLeadersInDistribution = true;
-                        break;
+                        var leaders = _UserOfArea
+                            .Where(usr => ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context?.Any() == true)
+                            .Select(usr => new
+                            {
+                                User = usr,
+                                LatestContext = ILU_Matrix[(op.DistributionId, usr.UserId)]
+                                    .OrderByDescending(c => c.AcquisitionDate)
+                                    .FirstOrDefault()
+                            })
+                            .Where(x => x.LatestContext != null)
+                            .Select(x => new
+                            {
+                                x.User,
+                                ILULevelNumber = _LevelsILU?
+                                    .Find(u => u.ILULevelId == x.LatestContext.ILULevelId)?.ILULevelCode
+                            })
+                            .Where(x => x.ILULevelNumber != null && x.ILULevelNumber != "§" && x.User.UserId != _newIlu.OperatorId)
+                            .ToList();
+
+                        var firstLeader = leaders.FirstOrDefault(x =>
+                                    x.ILULevelNumber == "ILeader" ||
+                                    x.ILULevelNumber == "LTraineeLeader" ||
+                                    x.ILULevelNumber == "LLeader" ||
+                                    x.ILULevelNumber == "ULeaderTrainee" ||
+                                    x.ILULevelNumber == "ULeader");
+
+                        if (firstLeader != null)
+                        {
+                            leaderName = firstLeader.User.Name;
+                            hasLeadersInDistribution = true;
+                            break;
+                        }
                     }
                 }
             }
