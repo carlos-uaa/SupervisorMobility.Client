@@ -111,7 +111,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
             UpdateTableValues();
 
-            if(_sosCombination.TackTime != "")
+            if (_sosCombination.TackTime != "")
             {
                 double closestCellSize = _labels_CellSize
                    .Select(double.Parse)
@@ -132,7 +132,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             StateHasChanged();
         }
 
-     
+
 
         public static int GetCycleId(string trainingTime)
         {
@@ -215,14 +215,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             }
 
             _sosCombination.SOSCombinationOperationSequence = StepsProcess;
-           
+
         }
 
         private async Task UpdateCombination()
         {
             Snackbar.Clear();
             UpdateButton = true;
-        
+
             var result = await SOSCombinationServices.UpdateSOSCombination(_sosCombination);
 
             if (result != null)
@@ -236,7 +236,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
-            
+
             UpdateButton = false;
 
         }
@@ -325,7 +325,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             }
 
             GetLastValidOperationIndex();
-           
+
 
             if (result_tackTime > 0)
             {
@@ -379,10 +379,59 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                     string.IsNullOrEmpty(operation.StepsToNextProcess) &&
                     string.IsNullOrEmpty(operation.PartsPerCycle))
                 {
-                    lastValidOperationIndex = index-1;
+                    lastValidOperationIndex = index - 1;
                     break; // Salir del bucle una vez que se encuentra la primera operación vacía
                 }
             }
+        }
+
+        private double CalculateSizeStep(double steps, double top)
+        {
+            double fullCells = Math.Floor(steps / _CellSize);
+            double remainingSteps = steps - (fullCells * _CellSize);
+            double result;
+
+            Console.WriteLine("Full" + fullCells);
+            Console.WriteLine("Remain" + remainingSteps);
+
+
+            if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+            {
+                result = fullCells * 33 + _HalfCellSize;
+            }
+            else if (remainingSteps > _HalfCellSize)
+            {
+                result = (fullCells + 1) * 33;
+            }
+            else
+            {
+                result = fullCells * 33;
+            }
+
+            if (top == 31)
+            {
+                result += 15;
+            }
+
+            return result;
+        }
+
+        private double CalculateRotateAngle(double top, double sizeStep)
+        {
+            if (top == 40)
+            {
+                if (sizeStep > 90)
+                {
+                    return 0;
+                }
+                return 25;
+            }
+            else if (top == 31)
+            {
+                return 35;
+            }
+            // Agrega más condiciones según sea necesario
+            return 25; // Valor por defecto
         }
     }
 }
