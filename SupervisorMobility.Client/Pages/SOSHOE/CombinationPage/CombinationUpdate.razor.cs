@@ -263,7 +263,33 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                .First();
 
             _CellSize = closestCellSize;
-
+            switch (_CellSize)
+            {
+                case 0.05:
+                    _CellSize_Slider = 12.5;
+                    break;
+                case 0.1:
+                    _CellSize_Slider = 25;
+                    break;
+                case 0.2:
+                    _CellSize_Slider = 37.5;
+                    break;
+                case 0.5:
+                    _CellSize_Slider = 50;
+                    break;
+                case 1.0:
+                    _CellSize_Slider = 62.5;
+                    break;
+                case 2.0:
+                    _CellSize_Slider = 75;
+                    break;
+                case 5.0:
+                    _CellSize_Slider = 87.5;
+                    break;
+                default:
+                    _CellSize_Slider = 0.02;
+                    break;
+            }
             _tackTimePosition = tackTime;
             UpdateTableValues();
         }
