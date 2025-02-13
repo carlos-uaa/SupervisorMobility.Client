@@ -1,4 +1,8 @@
 using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using Microsoft.AspNetCore.Components.Forms;
+using System.Runtime.CompilerServices;
+using System.Net.Http.Headers;
 using MudBlazor;
 
 
@@ -40,6 +44,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         public bool ShowLoading = true;
         public bool UpdateButton = false;
+
+        //Edit Image
+        private bool visibleEditImage = false;
+        private DialogOptions dialogEditImagesOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.ExtraExtraLarge, FullWidth = true, DisableBackdropClick = true };
 
         private double _CellSize { get; set; } = 0.02;
         private double _CellSize_Slider { get; set; } = 0.02;
@@ -97,16 +105,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 }
             }
 
-
-            if (_sosCombination.Illustrations != null && _sosCombination.Illustrations.Any())
+            if (_sosCombination.Illustrations?.Any() ?? false)
             {
 
                 foreach (var combinationImage in _sosCombination.Illustrations)
                 {
                     var image = await SOSCombinationServices.ShowIlustrationSOSCombination(combinationImage.FileUploadId);
-                    capturedImages.Add(image);
+                    PreviousImages.Add((combinationImage.FileUploadId, image));
                 }
             }
+
+
             cycleId = _sosCombination.SOSHub?.TrainingTime != null ? GetCycleId(_sosCombination.SOSHub.TrainingTime) : 0;
 
             UpdateTableValues();
@@ -230,7 +239,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 Snackbar.Add($"Combination Updated!", Severity.Info);
 
                 _sosCombination = result;
-                //_ = await UploadEvidence();
+                _ = await UploadEvidence();
 
                 NavigationManager.NavigateTo("/SOSHOE/Combination");
             }
@@ -241,6 +250,224 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
         }
 
+        #region EditImage
+        private UpdateCombinationImage updateImageComponent;
+        public int ImageIndex;
+        public bool IsPreviousPhoto;
+        public int FileUploadIndex = 0;
+        private List<int> OldImageRemoved = new();
+        private List<(int, string)> PreviousImages = new List<(int, string)>();//id, b64 string
+
+        private async Task OpenEditImageDialog(bool isPreviousPhoto, int index = 0, int fileUploadIndex = 0, string imageBase64 = "")
+        {
+            ImageIndex = index == 0 ? 1 : index;
+            IsPreviousPhoto = isPreviousPhoto;
+            visibleEditImage = true;
+            FileUploadIndex = fileUploadIndex;
+
+            while (updateImageComponent == null || !updateImageComponent.IsReady)
+            {
+                await Task.Delay(50);
+            }
+
+            if (updateImageComponent != null)
+            {
+                if (imageBase64 == "")
+                {
+                    var imagePath = "Images/CombinationSymbols/canvasImage.png";
+                    imageBase64 = imagePath;
+                    capturedImages.Add(imageBase64);
+                }
+                await updateImageComponent.LoadImageFromBase64Async(imageBase64);
+            }
+        }
+
+        private void CloseEditImageDialog()
+        {
+            visibleEditImage = false;
+            updateImageComponent = null;
+        }
+
+        public void UpdatePhoto(string updatedImage, int index, bool isPrevious)
+        {
+            if (isPrevious)
+            {
+                OldImageRemoved.Add(FileUploadIndex);
+                PreviousImages.RemoveAt(index);
+                FileUploadIndex = 0;
+            }
+            else
+            {
+                capturedImages.RemoveAt(index);
+            }
+            capturedImages.Add(updatedImage);
+            CloseEditImageDialog();
+            StateHasChanged();
+        }
+
+        #endregion
+
+
+        #region Upload Images
+        private async Task<AsyncVoidMethodBuilder> UploadEvidence()
+        {
+            await UploadImages();
+            await UpdateRemovedFiles();
+
+            return new AsyncVoidMethodBuilder();
+        }
+
+        private async Task UploadImages()
+        {
+
+            List<string> images = capturedImages;
+            int combinationId = _sosCombination.SOSCombinationId;
+
+            if (images.Count > 0)
+            {
+                foreach (var imageData in images)
+                {
+                    if (string.IsNullOrEmpty(imageData))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("No image data to upload", Severity.Warning);
+                        continue;
+                    }
+
+                    string base64Data = "";
+                    if (imageData.Contains("data:image/png;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/png;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpeg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpeg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/jpg;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/jpg;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/gif;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/gif;base64,", "");
+                    }
+                    else if (imageData.Contains("data:image/svg+xml;base64,"))
+                    {
+                        base64Data = imageData.Replace("data:image/svg+xml;base64,", "");
+                    }
+
+                    if (!IsValidBase64String(base64Data))
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Invalid image data", Severity.Error);
+                        continue;
+                    }
+
+                    var imageBytes = Convert.FromBase64String(base64Data);
+
+                    using var content = new MultipartFormDataContent();
+                    var imageStream = new MemoryStream(imageBytes);
+                    var fileContent = new StreamContent(imageStream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+
+                    content.Add(fileContent, "\"file\"", "evidenceSosHub.png");
+
+
+                    var result = await SOSCombinationServices.AddIllustrationToSOSCombination(content, combinationId);
+
+                    if (result is not null)
+                    {
+                        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Image Added to Combination", Severity.Info);
+                    }
+                    else
+                    {
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add("Failed to upload Image to Combination", Severity.Error);
+                    }
+
+                }
+
+                images.Clear();
+            }
+
+        }
+
+        private bool IsValidBase64String(string base64String)
+        {
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
+
+            try
+            {
+                Convert.FromBase64String(base64String);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private async Task AddImages(InputFileChangeEventArgs e)
+        {
+            foreach (var file in e.GetMultipleFiles())
+            {
+                if (file.ContentType.StartsWith("image/"))
+                {
+                    using (Stream mediaStream = file.OpenReadStream(file.Size))
+                    {
+                        MemoryStream ms = new();
+                        await mediaStream.CopyToAsync(ms);
+                        string mediaUri = $"data:{file.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                        capturedImages.Add(mediaUri);
+                    }
+                }
+            }
+        }
+
+        private async Task UpdateRemovedFiles()
+        {
+            Snackbar.Clear();
+            if (OldImageRemoved.Any())
+            {
+                foreach (var file in OldImageRemoved)
+                {
+                    var result = await SOSCombinationServices.RemoveIlustrationFromSOSData(_sosCombination.SOSCombinationId, file);
+                    if (!result)
+                    {
+                        Snackbar.Add($"Error removing the image", Severity.Error);
+                    }
+                }
+            }
+
+        }
+
+        private void RemoveOldImage(int fileId)
+        {
+            OldImageRemoved.Add(fileId);
+            PreviousImages.RemoveAll(p => p.Item1 == fileId);
+        }
+
+        private void RemoveImage(int index, int imgIndex)
+        {
+
+            if (index >= 0 && index < capturedImages.Count)
+            {
+                if (imgIndex == 1)
+                {
+                    capturedImages.RemoveAt(index);
+                }
+            }
+        }
+        #endregion
         private void UpdateTacKTime()
         {
             double tackTime = 0;
@@ -369,7 +596,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         int lastValidOperationIndex = -1;
         private void GetLastValidOperationIndex()
         {
-            lastValidOperationIndex = -1; // Inicializar a -1 para el caso en que no se encuentre ninguna operación válida
+            lastValidOperationIndex = -1; // Inicializar a -1 para el caso en que no se encuentre ninguna operaciï¿½n vï¿½lida
 
             foreach (var (operation, index) in _sosCombination.SOSCombinationOperationSequence.Select((operation, index) => (operation, index)))
             {
@@ -380,7 +607,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                     string.IsNullOrEmpty(operation.PartsPerCycle))
                 {
                     lastValidOperationIndex = index - 1;
-                    break; // Salir del bucle una vez que se encuentra la primera operación vacía
+                    break; // Salir del bucle una vez que se encuentra la primera operaciÃ³n vacÃ­a
                 }
             }
         }
@@ -430,7 +657,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             {
                 return 35;
             }
-            // Agrega más condiciones según sea necesario
+            // Agrega mÃ¡s condiciones segÃºn sea necesario
             return 25; // Valor por defecto
         }
     }

@@ -1,4 +1,4 @@
-﻿@page "/update-image"
+﻿@page "/update-combination-image"
 @using Microsoft.AspNetCore.Components.Forms
 @inject IJSRuntime JS
 
@@ -14,27 +14,27 @@
         <MudDrawer Open Fixed="false" Elevation="1" Variant="@DrawerVariant.Mini" Style="scrollbar-width: none;">
             <MudNavMenu>
                 <MudItem Class="pa-2">
-                    <MudInput T="string" Placeholder="Buscar" @bind-Value="search" Immediate Clearable Style="width:100%;" />
+                    <MudInput T="string" Placeholder="Buscar" @bind-Value="search" Immediate Clearable Style="width:100%;"/>
                 </MudItem>
                 <MudItem Class="pa-2">
                     <MudText Typo="Typo.subtitle1">Size</MudText>
                     <MudSlider @bind-Value="sliderSize" Min="10" Max="100" Step="1" Color="Color.Primary" />
                 </MudItem>
 
-                <MudTreeView T="string">
-                    <MudTreeViewItem Value='"Draw"'>
-                        <MudTreeViewItem Value='"Pencil"'>
+                <MudTreeView T="string" >
+                    <MudTreeViewItem Value='"Draw"' >
+                        <MudTreeViewItem Value='"Pencil"' >
                             <Content>
                                 <MudItem Class="d-flex" Style="align-items: flex-end; ">
-                                    <MudToggleIconButton @bind-Toggled="@IsPencilSelected"
-                                                         Icon="@Icons.Material.Filled.EditOff"
-                                                         ToggledIcon="@Icons.Material.Filled.Edit"
-                                                         ToggledColor="@Color.Info"
-                                                         @onclick="OnToggleClick" />
-                                    <MudColorPicker Label="Color" @bind-Text="PencilColor"
-                                                    Style="@($"color: {pencilColor}; width: 90%;  z-index: 1050 !important;")"
-                                                    ColorPickerView="ColorPickerView.Palette" />
-                                </MudItem>
+                                        <MudToggleIconButton @bind-Toggled="@IsPencilSelected"
+                                                                Icon="@Icons.Material.Filled.EditOff"
+                                                                ToggledIcon="@Icons.Material.Filled.Edit"
+                                                                ToggledColor="@Color.Info"
+                                                                @onclick="OnToggleClick" />
+                                        <MudColorPicker Label="Color" @bind-Text="PencilColor"
+                                                        Style="@($"color: {pencilColor}; width: 90%;  z-index: 1050 !important;")"
+                                                        ColorPickerView="ColorPickerView.Palette" />
+                                    </MudItem>
                             </Content>
                         </MudTreeViewItem>
                         <MudTreeViewItem Value='"ArrowLine"'>
@@ -79,7 +79,7 @@
                     {
                         <MudNavLink Match="NavLinkMatch.All">
                             <MudItem Style="display: flex; align-items: center;">
-                                <MudCheckBox @bind-Checked="image.IsSelected" Color="Color.Info" />
+                                <MudCheckBox @bind-Checked="image.IsSelected" Color="Color.Info"/>
                                 <MudImage src="@image.Src" Class="rounded-lg" id="@image.Src" Width="@(image.IsSelected ? sliderSize : 55)" draggable="true" @ondragstart="@(e => OnDragStart(e, image.Src))" @ontouchstart="@(e => OnTouchStart(e, image.Src))" />
                             </MudItem>
                         </MudNavLink>
@@ -88,25 +88,26 @@
             </MudNavMenu>
         </MudDrawer>
 
-        <MudDrawer Open="@(selectedImageModel != null)"
-                   Anchor="Anchor.End"
-                   Elevation="0"
-                   DisableOverlay
-                   Variant="@DrawerVariant.Temporary">
-            <MudDrawerHeader>
-                <MudText Typo="Typo.h6">Settings</MudText>
-            </MudDrawerHeader>
-            <MudNavMenu>
-                @if (selectedImageModel != null)
-                {
-                    <MudItem Class="pa-2">
-                        <MudText Typo="Typo.subtitle1">Selected Image Size</MudText>
-                        <MudSlider @bind-Value="SelectedImageSize"
-                                   Min="10"
-                                   Max="300"
-                                   Step="1"
-                                   Color="Color.Primary" />
-                    </MudItem>
+            <MudDrawer Open="@(selectedImageModel != null)"
+                       Anchor="Anchor.End"
+                       Elevation="0"
+                       DisableOverlay
+                       Variant="@DrawerVariant.Temporary">
+                <MudDrawerHeader>
+                    <MudText Typo="Typo.h6">Settings</MudText>
+                </MudDrawerHeader>
+                <MudNavMenu>
+                    @if (selectedImageModel != null)
+                    {
+                        <MudItem Class="pa-2">
+                            <MudText Typo="Typo.subtitle1">Selected Image Size</MudText>
+                            <MudSlider @bind-Value="SelectedImageSize"
+                                       Min="10"
+                                       Max="300"
+                                       Step="1"
+                                       Color="Color.Primary"
+                                        />
+                        </MudItem>
                     <MudItem Class="pa-2">
                         <MudText Typo="Typo.subtitle1">RotateImage</MudText>
                         <MudSlider @bind-Value="RotateImage"
@@ -115,24 +116,25 @@
                                    Step="1"
                                    Color="Color.Primary" />
                     </MudItem>
-                }
-            </MudNavMenu>
-        </MudDrawer>
+                    }
+                </MudNavMenu>
+            </MudDrawer>
 
 
         <div class="mud-height-full" style="display: flex; align-items: center; flex-direction: column;">
-            <MudItem Class="d-flex mb-4">
-                <MudButton HtmlTag="label"
+            <MudItem Class="d-flex mb-4" >
+                 <MudButton 
+                           HtmlTag="label"
                            Variant="Variant.Filled"
                            Size="Size.Small"
                            Color="Color.Info"
                            StartIcon="@Icons.Material.Filled.Image"
                            for="selectImage">
                     Load picture
-                </MudButton>
-                <InputFile hidden id="selectImage" OnChange="OnFileSelected" />
-                @* <MudButton OnClick="ClearImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Clear</MudButton> *@
-                <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
+                </MudButton> 
+                <InputFile hidden id="selectImage" OnChange="OnFileSelected" /> 
+                 @* <MudButton OnClick="ClearImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Clear</MudButton> *@
+                 <MudButton OnClick="UndoChange" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Undo" Color="Color.Primary" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Undo</MudButton>
                 <MudButton OnClick="GenerateImage" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddPhotoAlternate" Color="Color.Success" Size="Size.Small" Class="ml-2" Disabled="@isUndoDisabled">Update Image</MudButton>
             </MudItem>
             <canvas id="canvas"
@@ -144,7 +146,6 @@
     </MudDrawerContainer>
 </MudPaper>
 <img id="generatedImage" style="display:none; margin-top: 20px;" />
-
 
 @code {
 
@@ -286,7 +287,7 @@
         set
         {
             selectedImageSize = value;
-            UpdateSelectedImageSize(value).GetAwaiter().GetResult();
+            UpdateSelectedImageSize(value).GetAwaiter().GetResult(); 
         }
     }
 
@@ -344,27 +345,14 @@
 
     private List<ImageModel> imageUrls = new List<ImageModel>
     {
-        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag A.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag B.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag C.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Air Bag.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Green Cross.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/HV.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/OBD Triangle.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/OBD.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Red Dashed Rectangle.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Red Rectangle.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Red Rounded Rectangle.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Regulation.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Small Air Bag.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Small HV.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Small OBD.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Small Regulation.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Small Water leak.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak A.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak B.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Water Leak C.png", IsSelected = true },
-        new ImageModel { Src = "/Images/Hoe Symbols/Water leak.png", IsSelected = true },
+        new ImageModel { Src = "/Images/CombinationSymbols/start_operation.png", IsSelected = true },
+        new ImageModel { Src = "/Images/CombinationSymbols/area_template_1.png", IsSelected = true },
+        new ImageModel { Src = "/Images/CombinationSymbols/area_template_2.png", IsSelected = true },
+        new ImageModel { Src = "/Images/CombinationSymbols/area_template_3.png", IsSelected = true },
+        new ImageModel { Src = "/Images/CombinationSymbols/area_template_4.png", IsSelected = true },
+        new ImageModel { Src = "/Images/CombinationSymbols/end_operation.png", IsSelected = true },
+        new ImageModel { Src = "/Images/CombinationSymbols/checking.png", IsSelected = true },
+        new ImageModel { Src = "/Images/CombinationSymbols/inventory.png", IsSelected = true },
     };
 
 
@@ -380,7 +368,7 @@
     private List<string> history = new List<string>();
     private bool isUndoDisabled = true;
     private bool isUploaded = false;
-    private DotNetObjectReference<UpdateImage>? dotNetObjectRef;
+    private DotNetObjectReference<UpdateCombinationImage>? dotNetObjectRef;
 
     [JSInvokable("UpdateSelectedImage")]
     public void UpdateSelectedImage(string imageId)
@@ -514,8 +502,21 @@
         {
             dotNetObjectRef = DotNetObjectReference.Create(this);
             IsPencilSelected = false;
+            IsArrowSelected = false;
+            IsArrowheadSelected = false;
             await JS.InvokeVoidAsync("setupCanvas", canvasRef, dotNetObjectRef);
 
+            // try
+            // {
+
+            //     var imagePath = "Images/CombinationSymbols/canvasImage.png";
+
+            //     await ProcessImageAsync(imagePath);
+            // }
+            // catch (Exception ex)
+            // {
+            //     Console.WriteLine($"Error al cargar la imagen: {ex.Message}");
+            // }
             IsReady = true;
         }
     }
@@ -632,6 +633,7 @@
     {
         IsTextSelected = !IsTextSelected;
     }
+
 }
 
 <style>

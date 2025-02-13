@@ -91,5 +91,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         {
             _newIlu.ILULevelId = auxIluLevelId;
         }
+
+        private List<ILURegister> GetGroupedExpertiseTable()
+        {
+            return ExpertiseTable
+                .Where(e => e.isActive)
+                .GroupBy(e => new { e.DistributionId, ILUCategory = GetILUCategory(e.ILULevel?.ILULevelCode) })
+                .Select(g => g.OrderByDescending(e => e.AcquisitionDate).First())
+                .ToList();
+        }
+
+        private string GetILUCategory(string? iluLevelCode)
+        {
+            return iluLevelCode switch
+            {
+                "ITrainee" or "I" or "ILeader" or "LTrainee" or "LTraineeLeader" => "IGroup",
+                "L" or "LLeader" or "UTrainee" or "ULeaderTrainee" => "LGroup",
+                "U" or "ULeader" => "UGroup",
+                _ => "Other"
+            };
+        }
     }
 }
