@@ -298,5 +298,51 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 }
             }
         }
+
+        private double CalculateSizeStep(double steps, double top)
+        {
+            double fullCells = Math.Floor(steps / _CellSize);
+            double remainingSteps = steps - (fullCells * _CellSize);
+            double result;
+
+            if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+            {
+                result = fullCells * 33 + _HalfCellSize;
+            }
+            else if (remainingSteps > _HalfCellSize)
+            {
+                result = (fullCells + 1) * 33;
+            }
+            else
+            {
+                result = fullCells * 33;
+            }
+
+            if (top == 31)
+            {
+                result += 15;
+            }
+
+            return result;
+        }
+
+        private double CalculateRotateAngle(double top, double sizeStep)
+        {
+            if (top == 40)
+            {
+                if (sizeStep > 90)
+                {
+                    return 0;
+                }
+                return 25;
+            }
+            else if (top == 31)
+            {
+                return 35;
+            }
+            // Agrega más condiciones según sea necesario
+            return 25; // Valor por defecto
+        }
+
     }
 }
