@@ -12,13 +12,14 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Timers;
 using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservationNew;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class UpdateJobObservation
     {
-
+        bool is_env { get; set; }
         [Parameter]
         public int JobObservationId { get; set; }
         [Inject]
@@ -200,6 +201,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            is_env = Environment.IsDevelopment();
             try
             {
                 currentLanguage = await JS.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
@@ -504,7 +506,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
                     StateHasChanged();
-                await GetUserAsync();
+                    await GetUserAsync();
 
                     if (user != null)
                     {
@@ -603,7 +605,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         folderCCPError = true;
                     }
 
-                    if (searchAssychart)
+                    if (searchAssychart && _jobObservation.Operations != null && _jobObservation.Operations.Count() > 0)
                     {
                         listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operations?.FirstOrDefault()?.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                         FilterOperation = true;
@@ -612,7 +614,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-          
+
             StateHasChanged();
         }
 
@@ -1048,7 +1050,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     if (string.IsNullOrEmpty(answer.Answer))
                                     {
                                         Snackbar.Add(Localizer["answer all the questions"], Severity.Error);
-                                        return true; 
+                                        return true;
                                     }
                                 }
                                 else
@@ -1464,36 +1466,40 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public async Task SignDate()
         {
-            if (ChecklistQuestionsValidation())
+            if (!is_env)
             {
-                return;
-            }
 
-            if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
-                return;
-            }
+                if (ChecklistQuestionsValidation())
+                {
+                    return;
+                }
 
-            if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
-                return;
-            }
-            if (currentImage == "")
-            {
-                Snackbar.Clear();
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"Operator Signature is missing", Severity.Error);
-                return;
-            }
-            else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
-            {
-                await GenerateOperatorSignatureImage();
+                if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
+                    return;
+                }
+
+                if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
+                    return;
+                }
+                if (currentImage == "")
+                {
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                    return;
+                }
+                else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
+                {
+                    await GenerateOperatorSignatureImage();
+                }
             }
 
             endHour = DateTime.Now.TimeOfDay;
@@ -1789,7 +1795,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async void UpdateOperation(int id)
         {
-           
+
             jobProductId = 0;
             _specifications = new();
         }
@@ -3348,7 +3354,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 var extraEntrySec = entry.CategorySequence == 4 ? 5 : 4;
                 var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
-                
+
                 var extraEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == extraEntrySec);
 
                 string kpi = "";
