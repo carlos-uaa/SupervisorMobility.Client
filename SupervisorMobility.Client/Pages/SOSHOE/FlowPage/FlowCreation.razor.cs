@@ -47,24 +47,28 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                 AllowPanning = false
             };
 
-            Diagram = new BlazorDiagram(options);
-            Diagram.RegisterComponent<TerminalNode, Widgets.Terminal>();
-            Diagram.RegisterComponent<ProcessNode, Widgets.Process>();
-            Diagram.RegisterComponent<ConnectionNode, Widgets.Connection>();
-            Diagram.RegisterComponent<SupplementNode, Widgets.Supplement>();
-            Diagram.RegisterComponent<DecisionNode, Widgets.Decision>();
-            Diagram.RegisterComponent<DecisionRomboNode, Widgets.DecisionRombo>();
-
-            Diagram.RegisterComponent<ResizeControl, Widgets.ResizeControlWidget>();
-
-           
-          
-            Diagram.Links.Added += OnLinkAdded;
-            Diagram.Nodes.Added += OnNodeAdded;
-            Diagram.PointerUp += (mdl, args) =>
+            if (Diagram == null)
             {
-                Diagram.Refresh();
-            };
+
+                Diagram = new BlazorDiagram(options);
+                Diagram.RegisterComponent<TerminalNode, Widgets.Terminal>();
+                Diagram.RegisterComponent<ProcessNode, Widgets.Process>();
+                Diagram.RegisterComponent<ConnectionNode, Widgets.Connection>();
+                Diagram.RegisterComponent<SupplementNode, Widgets.Supplement>();
+                Diagram.RegisterComponent<DecisionNode, Widgets.Decision>();
+                Diagram.RegisterComponent<DecisionRomboNode, Widgets.DecisionRombo>();
+
+                Diagram.RegisterComponent<ResizeControl, Widgets.ResizeControlWidget>();
+
+
+
+                Diagram.Links.Added += OnLinkAdded;
+                Diagram.Nodes.Added += OnNodeAdded;
+                Diagram.PointerUp += (mdl, args) =>
+                {
+                    Diagram.Refresh();
+                };
+            }
         }
 
         private void OnNodeAdded(NodeModel node)
@@ -110,7 +114,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                         {
                             Diagram.Links.Remove(obj);
 
-                                var tgtAnchor = tgtAnchors.Anchors[position];
+                            var tgtAnchor = tgtAnchors.Anchors[position];
 
 
                             // Verificar si el nodo fuente o destino es un SupplementNode
@@ -185,7 +189,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             var mouseX = e.ClientX - containerOffset.Left - 42.35;
             var mouseY = e.ClientY - containerOffset.Top - 21.15;
 
-            
+
             var figureType = await JSRuntime.InvokeAsync<string>("window.getDraggedFigureType");
 
             Console.WriteLine("Figure Type: " + figureType);
@@ -246,7 +250,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                     Diagram.SelectModel(DecisionNode, true);
 
                     break;
-                     case "DecisionRombo":
+                case "DecisionRombo":
 
                     var addedNodeDecisionRombo = new DecisionRomboNode(84.7, 42.3, position: new Point(mouseX, mouseY))
                     {
@@ -302,7 +306,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
                     break;
             }
-          
+
             //Diagram.SelectModel(firstNode, true);
         }
 
@@ -357,7 +361,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
         {
             var data = new DiagramData
             {
-        
+
             };
 
             return data;
@@ -368,7 +372,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             Diagram.Nodes.Clear();
             Diagram.Links.Clear();
 
-            
+
 
             StateHasChanged();
         }
@@ -394,5 +398,5 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
     }
 
-  
+
 }
