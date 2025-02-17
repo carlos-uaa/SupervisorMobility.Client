@@ -278,6 +278,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation = result;
                     //_ = await GenerateChecklistAnswers();
                     //_ = await GenerateOperatorSignatureImage();
+                    _newIlu.AcquisitionDate = newDate1;
+                    _newIlu.DistributionId = _jobObservation.DistributionId;
+                    _newIlu.OperatorId = _jobObservation.OperatorId;
+                    _newIlu.isActive = true;
+                    Console.WriteLine("Job Creada, se añade ");
+
+                    var resultIlu = await ILUServices.AddRegisterForUser(_newIlu, _jobObservation.OperatorId);
+                    if (resultIlu != null)
+                    {
+                        Console.WriteLine("IluCreado");
+                        Snackbar.Add($"ILU Level Added", Severity.Success);
+                    }
 
                     //ClearJOStorage();
 
@@ -339,11 +351,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _newIlu.DistributionId = _jobObservation.DistributionId;
                     _newIlu.OperatorId = _jobObservation.OperatorId;
                     _newIlu.isActive = true;
+                        Console.WriteLine("Job Creada, se añade ");
 
                     var resultIlu = await ILUServices.AddRegisterForUser(_newIlu, _jobObservation.OperatorId);
                     if (resultIlu != null)
                     {
-                      
+                        Console.WriteLine("IluCreado");
                         Snackbar.Add($"ILU Level Added", Severity.Success);
                     }
 
