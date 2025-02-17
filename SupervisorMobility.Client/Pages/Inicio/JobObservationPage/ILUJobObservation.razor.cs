@@ -93,6 +93,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         bool ShowLoading = true;
 
         SOSCodePath CodePathDialogDisplay { get; set; }
+        private int auxILU_Level = 0;
+        private List<ILULevel> _LevelsILU { get; set; } = new();
+
 
         protected async override Task OnInitializedAsync()
         {
@@ -113,6 +116,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
             _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
+            _LevelsILU = await ILUServices.GetLevelsILU();
 
             //optenemos categorias
             foreach (var category in _checklistCategoriesAndQuestions)
@@ -399,6 +403,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             CodePathModalDisplay = true;
             StateHasChanged();
             return new AsyncVoidMethodBuilder();
+        }
+
+
+        private void updateILULevel()
+        {
+            _newIlu.ILULevelId = auxILU_Level;
         }
 
     }
