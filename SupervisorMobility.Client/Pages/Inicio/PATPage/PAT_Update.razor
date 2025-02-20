@@ -937,12 +937,34 @@
                                                         <table style="border: none">
                                                             <tbody>
                                                                 @{
-                                                                    var latestContext = context?.Where(d => d.AcquisitionDate.Value.Month == _yearMonth.Value.Month).OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
-                                                                    string ILULevelNumber = "§";
-                                                                    @if (latestContext != null)
+                                                                    var latestContexts = context?
+                                                                    .Where(d => d.AcquisitionDate.HasValue && d.AcquisitionDate.Value.Month == _yearMonth.Value.Month)
+                                                                    .OrderByDescending(c => c.AcquisitionDate)
+                                                                    .ToList();
+
+                                                                    var latestContext = latestContexts?.FirstOrDefault(); 
+
+                                                                    if (latestContext != null)
                                                                     {
-                                                                        ILULevelNumber = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId).ILULevelCode;
+                                                                        var previousContext = latestContexts?.Skip(1).FirstOrDefault();
+
+                                                                        string latestLevel = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId)?.ILULevelCode ?? "§";
+                                                                        string previousLevel = previousContext != null
+                                                                        ? _LevelsILU.Find(u => u.ILULevelId == previousContext.ILULevelId)?.ILULevelCode ?? "§"
+                                                                        : "§";
+
+                                                                        if ((latestLevel == "I" && previousLevel == "ITrainee") ||
+                                                                        (latestLevel == "L" && previousLevel == "LTrainee") ||
+                                                                        (latestLevel == "U" && previousLevel == "UTrainee"))
+                                                                        {
+                                                                            latestContext = previousContext; 
+                                                                        }
                                                                     }
+
+                                                                    string ILULevelNumber = latestContext != null
+                                                                    ? _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId)?.ILULevelCode ?? "§"
+                                                                    : "§";
+
                                                                 }
 
                                                                 @if (latestContext != null)
