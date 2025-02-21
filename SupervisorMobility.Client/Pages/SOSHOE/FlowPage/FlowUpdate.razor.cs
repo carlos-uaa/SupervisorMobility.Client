@@ -15,6 +15,10 @@ using Blazor.Diagrams.Core.Models;
 using Microsoft.AspNetCore.Components.Web;
 using Newtonsoft.Json;
 using Blazor.Diagrams.Core.Geometry;
+using System.Threading;
+using static SupervisorMobility.Client.Pages.SOSHOE.FlowPage.FlowCreation;
+using Microsoft.AspNetCore.Components.Routing;
+using DocumentFormat.OpenXml.Drawing.ChartDrawing;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 {
@@ -305,15 +309,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             }
         }
 
-        private void OnNodeAdded(NodeModel node)
+        private void OnNodeAdded(NodeModel nodo)
         {
-            node.Changed += (node) =>
+            nodo.Changed += (nodo) =>
             {
-                if (node is NodeModel nodeM)
+                if (nodo is NodeModel nodoM)
                 {
-                    nodeM.RefreshLinks();
+                    nodoM.RefreshLinks();
                 }
             };
+
         }
 
         private void OnLinkAdded(BaseLinkModel link)
@@ -416,138 +421,62 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             };
         }
 
+        private int GetArrayPosition(string alignment)
+        {
+            return alignment switch
+            {
+                nameof(PortAlignment.Left) => (int)Positions.Left,
+                nameof(PortAlignment.Top) => (int)Positions.Top,
+                nameof(PortAlignment.Right) => (int)Positions.Right,
+                nameof(PortAlignment.Bottom) => (int)Positions.Bottom,
+                _ => 0
+            };
+        }
+
+        private string GetPortAlignment(DynamicAnchor anchor, NodeModel node, BaseLinkModel link)
+        {
+            var anchorPosition = anchor.GetPosition(link, link.Route);
+            var leftDistance = Math.Abs(anchorPosition.X - node.Position.X);
+            var rightDistance = Math.Abs(anchorPosition.X - (node.Position.X + node.Size.Width));
+            var topDistance = Math.Abs(anchorPosition.Y - node.Position.Y);
+            var bottomDistance = Math.Abs(anchorPosition.Y - (node.Position.Y + node.Size.Height));
+
+            var minDistance = new[] { leftDistance, rightDistance, topDistance, bottomDistance }.Min();
+
+            if (minDistance == leftDistance) return PortAlignment.Left.ToString();
+            if (minDistance == rightDistance) return PortAlignment.Right.ToString();
+            if (minDistance == topDistance) return PortAlignment.Top.ToString();
+            return PortAlignment.Bottom.ToString();
+        }
+
         private async void OnDrop(DragEventArgs e)
         {
-
             var containerOffset = await JSRuntime.InvokeAsync<Offset>("getOffset", container);
             var mouseX = e.ClientX - containerOffset.Left - 42.35;
             var mouseY = e.ClientY - containerOffset.Top - 21.15;
 
-
             var figureType = await JSRuntime.InvokeAsync<string>("window.getDraggedFigureType");
 
-            Console.WriteLine("Figure Type: " + figureType);
-
-            switch (figureType)
+            NodeModel addedNode = figureType switch
             {
-                case "Terminal":
+                "Terminal" => new TerminalNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                "Proceso" => new ProcessNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                "Decision" => new DecisionNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                "DecisionRombo" => new DecisionRomboNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                "Conexion" => new ConnectionNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                "Suplemento" => new SupplementNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                _ => throw new InvalidOperationException("Tipo de figura desconocido")
+            };
 
+            var addedNodeModel = Diagram.Nodes.Add(addedNode);
+            addedNodeModel.AddPort(PortAlignment.Left);
+            addedNodeModel.AddPort(PortAlignment.Top);
+            addedNodeModel.AddPort(PortAlignment.Right);
+            addedNodeModel.AddPort(PortAlignment.Bottom);
 
-                    var addedTerminal = new TerminalNode(84.7, 42.3, position: new Point(mouseX, mouseY))
-                    {
-                        Title = "",
-                    };
-
-                    var firstNodeTerminal = Diagram.Nodes.Add(addedTerminal);
-                    firstNodeTerminal.AddPort(PortAlignment.Left);
-                    firstNodeTerminal.AddPort(PortAlignment.Top);
-                    firstNodeTerminal.AddPort(PortAlignment.Right);
-                    firstNodeTerminal.AddPort(PortAlignment.Bottom);
-
-                    Diagram.Controls.AddFor(firstNodeTerminal).Add(new ResizeControl());
-                    Diagram.SelectModel(firstNodeTerminal, true);
-                    break;
-
-                case "Proceso":
-
-                    var addedNode = new ProcessNode(84.7, 42.3, position: new Point(mouseX, mouseY))
-                    {
-                        Title = "",
-                    };
-
-                    var firstNode = Diagram.Nodes.Add(addedNode);
-                    firstNode.AddPort(PortAlignment.Left);
-                    firstNode.AddPort(PortAlignment.Top);
-                    firstNode.AddPort(PortAlignment.Right);
-                    firstNode.AddPort(PortAlignment.Bottom);
-
-                    Diagram.Controls.AddFor(firstNode).Add(new ResizeControl());
-                    Diagram.SelectModel(firstNode, true);
-
-                    break;
-
-
-                case "Decision":
-
-                    var addedNodeDecision = new DecisionNode(84.7, 42.3, position: new Point(mouseX, mouseY))
-                    {
-                        Title = "",
-                    };
-
-                    var DecisionNode = Diagram.Nodes.Add(addedNodeDecision);
-                    DecisionNode.AddPort(PortAlignment.Left);
-                    DecisionNode.AddPort(PortAlignment.Top);
-                    DecisionNode.AddPort(PortAlignment.Right);
-                    DecisionNode.AddPort(PortAlignment.Bottom);
-
-                    Diagram.Controls.AddFor(DecisionNode).Add(new ResizeControl());
-                    Diagram.SelectModel(DecisionNode, true);
-
-                    break;
-                case "DecisionRombo":
-
-                    var addedNodeDecisionRombo = new DecisionRomboNode(84.7, 42.3, position: new Point(mouseX, mouseY))
-                    {
-                        Title = "",
-                    };
-
-                    var DecisionRomboNode = Diagram.Nodes.Add(addedNodeDecisionRombo);
-                    DecisionRomboNode.AddPort(PortAlignment.Left);
-                    DecisionRomboNode.AddPort(PortAlignment.Top);
-                    DecisionRomboNode.AddPort(PortAlignment.Right);
-                    DecisionRomboNode.AddPort(PortAlignment.Bottom);
-
-                    Diagram.Controls.AddFor(DecisionRomboNode).Add(new ResizeControl());
-                    Diagram.SelectModel(DecisionRomboNode, true);
-
-                    break;
-
-
-                case "Conexion":
-
-                    var addedNodeConnection = new ConnectionNode(84.7, 42.3, position: new Point(mouseX, mouseY))
-                    {
-                        Title = "",
-                    };
-
-                    var NodeConnection = Diagram.Nodes.Add(addedNodeConnection);
-                    NodeConnection.AddPort(PortAlignment.Left);
-                    NodeConnection.AddPort(PortAlignment.Top);
-                    NodeConnection.AddPort(PortAlignment.Right);
-                    NodeConnection.AddPort(PortAlignment.Bottom);
-
-                    Diagram.Controls.AddFor(NodeConnection).Add(new ResizeControl());
-                    Diagram.SelectModel(NodeConnection, true);
-
-                    break;
-
-
-                case "Suplemento":
-
-                    var addedNodeSuplement = new SupplementNode(84.7, 42.3, position: new Point(mouseX, mouseY))
-                    {
-                        Title = "",
-                    };
-
-                    var NodeSuplement = Diagram.Nodes.Add(addedNodeSuplement);
-                    NodeSuplement.AddPort(PortAlignment.Left);
-                    NodeSuplement.AddPort(PortAlignment.Top);
-                    NodeSuplement.AddPort(PortAlignment.Right);
-                    NodeSuplement.AddPort(PortAlignment.Bottom);
-
-                    Diagram.Controls.AddFor(NodeSuplement).Add(new ResizeControl());
-                    Diagram.SelectModel(NodeSuplement, true);
-
-                    break;
-            }
-
-            //Diagram.SelectModel(firstNode, true);
+            Diagram.Controls.AddFor(addedNodeModel).Add(new ResizeControl());
+            Diagram.SelectModel(addedNodeModel, true);
         }
-
-
-        #region Data structures
-
-
 
         private class Offset
         {
@@ -562,55 +491,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             Right,
             Bottom
         }
-        #endregion
-
-        public class DiagramData
-        {
-            public List<NodeData> Nodes { get; set; } = new();
-            public List<LinkData> Links { get; set; } = new();
-        }
-
-        public class NodeData
-        {
-            public string Id { get; set; }
-            public PositionData Position { get; set; }
-            public string Type { get; set; } // Para restaurar el tipo de nodo
-        }
-
-        public class PositionData
-        {
-            public double X { get; set; }
-            public double Y { get; set; }
-        }
-
-        public class LinkData
-        {
-            public string Id { get; set; }
-            public string SourceNodeId { get; set; }
-            public string TargetNodeId { get; set; }
-        }
-
-
-        private DiagramData ConvertDiagramToData()
-        {
-            var data = new DiagramData
-            {
-
-            };
-
-            return data;
-        }
-
-        private void ConvertDataToDiagram(DiagramData data)
-        {
-            Diagram.Nodes.Clear();
-            Diagram.Links.Clear();
-
-
-
-            StateHasChanged();
-        }
-
 
         private void SaveDiagramAsJson()
         {
@@ -618,23 +498,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             diagramJson = JsonConvert.SerializeObject(data);
             Console.WriteLine("Diagram JSON: " + diagramJson);
         }
-
         private void LoadDiagramFromJson()
         {
             if (!string.IsNullOrEmpty(inputJson))
             {
                 var data = JsonConvert.DeserializeObject<DiagramData>(inputJson);
-                ConvertDataToDiagram(data);
-                StateHasChanged();
+                if (data != null)
+                {
+                    ConvertDataToDiagram(data);
+                    StateHasChanged();
+                }
             }
         }
 
-        String SelectedFigure = "";
-        private void SelectDataFigure(string DataFigure)
-        {
-            SelectedFigure = DataFigure;
-            Console.WriteLine(SelectedFigure);
-        }
 
         private async void ChangedExpandedDiagram()
         {
@@ -642,5 +518,171 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             await JSRuntime.InvokeVoidAsync("window.preventDefaultDragOver", container);
             await JSRuntime.InvokeVoidAsync("window.addEventsToFigures");
         }
+
+        private DiagramData ConvertDiagramToData()
+        {
+            var data = new DiagramData
+            {
+                Nodes = Diagram.Nodes.Select(node => new NodeData
+                {
+                    Id = node.Id,
+                    Position = new PositionData { X = node.Position.X, Y = node.Position.Y },
+                    Size = new SizeData { Width = node.Size.Width-20, Height = node.Size.Height-20 },
+                    Type = node.GetType().Name,
+                    Title = node?.Title ?? string.Empty
+                }).ToList(),
+
+                Links = Diagram.Links.Select(link =>
+                {
+                    var sourceNode = link.Source.Model as NodeModel;
+                    var targetNode = link.Target.Model as NodeModel;
+
+                    var sourcePortAlignment = link.Source is DynamicAnchor source_Anchor ? GetPortAlignment(source_Anchor, sourceNode, link) : "No disponible";
+                    var targetPortAlignment = link.Target is DynamicAnchor target_Anchor ? GetPortAlignment(target_Anchor, targetNode, link) : "No disponible";
+
+                    return new LinkData
+                    {
+                        Id = link.Id,
+                        SourceNodeId = sourceNode?.Id,
+                        TargetNodeId = targetNode?.Id,
+                        SourcePort = sourcePortAlignment,
+                        TargetPort = targetPortAlignment
+                    };
+                }).ToList()
+            };
+
+            return data;
+        }
+        private void ConvertDataToDiagram(DiagramData data)
+        {
+            Diagram.Nodes.Clear();
+            Diagram.Links.Clear();
+
+            var nodeDictionary = new Dictionary<string, NodeModel>();
+
+            foreach (var nodeData in data.Nodes)
+            {
+
+                /////////////////////////////////
+                //NodeModel addedNode = figureType switch
+                //{
+                //    "Terminal" => new TerminalNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                //    "Proceso" => new ProcessNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                //    "Decision" => new DecisionNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                //    "DecisionRombo" => new DecisionRomboNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                //    "Conexion" => new ConnectionNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                //    "Suplemento" => new SupplementNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                //    _ => throw new InvalidOperationException("Tipo de figura desconocido")
+                //};
+
+                //var addedNodeModel = Diagram.Nodes.Add(addedNode);
+                //addedNodeModel.AddPort(PortAlignment.Left);
+                //addedNodeModel.AddPort(PortAlignment.Top);
+                //addedNodeModel.AddPort(PortAlignment.Right);
+                //addedNodeModel.AddPort(PortAlignment.Bottom);
+
+                //Diagram.Controls.AddFor(addedNodeModel).Add(new ResizeControl());
+                //Diagram.SelectModel(addedNodeModel, true);
+                //////////////
+
+
+                NodeModel node = nodeData.Type switch
+                {
+                    nameof(TerminalNode) => new TerminalNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(ProcessNode) => new ProcessNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(ConnectionNode) => new ConnectionNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(SupplementNode) => new SupplementNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(DecisionNode) => new DecisionNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(DecisionRomboNode) => new DecisionRomboNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    _ => throw new InvalidOperationException("Tipo de nodo desconocido")
+                };
+
+                var NodeModel = Diagram.Nodes.Add(node);
+                NodeModel.AddPort(PortAlignment.Left);
+                NodeModel.AddPort(PortAlignment.Top);
+                NodeModel.AddPort(PortAlignment.Right);
+                NodeModel.AddPort(PortAlignment.Bottom);
+
+                Diagram.Controls.AddFor(NodeModel).Add(new ResizeControl());
+                nodeDictionary[nodeData.Id] = NodeModel;
+                //Diagram.Nodes.Add(node);
+                Diagram.Refresh();
+
+            }
+
+            foreach (var linkData in data.Links)
+            {
+                if (nodeDictionary.TryGetValue(linkData.SourceNodeId, out var sourceNode) &&
+                    nodeDictionary.TryGetValue(linkData.TargetNodeId, out var targetNode))
+                {
+                    var sourcePort = sourceNode.Ports.FirstOrDefault(p => p.Alignment.ToString() == linkData.SourcePort);
+                    var targetPort = targetNode.Ports.FirstOrDefault(p => p.Alignment.ToString() == linkData.TargetPort);
+                    
+                    //Si intento obtener el anchor falla, como si el nodo fuera nullo
+                    var srcAnchor = (sourceNode as ICmpAnchors).Anchors[GetArrayPosition(linkData.SourcePort)];
+                    var tgtAnchor = (targetNode as ICmpAnchors).Anchors[GetArrayPosition(linkData.TargetPort)];
+
+
+                    if (sourceNode is SupplementNode || targetNode is SupplementNode)
+                    {
+                        var link = new LinkModel(sourcePort, targetPort);
+
+                        link.Router = new DashedCustomRouter();
+                        Diagram.Links.Add(link);
+                        link.Refresh();
+
+                    }
+                    else
+                    {
+                        var newLink = new LinkModel(srcAnchor, tgtAnchor)
+                        {
+                            TargetMarker = LinkMarker.Arrow,
+                        };
+                        newLink.Router = new CustomRouter();
+
+                        Diagram.Links.Add(newLink);
+
+                        newLink.Refresh();
+
+                    }
+
+                    Diagram.Refresh();
+                }
+            }
+
+            StateHasChanged();
+        }
+
+        private void PrintDiagramContent()
+        {
+            Console.WriteLine("Nodos del diagrama:");
+            foreach (var node in Diagram.Nodes)
+            {
+                Console.WriteLine($"Nodo ID: {node.Id}, Tipo: {node.GetType().Name}, Título: {node.Title}, Posición: ({node.Position.X}, {node.Position.Y}), Tamaño: ({node.Size.Width}, {node.Size.Height})");
+                foreach (var port in node.Ports)
+                {
+                    Console.WriteLine($"   Puerto ID: {port.Id}, Alineación: {port.Alignment}");
+                }
+            }
+
+            Console.WriteLine("Enlaces del diagrama:");
+            foreach (var link in Diagram.Links)
+            {
+                var sourceNode = link.Source.Model as NodeModel;
+                var targetNode = link.Target.Model as NodeModel;
+
+                var sourceAnchor = link.Source as DynamicAnchor;
+                var targetAnchor = link.Target as DynamicAnchor;
+
+                var sourcePosition = sourceAnchor?.GetPosition(link, link.Route);
+                var targetPosition = targetAnchor?.GetPosition(link, link.Route);
+
+                var sourcePortAlignment = link.Source is DynamicAnchor source_Anchor ? GetPortAlignment(source_Anchor, sourceNode, link) : "No disponible";
+                var targetPortAlignment = link.Target is DynamicAnchor target_Anchor ? GetPortAlignment(target_Anchor, targetNode, link) : "No disponible";
+
+                Console.WriteLine($"Enlace ID: {link.Id}, Nodo Origen: {sourceNode?.Id}, Nodo Destino: {targetNode?.Id}, Posición Origen: ({sourcePosition?.X}, {sourcePosition?.Y}), Port Origen: {sourcePortAlignment} , Posición Destino: ({targetPosition?.X}, {targetPosition?.Y}), Port Destino: {targetPortAlignment}");
+            }
+        }
+
     }
 }

@@ -47,7 +47,7 @@ namespace SupervisorMobility.Client.Services.BridgeCDMSService
                 else
                 {
                     //await _js.InvokeVoidAsync("alert", $"Error get folders: {response.Content.ReadAsStringAsync().Result}");
-                    Console.WriteLine($"GET FOLDERS CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
+                    //Console.WriteLine($"GET FOLDERS CCP, Status Code {response.StatusCode} : {response.Content.ReadAsStringAsync().Result}");
                 }
             }
             catch (HttpRequestException ex)
