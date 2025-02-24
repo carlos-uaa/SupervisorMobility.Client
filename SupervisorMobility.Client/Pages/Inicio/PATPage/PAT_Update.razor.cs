@@ -73,6 +73,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private int operator_id { get; set; }
         private int supervisor_id { get; set; }
         private string ProgrammedStartDate { get; set; }
+        private string ILULevelAux { get; set; }
 
 
         private string leader { get; set; } = "S";
@@ -518,9 +519,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
 
         bool CreateILUJob = false;
-        void CreateJobObservation(int distributionId, int operatorId)
+        void CreateJobObservation(int distributionId, int operatorId, string ILULevelNumber = "")
         {
             distribution_id = distributionId;
+            ILULevelAux = ILULevelNumber == "§" ? "" : ILULevelNumber;
 
             operator_id = operatorId;
 
