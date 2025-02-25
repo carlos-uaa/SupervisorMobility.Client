@@ -1,8 +1,15 @@
 using MudBlazor;
-using System.Text.RegularExpressions;
-using System.Text;
-using System.Globalization;
 using Microsoft.JSInterop;
+using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
+using SupervisorMobility.Client.Pages.SOSHOE.FlowPage.Widgets;
+using Blazor.Diagrams.Core.Models.Base;
+using Blazor.Diagrams.Core.Models;
+using Blazor.Diagrams.Core.Geometry;
+using Blazor.Diagrams;
+using Blazor.Diagrams.Core.PathGenerators;
+using Blazor.Diagrams.Core.Routers;
+using Blazor.Diagrams.Options;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 {
@@ -51,8 +58,48 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
+
+        //Duagram
+        private BlazorDiagram Diagram { get; set; } = null!;
+        private bool _gridPoints;
+
         protected async override Task OnInitializedAsync()
         {
+            var options = new BlazorDiagramOptions
+            {
+                AllowMultiSelection = true,
+                Zoom =
+                {
+                    Enabled = false,
+                },
+                Links =
+                {
+                    DefaultRouter = new OrthogonalRouter(),
+                    DefaultPathGenerator = new StraightPathGenerator()
+                },
+                AllowPanning = false
+            };
+
+            if (Diagram == null)
+            {
+
+                Diagram = new BlazorDiagram(options);
+                Diagram.RegisterComponent<TerminalNode, Widgets.Terminal>();
+                Diagram.RegisterComponent<ProcessNode, Widgets.Process>();
+                Diagram.RegisterComponent<ConnectionNode, Widgets.Connection>();
+                Diagram.RegisterComponent<SupplementNode, Widgets.Supplement>();
+                Diagram.RegisterComponent<DecisionNode, Widgets.Decision>();
+                Diagram.RegisterComponent<DecisionRomboNode, Widgets.DecisionRombo>();
+                Diagram.RegisterComponent<CommentaryNode, Widgets.Commentary>();
+
+
+                Diagram.RegisterComponent<ResizeControl, Widgets.ResizeControlWidget>();
+
+                Diagram.PointerUp += (mdl, args) =>
+                {
+                    Diagram.Refresh();
+                };
+            }
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
@@ -80,6 +127,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             {
 
                 _sosFlow = await SOSFlowServices.GetSOSFlow((int)FlowId, true, true, true, true, true);
+                _ = await LoadDiagramFromJson();
+
                 if (_sosFlow.FlowLogbooks != null)
                 {
                     mostRecentLogs = _sosFlow.FlowLogbooks
@@ -121,7 +170,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             if (hasProperty)
             {
                 json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
-                user = JsonSerializer.Deserialize<User>(json) ?? new();
+                user = System.Text.Json.JsonSerializer.Deserialize<User>(json) ?? new();
 
             }
             return hasProperty;
@@ -258,5 +307,163 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
         {
             NavigationManager.NavigateTo($"/soshoe/Flow/Update/{FlowId}");
         }
+
+        private async Task<AsyncVoidMethodBuilder> LoadDiagramFromJson()
+        {
+            if (!string.IsNullOrEmpty(_sosFlow.Flow))
+            {
+                var data = JsonConvert.DeserializeObject<DiagramData>(_sosFlow.Flow);
+                if (data != null)
+                {
+                    ConvertDataToDiagram(data);
+                    StateHasChanged();
+                }
+            }
+            return new AsyncVoidMethodBuilder();
+        }
+
+        private async Task<AsyncVoidMethodBuilder> ConvertDataToDiagram(DiagramData data)
+        {
+            Diagram.Nodes.Clear();
+            Diagram.Links.Clear();
+
+            var nodeDictionary = new Dictionary<string, List<NodeModel>>();
+
+            foreach (var nodeData in data.Nodes)
+            {
+
+                NodeModel node = nodeData.Type switch
+                {
+                    nameof(TerminalNode) => new TerminalNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(ProcessNode) => new ProcessNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(ConnectionNode) => new ConnectionNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(SupplementNode) => new SupplementNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(DecisionNode) => new DecisionNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(DecisionRomboNode) => new DecisionRomboNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(CommentaryNode) => new CommentaryNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    _ => throw new InvalidOperationException("Tipo de nodo desconocido")
+                };
+
+                var nodeModelToAdd = Diagram.Nodes.Add(node);
+
+                if (nameof(CommentaryNode) != nodeData.Type)
+                {
+                    nodeModelToAdd.AddPort(PortAlignment.Left);
+                    nodeModelToAdd.AddPort(PortAlignment.Top);
+                    nodeModelToAdd.AddPort(PortAlignment.Right);
+                    nodeModelToAdd.AddPort(PortAlignment.Bottom);
+                }
+
+
+                if (!nodeDictionary.ContainsKey(nodeData.Id))
+                {
+                    nodeDictionary[nodeData.Id] = new List<NodeModel>();
+                }
+                nodeDictionary[nodeData.Id].Add(nodeModelToAdd);
+
+                Diagram.Refresh();
+
+            }
+
+            foreach (var linkData in data.Links)
+            {
+                if (nodeDictionary.TryGetValue(linkData.SourceNodeId, out var sourceNodes) &&
+                    nodeDictionary.TryGetValue(linkData.TargetNodeId, out var targetNodes))
+                {
+                    foreach (var sourceNode in sourceNodes)
+                    {
+                        foreach (var targetNode in targetNodes)
+                        {
+
+                            var sourcePort = sourceNode.Ports.FirstOrDefault(p => p.Alignment.ToString() == linkData.SourcePort);
+                            var targetPort = targetNode.Ports.FirstOrDefault(p => p.Alignment.ToString() == linkData.TargetPort);
+
+
+                            var srcNode = sourcePort.Parent;
+
+                            int position = GetArrayPosition(linkData.SourcePort);
+
+                            if (srcNode != null && srcNode is ICmpAnchors srcAnchors)
+                            {
+                                var srcAnchor = srcAnchors.Anchors[position];
+
+                                var tgtNode = targetPort.Parent;
+
+                                position = GetArrayPosition(linkData.TargetPort);
+
+                                if (tgtNode != null && tgtNode is ICmpAnchors tgtAnchors)
+                                {
+                                    var tgtAnchor = tgtAnchors.Anchors[position];
+
+                                    BaseLinkModel link = new LinkModel(srcAnchor, tgtAnchor);
+                                    if (srcNode is SupplementNode || tgtNode is SupplementNode)
+                                    {
+                                        link.Router = new DashedCustomRouter();
+                                    }
+                                    else
+                                    {
+                                        link.TargetMarker = LinkMarker.Arrow;
+                                        link.Router = new CustomRouter();
+                                    }
+                                    link.Locked = true; 
+
+                                    Diagram.Links.Add(link);
+                                    link.Refresh();
+                                    Diagram.Refresh();
+                                }
+
+                            }
+
+
+                            Diagram.Refresh();
+                        }
+                    }
+
+
+                }
+            }
+
+            foreach(NodeModel node in Diagram.Nodes)
+            {
+                foreach(var port in node.Ports)
+                {
+                    port.Locked = true;
+                }
+                node.Locked = true;
+            }
+
+
+            StateHasChanged();
+            return new AsyncVoidMethodBuilder();
+        }
+
+        enum Positions
+        {
+            Left,
+            Top,
+            Right,
+            Bottom
+        }
+        private int GetArrayPosition(string alignment)
+        {
+            return alignment switch
+            {
+                nameof(PortAlignment.Left) => (int)Positions.Left,
+                nameof(PortAlignment.Top) => (int)Positions.Top,
+                nameof(PortAlignment.Right) => (int)Positions.Right,
+                nameof(PortAlignment.Bottom) => (int)Positions.Bottom,
+                _ => 0
+            };
+        }
+        public bool GridPoints
+        {
+            get => _gridPoints;
+            set
+            {
+                _gridPoints = value;
+                Diagram.Refresh();
+            }
+        }
+
     }
 }
