@@ -521,7 +521,7 @@
                                                                         @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
                                                                         {
                                                                             <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                                <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
+                                                                                <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))">
                                                                                     @Localizer["sosReviewILU"]
                                                                                 </MudMenuItem>
                                                                                 <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
@@ -541,8 +541,8 @@
                                                                     </td>
                                                                     <td colspan="2">
                                                                         <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
-                                                                                @Localizer["createJobObservation"]
+                                                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))">
+                                                                                @Localizer["sosReviewILU"]
                                                                             </MudMenuItem>
                                                                             <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
                                                                                 <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
@@ -937,12 +937,34 @@
                                                         <table style="border: none">
                                                             <tbody>
                                                                 @{
-                                                                    var latestContext = context?.Where(d => d.AcquisitionDate.Value.Month == _yearMonth.Value.Month).OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
-                                                                    string ILULevelNumber = "§";
-                                                                    @if (latestContext != null)
+                                                                    var latestContexts = context?
+                                                                    .Where(d => d.AcquisitionDate.HasValue && d.AcquisitionDate.Value.Month == _yearMonth.Value.Month)
+                                                                    .OrderByDescending(c => c.AcquisitionDate)
+                                                                    .ToList();
+
+                                                                    var latestContext = latestContexts?.FirstOrDefault(); 
+
+                                                                    if (latestContext != null)
                                                                     {
-                                                                        ILULevelNumber = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId).ILULevelCode;
+                                                                        var previousContext = latestContexts?.Skip(1).FirstOrDefault();
+
+                                                                        string latestLevel = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId)?.ILULevelCode ?? "§";
+                                                                        string previousLevel = previousContext != null
+                                                                        ? _LevelsILU.Find(u => u.ILULevelId == previousContext.ILULevelId)?.ILULevelCode ?? "§"
+                                                                        : "§";
+
+                                                                        if ((latestLevel == "I" && previousLevel == "ITrainee") ||
+                                                                        (latestLevel == "L" && previousLevel == "LTrainee") ||
+                                                                        (latestLevel == "U" && previousLevel == "UTrainee"))
+                                                                        {
+                                                                            latestContext = previousContext; 
+                                                                        }
                                                                     }
+
+                                                                    string ILULevelNumber = latestContext != null
+                                                                    ? _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId)?.ILULevelCode ?? "§"
+                                                                    : "§";
+
                                                                 }
 
                                                                 @if (latestContext != null)
@@ -1001,8 +1023,8 @@
                                                                                 @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
                                                                                 {
                                                                                     <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
-                                                                                            @Localizer["createJobObservation"]
+                                                                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))">
+                                                                                            @Localizer["sosReviewILU"]
                                                                                         </MudMenuItem>
                                                                                         <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
                                                                                             <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
@@ -1022,8 +1044,8 @@
                                                                         </td>
                                                                         <td>
                                                                             <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                                <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId))">
-                                                                                    @Localizer["createJobObservation"]
+                                                                                <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))">
+                                                                                    @Localizer["sosReviewILU"]
                                                                                 </MudMenuItem>
                                                                                 <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
                                                                                     <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
@@ -1665,7 +1687,12 @@ else
     <DialogContent>
         <MudContainer Style="max-height: 75vh; overflow-y: scroll">
 
-            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation plant_id="_pat.PlantId" area_id="_pat.AreaId" LoggedUser="user" distribution_id="distribution_id" operator_id="operator_id" supervisor_id="supervisor_id" ProgrammedStartDate="ProgrammedStartDate"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation>
+            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation 
+                        plant_id="_pat.PlantId" area_id="_pat.AreaId" LoggedUser="user" distribution_id="distribution_id" 
+                        operator_id="operator_id" supervisor_id="supervisor_id" ProgrammedStartDate="ProgrammedStartDate"
+                        ILULevelAux="@ILULevelAux"
+            >
+            </SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation>
         </MudContainer>
     </DialogContent>
     <DialogActions>
