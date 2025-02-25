@@ -117,31 +117,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                             var tgtAnchor = tgtAnchors.Anchors[position];
 
 
-                            // Verificar si el nodo fuente o destino es un SupplementNode
+                            BaseLinkModel link = new LinkModel(srcAnchor, tgtAnchor);
                             if (srcNode is SupplementNode || tgtNode is SupplementNode)
                             {
-                                var link = new CustomLinkModel(srcAnchor, tgtAnchor);
-
                                 link.Router = new DashedCustomRouter();
-                                Diagram.Links.Add(link);
-                                link.Refresh();
-
                             }
                             else
                             {
-
-                                var newLink = new LinkModel(srcAnchor, tgtAnchor)
-                                {
-                                    TargetMarker = LinkMarker.Arrow,
-                                };
-                                newLink.Router = new CustomRouter();
-
-                                Diagram.Links.Add(newLink);
-
-                                newLink.Refresh();
-
+                                link.TargetMarker = LinkMarker.Arrow;
+                                link.Router = new CustomRouter();
                             }
-
+                            Diagram.Links.Add(link);
+                            link.Refresh();
                             Diagram.Refresh();
                         }
                     }

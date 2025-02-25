@@ -13,17 +13,6 @@ using static MudBlazor.CategoryTypes;
 namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage.Widgets
 {
 
-    public class CustomLinkModel : LinkModel
-    {
-        public double[] StrokeDashArray { get; set; }
-
-        public CustomLinkModel(Anchor source, Anchor target) : base(source, target)
-        {
-            // Inicializar con un patrón de línea punteada
-            StrokeDashArray = new double[] { 5, 5 };
-        }
-    }
-
     public class DashedCustomRouter : NormalRouter
     {
         private readonly Router _fallbackRouter;
@@ -41,35 +30,53 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage.Widgets
         public override Point[] GetRoute(Diagram diagram, BaseLinkModel link)
         {
             if (link.Source == null || link.Target == null)
-                return _fallbackRouter.GetRoute(diagram, link); // No routing possible if ports are not set
-            if (link.Source is DynamicAnchor originAnchor)
             {
-                if (link.Target is DynamicAnchor targetAnchor)
+                Console.WriteLine("link.Source o link.Target son nulos. Usando ruta de respaldo.");
+                return _fallbackRouter.GetRoute(diagram, link);
+            }
+
+
+
+            if (link.Source is DynamicAnchor originAnchor && link.Target is DynamicAnchor targetAnchor)
+            {
+                var originNode = originAnchor.Node;
+                var targetNode = targetAnchor.Node;
+
+                if (originAnchor.Providers.Count() == 0 || targetAnchor.Providers.Count() == 0)
                 {
-                    var originNode = originAnchor.Node;
-                    var targetNode = targetAnchor.Node;
-
-                    var originPosition = originAnchor.Providers[0] as BoundsBasedPositionProvider;
-                    var targetPosition = targetAnchor.Providers[0] as BoundsBasedPositionProvider;
-
-                    PortAlignment originAlignment = GetPortAlignment(originPosition.X, originPosition.Y);
-                    PortAlignment targetAlignment = GetPortAlignment(targetPosition.X, targetPosition.Y);
-
-                    var points = new List<Point>();
-
-                    // Get the dynamic positions of the source and target ports
-                    var sourcePoint = link.Source.GetPosition(link);
-                    var targetPoint = link.Target.GetPosition(link);
-
-                    // Add the starting point
-                    points.Add(sourcePoint);
-
-                    // Check the relative positions of the source and target
-                    CalculateOrthogonalPath(points, sourcePoint, targetPoint, originAlignment, targetAlignment, originNode as ICmpAnchors, targetNode as ICmpAnchors);
-
-
-                    return points.ToArray();
+                    Console.WriteLine("Proveedores de anclaje nulos o vacíos.");
+                    return _fallbackRouter.GetRoute(diagram, link);
                 }
+
+                var originPosition = originAnchor.Providers[0] as BoundsBasedPositionProvider;
+                var targetPosition = targetAnchor.Providers[0] as BoundsBasedPositionProvider;
+
+                if (originPosition == null || targetPosition == null)
+                {
+                    Console.WriteLine("originPosition o targetPosition son nulos.");
+                    return _fallbackRouter.GetRoute(diagram, link);
+                }
+
+                PortAlignment originAlignment = GetPortAlignment(originPosition.X, originPosition.Y);
+                PortAlignment targetAlignment = GetPortAlignment(targetPosition.X, targetPosition.Y);
+
+                var points = new List<Point>();
+
+                // Validación adicional para evitar valores nulos en GetPosition
+                var sourcePoint = originAnchor.GetPosition(link);
+                var targetPoint = targetAnchor.GetPosition(link);
+
+                if (sourcePoint == null || targetPoint == null)
+                {
+                    Console.WriteLine("sourcePoint o targetPoint son nulos.");
+                    return _fallbackRouter.GetRoute(diagram, link);
+                }
+
+                points.Add(sourcePoint);
+
+                CalculateOrthogonalPath(points, sourcePoint, targetPoint, originAlignment, targetAlignment, originNode as ICmpAnchors, targetNode as ICmpAnchors);
+
+                return points.ToArray();
             }
             return _fallbackRouter.GetRoute(diagram, link);
         }
