@@ -14,6 +14,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         [Parameter]
         public int DistributionId { get; set; }
 
+        [Parameter]
+        public bool? CriticalTypeUpdatePat { get; set; } = false;
+
+        [Parameter]
+        public EventCallback<bool> OnDistUpdate { get; set; }
+
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
 
@@ -76,7 +82,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
 
             if (result)
             {
-                NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+                if ((bool)CriticalTypeUpdatePat)
+                {
+                    await OnDistUpdate.InvokeAsync(true);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}");
+                }
+            }
+            else
+            {
+
             }
 
         }
