@@ -522,7 +522,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         void CreateJobObservation(int distributionId, int operatorId, string ILULevelNumber = "")
         {
             distribution_id = distributionId;
-            ILULevelAux = ILULevelNumber == "§" ? "" : ILULevelNumber;
+            ILULevelAux = ILULevelNumber == "§" ? " " : ILULevelNumber;
 
             operator_id = operatorId;
 
