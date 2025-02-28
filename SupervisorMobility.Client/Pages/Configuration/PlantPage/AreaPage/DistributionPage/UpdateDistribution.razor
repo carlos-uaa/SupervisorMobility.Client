@@ -10,28 +10,6 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["updateDistribution"]</PageTitle>
 
-@*Breadcrumb links*@
-@* <MudBreadcrumbs Class="mb-10" Items="_links">
-    <ItemTemplate Context="item">
-        @if (item.Text == Localizer["plantDetails"])
-        {
-            <MudButton @onclick="(() => GoToPlant())" Variant="Variant.Text" Color="Color.Info">@_plant.Description</MudButton>
-        }
-        else if (item.Text == Localizer["areaDetails"])
-        {
-            <MudButton @onclick="(() => GoToArea())" Variant="Variant.Text" Color="Color.Info">@_area.Description</MudButton>
-        }
-        else if (item.Text == Localizer["updateDistribution"])
-        {
-            <MudButton Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@Localizer["update"] @_distribution.Description</MudButton>
-        }
-        else
-        {
-            <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-        }
-    </ItemTemplate>
-</MudBreadcrumbs> *@
-
 @*Form*@
 <EditForm Model="_distribution" class="mt-10" OnValidSubmit="UpdateDistributionAsync">
     <DataAnnotationsValidator />
@@ -40,16 +18,20 @@
             <MudCard>
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Typo="Typo.h6">@Localizer["update"] @Localizer["distribution"]</MudText>
+                          @if (!(bool)CriticalTypeUpdatePat){
+                            <MudText Typo="Typo.h6">@Localizer["update"] @Localizer["distribution"]</MudText>
+                          }else{
+                            <MudText Typo="Typo.h6">@Localizer["update"] @Localizer["CriticalType"]</MudText>
+                          }
                     </CardHeaderContent>
                     <CardHeaderActions>
-                        <MudChip Variant="Variant.Text" Color="Color.Info">@Localizer["updateDistribution"]</MudChip>
+                      
                     </CardHeaderActions>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudTextField Label="@Localizer["description"]"
+                    <MudTextField ReadOnly="(bool)CriticalTypeUpdatePat" Label="@Localizer["description"]"
                                   @bind-Value="_distribution.Description" For="@(() => _distribution.Description)" />
-                    <MudTextField Label="@Localizer["code"]" Class="mt-3"
+                    <MudTextField ReadOnly="(bool)CriticalTypeUpdatePat" Label="@Localizer["code"]" Class="mt-3"
                                   @bind-Value="_distribution.Code" For="@(() => _distribution.Code)" />
 
                     <MudSelect T="int" Label="@Localizer1["ACCriticalLabel"]" Placeholder="@Localizer1["ACPHCritical"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_distribution.CriticalType" For="@(() => _distribution.CriticalType)">
@@ -61,11 +43,16 @@
                         <MudSelectItem Value="5">@($"{Localizer["OPCritical"]}")</MudSelectItem>
 
                     </MudSelect>
-                    <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_distribution.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                    @if (!(bool)CriticalTypeUpdatePat)
+                    {
+                        <MudSwitch ReadOnly="(bool)CriticalTypeUpdatePat" Class="mt-3" Label="Is active?" @bind-Checked="_distribution.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                    }
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["save"]</MudButton>
-                    <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">@Localizer["cancel"]</MudButton>
+                    @if (!(bool)CriticalTypeUpdatePat){
+                        <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateOrUpdate())">@Localizer["cancel"]</MudButton>
+                    }
                 </MudCardActions>
             </MudCard>
         </MudItem>
