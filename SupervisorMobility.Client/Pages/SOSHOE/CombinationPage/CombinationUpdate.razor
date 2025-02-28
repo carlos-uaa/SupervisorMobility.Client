@@ -223,12 +223,12 @@ else
                 <MudTd colspan="2"><b>PLANTA</b><br />@_sosCombination.SOSHub?.Plant?.Description</MudTd>
                 <MudTd><b>GERENCIA</b><br />@_sosCombination.SOSHub?.Department?.Description</MudTd>
             </MudTr>
-            <td class="divider images_cell" colspan="7" style="min-width: 30vw; height: 100%;">
-                <MudItem Class="d-flex" Style="justify-content: center; margin-top: 2px; margin-bottom: -8px;">
+        <td class="divider images_cell" colspan="7" style="min-width: 30vw; height: 100%;">
+            <MudItem Class="d-flex" Style="justify-content: center; margin-top: 2px; margin-bottom: -8px;">
                     @if (capturedImages.Any() || PreviousImages.Any())
                     {
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start; overflow-y: scroll; max-height:65vh; scroll-behavior: smooth; justify-content: center;">
                                 @foreach (var (image, index) in PreviousImages.Select((image, index) => (image, index)))
                                 {
                                 <MudItem Class=" mr-8 mb-4">
@@ -264,15 +264,14 @@ else
                     {
                     <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
                             @Localizer["There are no images"]
-                        </MudAlert>
-                        <MudButton Style="float: right;"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.Image"
-                                    @onclick="(() => OpenEditImageDialog(false))"
-                                    >
-                            Load picture
-                        </MudButton>
+                    </MudAlert>
+                    <MudButton Style="float: right;"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Image"
+                               @onclick="(() => OpenEditImageDialog(false))">
+                        Load picture
+                    </MudButton>
                     }
             </MudItem>
         </td>
@@ -436,8 +435,7 @@ else
                     if (indexOperationSequence > 0)
                     {
                         double previousSteps = 0.0;
-                        double.TryParse(
-                        _sosCombination.SOSCombinationOperationSequence.ElementAt(indexOperationSequence - 1).StepsToNextProcess?.Replace(",", ".") ?? "0",
+                        double.TryParse(_sosCombination.SOSCombinationOperationSequence.ElementAt(indexOperationSequence - 1).StepsToNextProcess?.Replace(",", ".") ?? "0",
                         System.Globalization.NumberStyles.Any,
                         System.Globalization.CultureInfo.InvariantCulture,
                         out previousSteps);
@@ -451,6 +449,31 @@ else
                     StepCurrentFragment = StepPrevious;
                     StepPrevious = AuxStepTiem;
 
+                    if (StepPrevious == 0 && StepCurrentFragment == 0)
+                    {
+                        StepCurrentFragment = steps;
+                    }
+                    else if (indexOperationSequence > 0)
+                    {
+                        double previousSteps = 0.0;
+                        double.TryParse(_sosCombination.SOSCombinationOperationSequence.ElementAt(indexOperationSequence - 1).StepsToNextProcess?.Replace(",", ".") ?? "0",
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out previousSteps);
+                        previousSteps = RoundToThreeDecimals(previousSteps);
+
+                        double previousFragment = Math.Floor((previousSteps / 2) * 100) / 100;
+                        StepCurrentFragment = RoundToThreeDecimals(previousSteps - previousFragment);
+
+                        if (StepPrevious == previousSteps)
+                        {
+                            StepPrevious = 0;
+                        }
+                    }
+
+                    Console.WriteLine($"Index: {indexOperationSequence} Steps: {steps} StepCurrentFragment: {StepCurrentFragment}  stepPreviws: {StepPrevious}");
+
+
                     if (isLastValidOperation)
                     {
                         StepCurrentFragment = steps;
@@ -458,17 +481,25 @@ else
                     else if (indexOperationSequence > lastValidOperationIndex)
                     {
                         StepPrevious = 0;
+                        if (manualOperationTime > 0 && manualWithMachineTime <= 0)
+                        {
+                            top = 31;
+                        }
+                        else if (manualOperationTime > 0 && manualWithMachineTime > 0)
+                        {
+                            top = 40;
+                        }
                     }
-                    // Start the row
+                        // Start the row
                     <tr style="height: 65px;">
                         <td>
-                            <div class="d-flex flex-column" style="align-items: center;">
+                            @*   <div class="d-flex flex-column" style="align-items: center;">
                                 <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Disabled="@(indexOperationSequence == 0)"
                                                OnClick="() => MoveStepsProcess(indexOperationSequence, -1)" />
                                 <span>@(indexOperationSequence + 1)</span>
                                 <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Disabled="@(indexOperationSequence == _sosCombination.SOSCombinationOperationSequence.Count - 1)"
                                                OnClick="() => MoveStepsProcess(indexOperationSequence, 1)" />
-                            </div>
+                            </div> *@
                         </td>
                         <td>@operationSequence.ProcessName</td>
                         <td style="min-width: 95px;">
@@ -582,7 +613,7 @@ else
 
 
                                         <td class="tacktime-cell" style="position: relative; overflow: @(isLastValidOperation ? "visible" : "hidden");">
-                                            <div style="position: absolute; top: 15px; left: 50px; width: 50%; height: 2px; background: black;"></div>
+                                            <div style="position: absolute; top: 15px; width: 50%; height: 2px; background: black;"></div>
                                             @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
                                             {
                                                 double relativePosition = ((_tackTimePosition - cellStart) / (cellEnd - cellStart)) * 100; // Posición relativa en porcentaje
