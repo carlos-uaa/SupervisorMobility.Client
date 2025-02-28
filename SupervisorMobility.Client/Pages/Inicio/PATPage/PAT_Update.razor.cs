@@ -3,6 +3,10 @@ using MudBlazor;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
+using System.Security.AccessControl;
+using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -37,6 +41,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private int auxILU_OpId = 0;
         public int userHciId = 0;
         private bool UserHasHci = false;
+        private bool UpdateOperationDialog = false;
 
         private List<ILURegister> AllRegistersOperationsInUser { get; set; } = new();
         private List<ILURegister> AllRegistersUsersInOperation { get; set; } = new();
@@ -414,6 +419,45 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
             ILUHistoryOperationDialog = true;
             StateHasChanged();
+        }
+        private async void OpenUpdate_Operation(int Dist_Id)
+        {
+            distribution_id = Dist_Id;
+
+            UpdateOperationDialog = true;
+            StateHasChanged();
+        }  
+        private async void CloseUpdateOperation()
+        {
+         
+            UpdateOperationDialog = false;
+            StateHasChanged();
+        }
+
+        private async void HandleCriticalUpdated(bool isUpdate)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (isUpdate)
+            {
+                Distribution updatedDist = await DistributionsServices.GetDistributionWithCollections(_pat.PlantId, _pat.AreaId, distribution_id);
+
+                int index = _distributions.FindIndex(d => d.DistributionId == updatedDist.DistributionId);
+
+                // Si se encuentra la distribución, reemplázala con updatedDist
+                if (index != -1)
+                {
+                    _distributions[index] = updatedDist;
+                }
+
+                UpdateOperationDialog = false;
+                Snackbar.Add($"{Localizer1["CriticalUpdateSucces"]}", Severity.Info);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add($"{Localizer1["CriticalUpdateError"]}", Severity.Error);
+            }
         }
 
         private async void CloseHistoryILU()

@@ -618,20 +618,25 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             double remainingSteps = steps - (fullCells * _CellSize);
             double result;
 
-            Console.WriteLine("Full" + fullCells);
-            Console.WriteLine("Remain" + remainingSteps);
+            //Console.WriteLine($"Step: {steps}  Full: " + fullCells + "Remain: " + remainingSteps);
 
-
-            if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+            if(steps < _HalfCellSize)
             {
+                result = 14;
+            }
+            else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+            {
+                Console.WriteLine("Into casi half full ");
                 result = fullCells * 33 + _HalfCellSize;
             }
             else if (remainingSteps > _HalfCellSize)
             {
+                Console.WriteLine("Into full more half ");
                 result = (fullCells + 1) * 33;
             }
             else
             {
+                Console.WriteLine("Into full  ");
                 result = fullCells * 33;
             }
 
@@ -650,6 +655,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 if (sizeStep > 90)
                 {
                     return 0;
+                }else if (sizeStep == 14)
+                {
+                    return 40;
                 }
                 return 25;
             }
