@@ -193,7 +193,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 " " => 1,
                 "I" => 4,
+                "ILeader" => 5,
                 "L" => 8,
+                "LLeader" => 9,
+
                 _ => 0 
             };
             _newIlu.ILULevelId = auxILU_Level;
