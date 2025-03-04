@@ -297,7 +297,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation = result;
                     //_ = await GenerateChecklistAnswers();
                     //_ = await GenerateOperatorSignatureImage();
-                    _newIlu.AcquisitionDate = newDate1;
+                    _newIlu.AcquisitionDate = DateTime.Now;
                     _newIlu.DistributionId = _jobObservation.DistributionId;
                     _newIlu.OperatorId = _jobObservation.OperatorId;
                     _newIlu.isActive = true;
@@ -366,7 +366,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     //_ = await GenerateChecklistAnswers();
                     //_ = await GenerateOperatorSignatureImage();
 
-                    _newIlu.AcquisitionDate = newDate1;
+                    _newIlu.AcquisitionDate = DateTime.Now;
                     _newIlu.DistributionId = _jobObservation.DistributionId;
                     _newIlu.OperatorId = _jobObservation.OperatorId;
                     _newIlu.isActive = true;
