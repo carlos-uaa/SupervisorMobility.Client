@@ -552,6 +552,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             visiblePhoto = true;
         
         }
+
         private async Task DownloadFile(int fileId, string filename)
         {
             await FilesServices.DownloadFileEvidence(fileId, filename);
