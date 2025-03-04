@@ -37,6 +37,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         [Parameter]
         public int operator_id { get; set; }
 
+        [Parameter]
+        public string ILULevelAux { get; set; }
+
         public DateTime? AuxProgrammedDate { get; set; }
 
         public JobObservation _jobObservation { get; set; } = new();
@@ -182,6 +185,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.HOEStandardTimes = "0";
             _jobObservation.ProductIds = "0|0|0|0|0";
             _jobObservation.ProductSpecifications = "||||";
+
+
+            Console.WriteLine(ILULevelAux);
+
+            auxILU_Level = ILULevelAux switch
+            {
+                " " => 1,
+                "I" => 4,
+                "ILeader" => 5,
+                "L" => 8,
+                "LLeader" => 9,
+
+                _ => 0 
+            };
+            _newIlu.ILULevelId = auxILU_Level;
+
             ShowLoading = false;
         }
 
@@ -278,7 +297,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation = result;
                     //_ = await GenerateChecklistAnswers();
                     //_ = await GenerateOperatorSignatureImage();
-                    _newIlu.AcquisitionDate = newDate1;
+                    _newIlu.AcquisitionDate = DateTime.Now;
                     _newIlu.DistributionId = _jobObservation.DistributionId;
                     _newIlu.OperatorId = _jobObservation.OperatorId;
                     _newIlu.isActive = true;
@@ -347,7 +366,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     //_ = await GenerateChecklistAnswers();
                     //_ = await GenerateOperatorSignatureImage();
 
-                    _newIlu.AcquisitionDate = newDate1;
+                    _newIlu.AcquisitionDate = DateTime.Now;
                     _newIlu.DistributionId = _jobObservation.DistributionId;
                     _newIlu.OperatorId = _jobObservation.OperatorId;
                     _newIlu.isActive = true;
@@ -422,6 +441,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private void updateILULevel()
         {
             _newIlu.ILULevelId = auxILU_Level;
+            Console.WriteLine(auxILU_Level);
         }
 
     }

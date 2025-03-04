@@ -1,9 +1,5 @@
 using MudBlazor;
-using System.Text.RegularExpressions;
-using System.Text;
-using System.Globalization;
 using Microsoft.JSInterop;
-using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using Blazor.Diagrams;
 using Blazor.Diagrams.Core.PathGenerators;
 using Blazor.Diagrams.Core.Routers;
@@ -15,10 +11,7 @@ using Blazor.Diagrams.Core.Models;
 using Microsoft.AspNetCore.Components.Web;
 using Newtonsoft.Json;
 using Blazor.Diagrams.Core.Geometry;
-using System.Threading;
-using static SupervisorMobility.Client.Pages.SOSHOE.FlowPage.FlowCreation;
-using Microsoft.AspNetCore.Components.Routing;
-using DocumentFormat.OpenXml.Drawing.ChartDrawing;
+using System.Runtime.CompilerServices;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 {
@@ -55,11 +48,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
         private BlazorDiagram Diagram { get; set; } = null!;
         private ElementReference container { get; set; }
 
-        private string diagramJson { get; set; } = "";
-        private string inputJson { get; set; } = "";
 
-
-
+        private bool _gridPoints;
+        private bool _expandedDiagramFigures = true;
 
 
         protected async override Task OnInitializedAsync()
@@ -90,6 +81,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                 Diagram.RegisterComponent<SupplementNode, Widgets.Supplement>();
                 Diagram.RegisterComponent<DecisionNode, Widgets.Decision>();
                 Diagram.RegisterComponent<DecisionRomboNode, Widgets.DecisionRombo>();
+                Diagram.RegisterComponent<CommentaryNode, Widgets.Commentary>();
+                
 
                 Diagram.RegisterComponent<ResizeControl, Widgets.ResizeControlWidget>();
 
@@ -127,6 +120,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             else
             {
                 _sosFlow = await SOSFlowServices.GetSOSFlow((int)FlowId, true, true, true, true, true);
+                _ = await LoadDiagramFromJson();
             }
 
             ShowLoading = false;
@@ -267,15 +261,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             UpdateButton = true;
 
 
-            //var resultSOS = await SOSHubServices.UpdateSOSHub(_sosAnalysis.SOSHub);
-
-            //if (resultSOS != null)
-            //{
-            //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            //    Snackbar.Add($"SOS Updated!", Severity.Info);
-            //}
-            //else
-            //    await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
+            _ = await SaveDiagramAsJson();
 
             var result = await SOSFlowServices.UpdateSOSFlow(_sosFlow);
 
@@ -295,9 +281,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
         //Edit
         //
-
-        private bool _gridPoints;
-        private bool _expandedDiagramFigures = true;
 
         public bool GridPoints
         {
@@ -357,30 +340,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
 
                             // Verificar si el nodo fuente o destino es un SupplementNode
+                            BaseLinkModel link = new LinkModel(srcAnchor, tgtAnchor);
                             if (srcNode is SupplementNode || tgtNode is SupplementNode)
                             {
-                                var link = new CustomLinkModel(srcAnchor, tgtAnchor);
-
                                 link.Router = new DashedCustomRouter();
-                                Diagram.Links.Add(link);
-                                link.Refresh();
-
                             }
                             else
                             {
-
-                                var newLink = new LinkModel(srcAnchor, tgtAnchor)
-                                {
-                                    TargetMarker = LinkMarker.Arrow,
-                                };
-                                newLink.Router = new CustomRouter();
-
-                                Diagram.Links.Add(newLink);
-
-                                newLink.Refresh();
-
+                                link.TargetMarker = LinkMarker.Arrow;
+                                link.Router = new CustomRouter();
                             }
-
+                            Diagram.Links.Add(link);
+                            link.Refresh();
                             Diagram.Refresh();
                         }
                     }
@@ -452,8 +423,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
         private async void OnDrop(DragEventArgs e)
         {
             var containerOffset = await JSRuntime.InvokeAsync<Offset>("getOffset", container);
-            var mouseX = e.ClientX - containerOffset.Left - 42.35;
-            var mouseY = e.ClientY - containerOffset.Top - 21.15;
+            var scrollX = await JSRuntime.InvokeAsync<double>("eval", "window.scrollX");
+            var scrollY = await JSRuntime.InvokeAsync<double>("eval", "window.scrollY");
+
+            var mouseX = e.ClientX - containerOffset.Left - 42.35 + scrollX;
+            var mouseY = e.ClientY - containerOffset.Top - 21.15 + scrollY;
 
             var figureType = await JSRuntime.InvokeAsync<string>("window.getDraggedFigureType");
 
@@ -465,14 +439,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                 "DecisionRombo" => new DecisionRomboNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
                 "Conexion" => new ConnectionNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
                 "Suplemento" => new SupplementNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
+                "Commentary" => new CommentaryNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
                 _ => throw new InvalidOperationException("Tipo de figura desconocido")
             };
 
             var addedNodeModel = Diagram.Nodes.Add(addedNode);
-            addedNodeModel.AddPort(PortAlignment.Left);
-            addedNodeModel.AddPort(PortAlignment.Top);
-            addedNodeModel.AddPort(PortAlignment.Right);
-            addedNodeModel.AddPort(PortAlignment.Bottom);
+
+            if(figureType != "Commentary")
+            {
+                addedNodeModel.AddPort(PortAlignment.Left);
+                addedNodeModel.AddPort(PortAlignment.Top);
+                addedNodeModel.AddPort(PortAlignment.Right);
+                addedNodeModel.AddPort(PortAlignment.Bottom);
+            }
 
             Diagram.Controls.AddFor(addedNodeModel).Add(new ResizeControl());
             Diagram.SelectModel(addedNodeModel, true);
@@ -492,23 +471,25 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             Bottom
         }
 
-        private void SaveDiagramAsJson()
+        private async Task<AsyncVoidMethodBuilder> SaveDiagramAsJson()
         {
-            var data = ConvertDiagramToData();
-            diagramJson = JsonConvert.SerializeObject(data);
-            Console.WriteLine("Diagram JSON: " + diagramJson);
+            var data = await ConvertDiagramToData();
+            _sosFlow.Flow = JsonConvert.SerializeObject(data);
+            //Console.WriteLine("Diagram JSON: " + diagramJson);
+            return new AsyncVoidMethodBuilder();
         }
-        private void LoadDiagramFromJson()
+        private async Task<AsyncVoidMethodBuilder> LoadDiagramFromJson()
         {
-            if (!string.IsNullOrEmpty(inputJson))
+            if (!string.IsNullOrEmpty(_sosFlow.Flow))
             {
-                var data = JsonConvert.DeserializeObject<DiagramData>(inputJson);
+                var data = JsonConvert.DeserializeObject<DiagramData>(_sosFlow.Flow);
                 if (data != null)
                 {
                     ConvertDataToDiagram(data);
                     StateHasChanged();
                 }
             }
+            return new AsyncVoidMethodBuilder();
         }
 
 
@@ -519,7 +500,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
             await JSRuntime.InvokeVoidAsync("window.addEventsToFigures");
         }
 
-        private DiagramData ConvertDiagramToData()
+        private async Task<DiagramData> ConvertDiagramToData()
         {
             var data = new DiagramData
             {
@@ -527,7 +508,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                 {
                     Id = node.Id,
                     Position = new PositionData { X = node.Position.X, Y = node.Position.Y },
-                    Size = new SizeData { Width = node.Size.Width-20, Height = node.Size.Height-20 },
+                    Size = new SizeData { Width = node.Size.Width - 20, Height = node.Size.Height - 20 },
                     Type = node.GetType().Name,
                     Title = node?.Title ?? string.Empty
                 }).ToList(),
@@ -553,38 +534,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
             return data;
         }
-        private void ConvertDataToDiagram(DiagramData data)
+        private async Task<AsyncVoidMethodBuilder> ConvertDataToDiagram(DiagramData data)
         {
             Diagram.Nodes.Clear();
             Diagram.Links.Clear();
 
-            var nodeDictionary = new Dictionary<string, NodeModel>();
+            var nodeDictionary = new Dictionary<string, List<NodeModel>>();
 
             foreach (var nodeData in data.Nodes)
             {
-
-                /////////////////////////////////
-                //NodeModel addedNode = figureType switch
-                //{
-                //    "Terminal" => new TerminalNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
-                //    "Proceso" => new ProcessNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
-                //    "Decision" => new DecisionNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
-                //    "DecisionRombo" => new DecisionRomboNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
-                //    "Conexion" => new ConnectionNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
-                //    "Suplemento" => new SupplementNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" },
-                //    _ => throw new InvalidOperationException("Tipo de figura desconocido")
-                //};
-
-                //var addedNodeModel = Diagram.Nodes.Add(addedNode);
-                //addedNodeModel.AddPort(PortAlignment.Left);
-                //addedNodeModel.AddPort(PortAlignment.Top);
-                //addedNodeModel.AddPort(PortAlignment.Right);
-                //addedNodeModel.AddPort(PortAlignment.Bottom);
-
-                //Diagram.Controls.AddFor(addedNodeModel).Add(new ResizeControl());
-                //Diagram.SelectModel(addedNodeModel, true);
-                //////////////
-
 
                 NodeModel node = nodeData.Type switch
                 {
@@ -594,94 +552,88 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                     nameof(SupplementNode) => new SupplementNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
                     nameof(DecisionNode) => new DecisionNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
                     nameof(DecisionRomboNode) => new DecisionRomboNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
+                    nameof(CommentaryNode) => new CommentaryNode(nodeData.Size.Width, nodeData.Size.Height, new Point(nodeData.Position.X, nodeData.Position.Y)) { Title = nodeData.Title },
                     _ => throw new InvalidOperationException("Tipo de nodo desconocido")
                 };
 
-                var NodeModel = Diagram.Nodes.Add(node);
-                NodeModel.AddPort(PortAlignment.Left);
-                NodeModel.AddPort(PortAlignment.Top);
-                NodeModel.AddPort(PortAlignment.Right);
-                NodeModel.AddPort(PortAlignment.Bottom);
+                var nodeModelToAdd = Diagram.Nodes.Add(node);
 
-                Diagram.Controls.AddFor(NodeModel).Add(new ResizeControl());
-                nodeDictionary[nodeData.Id] = NodeModel;
-                //Diagram.Nodes.Add(node);
+                if (nameof(CommentaryNode) != nodeData.Type)
+                {
+                    nodeModelToAdd.AddPort(PortAlignment.Left);
+                    nodeModelToAdd.AddPort(PortAlignment.Top);
+                    nodeModelToAdd.AddPort(PortAlignment.Right);
+                    nodeModelToAdd.AddPort(PortAlignment.Bottom);
+                }
+
+                Diagram.Controls.AddFor(nodeModelToAdd).Add(new ResizeControl());
+
+
+                if (!nodeDictionary.ContainsKey(nodeData.Id))
+                {
+                    nodeDictionary[nodeData.Id] = new List<NodeModel>();
+                }
+                nodeDictionary[nodeData.Id].Add(nodeModelToAdd);
+
                 Diagram.Refresh();
 
             }
 
             foreach (var linkData in data.Links)
             {
-                if (nodeDictionary.TryGetValue(linkData.SourceNodeId, out var sourceNode) &&
-                    nodeDictionary.TryGetValue(linkData.TargetNodeId, out var targetNode))
+                if (nodeDictionary.TryGetValue(linkData.SourceNodeId, out var sourceNodes) &&
+                    nodeDictionary.TryGetValue(linkData.TargetNodeId, out var targetNodes))
                 {
-                    var sourcePort = sourceNode.Ports.FirstOrDefault(p => p.Alignment.ToString() == linkData.SourcePort);
-                    var targetPort = targetNode.Ports.FirstOrDefault(p => p.Alignment.ToString() == linkData.TargetPort);
-                    
-                    //Si intento obtener el anchor falla, como si el nodo fuera nullo
-                    var srcAnchor = (sourceNode as ICmpAnchors).Anchors[GetArrayPosition(linkData.SourcePort)];
-                    var tgtAnchor = (targetNode as ICmpAnchors).Anchors[GetArrayPosition(linkData.TargetPort)];
-
-
-                    if (sourceNode is SupplementNode || targetNode is SupplementNode)
+                    foreach (var sourceNode in sourceNodes)
                     {
-                        var link = new LinkModel(sourcePort, targetPort);
-
-                        link.Router = new DashedCustomRouter();
-                        Diagram.Links.Add(link);
-                        link.Refresh();
-
-                    }
-                    else
-                    {
-                        var newLink = new LinkModel(srcAnchor, tgtAnchor)
+                        foreach (var targetNode in targetNodes)
                         {
-                            TargetMarker = LinkMarker.Arrow,
-                        };
-                        newLink.Router = new CustomRouter();
 
-                        Diagram.Links.Add(newLink);
+                            var sourcePort = sourceNode.Ports.FirstOrDefault(p => p.Alignment.ToString() == linkData.SourcePort);
+                            var targetPort = targetNode.Ports.FirstOrDefault(p => p.Alignment.ToString() == linkData.TargetPort);
 
-                        newLink.Refresh();
 
+                            var srcNode = sourcePort.Parent;
+
+                            int position = GetArrayPosition(linkData.SourcePort);
+
+                            if (srcNode != null && srcNode is ICmpAnchors srcAnchors)
+                            {
+                                var srcAnchor = srcAnchors.Anchors[position];
+
+                                var tgtNode = targetPort.Parent;
+
+                                position = GetArrayPosition(linkData.TargetPort);
+
+                                if (tgtNode != null && tgtNode is ICmpAnchors tgtAnchors)
+                                {
+                                    var tgtAnchor = tgtAnchors.Anchors[position];
+
+                                    BaseLinkModel link = new LinkModel(srcAnchor, tgtAnchor);
+                                    if (srcNode is SupplementNode || tgtNode is SupplementNode)
+                                    {
+                                        link.Router = new DashedCustomRouter();
+                                    }
+                                    else
+                                    {
+                                        link.TargetMarker = LinkMarker.Arrow;
+                                        link.Router = new CustomRouter();
+                                    }
+                                    Diagram.Links.Add(link);
+                                    link.Refresh();
+                                    Diagram.Refresh();
+                                }
+
+                            }
+
+
+                            Diagram.Refresh();
+                        }
                     }
-
-                    Diagram.Refresh();
                 }
             }
-
             StateHasChanged();
-        }
-
-        private void PrintDiagramContent()
-        {
-            Console.WriteLine("Nodos del diagrama:");
-            foreach (var node in Diagram.Nodes)
-            {
-                Console.WriteLine($"Nodo ID: {node.Id}, Tipo: {node.GetType().Name}, Título: {node.Title}, Posición: ({node.Position.X}, {node.Position.Y}), Tamaño: ({node.Size.Width}, {node.Size.Height})");
-                foreach (var port in node.Ports)
-                {
-                    Console.WriteLine($"   Puerto ID: {port.Id}, Alineación: {port.Alignment}");
-                }
-            }
-
-            Console.WriteLine("Enlaces del diagrama:");
-            foreach (var link in Diagram.Links)
-            {
-                var sourceNode = link.Source.Model as NodeModel;
-                var targetNode = link.Target.Model as NodeModel;
-
-                var sourceAnchor = link.Source as DynamicAnchor;
-                var targetAnchor = link.Target as DynamicAnchor;
-
-                var sourcePosition = sourceAnchor?.GetPosition(link, link.Route);
-                var targetPosition = targetAnchor?.GetPosition(link, link.Route);
-
-                var sourcePortAlignment = link.Source is DynamicAnchor source_Anchor ? GetPortAlignment(source_Anchor, sourceNode, link) : "No disponible";
-                var targetPortAlignment = link.Target is DynamicAnchor target_Anchor ? GetPortAlignment(target_Anchor, targetNode, link) : "No disponible";
-
-                Console.WriteLine($"Enlace ID: {link.Id}, Nodo Origen: {sourceNode?.Id}, Nodo Destino: {targetNode?.Id}, Posición Origen: ({sourcePosition?.X}, {sourcePosition?.Y}), Port Origen: {sourcePortAlignment} , Posición Destino: ({targetPosition?.X}, {targetPosition?.Y}), Port Destino: {targetPortAlignment}");
-            }
+            return new AsyncVoidMethodBuilder();
         }
 
     }

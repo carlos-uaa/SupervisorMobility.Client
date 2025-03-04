@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using System.Runtime.CompilerServices;
 using System.Net.Http.Headers;
 using MudBlazor;
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
@@ -618,25 +619,32 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             double remainingSteps = steps - (fullCells * _CellSize);
             double result;
 
-            Console.WriteLine("Full" + fullCells);
-            Console.WriteLine("Remain" + remainingSteps);
+            //Console.WriteLine($"Step: {steps}  Full: " + fullCells + "Remain: " + remainingSteps);
 
-
-            if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+            if (steps <= _HalfCellSize)
             {
+                Console.WriteLine("Step <= half size ");
+                result = 23;
+            }
+            else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+            {
+                Console.WriteLine("Into casi half full ");
                 result = fullCells * 33 + _HalfCellSize;
             }
             else if (remainingSteps > _HalfCellSize)
             {
+                Console.WriteLine("Into full more half ");
                 result = (fullCells + 1) * 33;
             }
             else
             {
+                Console.WriteLine("Into full  ");
                 result = fullCells * 33;
             }
 
             if (top == 31)
             {
+
                 result += 15;
             }
 
@@ -647,18 +655,46 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         {
             if (top == 40)
             {
-                if (sizeStep > 90)
+                if (sizeStep < 33)
                 {
-                    return 0;
+                    return 50;
                 }
-                return 25;
+                else if (sizeStep >= 33 && sizeStep < 66)
+                {
+                    return 40;
+                }
+                else if (sizeStep >= 66 && sizeStep < 99)
+                {
+                    return 30;
+                }
+                else if (sizeStep >= 99 && sizeStep < 110)
+                {
+                    return 20;
+                }
+
             }
-            else if (top == 31)
+            else if (top == 20)
             {
-                return 35;
+               if (sizeStep < 33)
+                {
+                    return 70;
+                }
+                else if (sizeStep >= 33 && sizeStep < 66)
+                {
+                    return 50;
+                }
+                else if (sizeStep >= 66 && sizeStep < 99)
+                {
+                    return 30;
+                }
+                else if (sizeStep >= 99 && sizeStep < 110)
+                {
+                    return 30;
+                    //return 25;
+                }
             }
             // Agrega más condiciones según sea necesario
-            return 25; // Valor por defecto
+            return 50; // Valor por defecto
         }
     }
 }
