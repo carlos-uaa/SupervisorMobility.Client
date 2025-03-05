@@ -186,14 +186,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.ProductIds = "0|0|0|0|0";
             _jobObservation.ProductSpecifications = "||||";
 
-            Console.WriteLine(ILULevelAux + "");
 
+            Console.WriteLine(ILULevelAux);
 
             auxILU_Level = ILULevelAux switch
             {
                 " " => 1,
                 "I" => 4,
+                "ILeader" => 5,
                 "L" => 8,
+                "LLeader" => 9,
+
                 _ => 0 
             };
             _newIlu.ILULevelId = auxILU_Level;

@@ -14,17 +14,21 @@ namespace SupervisorMobility.Client.Data.Entities
         public Plant? Plant { get; set; }
         public Area? Area { get; set; }
         public Distribution? Distribution { get; set; }
-        public Operation? Operation { get; set; }
-        public ICollection<Lup>? Lup { get; set; } = new List<Lup>();
+        public IEnumerable<Operation>? Operations { get; set; } = new List<Operation>();
 
-        public User? Supervisor { get; set; }
-
-        public User? Operator { get; set; }
+        //people
+        public User Supervisor { get; set; }
+        public User Operator { get; set; }
+        //lup
+        public ICollection<Lup> Lup { get; set; } = new List<Lup>();
+        //history
+        public ICollection<JobObservationHistoryVersion> History { get; set; } = new List<JobObservationHistoryVersion>();
+        //answers question
+        public ICollection<ChecklistAnswer>? ChecklistAnswers { get; set; } = new List<ChecklistAnswer>();
 
         public int? PlantId { get; set; }
         public int? AreaId { get; set; }
         public int? DistributionId { get; set; }
-        public int? OperationId { get; set; }
         public int? SupervisorId { get; set; }
         public int? OperatorId { get; set; }
 
@@ -42,18 +46,31 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public int Option { get; set; }
         public string? Anomaly { get; set; }
+
         public string? HOEStandardTimes { get; set; }
-        public string? Models { get; set; }
+        public string? ModelsSpecification { get; set; }
         public string Cycles { get; set; }
 
-        public string? SsvCommentary { get; set; }
-        public string? OperatorCommentary { get; set; }
-        public string? SsvSignature { get; set; }
+        public string SsvCommentary { get; set; }
+        public string OperatorCommentary { get; set; }
+        public string SsvSignature { get; set; }
         public string OperatorSignature { get; set; }
         public string? ReleasedFeedback { get; set; }
 
         public int? KpiId { get; set; }
         public string? TaktTime { get; set; }
         public string? Questions { get; set; }
+        public int? ProductId { get; set; }
+
+        public string? ProductIds { get; set; }
+        public string? ProductSpecifications { get; set; }
+
+        public string? OperationTimesJson { get; set; }
+        public string? StepsNumber { get; set; }
+        public string? DoubleManagment { get; set; }
+        public string? Waiting { get; set; }
+        public string? SectionIds { get; set; }
+
+        public FileUpload? SignatureImage { get; set; } = new();
     }
 }

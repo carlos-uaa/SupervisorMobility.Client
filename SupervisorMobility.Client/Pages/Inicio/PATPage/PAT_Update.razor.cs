@@ -539,9 +539,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 }
             }
 
-
-            if (!hasLeadersInDistribution)
+            if (hasLeadersInDistribution)
             {
+                Snackbar.Add($"{leaderName} is already a Leader in this distribution!", Severity.Warning);
+
+            }
+
                 ShowTable = false;
                 AddILUVisibleDialog = false;
                 var result = await ILUServices.AddRegisterForUser(_newIlu, (int)_newIlu.OperatorId);
@@ -552,11 +555,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     Snackbar.Add($"ILU Level Added", Severity.Success);
                 }
 
-            }
-            else
-            {
-                Snackbar.Add($"{leaderName} is already a Leader in this distribution!", Severity.Warning);
-            }
 
         }
 
@@ -566,7 +564,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         void CreateJobObservation(int distributionId, int operatorId, string ILULevelNumber = "")
         {
             distribution_id = distributionId;
-            ILULevelAux = ILULevelNumber == "§" ? "" : ILULevelNumber;
+            ILULevelAux = ILULevelNumber == "§" ? " " : ILULevelNumber;
 
             operator_id = operatorId;
 
