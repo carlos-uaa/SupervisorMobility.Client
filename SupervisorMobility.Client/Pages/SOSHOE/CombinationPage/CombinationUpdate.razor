@@ -428,10 +428,9 @@ else
                     double.TryParse(operationSequence.StepsToNextProcess?.Replace(",", ".") ?? "0", System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out steps);
                     steps = RoundToThreeDecimals(steps);
 
-                    double StepCurrentFragment = 0.0;
-                    double StepPrevious = Math.Floor((steps / 2) * 100) / 100;
+                    double StepCurrentFragment = Math.Floor((steps / 2) * 100) / 100;
+                    double StepPrevious = 0.0;
 
-                    Console.WriteLine($"Index[{indexOperationSequence}] StepCurrentFragment: {StepCurrentFragment}  stepPreviws: {StepPrevious}");
 
                     if (StepPrevious == 0 && StepCurrentFragment == 0)
                     {
@@ -441,52 +440,28 @@ else
                     {
                         double previousSteps = 0.0;
                         double.TryParse(_sosCombination.SOSCombinationOperationSequence.ElementAt(indexOperationSequence - 1).StepsToNextProcess?.Replace(",", ".") ?? "0",
-                        System.Globalization.NumberStyles.Any,
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        out previousSteps);
+                        System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out previousSteps);
                         previousSteps = RoundToThreeDecimals(previousSteps);
 
                         double previousFragment = Math.Floor((previousSteps / 2) * 100) / 100;
-                        StepCurrentFragment = RoundToThreeDecimals(previousSteps - previousFragment);
- 
+                        StepPrevious = RoundToThreeDecimals(previousSteps - previousFragment);
+
+
+                        Console.WriteLine($"Index[{indexOperationSequence}] Current: {StepCurrentFragment}  Previus: {StepPrevious}");
                         if (StepPrevious == previousSteps)
                         {
                             StepPrevious = 0;
                         } 
-
                     }
 
-                    if(steps > _HalfCellSize && StepPrevious != 0){
-
-                        double AuxStepTiem = StepCurrentFragment;
-                        StepCurrentFragment = StepPrevious;
-                        StepPrevious = AuxStepTiem;
-                    }
-
-                    Console.WriteLine($"Pre Inv: StepCurrentFragment: {StepCurrentFragment}  stepPreviws: {StepPrevious}");
-
-                    Console.WriteLine($"StepCurrentFragment: {StepCurrentFragment}  stepPreviws: {StepPrevious}");
+                    Console.WriteLine($"Index[{indexOperationSequence}] StepCurrentFragment: {StepCurrentFragment}  stepPreviws: {StepPrevious}");
 
 
                     if (isLastValidOperation)
                     {
                         StepCurrentFragment = steps;
                     }
-                    else if (indexOperationSequence > lastValidOperationIndex)
-                    {
-                        StepPrevious = 0;
 
-                        if (manualOperationTime > 0 && manualWithMachineTime <= 0)
-                        {
-                            top = 20;
-                        }
-                        else if (manualOperationTime > 0 && manualWithMachineTime > 0)
-                        {
-                            top = 40;
-                        }
-
-                    }
-                        // Start the row
                     <tr style="height: 65px;">
                         <td>
                             @*   <div class="d-flex flex-column" style="align-items: center;">
@@ -933,7 +908,6 @@ else
                                                 @if (isLastValidOperation)
                                                 {
                                                     StepCurrentFragment = 0;
-
                                                 }
 
                                                 @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
@@ -965,24 +939,116 @@ else
                                     if (manualOperationTime <= _HalfCellSize) // Media línea
                                     {
 
-                                        // manualOperationTime
-                                        if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime <= 0)
+                                        // manualOperationTime seguido de AutomaticMachineOperationTime && StepCurrent
+                                        if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime > 0 && StepCurrentFragment > 0)
                                         {
-
                                             if (manualOperationTime < _HalfCellSize)
                                             {
                                                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
-                                                manualOperationTime = RoundToThreeDecimals(manualOperationTime - manualOperationTime);
+                                                manualOperationTime = 0;
                                             }
                                             else
                                             {
                                                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
                                                 manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
                                             }
-                                            //Solo se traza media linea
+
+                                            if (automaticMachineTime < _HalfCellSize)
+                                            {
+                                                automaticMachineTime = 0;
+                                            }
+                                            else
+                                            {
+                                                automaticMachineTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                                            }
+
+                                            if (StepCurrentFragment < _HalfCellSize)
+                                            {
+                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepCurrentFragment);
+                                                StepCurrentFragment = 0;
+                                            }
+                                            else
+                                            {
+                                                StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                                            }
+
 
                                             <td class="tacktime-cell" style="position: relative; overflow: visible;">
                                                 <div style="position: absolute; top: 15px; left: 0; width: 50%; height: 2px; background: black;"></div>
+                                                <div style="position: absolute; top: 15px; left: 50%; width: 50%; height: 2px; border-top: 2px dashed black;"></div>
+                                                @if (isLastValidOperation)
+                                                {
+                                                    StepCurrentFragment = 0;
+                                                    <div style="position: absolute; top: @($"-{65*(lastValidOperationIndex)}px"); rotate: 5deg; left:15px; width: 110%;">
+                                                        <div class="last-zig-zag-line" style="min-height: @($"{65*(lastValidOperationIndex+1)-30}px"); "></div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    double sizeStep = CalculateSizeStep(steps, 35);
+                                                    double angle = CalculateRotateAngle(35, sizeStep);
+                                                    int topv = StepCurrentFragment <= _HalfCellSize ? 30 : top;
+
+                                                    <div style="position: absolute; top: @($"{topv}px"); rotate: @($"{angle}deg"); left: 0px; min-width: @($"{(sizeStep)}px"); ">
+                                                        <div class="zig-zag-line"></div>
+                                                    </div>
+                                                    renderStep = false;
+                                                }
+                                                @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
+                                                {
+                                                    double relativePosition = ((_tackTimePosition - cellStart) / (cellEnd - cellStart)) * 100; // Posición relativa en porcentaje
+                                                    <div class="tacktime-line" style="left:@relativePosition%;"></div>
+                                                }
+                                            </td>
+                                        }
+                                        // manualOperationTime seguido de current step
+                                        else if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime <= 0 && StepCurrentFragment > 0)
+                                        {
+
+                                            if (manualOperationTime < _HalfCellSize)
+                                            {
+                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
+                                                manualOperationTime = 0;
+                                            }
+                                            else
+                                            {
+                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                                                manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                                            }
+
+                                            if (StepCurrentFragment < _HalfCellSize)
+                                            {
+                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepCurrentFragment);
+                                                StepCurrentFragment = 0;
+                                            }
+                                            else
+                                            {
+                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                                                StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                                            }
+
+
+                                            <td class="tacktime-cell" style="position: relative; overflow: visible;">
+                                                <div style="position: absolute; top: 15px; left: 0; width: 50%; height: 2px; background: black;"></div>
+                                                @if (isLastValidOperation)
+                                                {
+                                                    StepCurrentFragment = 0;
+                                                    <div style="position: absolute; top: @($"-{65*(lastValidOperationIndex)}px"); rotate: 5deg; left:15px; width: 110%;">
+                                                        <div class="last-zig-zag-line" style="min-height: @($"{65*(lastValidOperationIndex+1)-30}px"); "></div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    double sizeStep = CalculateSizeStep(steps, 35);
+                                                    double angle = CalculateRotateAngle(35, sizeStep);
+                                                    int topv = steps <= _CellSize ? 30 : top;
+
+                                                    <div style="position: absolute; top: @($"{topv}px"); rotate: @($"{angle}deg"); left: 0px; min-width: @($"{(sizeStep)}px"); ">
+                                                        <div class="zig-zag-line"></div>
+                                                    </div>
+                                                    renderStep = false;
+                                                }
                                                 @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
                                                 {
                                                     double relativePosition = ((_tackTimePosition - cellStart) / (cellEnd - cellStart)) * 100; // Posición relativa en porcentaje
@@ -1081,7 +1147,7 @@ else
 
                                             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
 
-                                            cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+
 
                                             <td class="tacktime-cell" style="position: relative; overflow: visible;">
                                                 <div style="position: absolute; top: 15px; left: 0; width: 50%; height: 2px; background: black;"></div>
@@ -1093,58 +1159,24 @@ else
                                                 }
                                             </td>
                                         }
-                                        // manualOperationTime seguido de AutomaticMachineOperationTime && StepCurrent
-                                        else if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime > 0 && StepCurrentFragment > 0)
+                                        // manualOperationTime
+                                        else if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime <= 0)
                                         {
+
                                             if (manualOperationTime < _HalfCellSize)
                                             {
                                                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
-                                                manualOperationTime = 0;
+                                                manualOperationTime = RoundToThreeDecimals(manualOperationTime - manualOperationTime);
                                             }
                                             else
                                             {
                                                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
                                                 manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
                                             }
-
-                                            if (automaticMachineTime < _HalfCellSize)
-                                            {
-                                                automaticMachineTime = 0;
-                                            }
-                                            else
-                                            {
-                                                automaticMachineTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
-                                            }
-
-                                            if (StepCurrentFragment < _HalfCellSize)
-                                            {
-                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepCurrentFragment);
-                                                StepCurrentFragment = 0;
-                                            }
-                                            else
-                                            {
-                                                StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
-                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
-                                            }
-
+                                            //Solo se traza media linea
 
                                             <td class="tacktime-cell" style="position: relative; overflow: visible;">
                                                 <div style="position: absolute; top: 15px; left: 0; width: 50%; height: 2px; background: black;"></div>
-                                                <div style="position: absolute; top: 15px; left: 50%; width: 50%; height: 2px; border-top: 2px dashed black;"></div>
-                                                @if (isLastValidOperation)
-                                                {
-                                                    StepCurrentFragment = 0;
-                                                    <div style="position: absolute; top: @($"-{65*(lastValidOperationIndex)}px"); rotate: 5deg; left:15px; width: 110%;">
-                                                        <div class="last-zig-zag-line" style="min-height: @($"{65*(lastValidOperationIndex+1)-30}px"); "></div>
-                                                    </div>
-                                                }
-                                                else
-                                                {
-
-                                                    <div style="position: absolute; top: @($"{top}px"); left: 50%; width: 50%; overflow:hidden">
-                                                        <div class="zig-zag-line"></div>
-                                                    </div>
-                                                }
                                                 @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
                                                 {
                                                     double relativePosition = ((_tackTimePosition - cellStart) / (cellEnd - cellStart)) * 100; // Posición relativa en porcentaje
@@ -1152,57 +1184,6 @@ else
                                                 }
                                             </td>
                                         }
-                                        // manualOperationTime seguido de current step
-                                        else if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime <= 0 && StepCurrentFragment > 0)
-                                        {
-
-                                            if (manualOperationTime < _HalfCellSize)
-                                            {
-                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
-                                                manualOperationTime = 0;
-                                            }
-                                            else
-                                            {
-                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
-                                                manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
-                                            }
-
-                                            if (StepCurrentFragment < _HalfCellSize)
-                                            {
-                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepCurrentFragment);
-                                                StepCurrentFragment = 0;
-                                            }
-                                            else
-                                            {
-                                                cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
-                                                StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
-                                            }
-
-
-                                            <td class="tacktime-cell" style="position: relative; overflow: visible;">
-                                                <div style="position: absolute; top: 15px; left: 0; width: 50%; height: 2px; background: black;"></div>
-                                                @if (isLastValidOperation)
-                                                {
-                                                    StepCurrentFragment = 0;
-                                                    <div style="position: absolute; top: @($"-{65*(lastValidOperationIndex)}px"); rotate: 5deg; left:15px; width: 110%;">
-                                                        <div class="last-zig-zag-line" style="min-height: @($"{65*(lastValidOperationIndex+1)-30}px"); "></div>
-                                                    </div>
-                                                }
-                                                else
-                                                {
-
-                                                    <div style="position: absolute; top: @($"{top}px"); left: 50%; width: 50%; overflow:hidden">
-                                                        <div class="zig-zag-line"></div>
-                                                    </div>
-                                                }
-                                                @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
-                                                {
-                                                    double relativePosition = ((_tackTimePosition - cellStart) / (cellEnd - cellStart)) * 100; // Posición relativa en porcentaje
-                                                    <div class="tacktime-line" style="left:@relativePosition%;"></div>
-                                                }
-                                            </td>
-                                        }
-
                                     }
                                     else // Línea completa
                                     {
@@ -1243,9 +1224,13 @@ else
                                             }
                                             else
                                             {
-                                                <div style="position: absolute; top: @($"{top}px"); width: 50%; overflow:hidden">
+                                                double sizeStep = CalculateSizeStep(steps, 35);
+                                                double angle = CalculateRotateAngle(35, sizeStep);
+
+                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: 10px; min-width: @($"{(sizeStep)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
+                                                renderStep = false;
                                             }
 
                                             @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
@@ -1306,9 +1291,13 @@ else
                                             }
                                             else
                                             {
-                                                <div style="position: absolute; top: @($"{top}px"); width: 50%; overflow:hidden">
+                                                double sizeStep = CalculateSizeStep(steps, 35);
+                                                double angle = CalculateRotateAngle(35, sizeStep);
+
+                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: 10px; min-width: @($"{(sizeStep)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
+                                                renderStep = false;
                                             }
                                             @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
                                             {
@@ -1387,6 +1376,38 @@ else
                                             }
                                         </td>
                                     }
+                                    else if (automaticMachineTime <= _HalfCellSize && StepCurrentFragment <= _HalfCellSize && StepCurrentFragment > 0)
+                                    {
+                                        automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                                        StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                                        cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+
+                                        <td class="tacktime-cell" style="position: relative; overflow: visible;">
+                                            <div style="position: absolute; top: 15px; left: 0; width: 50%; height: 2px; border-top: 2px dashed black;"></div>
+
+                                            @if (renderStep)
+                                            {
+                                                double sizeStep = CalculateSizeStep(steps, 35);
+                                                double angle = CalculateRotateAngle(35, sizeStep);
+
+                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: 10px; min-width: @($"{(sizeStep)}px"); ">
+                                                    <div class="zig-zag-line"></div>
+                                                </div>
+                                                renderStep = false;
+                                            }
+
+                                            @if (isLastValidOperation)
+                                            {
+                                                StepCurrentFragment = 0;
+                                            }
+
+                                            @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
+                                            {
+                                                double relativePosition = ((_tackTimePosition - cellStart) / (cellEnd - cellStart)) * 100; // Posición relativa en porcentaje
+                                                <div class="tacktime-line" style="left:@relativePosition%;"></div>
+                                            }
+                                        </td>
+                                    }
                                     else if (automaticMachineTime >= _CellSize && StepCurrentFragment <= _HalfCellSize && StepCurrentFragment > 0)
                                     {
                                         automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _CellSize);
@@ -1400,8 +1421,10 @@ else
                                             {
                                                 double sizeStep = CalculateSizeStep(steps, top);
                                                 double angle = CalculateRotateAngle(top, sizeStep);
+                                                int leftv = steps <= _HalfCellSize ? -20 : -10;
+                                                int topv = StepCurrentFragment <= _HalfCellSize ? 30 : top;
 
-                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: -10px; min-width: @($"{(sizeStep)+12}px"); ">
+                                                <div style="position: absolute; top: @($"{topv}px"); rotate: @($"{angle}deg"); left: @($"{(leftv)}px"); min-width: @($"{(sizeStep)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
                                                 renderStep = false;
@@ -1410,7 +1433,6 @@ else
                                             @if (isLastValidOperation)
                                             {
                                                 StepCurrentFragment = 0;
-
                                             }
 
                                             @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
@@ -1446,43 +1468,11 @@ else
                                             }
                                         </td>
                                     }
-                                    else if (automaticMachineTime <= _HalfCellSize && StepCurrentFragment <= _HalfCellSize && StepCurrentFragment > 0)
-                                    {
-                                        automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
-                                        StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
-                                        cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
-
-                                        <td class="tacktime-cell" style="position: relative; overflow: visible;">
-                                            <div style="position: absolute; top: 15px; left: 0; width: 50%; height: 2px; border-top: 2px dashed black;"></div>
-
-                                            @if (renderStep)
-                                            {
-                                                double sizeStep = CalculateSizeStep(steps, top);
-                                                double angle = CalculateRotateAngle(top, sizeStep);
-
-                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: -10px; min-width: @($"{(sizeStep)+12}px"); ">
-                                                    <div class="zig-zag-line"></div>
-                                                </div>
-                                                renderStep = false;
-                                            }
-
-                                            @if (isLastValidOperation)
-                                            {
-                                                StepCurrentFragment = 0;
-                                            }
-
-                                            @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
-                                            {
-                                                double relativePosition = ((_tackTimePosition - cellStart) / (cellEnd - cellStart)) * 100; // Posición relativa en porcentaje
-                                                <div class="tacktime-line" style="left:@relativePosition%;"></div>
-                                            }
-                                        </td>
-                                    }
                                 }
                                 //case 5: Remaining manualWithMachineTime
                                 else if (manualOperationTime <= 0 && manualWithMachineTime > 0 && automaticMachineTime <= 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
                                 {
-                                    if (manualWithMachineTime >= _CellSize || manualWithMachineTime >= _HalfCellSize)
+                                    if (manualWithMachineTime >= _CellSize || manualWithMachineTime > _HalfCellSize)
                                     {
                                         manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _CellSize);
                                         cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
@@ -1532,9 +1522,17 @@ else
                                             }
                                             else
                                             {
-                                                <div style="position: absolute; top: @($"{top}px"); width: 50%; overflow:hidden">
-                                                    <div class="zig-zag-line"></div>
-                                                </div>
+                                                @if (renderStep)
+                                                {
+                                                    
+                                                    double sizeStep = CalculateSizeStep(steps, 35);
+                                                    double angle = CalculateRotateAngle(35, sizeStep);
+
+                                                    <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: 10px; min-width: @($"{(sizeStep)}px"); ">
+                                                        <div class="zig-zag-line"></div>
+                                                    </div>
+                                                    renderStep = false;
+                                                }
                                             }
 
                                             @if (_tackTimePosition != 0 && _tackTimePosition >= cellStart && _tackTimePosition < cellEnd && _sosCombination.TackTime != "")
@@ -1583,8 +1581,10 @@ else
                                             {
                                                 double sizeStep = CalculateSizeStep(steps, top);
                                                 double angle = CalculateRotateAngle(top, sizeStep);
+                                                int leftv = StepCurrentFragment <= _HalfCellSize ? -20 : -10;
+                                                // int topv = StepCurrentFragment <= _HalfCellSize ? 30 : top;
 
-                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: -10px; min-width: @($"{(sizeStep)+12}px"); ">
+                                                <div style="position: absolute; top: @($"{top}px");; rotate: @($"{angle}deg");; left: @($"{leftv}px"); min-width: @($"{(sizeStep)+12}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
                                                 renderStep = false;
