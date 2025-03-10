@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Net.Http.Headers;
 using MudBlazor;
 using DocumentFormat.OpenXml.Drawing.Diagrams;
+using DocumentFormat.OpenXml.Drawing;
 
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
@@ -615,40 +616,85 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
         private double CalculateSizeStep(double steps, double top)
         {
-            double fullCells = Math.Floor(steps / _CellSize);
+            double fullCells = Math.Round(Math.Floor(steps / _CellSize), 3);
             double remainingSteps = steps - (fullCells * _CellSize);
-            double result;
+            double result = 33;
 
-            //Console.WriteLine($"Step: {steps}  Full: " + fullCells + "Remain: " + remainingSteps);
+            //Console.WriteLine($"Step: {steps}  Full: " + fullCells + " Remain: " + remainingSteps);
 
-            if (steps <= _HalfCellSize)
+            if (top == 40)
             {
-                Console.WriteLine("Step <= half size ");
-                result = 23;
-            }
-            else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
-            {
-                Console.WriteLine("Into casi half full ");
-                result = fullCells * 33 + _HalfCellSize;
-            }
-            else if (remainingSteps > _HalfCellSize)
-            {
-                Console.WriteLine("Into full more half ");
-                result = (fullCells + 1) * 33;
-            }
-            else
-            {
-                Console.WriteLine("Into full  ");
-                result = fullCells * 33;
-            }
+                if (steps <= _HalfCellSize)
+                {
+                    Console.WriteLine("Step <= half size ");
+                    result = 28;
+                }
+                else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+                {
+                    Console.WriteLine("Into casi half full ");
+                    result = (fullCells * 30) + (30 * remainingSteps);
+                }
+                else if (remainingSteps > _HalfCellSize)
+                {
+                    Console.WriteLine("Into full more half ");
+                    result = (fullCells * 30) + (30 * remainingSteps);
+                }
+                else
+                {
+                    Console.WriteLine("Into full  ");
+                    result = fullCells * 27;
+                }
 
-            if (top == 31)
-            {
+            } else if (top == 35) {
+                if (steps <= _HalfCellSize)
+                {
+                    Console.WriteLine("35 <= ");
+                    result = 50;
+                }
+                else if (steps <= _CellSize)
+                {
+                    Console.WriteLine("Into casi half full ");
+                    result = (fullCells * 50) + 10;
+                }
+                else if (remainingSteps > _HalfCellSize)
+                {
+                    Console.WriteLine("Into full more half ");
+                    result = (fullCells * 50) + (45 * remainingSteps);
+                }
+                else
+                {
+                    Console.WriteLine("35  full  ");
+                    result = fullCells * 30;
+                }
 
-                result += 15;
+            }
+            else if (top == 20)
+            {
+                if (steps <= _HalfCellSize)
+                {
+                    Console.WriteLine("Step <= half size ");
+                    result = 50;
+                }
+                else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+                {
+                    Console.WriteLine("Into casi half full ");
+                    result = (fullCells * 30) + (30 * remainingSteps);
+                }
+                else if (remainingSteps > _HalfCellSize)
+                {
+                    Console.WriteLine("Into full more half ");
+                    result = (fullCells * 60) + (30 * remainingSteps);
+                }
+                else
+                {
+                    Console.WriteLine("Into full  ");
+                    result = fullCells * 33;
+                }
             }
 
             return result;
+
+
         }
 
         private double CalculateRotateAngle(double top, double sizeStep)
@@ -657,7 +703,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             {
                 if (sizeStep < 33)
                 {
-                    return 50;
+                    return 55;
                 }
                 else if (sizeStep >= 33 && sizeStep < 66)
                 {
@@ -673,27 +719,45 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 }
 
             }
+            else if (top == 35)
+            {
+                if (sizeStep < 66)
+                {
+                    return 60;
+                }
+                else if (sizeStep >= 66 && sizeStep < 99)
+                {
+                    return 25;
+                }
+                else if (sizeStep >= 99 && sizeStep < 120)
+                {
+                    return 20;
+                }
+                else if (sizeStep >= 120 && sizeStep < 150)
+                {
+                    return 15;
+                }
+
+            }
             else if (top == 20)
             {
                if (sizeStep < 33)
                 {
-                    return 70;
+                    return 80;
                 }
                 else if (sizeStep >= 33 && sizeStep < 66)
                 {
-                    return 50;
+                    return 70;
                 }
                 else if (sizeStep >= 66 && sizeStep < 99)
                 {
-                    return 30;
+                    return 50;
                 }
                 else if (sizeStep >= 99 && sizeStep < 110)
                 {
-                    return 30;
-                    //return 25;
+                    return 40;
                 }
             }
-            // Agrega más condiciones según sea necesario
             return 50; // Valor por defecto
         }
     }
