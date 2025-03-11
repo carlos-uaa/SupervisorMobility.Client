@@ -559,6 +559,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         }
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogOptionsUpdateDistribution = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, DisableBackdropClick = true, CloseButton = true };
 
         bool CreateILUJob = false;
         void CreateJobObservation(int distributionId, int operatorId, string ILULevelNumber = "")

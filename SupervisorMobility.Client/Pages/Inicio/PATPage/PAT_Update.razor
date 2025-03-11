@@ -55,7 +55,9 @@
         touch-action: pan-y;
     }
 
-
+    .right-border {
+        border-right: 1px solid var(--mud-palette-table-lines);
+    }
 
     .table-container {
         box-shadow: var(--mud-elevation-1);
@@ -79,11 +81,11 @@
         left: 0;
     }
     /*
-                                            table {
-                                                border-collapse: collapse;
-                                                min-width: 100%;
-                                                border-radius: var(--mud-default-borderradius);
-                                            } */
+                                                                table {
+                                                                    border-collapse: collapse;
+                                                                    min-width: 100%;
+                                                                    border-radius: var(--mud-default-borderradius);
+                                                                } */
 
     th,
     td {
@@ -383,8 +385,8 @@
                                     <th rowspan="2"><b>NOTAS RELACIONADAS CON LAS <br />OPERACIONES / DISTRIBUCIONES</b></th>
                                 </tr>
                                 <tr class="fixed-row">
-                                    <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th>
-                                    <th colspan="2" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
+                                    @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
+                                    <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
                                     <Virtualize Items="_UserOfArea">
                                         <th>Nivel</th>
                                         <th>Fecha</th>
@@ -397,18 +399,32 @@
                                 {
 
                                     <tr>
-                                        <td style="max-width:120px;width:100px" colspan="2" class="fixed-column dynamic-left">@op.Code</td>
+                                        @* <td style="max-width:120px;width:100px" colspan="2" class="fixed-column dynamic-left">@op.Code</td> *@
                                         @if (Distributions_Knolowed[op.DistributionId])
                                         {
-                                            <th colspan="2" class="fixed-column dynamic-left">
-                                                <div style="text-align: end;">
-                                                    <MudMenu AnchorOrigin="Origin.BottomCenter">
-                                                        <ActivatorContent>
-                                                            @op.Description &nbsp;
-
-                                                            @if (user.UserType == 1)
-                                                            {
-                                                                <MudBadge Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
+                                            <th colspan="4" class="fixed-column dynamic-left">
+                                                <div style="display: flex; justify-content: space-between;">
+                                                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
+                                                                @op.Description &nbsp;
+                                                                @if (user.UserType == 1)
+                                                                {
+                                                                    <MudBadge OnClick="(() => OpenUpdate_Operation(op.DistributionId))" OnTouch="(() => OpenUpdate_Operation(op.DistributionId))" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
+                                                                        @switch (op.CriticalType)
+                                                                        {
+                                                                            case 1:
+                                                                                <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                                break;
+                                                                            case 2:
+                                                                                <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                                break;
+                                                                            case 3:
+                                                                                <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                                break;
+                                                                        }
+                                                                    </MudBadge>
+                                                                }
+                                                                else
+                                                                {
                                                                     @switch (op.CriticalType)
                                                                     {
                                                                         case 1:
@@ -421,53 +437,61 @@
                                                                             <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
                                                                             break;
                                                                     }
-                                                                </MudBadge>
-                                                            }
-                                                            else
-                                                            {
-                                                                @switch (op.CriticalType)
-                                                                {
-                                                                    case 1:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 2:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 3:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
                                                                 }
-                                                            }
-
-
-
-
-                                                            <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon>
-                                                        </ActivatorContent>
-                                                        <ChildContent>
-                                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU_Operation(op.DistributionId))" OnTouch="(() => OpenHistoryILU_Operation(op.DistributionId))">
-                                                                @Localizer["historyILU"]
-                                                            </MudMenuItem>
-                                                             @if (user.UserType == 1)
-                                                            {
-                                                            <MudMenuItem Icon="@Icons.Material.Filled.EditAttributes" OnClick="(() => OpenUpdate_Operation(op.DistributionId))" OnTouch="(() => OpenUpdate_Operation(op.DistributionId))">
-                                                                @Localizer["UpdateCritycalType"]
-                                                            </MudMenuItem>
-                                                            }
-                                                        </ChildContent>
-                                                    </MudMenu>
+                                                    </div>
+                                                    <div style="text-align: end">
+                                                        <MudMenu AnchorOrigin="Origin.BottomCenter">
+                                                            <ActivatorContent>
+                                                                <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown"></MudIcon>
+                                                            </ActivatorContent>
+                                                            <ChildContent>
+                                                                <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU_Operation(op.DistributionId))" OnTouch="(() => OpenHistoryILU_Operation(op.DistributionId))">
+                                                                    @Localizer["historyILU"]
+                                                                </MudMenuItem>
+                                                                @if (user.UserType == 1)
+                                                                {
+                                                                    <MudMenuItem Icon="@Icons.Material.Filled.EditAttributes" OnClick="(() => OpenUpdate_Operation(op.DistributionId))" OnTouch="(() => OpenUpdate_Operation(op.DistributionId))">
+                                                                        @Localizer["UpdateCritycalType"]
+                                                                    </MudMenuItem>
+                                                                }
+                                                            </ChildContent>
+                                                        </MudMenu>
+                                                    </div>
                                                 </div>
                                             </th>
                                         }
                                         else
                                         {
-                                            <th class="fixed-column dynamic-left" colspan="2" style="background-color:#fbe8ce;color:#ff9800">
-                                                @op.Description &nbsp;
+                                            <th class="fixed-column dynamic-left" colspan="4" style="background-color:#fbe8ce;color:#ff9800">
+                                                <div style="display: flex; justify-content: space-between;">
+                                                    <div style="display: flex; justify-content: space-between; align-items: center;  width: 100%">
 
-                                                @if (user.UserType == 1)
-                                                {
-                                                    <MudBadge OnClick="(() => OpenUpdate_Operation(op.DistributionId))" OnTouch="(() => OpenUpdate_Operation(op.DistributionId))" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
+                                                    @op.Description &nbsp;
 
+                                                    @if (user.UserType == 1)
+                                                    {
+                                                        <MudBadge OnClick="(() => OpenUpdate_Operation(op.DistributionId))" OnTouch="(() => OpenUpdate_Operation(op.DistributionId))" Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Overlap="true" Bordered="true" Class="mx-6 my-4">
+
+                                                            @switch (op.CriticalType)
+                                                            {
+                                                                case 1:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 2:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 3:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                default:
+
+                                                                    break;
+                                                            }
+
+                                                        </MudBadge>
+                                                    }
+                                                    else
+                                                    {
                                                         @switch (op.CriticalType)
                                                         {
                                                             case 1:
@@ -483,36 +507,17 @@
 
                                                                 break;
                                                         }
-
-                                                    </MudBadge>
-                                                }
-                                                else
-                                                {
-                                                    @switch (op.CriticalType)
-                                                    {
-                                                        case 1:
-                                                            <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                            break;
-                                                        case 2:
-                                                            <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                            break;
-                                                        case 3:
-                                                            <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                            break;
-                                                        default:
-
-                                                            break;
                                                     }
-                                                }
-
+                                                    </div>
+                                                    <div style="text-align: end">
+                                                    </div>
+                                                </div>
                                             </th>
                                         }
 
 
                                         <Virtualize Context="usr" Items="_UserOfArea">
-                                            <td style="text-align: end;" colspan="2">
-
-
+                                            <td style="text-align: end;" colspan="2" class="right-border" >
                                                 @if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
                                                 {
                                                     <table style="border: none">
@@ -526,13 +531,13 @@
                                                                 }
                                                             }
 
-                                                            @if (latestContext != null)
-                                                            {
-                                                                <tr style="border: none; display: flex; justify-content: space-between;">
-                                                                    @if (ILULevelNumber != "§")
+                                                            <tr style="border: none; display: flex; justify-content: space-between; align-items: center">
+                                                                <td style="border: none">
+                                                                    @if (latestContext != null)
                                                                     {
-                                                                        string imageSrc = "";
-                                                                        <td style="border: none">
+                                                                        @if (ILULevelNumber != "§")
+                                                                        {
+                                                                            string imageSrc = "";
                                                                             @switch (ILULevelNumber)
                                                                             {
                                                                                 case "ITrainee":
@@ -575,49 +580,40 @@
                                                                             <div class="d-flex align-items-center">
                                                                                 <MudImage Src="@imageSrc" Alt="ILU Image" Height="45" Class="rounded-lg" />
                                                                             </div>
-                                                                        </td>
-                                                                    }
-                                                                    <td style="border: none">
-                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper().Replace(".", "")
-                                                                        @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
-                                                                        {
-                                                                            <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
-                                                                                <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))">
-                                                                                    @Localizer["sosReviewILU"]
-                                                                                </MudMenuItem>
-                                                                                <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
-                                                                                    <MudText Class="animationtext">@Localizer["Set ILU Level"] @usr.Name - @op.Description </MudText>
-                                                                                </MudMenuItem>
-                                                                            </MudMenu>
-
                                                                         }
+                                                                    }
+                                                                </td>
+                                                                <td style="border: none" >
+                                                                    @if (latestContext != null)
+                                                                    {
+                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper().Replace(".", "")
+                                                                    }
 
-                                                                    </td>
-                                                                </tr>
-                                                            }
-                                                            else if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
-                                                            {
-                                                                <tr style="border: none; display: flex; justify-content: space-between;">
-                                                                    <td style="border: none">
-                                                                    </td>
-                                                                    <td colspan="2">
+                                                                    @if ((latestContext is null || (latestContext.ILULevelId != 1 && latestContext.ILULevelId != 4 && latestContext.ILULevelId != 5 && latestContext.ILULevelId < 8)) || (latestContext is null || latestContext.ILULevelId < 2))
+                                                                    {
                                                                         <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                                                            @if (latestContext is null || latestContext?.ILULevelId != 1 && latestContext?.ILULevelId != 4 && latestContext?.ILULevelId != 5 && latestContext?.ILULevelId < 8)
+                                                                        {
                                                                             <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))" OnTouch="(() => CreateJobObservation(op.DistributionId, usr.UserId, ILULevelNumber))">
                                                                                 @Localizer["sosReviewILU"]
                                                                             </MudMenuItem>
+                                                                        }
+
+                                                                        @if (latestContext is null || latestContext?.ILULevelId < 2)
+                                                                        {
                                                                             <MudMenuItem Class="animationContainer" Style="max-width:300px" Icon="@Icons.Material.Filled.Add" OnClick="@( () => OpenDialogAddILU(op.DistributionId, usr.UserId))" OnTouch="( () => OpenDialogAddILU(op.DistributionId, usr.UserId))">
-                                                                                <MudText Class="animationtext">@Localizer["newILUFor"] @usr.Name in Operation @op.Description </MudText>
+                                                                                <MudText Class="animationtext">@(latestContext != null ? @Localizer["Set ILU Level"] : @Localizer["newILUFor"])  @usr.Name - @op.Description </MudText>
                                                                             </MudMenuItem>
-                                                                        </MudMenu>
-                                                                    </td>
-                                                                </tr>
+                                                                        }
+                                                                    </MudMenu>
+                                                                    }
 
+                                                                </td>
+                                                            </tr>
 
-                                                            }
                                                         </tbody>
                                                     </table>
                                                 }
-
                                             </td>
                                         </Virtualize>
                                         <td>
@@ -1550,7 +1546,7 @@ else
     </DialogActions>
 </MudDialog>
 
-<MudDialog DisableSidePadding="false" @bind-IsVisible="UpdateOperationDialog" Options="dialogOptions">
+<MudDialog DisableSidePadding="false" @bind-IsVisible="UpdateOperationDialog" Options="dialogOptionsUpdateDistribution">
     <DialogContent>
         <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction:row" Class="gap-4">
             <SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.UpdateDistribution OnDistUpdate="HandleCriticalUpdated" CriticalTypeUpdatePat="true" PlantId="_pat.PlantId" AreaId="_pat.AreaId" DistributionId="distribution_id"></SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.UpdateDistribution>
