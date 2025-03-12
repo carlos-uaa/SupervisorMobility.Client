@@ -228,7 +228,7 @@ namespace SupervisorMobility.Client.Pages.Test
                         if (CC) { CC = false; currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 1; }
                         if (hS) { hS = false; hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; }
 
-                        jobProductId = _jobObservation.ProductId ?? 0;
+                        //jobProductId = _jobObservation.ProductId ?? 0;
                         productSpecification = _jobObservation.ModelsSpecification;
                         kpiID = _jobObservation.KpiId ?? 0;
 
@@ -258,14 +258,14 @@ namespace SupervisorMobility.Client.Pages.Test
 
                         await InitializeCollectionsWithPreviousData();
 
-                        if (_jobObservation.ProductId != null)
-                        {
-                            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-                            if (selectedProduct != null)
-                            {
-                                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
-                            }
-                        }
+                        //if (_jobObservation.ProductId != null)
+                        //{
+                        //    var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+                        //    if (selectedProduct != null)
+                        //    {
+                        //        _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+                        //    }
+                        //}
 
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -834,7 +834,7 @@ namespace SupervisorMobility.Client.Pages.Test
                 }
             }
 
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             //SetAsCurrentJobObservation();
             StateHasChanged();
@@ -957,7 +957,7 @@ namespace SupervisorMobility.Client.Pages.Test
             _jobObservation.TaktTime = taktTime.ToString().Replace(",", ".");
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString().Replace(",", ".");
             _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
 
             startHour = DateTime.Now.TimeOfDay;
 
@@ -1729,7 +1729,7 @@ namespace SupervisorMobility.Client.Pages.Test
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
 
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
@@ -2877,27 +2877,26 @@ namespace SupervisorMobility.Client.Pages.Test
                 }
             }
 
-            if (_jobObservation.ProductId != null)
-            {
-                _specifications = new();
-                var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-                if (prodName != null)
-                {
-                    var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
-                    if (op != null && !string.IsNullOrEmpty(op.NameTime))
-                    {
-                        var names = op.NameTime.Replace(',', '.').Split("§");
-                        for (int i = 0; i < 5; i++)
-                        {
-                            if (!string.IsNullOrEmpty(names[i]))
-                            {
-                                _specifications.Add(names[i]);
-                            }
-                        }
-
-                    }
-                }
-            }
+            //if (_jobObservation.ProductId != null)
+            //{
+            //    _specifications = new();
+            //    var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            //    if (prodName != null)
+            //    {
+            //        var op = _operations.FirstOrDefault(p => p.ProductName == prodName?.Code);
+            //        if (op != null && !string.IsNullOrEmpty(op.NameTime))
+            //        {
+            //            var names = op.NameTime.Replace(',', '.').Split("§");
+            //            for (int i = 0; i < 5; i++)
+            //            {
+            //                if (!string.IsNullOrEmpty(names[i]))
+            //                {
+            //                    _specifications.Add(names[i]);
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
 
             StateHasChanged();
         }

@@ -228,7 +228,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
                 _checklistAnswers = await ChecklistAnswerServices.GetAllChecklistAnswersByJobObservationId(JobObservationId);
 
-                jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
+                //jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
 
                 SSV_LupList = _jobObservation.Lup.Where(l => !l.EndDate.HasValue).ToList();
 
