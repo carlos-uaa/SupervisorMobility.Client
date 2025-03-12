@@ -240,7 +240,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 0; 
                     hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; 
 
-                    jobProductId = _jobObservation.ProductId ?? 0;
+                    //jobProductId = _jobObservation.ProductId ?? 0;
                     //productSpecification = _jobObservation.ModelsSpecification;
                     kpiID = _jobObservation.KpiId ?? 0;
 
@@ -270,14 +270,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     await InitializeCollectionsWithPreviousData();
 
-                    if (_jobObservation.ProductId != null)
-                    {
-                        var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-                        if (selectedProduct != null)
-                        {
-                            _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
-                        }
-                    }
+                    //if (_jobObservation.ProductId != null)
+                    //{
+                    //    var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+                    //    if (selectedProduct != null)
+                    //    {
+                    //        _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+                    //    }
+                    //}
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -1061,7 +1061,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.TaktTime = taktTime.ToString().Replace(",", ".");
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString().Replace(",", ".");
             _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
             _jobObservation.ProductIds = string.Join("|", jobProductIds);
             _jobObservation.ProductSpecifications = string.Join("|", productSpecification);
 
@@ -1835,7 +1835,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
 
 
             if (CultureInfo.CurrentCulture.Name == "en-US")

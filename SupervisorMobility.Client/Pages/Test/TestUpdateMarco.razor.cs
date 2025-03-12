@@ -322,7 +322,7 @@ namespace SupervisorMobility.Client.Pages.Test
 
                     ids = _jobObservation.SectionIds.Split('|');
 
-                    jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
+                    //jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
                     showLoading = false;
 
                     var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
@@ -752,7 +752,7 @@ namespace SupervisorMobility.Client.Pages.Test
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -973,7 +973,7 @@ namespace SupervisorMobility.Client.Pages.Test
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1166,7 +1166,7 @@ namespace SupervisorMobility.Client.Pages.Test
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
@@ -1366,7 +1366,7 @@ namespace SupervisorMobility.Client.Pages.Test
             _jobObservation.TaktTime = taktTime.ToString();
             _jobObservation.HOEStandardTimes = hoeStandardTime.ToString();
             _jobObservation.KpiId = kpiID;
-            _jobObservation.ProductId = jobProductId;
+            //_jobObservation.ProductId = jobProductId;
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
