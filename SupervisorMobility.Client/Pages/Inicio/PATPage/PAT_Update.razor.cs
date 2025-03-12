@@ -134,6 +134,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 await GetUserAsync();
 
                 _pat = await PATsServices.getPat(patID);
+                FilterUserYear();
 
                 await PrepareDataTable();
                 StateHasChanged();
@@ -863,6 +864,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         DateTime LastdayYear = DateTime.Now;
         private string month;
         private string year;
+        private async void YearlyTab()
+        {
+            FilterUserYear();
+          
+            StateHasChanged();
+
+            MonthlyView = false;
+
+            StateHasChanged();
+        }  
+        
         private async void MontlyTab()
         {
             FilterUserMonth();
@@ -924,6 +936,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         {
             _visibleSubordinateIds = _pat.PatSubordinates
                 .Where(ps => (_yearMonth.Value.Date >= ps.StartDate.Date || _yearMonth.Value.Date.Month >= ps.StartDate.Date.Month) && (ps.EndDate == null || _yearMonth.Value.Month <= ps.EndDate.Value.Month))
+                .Select(ps => ps.UserId)
+                .ToList();
+        }
+        
+        private void FilterUserYear()
+        {
+            _visibleSubordinateIds = _pat.PatSubordinates
+                .Where(ps => ps.EndDate == null || DateTime.Now <= ps.EndDate.Value)
                 .Select(ps => ps.UserId)
                 .ToList();
         }
