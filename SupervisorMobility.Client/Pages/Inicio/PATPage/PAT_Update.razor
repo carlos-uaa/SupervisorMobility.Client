@@ -143,7 +143,7 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.ArrowBackIosNew" Color="Color.Info" @onclick="@(()=>LastMonth())" OnTouch="@(()=>LastMonth())" Class="mr-4"></MudIconButton>
                                 }
                             </MudTooltip>
-                            <MudDatePicker Style="width: 150px; margin-top: -8px" OpenTo="OpenTo.Month" MinDate="@date" MaxDate="@LastdayYear" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
+                            <MudDatePicker Style="width: 150px; margin-top: -8px" OpenTo="OpenTo.Month" MinDate="@_pat.AplicationDate" MaxDate="@LastdayYear" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnDateChanged Date="_yearMonth" />
                             <MudTooltip Text=@Localizer["nextMonth"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
                                 @if (_yearMonth.Value.Month <= 11)
                                 {
@@ -272,7 +272,7 @@
         <ChildContent>
 
 
-            <MudTabPanel Text="Yearly" OnClick="@(() => MonthlyView = false)">
+            <MudTabPanel Text="Yearly" OnClick="@(() => YearlyTab())" OnTouch="@(() => YearlyTab())">
                 <div class="table-container mb-10">
                     <div class="scrollable-columns">
                         <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="overflow-x: auto; height: 82vh" Elevation="0">
@@ -280,7 +280,7 @@
                                 <tr class="fixed-row">
                                     <th colspan="2">@Localizer["operatorsByOperation"]</th>
                                     <th colspan="2" rowspan="3" class="fixed-column dynamic-left ">@Localizer["operatorName"]</th>
-                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                         @if (User_Knolowed[usr.UserId])
                                         {
                                             <th rowspan="3" colspan="2">
@@ -367,7 +367,7 @@
                                         </div>
 
                                     </th>
-                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                         @if (User_Knolowed[usr.UserId])
                                         {
                                             <th colspan="2" style="text-align: center;">
@@ -387,7 +387,7 @@
                                 <tr class="fixed-row">
                                     @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
                                     <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
-                                    <Virtualize Items="_UserOfArea">
+                                    <Virtualize Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                         <th>Nivel</th>
                                         <th>Fecha</th>
                                     </Virtualize>
@@ -516,7 +516,7 @@
                                         }
 
 
-                                        <Virtualize Context="usr" Items="_UserOfArea">
+                                        <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                             <td style="text-align: end;" colspan="2" class="right-border" >
                                                 @if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
                                                 {
@@ -667,7 +667,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                         @{
                                             int index = _UserOfArea.IndexOf(usr);
                                         }
@@ -719,7 +719,7 @@
                                     </td>
                                     <td colspan="2" class="fixed-column dynamic-left">
                                     </td>
-                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                         <td style="text-align: center;" colspan="2">
                                             @{
                                                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
@@ -742,7 +742,7 @@
                                     </td>
                                     @if (_pat?.PatUserRoles != null)
                                     {
-                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
+                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                             <td style="text-align: center;" colspan="2" rowspan="2">
                                                 <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
                                                 <MudSelect @bind-Value="patUserRole.Role"
