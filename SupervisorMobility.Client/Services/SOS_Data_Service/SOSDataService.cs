@@ -365,9 +365,9 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                                 if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
                                 {
-                                  
+
                                     List<JobObservation> findedJobs = availableJobs.Where(j => j.DistributionId == item.distribution.DistributionId).ToList();
-                                  
+
                                     JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any(jo => jo.OperationId == op.OperationId));
 
                                     if (findedJob != null)
@@ -536,8 +536,11 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom)
         {
 
-            List<JobObservation> availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
+            List<JobObservation>? availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
 
+            this.diasSeparate = diasSeparate;
+            this.Startday = Startday;
+            this.JobsPorDia = JobsPorDia;
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
@@ -581,7 +584,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                 if (_All_Suggested_SOSJobobservation.Count == 0)
                 {
-                    
+
                     foreach (var op in _All_Operations)
                     {
                         if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
@@ -589,19 +592,19 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                             int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
 
-                            
+
                             int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                           
+
                             //Buscamos el id de distribucion al que pertenece la operacion
                             int distID = selectedDistributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId)).DistributionId;
 
                             //Filtrar las jobs siguiente año disponibles por distribucion para evitar usar Jobs de alguna otra distribucion
-                            List<JobObservation> findedJobs = availableJobs.Where(j => j.DistributionId == distID).ToList();
+                            List<JobObservation> findedJobs = availableJobs?.Where(j => j.DistributionId == distID).ToList();
                             //(En caso de que esten incompletas)
                             //Buscar alguna que tenga la operacion
                             //o en su defecto usar la primera job disponible sin operacion para no tener registros en bdd
-                            JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any( jo => jo.OperationId == op.OperationId));
+                            JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any(jo => jo.OperationId == op.OperationId));
 
 
 
@@ -609,7 +612,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                             {
                                 JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
 
-                                
+
                                 if (findedJob.SupervisorId == null)
                                 {
                                     _newSuggestionExist.SupervisorId = supervisorId;
@@ -720,7 +723,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 _newSuggestion.StartDate = parsedDate;
                                 _newSuggestion.PlannedStartDate = parsedDate;
 
-
+                                Console.WriteLine($"Date [{parsedDate}] Job {_newSuggestion.Distribution.Code} - [{op.Description}] {op.OperationId}");
 
                                 _All_Suggested_SOSJobobservation.Add(_newSuggestion);
                             }
@@ -772,12 +775,50 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                     {
                         return startAvailabeDate;
                     }
+                    else if (await IsWeekend(startAvailabeDate))
+                    {
+                        if (startAvailabeDate.DayOfWeek == DayOfWeek.Saturday)
+                        {
+                            startAvailabeDate = startAvailabeDate.AddDays(2);
+                            if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
+                            {
+                                return startAvailabeDate;
+                            }
+                        }
+                        else if (startAvailabeDate.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            startAvailabeDate = startAvailabeDate.AddDays(1);
+                            if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
+                            {
+                                return startAvailabeDate;
+                            }
+                        }
+                    }
                 }
                 else
                 {
                     if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
                     {
                         return startAvailabeDate;
+                    }
+                    else if (await IsWeekend(startAvailabeDate))
+                    {
+                        if (startAvailabeDate.DayOfWeek == DayOfWeek.Saturday)
+                        {
+                            startAvailabeDate = startAvailabeDate.AddDays(2);
+                            if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
+                            {
+                                return startAvailabeDate;
+                            }
+                        }
+                        else if (startAvailabeDate.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            startAvailabeDate = startAvailabeDate.AddDays(1);
+                            if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
+                            {
+                                return startAvailabeDate;
+                            }
+                        }
                     }
                 }
 
