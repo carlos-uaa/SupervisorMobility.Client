@@ -4,6 +4,7 @@ using AutoMapper;
 using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
 using System.Diagnostics;
 using System.Linq;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace SupervisorMobility.Client.Services.SOS_Data_Service
 {
@@ -50,6 +51,8 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         public DateTime Startday { get; set; } = DateTime.Now;
         public int diasSeparate { get; set; } = 1;
         public int JobsPorDia { get; set; } = 1;
+        public int Year { get; set; } = 1;
+        public int YearLoop { get; set; } = 0;
         public string jobCategoryStructureIds { get; set; } = "";
 
         public SOSDataService(HttpClient http, ISOSReviewService SosInject, IMapper MapInjec, ISOSReviewService sosInject, IJobObservationService jobObsServices)
@@ -344,6 +347,9 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             this.diasSeparate = diasSeparate;
             this.Startday = Startday;
             this.JobsPorDia = JobsPorDia;
+            this.Year = Startday.Year;
+            this.YearLoop = 0;
+
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
             try
             {
@@ -365,9 +371,9 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                                 if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
                                 {
-                                  
+
                                     List<JobObservation> findedJobs = availableJobs.Where(j => j.DistributionId == item.distribution.DistributionId).ToList();
-                                  
+
                                     JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any(jo => jo.OperationId == op.OperationId));
 
                                     if (findedJob != null)
@@ -536,8 +542,13 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom)
         {
 
-            List<JobObservation> availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
+            List<JobObservation>? availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
 
+            this.diasSeparate = diasSeparate;
+            this.Startday = Startday;
+            this.JobsPorDia = JobsPorDia;
+            this.Year = Startday.Year;
+            this.YearLoop = 0;
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
@@ -581,7 +592,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                 if (_All_Suggested_SOSJobobservation.Count == 0)
                 {
-                    
+
                     foreach (var op in _All_Operations)
                     {
                         if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
@@ -589,19 +600,19 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                             int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
 
-                            
+
                             int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                           
+
                             //Buscamos el id de distribucion al que pertenece la operacion
                             int distID = selectedDistributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId)).DistributionId;
 
                             //Filtrar las jobs siguiente año disponibles por distribucion para evitar usar Jobs de alguna otra distribucion
-                            List<JobObservation> findedJobs = availableJobs.Where(j => j.DistributionId == distID).ToList();
+                            List<JobObservation> findedJobs = availableJobs?.Where(j => j.DistributionId == distID).ToList();
                             //(En caso de que esten incompletas)
                             //Buscar alguna que tenga la operacion
                             //o en su defecto usar la primera job disponible sin operacion para no tener registros en bdd
-                            JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any( jo => jo.OperationId == op.OperationId));
+                            JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any(jo => jo.OperationId == op.OperationId));
 
 
 
@@ -609,7 +620,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                             {
                                 JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
 
-                                
+
                                 if (findedJob.SupervisorId == null)
                                 {
                                     _newSuggestionExist.SupervisorId = supervisorId;
@@ -720,8 +731,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 _newSuggestion.StartDate = parsedDate;
                                 _newSuggestion.PlannedStartDate = parsedDate;
 
-
-
+                               
                                 _All_Suggested_SOSJobobservation.Add(_newSuggestion);
                             }
                         }
@@ -761,16 +771,52 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
         public async Task<DateTime> FindNextAvailableDate(DateTime startAvailabeDate, bool isSuggest, int id_SV = 0)
         {
-            int yearToCheck = startAvailabeDate.Year;
-            int initialDayOfYear = startAvailabeDate.DayOfYear;
+            int yearToCheck = this.Year;
+            DateTime initialDayOfYear = new DateTime(startAvailabeDate.Year, startAvailabeDate.Month, startAvailabeDate.Day);
 
-            while (startAvailabeDate.Year == yearToCheck || startAvailabeDate.DayOfYear < initialDayOfYear)
+            if(YearLoop > 0)
             {
+                if (YearLoop == diasSeparate)
+                {
+                    YearLoop = 0;
+                }
+
+                startAvailabeDate = initialDayOfYear.AddDays(YearLoop);
+            }
+
+            while (true)
+            {
+
+
+                if (startAvailabeDate < DateTime.Today)
+                {
+                    startAvailabeDate = initialDayOfYear.AddDays(YearLoop);
+                }
+
                 if (isSuggest)
                 {
                     if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
                     {
                         return startAvailabeDate;
+                    }
+                    else if (await IsWeekend(startAvailabeDate))
+                    {
+                        if (startAvailabeDate.DayOfWeek == DayOfWeek.Saturday)
+                        {
+                            startAvailabeDate = startAvailabeDate.AddDays(2);
+                            if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
+                            {
+                                return startAvailabeDate;
+                            }
+                        }
+                        else if (startAvailabeDate.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            startAvailabeDate = startAvailabeDate.AddDays(1);
+                            if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
+                            {
+                                return startAvailabeDate;
+                            }
+                        }
                     }
                 }
                 else
@@ -779,14 +825,46 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                     {
                         return startAvailabeDate;
                     }
+                    else if (await IsWeekend(startAvailabeDate))
+                    {
+                        if (startAvailabeDate.DayOfWeek == DayOfWeek.Saturday)
+                        {
+                            startAvailabeDate = startAvailabeDate.AddDays(2);
+                            if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
+                            {
+                                return startAvailabeDate;
+                            }
+                        }
+                        else if (startAvailabeDate.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            startAvailabeDate = startAvailabeDate.AddDays(1);
+                            if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
+                            {
+                                return startAvailabeDate;
+                            }
+                        }
+                    }
                 }
 
                 startAvailabeDate = startAvailabeDate.AddDays(diasSeparate);
 
-                if (startAvailabeDate > DateTime.MaxValue)
+                if (startAvailabeDate.Year != yearToCheck)
                 {
-                    throw new InvalidOperationException("No se pudo encontrar una fecha disponible en el año actual.");
+                    YearLoop += 1;
+
+                    if(YearLoop == diasSeparate)
+                    {
+                        JobsPorDia +=1;
+                    }
+
+                    //this.JobsPorDia += 1;
+                    // Ajustar el año de la fecha para que permanezca en el mismo año
+                    startAvailabeDate = new DateTime(yearToCheck, startAvailabeDate.Month, startAvailabeDate.Day);
+
+                    //throw new InvalidOperationException("No se pudo encontrar una fecha disponible en el año actual.");
                 }
+
+              
             }
 
 
@@ -797,7 +875,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         private async Task<bool> IsDateAlreadyUsed(DateTime dateToCheck)
         {
             int count = _All_SOSJobobservation.Count(o => o.PlannedStartDate.Value.Date == dateToCheck.Date);
-            return count > 1;
+            return count > JobsPorDia;
         }
 
         private async Task<bool> IsDateSuggestAlreadyUsed(DateTime dateToCheck, int id_SV)
@@ -809,7 +887,6 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             }
 
             return true;
-
         }
 
         private async Task<bool> IsWeekend(DateTime dateToCheck)
@@ -919,7 +996,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
         public List<JobObservationNulls> Get_Suggest_AllSos_Dist(int dist_Id)
         {
-            Console.WriteLine($"Get_Suggest_AllSos_Dist: {dist_Id} - {DateTime.Now}");
+            //Console.WriteLine($"Get_Suggest_AllSos_Dist: {dist_Id} - {DateTime.Now}");
             return _All_Suggested_SOSJobobservation.Where(j => j.DistributionId == dist_Id).ToList();
         }
 

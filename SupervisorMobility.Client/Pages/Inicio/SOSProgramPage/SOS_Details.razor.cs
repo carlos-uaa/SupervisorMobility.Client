@@ -849,7 +849,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private async Task PrepareSuggestDataTable(int id_distribution = 0)
         {
             //Debugear esta parte Ver por que el id mandado no responde
-            Console.WriteLine($"Prepare SuggestDist: {id_distribution} - {DateTime.Now} ");
+            //Console.WriteLine($"Prepare SuggestDist: {id_distribution} - {DateTime.Now} ");
             if (ScheduleView && id_distribution == 0)
             {
                 //traer toda las cosas por mes
@@ -1004,7 +1004,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
                     yesText: "Entendio!");
 
-                    Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+                    //Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
 
                     //msg de crear Supervisor
                 }
@@ -1017,7 +1017,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
                 yesText: "Entendio!");
 
-                Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+                //Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
 
                 //msg de crear Supervisor
             }
@@ -1217,7 +1217,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                         (MarkupString)$"Antes de proceder con la creación de Un Job Observation, por favor define un supervisor responsable.",
                         yesText: "Entendio!");
 
-                        Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+                        //Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
 
                         ////ssv o admin intentanto crear job
                         ///
@@ -1235,7 +1235,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 (MarkupString)$"SOS Register User-Operation Relationship Not Exist.",
                 yesText: "ok!");
 
-                Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
+                //Console.WriteLine($"La clave '{OperationId}' no existe en el diccionario.");
 
                 //msg de crear Supervisor
             }
@@ -1334,27 +1334,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                 if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
                 {
-                    Console.WriteLine(newDate1);
+                    //Console.WriteLine(newDate1);
                 }
                 else
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Error in Date Start", Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour1);
+                    //Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
 
                 if (DateTime.TryParseExact(hour2, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
                 {
-                    Console.WriteLine(newDate2);
+                    //Console.WriteLine(newDate2);
                 }
                 else
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateError"], Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour2);
+                    //Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
                 _jobObservation.StartDate = newDate1;
@@ -1363,8 +1363,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 _jobObservation.PlannedStartDate = newDate1;
                 _jobObservation.PlannedEndDate = newDate2;
 
-                Console.WriteLine(_jobObservation.StartDate);
-                Console.WriteLine(_jobObservation.EndDate);
+                //Console.WriteLine(_jobObservation.StartDate);
+                //Console.WriteLine(_jobObservation.EndDate);
 
 
                 if (plannedStartDate == _jobObservation.StartDate && plannedEndDate == _jobObservation.EndDate)
@@ -1405,27 +1405,27 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                 if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
                 {
-                    Console.WriteLine(newDate1);
+                    //Console.WriteLine(newDate1);
                 }
                 else
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateStartError"], Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour1);
+                    //Console.WriteLine("Unable to parse '{0}'", hour1);
                 }
 
 
                 if (DateTime.TryParseExact(hour2, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate2))
                 {
-                    Console.WriteLine(newDate2);
+                    //Console.WriteLine(newDate2);
                 }
                 else
                 {
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateEndError"], Severity.Error);
-                    Console.WriteLine("Unable to parse '{0}'", hour2);
+                    //Console.WriteLine("Unable to parse '{0}'", hour2);
                 }
 
                 _jobObservation.StartDate = newDate1;
@@ -1434,8 +1434,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 _jobObservation.PlannedStartDate = newDate1;
                 _jobObservation.PlannedEndDate = newDate2;
 
-                Console.WriteLine(_jobObservation.StartDate);
-                Console.WriteLine(_jobObservation.EndDate);
+                //Console.WriteLine(_jobObservation.StartDate);
+                //Console.WriteLine(_jobObservation.EndDate);
 
 
                 if (plannedStartDate == _jobObservation.StartDate && plannedEndDate == _jobObservation.EndDate)
@@ -1505,10 +1505,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                 if (DateTime.TryParseExact(hour1, $"d/M/yyyy", null, DateTimeStyles.None, out var newDate1))
                 {
-                    Console.WriteLine(newDate1);
+                    //Console.WriteLine(newDate1);
                 }
                 else
-                    Console.WriteLine("Unable to parse {es-ES} '{0}'", hour1);
+                    //Console.WriteLine("Unable to parse {es-ES} '{0}'", hour1);
 
                 programmedStartDate = newDate1.ToString("MM-dd-yyyy");
             }
@@ -1713,7 +1713,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private async void ShowBtnPress(int distribution_Id)
         {
-            Console.WriteLine($"Btn Press dist: {distribution_Id} - {DateTime.Now}");
+            //Console.WriteLine($"Btn Press dist: {distribution_Id} - {DateTime.Now}");
             Distribution? tmpdist = _distributions.FirstOrDefault(f => f.DistributionId == distribution_Id);
 
             if (tmpdist != null)
@@ -1783,7 +1783,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error In Create SOSRegUserOperationRelationship Function: {ex.Message} ");
+                        //Console.WriteLine($"Error In Create SOSRegUserOperationRelationship Function: {ex.Message} ");
 
                         bool? result = await DialogService.ShowMessageBox(
                                "Atencion",
@@ -1811,7 +1811,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                 if(!result.Canceled)
                                 {
                                     bool? option = (bool?)result.Data;
-                                    Console.WriteLine($"Option : {option}");
+                                    //Console.WriteLine($"Option : {option}");
                                     //mensaje de opocion
                                     switch (option)
                                     {
@@ -1891,7 +1891,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                                     {
                                         SOS_Registers_UserOperationRelationship.Clear();
                                         OperationsInDistributionCount.Clear();
-                                        Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
+                                        //Console.WriteLine($"First Time: Create SOS_Registers_UserOperationRelationship");
                                         _SosRegistersrUserOperation = await SOSPlanReviewServices.GetSOSRegUserOperation(_sos_plan.SOSid);
 
                                         foreach (var item in _SosRegistersrUserOperation)
@@ -1923,7 +1923,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Error In assign Supervisor ID: {ex.Message} ");
+                                //Console.WriteLine($"Error In assign Supervisor ID: {ex.Message} ");
 
                                 bool? result = await DialogService.ShowMessageBox(
                                        "Assign Supervisor ID Error",
@@ -2008,6 +2008,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 return;
             }
 
+
+            if (JobsPorDia == 0)
+            {
+                DialogService.ShowMessageBox("Warning", "Its Necessary at least one Job per Day !", yesText: "OK!");
+                StateHasChanged();
+                enableCreateSuggestion = false;
+                return;
+            }
+
+            if (diasSeparate == 0)
+            {
+                DialogService.ShowMessageBox("Warning", "It is necessary to separate at least 1 day !", yesText: "OK!");
+                StateHasChanged();
+                enableCreateSuggestion = false;
+                return;
+            }
+
             if (SV_Manager.Count() == 0)
             {
                 DialogService.ShowMessageBox("Warning", "SV is Necessary!", yesText: "OK!");
@@ -2033,7 +2050,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 await PrepareSuggestDataTable();
 
                 await DialogService.ShowMessageBox("Info!", "Suggestion created!", yesText: "OK!");
-                Console.WriteLine($" Final First Sugg Generation");
+                //Console.WriteLine($" Final First Sugg Generation");
 
                 //ShowLoading = false;
                 enableCreateSuggestion = false;
@@ -2044,7 +2061,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         }
 
-        private void StartCreateNewSuggestion()
+        private async void StartCreateNewSuggestion()
         {
             enableCreateSuggestion = true;
             _yearMonth = Startday;
@@ -2064,6 +2081,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 return;
             }
 
+            if (JobsPorDia == 0)
+            {
+                DialogService.ShowMessageBox("Warning", "Its Necessary at least one Job per Day !", yesText: "OK!");
+                StateHasChanged();
+                return;
+            }
+
+            if (diasSeparate == 0)
+            {
+                DialogService.ShowMessageBox("Warning", "It is necessary to separate at least 1 day !", yesText: "OK!");
+                StateHasChanged();
+                return;
+            }
+
             if (SV_Manager.Count == 0)
             {
                 DialogService.ShowMessageBox("Warning", "SV is Necessary!", yesText: "OK!");
@@ -2076,7 +2107,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             ShowLoading = true;
             StateHasChanged();
 
-            Task.Run(async () =>
+            await Task.Run(async () =>
             {
                 await CreateNewSuggestion();
             }
@@ -2089,12 +2120,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
             await SOSDataServices.SetNewConfigSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, StartdayUTC, JobsPorDia, OptionRandom);
-            await PrepareSuggestDataTable();
 
             // Una vez completada la configuración, muestra un mensaje informativo
-            Console.WriteLine("Final New Suggestion Generation");
+            //Console.WriteLine("Final New Suggestion Generation");
             await DialogService.ShowMessageBox("Info!", "New suggestion created!", yesText: "OK!");
 
+
+            await PrepareSuggestDataTable();
 
             // Restaura el estado y muestra la tabla nuevamente
             ShowLoading = false;
@@ -2206,7 +2238,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 var SearchJob = _All_Suggested_SOSJobobservation.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op);
                 SearchJob.SupervisorId = context.Register.Supervisor.UserId;
 
-                Console.WriteLine($"Update SV");
+                //Console.WriteLine($"Update SV");
                 visibleSuggestSVDialog = false;
             }
         }
@@ -2265,7 +2297,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         public void UpdateMultiDistribution(DistSelect CheckItem)
         {
             CheckItem.isSelected = !CheckItem.isSelected;
-            Console.Write(CheckItem.distribution.Code);
+            //Console.Write(CheckItem.distribution.Code);
             StateHasChanged();
         }
 

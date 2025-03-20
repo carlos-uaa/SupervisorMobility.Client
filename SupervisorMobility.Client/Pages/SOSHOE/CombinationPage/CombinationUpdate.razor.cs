@@ -595,6 +595,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                     break;
             }
         }
+
+
         int lastValidOperationIndex = -1;
         private void GetLastValidOperationIndex()
         {
@@ -620,50 +622,41 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             double remainingSteps = steps - (fullCells * _CellSize);
             double result = 33;
 
-            //Console.WriteLine($"Step: {steps}  Full: " + fullCells + " Remain: " + remainingSteps);
 
             if (top == 40)
             {
                 if (steps <= _HalfCellSize)
                 {
-                    Console.WriteLine("Step <= half size ");
                     result = 28;
                 }
                 else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
                 {
-                    Console.WriteLine("Into casi half full ");
                     result = (fullCells * 30) + (30 * remainingSteps);
                 }
                 else if (remainingSteps > _HalfCellSize)
                 {
-                    Console.WriteLine("Into full more half ");
                     result = (fullCells * 30) + (30 * remainingSteps);
                 }
                 else
                 {
-                    Console.WriteLine("Into full  ");
                     result = fullCells * 27;
                 }
 
             } else if (top == 35) {
                 if (steps <= _HalfCellSize)
                 {
-                    Console.WriteLine("35 <= ");
                     result = 50;
                 }
                 else if (steps <= _CellSize)
                 {
-                    Console.WriteLine("Into casi half full ");
                     result = (fullCells * 50) + 10;
                 }
                 else if (remainingSteps > _HalfCellSize)
                 {
-                    Console.WriteLine("Into full more half ");
                     result = (fullCells * 50) + (45 * remainingSteps);
                 }
                 else
                 {
-                    Console.WriteLine("35  full  ");
                     result = fullCells * 30;
                 }
 
@@ -672,29 +665,23 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             {
                 if (steps <= _HalfCellSize)
                 {
-                    Console.WriteLine("Step <= half size ");
                     result = 50;
                 }
                 else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
                 {
-                    Console.WriteLine("Into casi half full ");
                     result = (fullCells * 30) + (30 * remainingSteps);
                 }
                 else if (remainingSteps > _HalfCellSize)
                 {
-                    Console.WriteLine("Into full more half ");
                     result = (fullCells * 60) + (30 * remainingSteps);
                 }
                 else
                 {
-                    Console.WriteLine("Into full  ");
                     result = fullCells * 33;
                 }
             }
 
             return result;
-
-
         }
 
         private double CalculateRotateAngle(double top, double sizeStep)
@@ -741,7 +728,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             }
             else if (top == 20)
             {
-               if (sizeStep < 33)
+                if (sizeStep < 33)
                 {
                     return 80;
                 }
