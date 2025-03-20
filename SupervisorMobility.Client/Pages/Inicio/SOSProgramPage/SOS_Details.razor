@@ -54,6 +54,9 @@
         max-width: 100%;
     }
 
+      .right-border {
+        border-right: 1px solid var(--mud-palette-table-lines);
+    }
 
     .mud-simple-table.mud-table-sticky-header * table thead * th {
         background-color: var(--mud-palette-surface);
@@ -129,18 +132,7 @@
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["sosDetails"]</PageTitle>
 @*Breadcrumb links*@
-@*  <div style="display: flex; align-items: center; justify-content: space-between;">
-        <MudItem>
-            <MudBreadcrumbs Class="mb-2" Items="_links">
-                <ItemTemplate Context="item">
-                    <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-                </ItemTemplate>
-            </MudBreadcrumbs>
-        </MudItem>
-        <MudItem Style="text-align: end">
-            <img src="Images/logo.png" Height="50" />
-        </MudItem>
-    </div> *@
+
 @if (ShowTable)
 {
             <MudTabs Border="true" Outlined="true" ApplyEffectsToContainer="true" Class="mt-0 mx-0" HeaderPosition="TabHeaderPosition.Before" PrevIcon="@Icons.Material.Filled.SkipPrevious" NextIcon="@Icons.Material.Filled.SkipNext">
@@ -162,9 +154,9 @@
                                 </MudItem>
                             </MudItem>
                         </MudItem>
-                @if (MonthlyView)
-                {
-                                    <MudItem Style="display: flex;  align-items: center">
+                        @if (MonthlyView)
+                        {
+                                            <MudItem Style="display: flex;  align-items: center">
                                         <MudTooltip Text=@Localizer["lastMonth"] Arrow="true" Placement="Placement.Top" Color="Color.Info">
                             @if (SuggestionMode)
                             {
@@ -310,13 +302,7 @@
                                                                                                                                         <MudMenuItem Icon="@Icons.Material.Filled.PlaylistAdd" @onclick="@(()=>OpenDialog4(date))" OnTouch="@(()=>OpenDialog4(date))">
                                                                             @Localizer["programmedJobObservation"]
                                                                                                                                         </MudMenuItem>
-                                                                        @* <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="@(()=>PlanJobObservation(date))" OnTouch="@(()=>PlanJobObservation(date))">
-                                        @Localizer["planJobObservation"]
-                                        </MudMenuItem>
-                                        <MudMenuItem Icon="@Icons.Material.Filled.Add" @onclick="@(()=>CreateJobObservation(date))" OnTouch="@(()=>CreateJobObservation(date))">
-                                        @Localizer["createJobObservation"]
-                                        </MudMenuItem> *@
-                                                                                                                                    </MudMenu>
+                                                                                                                            </MudMenu>
                                                                 }
                                                                 else
                                                                 {
@@ -331,12 +317,7 @@
                                                                                                                                         <MudMenuItem Icon="@Icons.Material.Filled.PlaylistAdd" @onclick="@(()=>OpenDialog4(date))" OnTouch="@(()=>OpenDialog4(date))">
                                                                             @Localizer["programmedJobObservation"]
                                                                                                                                         </MudMenuItem>
-                                                                        @* <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" @onclick="@(()=>PlanJobObservation(date))" OnTouch="@(()=>PlanJobObservation(date))">
-                                        @Localizer["planJobObservation"]
-                                        </MudMenuItem>
-                                        <MudMenuItem Icon="@Icons.Material.Filled.Add" @onclick="@(()=>CreateJobObservation(date))" OnTouch="@(()=>CreateJobObservation(date))">
-                                        @Localizer["createJobObservation"]
-                                        </MudMenuItem> *@
+                                                         
                                                                                                                                     </MudMenu>
                                                                 }
                                                                 else
@@ -1802,7 +1783,7 @@
                                                             if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
                                                             {
 
-                                                                                                                                <MudTd style="text-align: center; width:160px; max-height:160px;">
+                                                                <MudTd style="text-align: center; width:160px; max-height:160px;" class="@(date.DayOfWeek == DayOfWeek.Friday ? "right-border" : "")">
 
                                                                     @if (SOS_Registers_Matrix.TryGetValue((op.OperationId, _yearMonth.Value.Month), out var context))
                                                                     {
@@ -1858,7 +1839,7 @@
                                                             int currentIndex = i;
                                                             if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
                                                             {
-                                                                                                                                <MudTd style="text-align: center; width:160px; max-height:160px ">
+                                                                <MudTd style="text-align: center; width:160px; max-height:160px " class="@(date.DayOfWeek == DayOfWeek.Friday ? "right-border" : "")">
 
                                                                     @if (SOS_Registers_Matrix.TryGetValue((op.OperationId, (int)_yearMonth.Value.Month), out var context))
                                                                     {
@@ -2820,7 +2801,7 @@
 
                                                                                 if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
                                                                                 {
-                                                                                                                                                    <MudTd style="text-align: center; width:160px; max-height:160px;">
+                                                                                    <MudTd style="text-align: center; width:160px; max-height:160px;" class="@(date.DayOfWeek == DayOfWeek.Friday ? "right-border" : "")">
                                                                                         @foreach (var jobobs in _All_Suggested_SOSJobobservation.Where(j => j.DistributionId == Distribution_Item.DistributionId))
                                                                                         {
                                                                                             if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date == Convert.ToDateTime(compare.ToShortDateString()).Date && jobobs.Operations?.FirstOrDefault()?.OperationId == op.OperationId)
@@ -2838,19 +2819,18 @@
                                                                                                                             <MudTd rowspan="2">@op.RestrictionOrComment</MudTd>
                                                                                                                         </MudTr>
 
-                                                                                                                        <MudTr>
+                                                                                                                        <MudTr >
 
                                                                                                                             <MudTd class="fixed-column dynamic-left real">@Localizer["R"]</MudTd>
 
                                                                             @for (var i = 1; i <= daysInMonth; i++)
                                                                             {
                                                                                 var date = new DateTime(_yearMonth.Value.Year, _yearMonth.Value.Month, i);
-                                                                                var dayName = date.ToString("dddd");
-                                                                                var compare = new DateTime(_yearMonth.Value.Year, _yearMonth.Value.Month, i);
-                                                                                int currentIndex = i;
-
-
-
+                                                                           
+                                                                                @if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
+                                                                                {
+                                                                                                                            <MudTd class="@(date.DayOfWeek == DayOfWeek.Friday ? "right-border" : "")"></MudTd>
+                                                                                }
                                                                             }
 
 
@@ -3264,9 +3244,7 @@
                                                                                 @for (var i = 1; i < 13; i++)
                                                                                 {
                                                                                     int currentIndex = i;
-                                                                                    var date = new DateTime(_yearMonth.Value.Year, currentIndex, 1);
-                                                                                    var dayName = date.ToString("dddd");
-                                                                                    var compare = new DateTime(_yearMonth.Value.Year, currentIndex, 1);
+                                                                                 
 
                                                                                                                                                     <MudTd style="text-align: center; width:160px; ">
 
