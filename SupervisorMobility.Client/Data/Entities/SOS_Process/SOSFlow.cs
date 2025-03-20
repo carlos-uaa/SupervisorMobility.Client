@@ -7,7 +7,7 @@
         public string? OperationName { get; set; }
         public string? ProcessName { get; set; }
 
-        public string Flow { get; set; }
+        public string Flow { get; set; } = "";
 
         public int? ReviewerHSId { get; set; }
         public User? ReviewerHS { get; set; }
