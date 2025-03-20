@@ -4,6 +4,7 @@ using AutoMapper;
 using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
 using System.Diagnostics;
 using System.Linq;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace SupervisorMobility.Client.Services.SOS_Data_Service
 {
@@ -50,6 +51,8 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         public DateTime Startday { get; set; } = DateTime.Now;
         public int diasSeparate { get; set; } = 1;
         public int JobsPorDia { get; set; } = 1;
+        public int Year { get; set; } = 1;
+        public int YearLoop { get; set; } = 0;
         public string jobCategoryStructureIds { get; set; } = "";
 
         public SOSDataService(HttpClient http, ISOSReviewService SosInject, IMapper MapInjec, ISOSReviewService sosInject, IJobObservationService jobObsServices)
@@ -344,6 +347,9 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             this.diasSeparate = diasSeparate;
             this.Startday = Startday;
             this.JobsPorDia = JobsPorDia;
+            this.Year = Startday.Year;
+            this.YearLoop = 0;
+
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
             try
             {
@@ -541,6 +547,8 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             this.diasSeparate = diasSeparate;
             this.Startday = Startday;
             this.JobsPorDia = JobsPorDia;
+            this.Year = Startday.Year;
+            this.YearLoop = 0;
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
@@ -723,8 +731,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 _newSuggestion.StartDate = parsedDate;
                                 _newSuggestion.PlannedStartDate = parsedDate;
 
-                                Console.WriteLine($"Date [{parsedDate}] Job {_newSuggestion.Distribution.Code} - [{op.Description}] {op.OperationId}");
-
+                               
                                 _All_Suggested_SOSJobobservation.Add(_newSuggestion);
                             }
                         }
@@ -764,11 +771,28 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
         public async Task<DateTime> FindNextAvailableDate(DateTime startAvailabeDate, bool isSuggest, int id_SV = 0)
         {
-            int yearToCheck = startAvailabeDate.Year;
-            int initialDayOfYear = startAvailabeDate.DayOfYear;
+            int yearToCheck = this.Year;
+            DateTime initialDayOfYear = new DateTime(startAvailabeDate.Year, startAvailabeDate.Month, startAvailabeDate.Day);
 
-            while (startAvailabeDate.Year == yearToCheck || startAvailabeDate.DayOfYear < initialDayOfYear)
+            if(YearLoop > 0)
             {
+                if (YearLoop == diasSeparate)
+                {
+                    YearLoop = 0;
+                }
+
+                startAvailabeDate = initialDayOfYear.AddDays(YearLoop);
+            }
+
+            while (true)
+            {
+
+
+                if (startAvailabeDate < DateTime.Today)
+                {
+                    startAvailabeDate = initialDayOfYear.AddDays(YearLoop);
+                }
+
                 if (isSuggest)
                 {
                     if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
@@ -824,10 +848,23 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                 startAvailabeDate = startAvailabeDate.AddDays(diasSeparate);
 
-                if (startAvailabeDate > DateTime.MaxValue)
+                if (startAvailabeDate.Year != yearToCheck)
                 {
-                    throw new InvalidOperationException("No se pudo encontrar una fecha disponible en el año actual.");
+                    YearLoop += 1;
+
+                    if(YearLoop == diasSeparate)
+                    {
+                        JobsPorDia +=1;
+                    }
+
+                    //this.JobsPorDia += 1;
+                    // Ajustar el año de la fecha para que permanezca en el mismo año
+                    startAvailabeDate = new DateTime(yearToCheck, startAvailabeDate.Month, startAvailabeDate.Day);
+
+                    //throw new InvalidOperationException("No se pudo encontrar una fecha disponible en el año actual.");
                 }
+
+              
             }
 
 
@@ -838,7 +875,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         private async Task<bool> IsDateAlreadyUsed(DateTime dateToCheck)
         {
             int count = _All_SOSJobobservation.Count(o => o.PlannedStartDate.Value.Date == dateToCheck.Date);
-            return count > 1;
+            return count > JobsPorDia;
         }
 
         private async Task<bool> IsDateSuggestAlreadyUsed(DateTime dateToCheck, int id_SV)
@@ -850,7 +887,6 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             }
 
             return true;
-
         }
 
         private async Task<bool> IsWeekend(DateTime dateToCheck)
@@ -960,7 +996,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
         public List<JobObservationNulls> Get_Suggest_AllSos_Dist(int dist_Id)
         {
-            Console.WriteLine($"Get_Suggest_AllSos_Dist: {dist_Id} - {DateTime.Now}");
+            //Console.WriteLine($"Get_Suggest_AllSos_Dist: {dist_Id} - {DateTime.Now}");
             return _All_Suggested_SOSJobobservation.Where(j => j.DistributionId == dist_Id).ToList();
         }
 
