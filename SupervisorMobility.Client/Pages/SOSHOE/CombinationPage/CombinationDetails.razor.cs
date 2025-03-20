@@ -207,7 +207,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         {
             //await Exportation.ExportCombinationToExcel(CombinationId.Value);
         }
-
+        
         private void UpdateTableValues()
         {
             switch (_CellSize_Slider)
@@ -280,6 +280,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                     break;
             }
         }
+
         int lastValidOperationIndex = -1;
         private void GetLastValidOperationIndex()
         {
@@ -301,26 +302,69 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
         private double CalculateSizeStep(double steps, double top)
         {
-            double fullCells = Math.Floor(steps / _CellSize);
+            double fullCells = Math.Round(Math.Floor(steps / _CellSize), 3);
             double remainingSteps = steps - (fullCells * _CellSize);
-            double result;
+            double result = 33;
 
-            if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
-            {
-                result = fullCells * 33 + _HalfCellSize;
-            }
-            else if (remainingSteps > _HalfCellSize)
-            {
-                result = (fullCells + 1) * 33;
-            }
-            else
-            {
-                result = fullCells * 33;
-            }
 
-            if (top == 31)
+            if (top == 40)
             {
-                result += 15;
+                if (steps <= _HalfCellSize)
+                {
+                    result = 28;
+                }
+                else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+                {
+                    result = (fullCells * 30) + (30 * remainingSteps);
+                }
+                else if (remainingSteps > _HalfCellSize)
+                {
+                    result = (fullCells * 30) + (30 * remainingSteps);
+                }
+                else
+                {
+                    result = fullCells * 27;
+                }
+
+            }
+            else if (top == 35)
+            {
+                if (steps <= _HalfCellSize)
+                {
+                    result = 50;
+                }
+                else if (steps <= _CellSize)
+                {
+                    result = (fullCells * 50) + 10;
+                }
+                else if (remainingSteps > _HalfCellSize)
+                {
+                    result = (fullCells * 50) + (45 * remainingSteps);
+                }
+                else
+                {
+                    result = fullCells * 30;
+                }
+
+            }
+            else if (top == 20)
+            {
+                if (steps <= _HalfCellSize)
+                {
+                    result = 50;
+                }
+                else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
+                {
+                    result = (fullCells * 30) + (30 * remainingSteps);
+                }
+                else if (remainingSteps > _HalfCellSize)
+                {
+                    result = (fullCells * 60) + (30 * remainingSteps);
+                }
+                else
+                {
+                    result = fullCells * 33;
+                }
             }
 
             return result;
@@ -330,19 +374,64 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         {
             if (top == 40)
             {
-                if (sizeStep > 90)
+                if (sizeStep < 33)
                 {
-                    return 0;
+                    return 55;
                 }
-                return 25;
-            }
-            else if (top == 31)
-            {
-                return 35;
-            }
-            // Agrega más condiciones según sea necesario
-            return 25; // Valor por defecto
-        }
+                else if (sizeStep >= 33 && sizeStep < 66)
+                {
+                    return 40;
+                }
+                else if (sizeStep >= 66 && sizeStep < 99)
+                {
+                    return 30;
+                }
+                else if (sizeStep >= 99 && sizeStep < 110)
+                {
+                    return 20;
+                }
 
+            }
+            else if (top == 35)
+            {
+                if (sizeStep < 66)
+                {
+                    return 60;
+                }
+                else if (sizeStep >= 66 && sizeStep < 99)
+                {
+                    return 25;
+                }
+                else if (sizeStep >= 99 && sizeStep < 120)
+                {
+                    return 20;
+                }
+                else if (sizeStep >= 120 && sizeStep < 150)
+                {
+                    return 15;
+                }
+
+            }
+            else if (top == 20)
+            {
+                if (sizeStep < 33)
+                {
+                    return 80;
+                }
+                else if (sizeStep >= 33 && sizeStep < 66)
+                {
+                    return 70;
+                }
+                else if (sizeStep >= 66 && sizeStep < 99)
+                {
+                    return 50;
+                }
+                else if (sizeStep >= 99 && sizeStep < 110)
+                {
+                    return 40;
+                }
+            }
+            return 50; // Valor por defecto
+        }
     }
 }
