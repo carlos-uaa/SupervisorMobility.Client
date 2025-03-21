@@ -135,9 +135,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         DateTime LastdayYear = DateTime.Now;
         int JobsPorDia = 1;
 
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = false };
         private DialogOptions dialogSVOptions = new() { CloseOnEscapeKey = false, DisableBackdropClick = true, CloseButton = false };
-
+                
         TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
         SosJobCount opInDistDialog = new();
         bool ShowGraphicDonnut = false;

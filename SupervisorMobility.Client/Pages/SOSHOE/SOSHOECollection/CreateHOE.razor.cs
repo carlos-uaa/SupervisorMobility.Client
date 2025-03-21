@@ -713,7 +713,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _areas = user.Areas?.ToList();
                 _areas = _areas.OrderBy(a => a.Description).ToList();
 
+                if (_sosHub.ApproverOwners == null)
+                {
+                    _sosHub.ApproverOwners = new List<User>();
+                }
                 _sosHub.ApproverOwners.Add(user);
+
+                _sosHub.PlantId = plantId;
+                this.plantId = plantId;
+                _sosHub.AreaId = areaId;
+                this.areaId = areaId;
+
+                ShowSupervisors();
             }
             else if (user.UserType == 3)
             {
@@ -723,8 +734,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 _areas = await AreaServices.GetAreas(plantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();
 
+                if (_sosHub.ReviewerEditors == null)
+                {
+                    _sosHub.ReviewerEditors = new List<User>();
+                }
                 _sosHub.ReviewerEditors.Add(user);
 
+                _sosHub.PlantId = plantId;
+                this.plantId = plantId;
+                _sosHub.AreaId = areaId;
+                this.areaId = areaId;
+
+                ShowSupervisors();
             }
             StateHasChanged();
 
