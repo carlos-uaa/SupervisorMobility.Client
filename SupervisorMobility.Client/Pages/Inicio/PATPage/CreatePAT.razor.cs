@@ -121,7 +121,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         _pat.AreaId = Area_Id;
 
                         //_allSSVs = await UsersService.GetUsersByType(2, true, false);
-                        //_allSupervisors = await UsersService.GetUsersByType(3, true, false);
+                        _supervisors = await UsersService.GetUsersByType(3, true, false);
 
                     }
                     else if (user.UserType == 3)
@@ -206,7 +206,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         }
 
 
-      
+        private async void ShowSupervisors()
+        {
+            _supervisors.Clear();
+            if (user.UserType == 1)
+            {
+                _supervisors = await UsersService.GetUsersByType(3, true, false);
+            }
+            else if (user.UserType <= 3)
+            {
+                _supervisors = await UsersService.GetUsersByUserTypeInPlantAndArea(_pat.PlantId, _pat.AreaId, 3, true, false);
+            }
+            StateHasChanged();
+        }
+
 
         // Create Pat
         async void CreatePatAsync()
