@@ -83,6 +83,14 @@
         overflow-y: auto;
     }
 
+    .toggle-group-container-dialog {
+        height: 50vh;
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
     .toggle-column {
         flex-basis: calc(25% - 10px);
         margin: 5px;
@@ -100,7 +108,7 @@
             <MudButton @onclick="(() => OpenDialogPastJobObservations())" Class="ml-4 mb-3" Variant="Variant.Filled" Color="Color.Info" Size="Size.Small" StartIcon="@Icons.Material.Filled.AccessTime">@Localizer["pastJobObservationLup"]</MudButton>
         </MudItem>
     </div>
-    @if (showLoading)
+    @if (ShowLoading)
 {
     <MudGrid Justify="Justify.Center" Style="margin-bottom: 70px">
         <MudItem lg="10" md="12" sm="12" xs="12">
@@ -370,7 +378,7 @@
             <MudTextField @bind-Value="searchTerm" Placeholder="Buscar operación..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
 
 
-            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" @bind-attributes="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container">
+            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" @bind-attributes="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container-dialog">
                 @foreach (Operation operation in FilteredOperations)
                 {
                     <div class="toggle-column">
@@ -403,5 +411,29 @@
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Info" OnClick="@(() => CloseOperations())">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@* Show loading Dialog *@
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowLoading" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+                <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                    <ItemTemplate>
+                        <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                            <MudItem class="d-flex flex-column justify-center align-self-center">
+                                <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                            </MudItem>
+                            @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                            <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                        </div>
+                    </ItemTemplate>
+                </MudCarousel>
+            
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+
     </DialogActions>
 </MudDialog>

@@ -551,7 +551,29 @@
                                                     <td>
                                                         @*Mud select of Distribution *@
                                                         <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" ReadOnly>
-                                                            <MudSelectItem Disabled="true" Value="@_jobObservation.DistributionId">@_jobObservation.Distribution?.Code - @_jobObservation.Distribution?.Description</MudSelectItem>
+                                                            <MudSelectItem Disabled="true" Value="@_jobObservation.DistributionId">
+                                                                <MudChip T="string" Variant="Variant.Text" Color="Color.Info" Class="toggle-column">
+                                                                    @($"{_jobObservation.Distribution.Description}")
+                                                                    @switch (_jobObservation.Distribution.CriticalType)
+                                                                    {
+                                                                        case 1:
+                                                                            <MudItem>
+                                                                                <img src="Images/A.png" Height="25" Width="25" />
+                                                                            </MudItem>
+                                                                            break;
+                                                                        case 2:
+                                                                            <MudItem>
+                                                                                <img src="Images/B.png" Height="25" Width="25" />
+                                                                            </MudItem>
+                                                                            break;
+                                                                        case 3:
+                                                                            <MudItem>
+                                                                                <img src="Images/C.png" Height="25" Width="25" />
+                                                                            </MudItem>
+                                                                            break;
+                                                                    }
+                                                                </MudChip>
+                                                            </MudSelectItem>
                                                         </MudSelect>
 
                                                     </td>
@@ -603,13 +625,13 @@
                                                         <div style="width: 35%">
                                                             @if (_jobObservation.OperatorId != 0 && _jobObservation.Operator != null)
                                                             {
-                                                                @if (_jobObservation.Operator.ILURegisers != null && _jobObservation.Operator.ILURegisers?.Count > 0 && _jobObservation.DistributionId != 0 )
+                                                                @if (_jobObservation.Operator.ILURegisers != null && _jobObservation.Operator.ILURegisers?.Count > 0 && _jobObservation.DistributionId != 0)
                                                                 {
                                                                     var latestContext = _jobObservation.Operator.ILURegisers.Where(r => r.DistributionId == _jobObservation.DistributionId).OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
                                                                     @if (latestContext != null)
                                                                     {
                                                                         string imageSrc = "";
-                                                                        @if (_jobObservation.Type == 4 && _jobObservation.Status == 6)
+                                                                        @if (_jobObservation.Type == 4 && _jobObservation.Status != 6)
                                                                         {
                                                                             string imageUpgradeSrc = latestContext.ILULevelId switch
                                                                             {
@@ -668,13 +690,14 @@
 
                                                                             <MudSelect T="int" Label="ILU" Value="1" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" ReadOnly="true">
                                                                                 <MudSelectItem Value="1">
-                                                                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                                                    <MudImage Src="@imageSrc" Alt="ILU Image" Height="30" Class="rounded-lg" Style="margin-top: -5px" />
-                                                                                    @if(imageUpgradeSrc != ""){
-                                                                                    <MudIcon Icon="@Icons.Material.Filled.DoubleArrow" />
-                                                                                    <MudImage Src="@imageUpgradeSrc" Alt="ILU Image" Height="30" Class="rounded-lg" Style="margin-top: -5px" />
-                                                                                    }
-                                                                              </div>
+                                                                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                                                        <MudImage Src="@imageSrc" Alt="ILU Image" Height="30" Class="rounded-lg" Style="margin-top: -5px" />
+                                                                                        @if (imageUpgradeSrc != "")
+                                                                                        {
+                                                                                            <MudIcon Icon="@Icons.Material.Filled.DoubleArrow" />
+                                                                                            <MudImage Src="@imageUpgradeSrc" Alt="ILU Image" Height="30" Class="rounded-lg" Style="margin-top: -5px" />
+                                                                                        }
+                                                                                    </div>
                                                                                 </MudSelectItem>
                                                                             </MudSelect>
 

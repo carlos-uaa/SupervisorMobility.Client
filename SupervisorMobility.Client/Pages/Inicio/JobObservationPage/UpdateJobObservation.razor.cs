@@ -142,7 +142,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
         public int jobProductId = 0;
-        bool showLoading = true;
+        
         List<Operation> _filteredOperations = new();
         string[] ids { get; set; }
         string currentLanguage = "es-ES";
@@ -201,6 +201,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
             is_env = Environment.IsDevelopment();
             try
             {
@@ -385,7 +397,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     ids = _jobObservation.SectionIds.Split('|');
 
                     //jobProductId = _jobObservation.ProductId != null ? (int)_jobObservation.ProductId : 0;
-                    showLoading = false;
+
 
                     var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
                     if (jobProductId != 0)
@@ -584,26 +596,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         Console.WriteLine("missing plant");
                     }
 
-                    try
-                    {
-                        CCPFolders = await CDMSServices.GetFoldersCCP();
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error Get CCP Folder From CCP");
-                        Console.WriteLine(ex.Message);
-                        Console.WriteLine(ex.Message);
-                    }
+                    //try
+                    //{
+                    //    CCPFolders = await CDMSServices.GetFoldersCCP();
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    Console.WriteLine("Error Get CCP Folder From CCP");
+                    //    Console.WriteLine(ex.Message);
+                    //    Console.WriteLine(ex.Message);
+                    //}
 
-                    if (CCPFolders != null)
-                    {
-                        folderCCPError = false;
-                        rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
-                    }
-                    else
-                    {
-                        folderCCPError = true;
-                    }
+                    //if (CCPFolders != null)
+                    //{
+                    //    folderCCPError = false;
+                    //    rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
+                    //}
+                    //else
+                    //{
+                    //    folderCCPError = true;
+                    //}
 
                     if (searchAssychart && _jobObservation.Operations != null && _jobObservation.Operations.Count() > 0)
                     {
@@ -614,7 +626,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
-
+            ShowLoading = false;
             StateHasChanged();
         }
 
@@ -840,11 +852,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //In progress
         private async Task SaveProgressJobObservation()
         {
+            Console.WriteLine("Into Save Progress");
+            ShowLoading = true;
+            StateHasChanged();
+
             if (_jobObservation.Option == 3 && _jobObservation.Anomaly.IsNullOrEmpty())
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add(Localizer["AnomalyFirst"], Severity.Error);
+                ShowLoading = false;
                 return;
             }
 
@@ -863,6 +880,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Operator Signature doesn't match", Severity.Error);
 
+                ShowLoading = false;
                     return;
                 }
                 if (currentImage == "")
@@ -870,6 +888,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                ShowLoading = false;
                     return;
                 }
                 else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
@@ -1021,6 +1040,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
             }
+                ShowLoading = false;
+            StateHasChanged();
         }
 
 
@@ -1074,28 +1095,34 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Under Review Job observation
         public async void UnderReviewJobObservation()
         {
+            ShowLoading = true;
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
             if (ChecklistQuestionsValidation())
             {
+                ShowLoading = false;
+
                 return;
             }
 
             if (_jobObservation.OperatorSignature == null || _jobObservation.OperatorSignature == "")
             {
+                ShowLoading = false;
                 Snackbar.Add(Localizer["operatorsignaturemiss"] + $"!", Severity.Error);
                 return;
             }
 
             if (_jobObservation.OperatorSignature != _jobObservation.Operator.Payroll.ToString())
             {
+                ShowLoading = false;
                 Snackbar.Add(Localizer["operatorsignaturenotmarch"], Severity.Error);
                 return;
             }
             if (currentImage == "")
             {
                 Snackbar.Add($"Operator Signature is missing", Severity.Error);
+                ShowLoading = false;
                 return;
             }
             else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
@@ -1158,6 +1185,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Error in Operator Signature", Severity.Error);
+                ShowLoading = false;
                     return;
                 }
 
@@ -1186,6 +1214,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+
+                
+
             }
             else
             {
@@ -1221,6 +1252,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Error in Operator Signature", Severity.Error);
+                ShowLoading = false;
                     return;
                 }
 
@@ -1252,6 +1284,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
             }
 
+            ShowLoading = false;
         }
 
 
@@ -2210,10 +2243,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-        private CDMS_CCP_Archives CcpFilesInFolder = new CDMS_CCP_Archives();
-        private CDMS_HOE_Archives HoeFilesInFolder = new CDMS_HOE_Archives();
-        private CDMS_GOS_Archives GosFilesInFolder = new CDMS_GOS_Archives();
-
+    
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         public void ShowHourMessage()
@@ -2277,209 +2307,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         MudTabPanel GOS;
         MudTabPanel GOSCD;
 
-        public bool CodePathModalDisplay { get; set; } = false;
+    
         private string searchCodeString = "";
         bool ShowLoading = true;
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
-        SOSCodePath CodePathDialogDisplay { get; set; }
 
-
-        private async void CloseModalFiles()
-        {
-            CodePathModalDisplay = false;
-
-            StateHasChanged();
-
-        }
-
-        int SOSCodePathId { get; set; } = 0;
-        string SosPanelOpen { get; set; } = "";
-        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
-        {
-
-            ShowLoading = true;
-            SOSCodePathId = itemselected.SOSCodePathId;
-            switch (panelSelect)
-            {
-                case 1:
-                    SosPanelOpen = "HOE";
-                    break;
-
-                case 2:
-                    SosPanelOpen = "CCP";
-                    break;
-
-                case 3:
-                    SosPanelOpen = "GOS";
-                    break;
-
-                case 4:
-                    SosPanelOpen = "HOE_CD";
-                    break;
-
-                case 5:
-                    SosPanelOpen = "CCP_CD";
-                    break;
-
-                case 6:
-                    SosPanelOpen = "GOS_CD";
-                    break;
-
-
-            }
-
-            CodePathModalDisplay = true;
-            StateHasChanged();
-            return new AsyncVoidMethodBuilder();
-        }
-
-
-        private async Task<AsyncVoidMethodBuilder> SearchFunction()
-        {
-            Console.WriteLine($"SearchFunction - Start {DateTime.Now}");
-
-            if (CodePathDialogDisplay != null)
-            {
-                try
-                {
-                    ShowLoading = true;
-                    Console.WriteLine($"State Start {ShowLoading}");
-                    StateHasChanged();
-
-                    if (string.IsNullOrEmpty(searchCodeString))
-                    {
-                        if (CodePathDialogDisplay.HOE != "")
-                            HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
-
-                        if (CodePathDialogDisplay.GOS != "")
-                            GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
-
-                        if (CodePathDialogDisplay.CCP != "")
-                            CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
-
-                        if (CodePathDialogDisplay.CommonDirectionHOE != "")
-                            HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
-
-                        if (CodePathDialogDisplay.CommonDirectionGOS != "")
-                            GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
-
-                        if (CodePathDialogDisplay.CommonDirectionCCP != "")
-                            CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
-                    }
-                    else
-                    {
-                        if (CodePathDialogDisplay.HOE != "")
-                        {
-                            HoeFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolder);
-                            HoeFilesInFolder.operation = HoeFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.GOS != "")
-                        {
-                            GosFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolder);
-                            GosFilesInFolder.operation = AuxGosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CCP != "")
-                        {
-                            CcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolder);
-                            CcpFilesInFolder.operation = CcpFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionHOE != "")
-                        {
-                            HoeFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxHoeFilesInFolderCD);
-                            HoeFilesInFolderCD.operation = HoeFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionGOS != "")
-                        {
-                            GosFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxGosFilesInFolderCD);
-                            GosFilesInFolderCD.operation = GosFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                        if (CodePathDialogDisplay.CommonDirectionCCP != "")
-                        {
-                            CcpFilesInFolderCD = ObjectCloner.ObjectCloner.DeepClone(AuxCcpFilesInFolderCD);
-                            CcpFilesInFolderCD.operation = CcpFilesInFolderCD.operation.Where(x => x.Nombre.ToLower().Contains(searchCodeString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-                        }
-
-                    }
-
-
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error Filter: {ex.Message}");
-                }
-                finally
-                {
-                    ShowLoading = false;
-                    StateHasChanged();
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Error Filter es nullo");
-            }
-
-            Console.WriteLine($"SearchFunction - End {DateTime.Now}");
-            Console.WriteLine($"State End {ShowLoading}");
-            //// if text is null or empty, show complete list
-            //if (string.IsNullOrEmpty(searchString))
-            //    return GosFilesInFolder.operation;
-
-            //return GosFilesInFolder.operation.Where(x => x.Nombre.ToLower().Contains(searchString.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
-            return new AsyncVoidMethodBuilder();
-        }
-
-        TreeItemData nodoEncontrado { get; set; }
-        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
-
-        TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
-        TreeItemData SelectedNodeCCP { get; set; }
-        private async Task<AsyncVoidMethodBuilder> CCPFolderByDirectory(string CCPrute)
-        {
-
-            try
-            {
-                ShowLoading = true;
-
-                if (CCPrute != "")
-                {
-                    Console.WriteLine($"CCP {CCPrute}");
-
-                    CcpFilesInFolder = new CDMS_CCP_Archives();
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-                    if (CcpFilesInFolder == null)
-                        folderErrorCCP = true;
-                    else
-                    {
-                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-                        folderErrorCCP = false;
-
-                    }
-                }
-
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error CCPFolderByDirectory: {ex.Message}");
-            }
-            finally
-            {
-                ShowLoading = false;
-                StateHasChanged();
-            }
-
-            return new AsyncVoidMethodBuilder();
-
-        }
         //camara for atachment answer
         ChecklistAnswer SelectedAnswer { get; set; }
         private async void OpenCameraAnswerDialog(ChecklistAnswer item)
