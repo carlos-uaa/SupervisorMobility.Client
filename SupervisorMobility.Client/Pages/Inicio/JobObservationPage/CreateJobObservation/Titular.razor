@@ -8,6 +8,14 @@
         overflow-y: auto;
     }
 
+    .toggle-group-container-dialog {
+        height: 50vh;
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
     .toggle-column {
         flex-basis: calc(25% - 10px);
         margin: 5px;
@@ -116,14 +124,24 @@
                         @*Mud select for Distribution *@
                         @if (_jobObservation.AreaId != 0)
                         {
-                            <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="()=>ShowOperations.InvokeAsync()">
+                            <MudSelect T="int" Style="display: flex; align-items: center; justify-content: space-evenly;" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="()=>ShowOperations.InvokeAsync()">
                                 <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
                                 @foreach (var type in _distributions)
                                 {
-                                    <MudSelectItem Value="type.DistributionId">
-                                        @(
-                                            $"{type.Code} - {type.Description}"
-                                            )
+                                    <MudSelectItem Value="type.DistributionId" Style="display: flex; align-items: center; justify-content: space-evenly;">
+                                            @($"{type.Description}   ")
+                                            @switch (type.CriticalType)
+                                            {
+                                                case 1:
+                                                        <img src="Images/A.png" Height="25" Width="25" />
+                                                    break;
+                                                case 2:
+                                                        <img src="Images/B.png" Height="25" Width="25" />
+                                                    break;
+                                                case 3:
+                                                        <img src="Images/C.png" Height="25" Width="25" />
+                                                    break;
+                                            }
                                     </MudSelectItem>
                                 }
                             </MudSelect>
@@ -214,24 +232,18 @@
                                         <div class="toggle-group-container">
                                             @foreach (Operation operation in _jobObservation.Operations)
                                             {
-                                                <MudChip T="string" Variant="Variant.Text" Color="Color.Info" Class="toggle-column">
+                                                <MudChip T="string" Variant="Variant.Text" Color="Color.Info" Class="toggle-column" Style="display: flex; align-items: center; justify-content: space-evenly;">
                                                     @($"{operation.Code} - {operation.Description}")
                                                     @switch (operation.CriticalType)
                                                     {
                                                         case 1:
-                                                            <MudItem>
                                                                 <img src="Images/A.png" Height="25" Width="25" />
-                                                            </MudItem>
                                                             break;
                                                         case 2:
-                                                            <MudItem>
                                                                 <img src="Images/B.png" Height="25" Width="25" />
-                                                            </MudItem>
                                                             break;
                                                         case 3:
-                                                            <MudItem>
                                                                 <img src="Images/C.png" Height="25" Width="25" />
-                                                            </MudItem>
                                                             break;
                                                     }
                                                 </MudChip>
@@ -349,7 +361,7 @@
             <MudTextField @bind-Value="searchTerm" Placeholder="Buscar operación..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
 
 
-            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container">
+            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container-dialog">
                 @foreach (Operation operation in FilteredOperations)
                 {
                     <div class="toggle-column">

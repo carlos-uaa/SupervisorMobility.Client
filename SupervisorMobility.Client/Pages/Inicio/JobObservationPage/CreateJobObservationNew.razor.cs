@@ -118,7 +118,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
 
-        bool showLoading = true;
+    
 
         string currentLanguage = "es-ES";
 
@@ -153,9 +153,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private bool isWaitingTimeActive = false;
         public string[] productSpecification = new string[5];
 
+        bool ShowLoading = true;
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
         protected async override Task OnInitializedAsync()
         {
+
+             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
             try
             {
                 currentLanguage = await JS.InvokeAsync<string>("localStorage.getItem", "i18nextLng");
@@ -283,7 +300,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add("Loaded previous work", Severity.Info);
 
-                    showLoading = false;
+                    ShowLoading = false;
                     StateHasChanged();
                 }
                 catch (Exception e)
@@ -304,29 +321,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
 
+            ShowLoading = false;
             StateHasChanged();
-
-
-            try
-            {
-                CCPFolders = await CDMSServices.GetFoldersCCP();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Get CCP Folder From CCP");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.Message);
-            }
-
-            if (CCPFolders != null)
-            {
-                folderCCPError = false;
-                rootNodeCCP = TreeServices.Make_Tree_CCP(CCPFolders.operation);
-            }
-            else
-            {
-                folderCCPError = true;
-            }
 
     }
 
@@ -375,7 +371,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             //await GetUserAsync();
 
-            showLoading = false;
+            ShowLoading = false;
             StateHasChanged();
 
             if (user != null)
