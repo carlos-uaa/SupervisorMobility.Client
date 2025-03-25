@@ -1,4 +1,5 @@
-﻿using MudBlazor;
+﻿using DocumentFormat.OpenXml.InkML;
+using MudBlazor;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.OperationPage
 {
@@ -25,23 +26,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         Area _area = new();
         Distribution _distribution = new();
         public Operation _operation { get; set; } = new();
+        private List<Product> _products = new List<Product>();
+        private Product _product = new Product();
         private bool showui = false;
 
-        // Initialization
-        //protected async override Task OnInitializedAsync()
-        //{
-        //    _links = new List<BreadcrumbItem>
-        //    {
-        //        new BreadcrumbItem(text: Localizer["home"], href: "/"),
-        //        new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-        //        new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-        //        new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
-        //        new BreadcrumbItem(text: Localizer["areaDetails"], href: ""),
-        //        new BreadcrumbItem(text: Localizer["distributionDetails"], href: ""),
-        //        new BreadcrumbItem(text: Localizer["updateOperation"], href: "", disabled: true)
-        //    };
-        //    BreadcrumbService.UpdateBreadcrumbs(_links);
-        //}
+        public List<string> NameTimeList = new List<string>();
+        public List<string> TimeList = new List<string>();
+        public List<string> AdditionalTimeList = new List<string>();
+        public List<string> StandardTimeList = new List<string>(); 
 
         protected override async Task OnParametersSetAsync()
         {
@@ -49,6 +41,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             _area = await AreaService.GetAreaById(PlantId, AreaId);
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
             _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
+                _products = await ProductsServices.GetProducts();
             _links = new List<BreadcrumbItem>
                      {
                          new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -60,6 +53,30 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
                          new BreadcrumbItem(text: Localizer["updateOperation"] +  " / "  + _operation.Description, href: "", disabled: true)
                      };
             BreadcrumbService.UpdateBreadcrumbs(_links);
+
+            if (!string.IsNullOrEmpty(_operation.NameTime))
+            {
+                NameTimeList = _operation.NameTime.Split('§').ToList();
+            }
+
+            if (!string.IsNullOrEmpty(_operation.Time))
+            {
+                TimeList = _operation.Time.Split('§').ToList();
+            }
+
+            if (!string.IsNullOrEmpty(_operation.AdditionalTime))
+            {
+                AdditionalTimeList = _operation.AdditionalTime.Split('§').ToList();
+            }
+
+            if (!string.IsNullOrEmpty(_operation.StandardTime))
+            {
+                StandardTimeList = _operation.StandardTime.Split('§').ToList();
+            }
+
+            _product = _products.Find(p => p.Code == _operation.ProductName);
+
+
             showui = true;
         }
 
@@ -82,6 +99,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         // Update operation
         async void UpdateOperationAsync()
         {
+            // Actualiza los valores de _operation con los valores de los arrays
+            _operation.NameTime = string.Join('§', NameTimeList);
+            _operation.Time = string.Join('§', TimeList);
+            _operation.AdditionalTime = string.Join('§', AdditionalTimeList);
+            _operation.StandardTime = string.Join('§', StandardTimeList);
+
             _operation.IsActive = true;
             var result = await OperationService.UpdateOperation(PlantId, AreaId, DistributionId, OperationId, _operation);
 
@@ -95,6 +118,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         void CancelCreateOrUpdate()
         {
             NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
+        }
+
+        void UpdateProduct()
+        {
+           
+                _product = _products.Find(p => p.Code == _operation.ProductName);
+        
+            StateHasChanged();
         }
     }
 }

@@ -52,7 +52,21 @@
                             <MudSelectItem Disabled="true" Value="0">@Localizer["selectADistribution"]</MudSelectItem>
                             @foreach (var type in _distributions)
                             {
-                                <MudSelectItem Value="type.DistributionId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                <MudSelectItem Value="type.DistributionId" Style="display: flex; align-items: center; justify-content: space-evenly;">
+                                    @($"{type.Description}   ")
+                                    @switch (type.CriticalType)
+                                    {
+                                        case 1:
+                                            <img src="Images/A.png" Height="25" Width="25" />
+                                            break;
+                                        case 2:
+                                            <img src="Images/B.png" Height="25" Width="25" />
+                                            break;
+                                        case 3:
+                                            <img src="Images/C.png" Height="25" Width="25" />
+                                            break;
+                                    }
+                                </MudSelectItem>
                             }
                         </MudSelect>
                     </td>
@@ -135,7 +149,7 @@
                                     <div class="toggle-group-container">
                                         @foreach (Operation operation in _jobObservation.Operations)
                                         {
-                                            <MudChip T="string" Variant="Variant.Text" Color="Color.Info" Class="toggle-column" >
+                                            <MudChip T="string" Variant="Variant.Text" Color="Color.Info" Class="toggle-column"  >
                                                 @($"{operation.Code} - {operation.Description}")
                                                 @switch (operation.CriticalType)
                                                 {
@@ -212,7 +226,7 @@
                                     @if (latestContext != null)
                                     {
                                         string imageSrc = "";
-                                        @if (_jobObservation.Type == 4)
+                                        @if (_jobObservation.Type == 4 && _jobObservation.Status != 6)
                                         {
                                             string imageUpgradeSrc = latestContext.ILULevelId switch
                                             {
