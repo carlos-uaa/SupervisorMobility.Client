@@ -57,6 +57,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                 Diagram.RegisterComponent<SupplementNode, Widgets.Supplement>();
                 Diagram.RegisterComponent<DecisionNode, Widgets.Decision>();
                 Diagram.RegisterComponent<DecisionRomboNode, Widgets.DecisionRombo>();
+                Diagram.RegisterComponent<CommentaryNode, Widgets.Commentary>();
 
                 Diagram.RegisterComponent<ResizeControl, Widgets.ResizeControlWidget>();
 
@@ -292,6 +293,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                     Diagram.SelectModel(NodeSuplement, true);
 
                     break;
+                case "Commentary":
+                    
+                    var addedNodeComment = new CommentaryNode(84.7, 42.3, position: new Point(mouseX, mouseY)) { Title = "" };
+
+                    var NodeComment = Diagram.Nodes.Add(addedNodeComment);
+
+                    Diagram.Controls.AddFor(NodeComment).Add(new ResizeControl());
+                    Diagram.SelectModel(NodeComment, true);
+                    break;
             }
 
             //Diagram.SelectModel(firstNode, true);
@@ -317,38 +327,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
         }
         #endregion
 
-        public class DiagramData
-        {
-            public List<NodeData> Nodes { get; set; } = new();
-            public List<LinkData> Links { get; set; } = new();
-        }
-
-        public class NodeData
-        {
-            public string Id { get; set; }
-            public PositionData Position { get; set; }
-            public string Type { get; set; } // Para restaurar el tipo de nodo
-        }
-
-        public class PositionData
-        {
-            public double X { get; set; }
-            public double Y { get; set; }
-        }
-
-        public class LinkData
-        {
-            public string Id { get; set; }
-            public string SourceNodeId { get; set; }
-            public string TargetNodeId { get; set; }
-        }
-
 
         private DiagramData ConvertDiagramToData()
         {
             var data = new DiagramData
             {
+                Nodes = Diagram.Nodes.Select(node => new NodeData
+                {
+                    Id = node.Id,
+                    Position = new PositionData { X = node.Position.X, Y = node.Position.Y },
+                    Size = new SizeData { Width = node.Size.Width - 20, Height = node.Size.Height - 20 },
+                    Type = node.GetType().Name,
+                    Title = node?.Title ?? string.Empty
+                }).ToList(),
 
+                Links = Diagram.Links.Select(link =>
+                {
+                    var sourceNode = link.Source.Model as NodeModel;
+                    var targetNode = link.Target.Model as NodeModel;
+
+                    var sourcePortAlignment = link.Source is DynamicAnchor source_Anchor ? GetPortAlignment(source_Anchor, sourceNode, link) : "No disponible";
+                    var targetPortAlignment = link.Target is DynamicAnchor target_Anchor ? GetPortAlignment(target_Anchor, targetNode, link) : "No disponible";
+
+                    return new LinkData
+                    {
+                        Id = link.Id,
+                        SourceNodeId = sourceNode?.Id,
+                        TargetNodeId = targetNode?.Id,
+                        SourcePort = sourcePortAlignment,
+                        TargetPort = targetPortAlignment
+                    };
+                }).ToList()
             };
 
             return data;
@@ -381,7 +390,21 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                 StateHasChanged();
             }
         }
+        private string GetPortAlignment(DynamicAnchor anchor, NodeModel node, BaseLinkModel link)
+        {
+            var anchorPosition = anchor.GetPosition(link, link.Route);
+            var leftDistance = Math.Abs(anchorPosition.X - node.Position.X);
+            var rightDistance = Math.Abs(anchorPosition.X - (node.Position.X + node.Size.Width));
+            var topDistance = Math.Abs(anchorPosition.Y - node.Position.Y);
+            var bottomDistance = Math.Abs(anchorPosition.Y - (node.Position.Y + node.Size.Height));
 
+            var minDistance = new[] { leftDistance, rightDistance, topDistance, bottomDistance }.Min();
+
+            if (minDistance == leftDistance) return PortAlignment.Left.ToString();
+            if (minDistance == rightDistance) return PortAlignment.Right.ToString();
+            if (minDistance == topDistance) return PortAlignment.Top.ToString();
+            return PortAlignment.Bottom.ToString();
+        }
 
     }
 

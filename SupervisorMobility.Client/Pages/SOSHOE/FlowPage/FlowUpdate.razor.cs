@@ -247,7 +247,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
         public async Task ApproveFlow()
         {
-
+            _sosFlow.ApproverId = user.UserId;
             _sosFlow.FlowLogbooks.Last()!.Status = 2;
 
             await UpdateFlow();
@@ -508,7 +508,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
                 {
                     Id = node.Id,
                     Position = new PositionData { X = node.Position.X, Y = node.Position.Y },
-                    Size = new SizeData { Width = node.Size.Width - 20, Height = node.Size.Height - 20 },
+                    Size = node is not CommentaryNode? new SizeData { Width = node.Size.Width - 20, Height = node.Size.Height - 20 }: new SizeData { Width = node.Size.Width, Height = node.Size.Height },
                     Type = node.GetType().Name,
                     Title = node?.Title ?? string.Empty
                 }).ToList(),
