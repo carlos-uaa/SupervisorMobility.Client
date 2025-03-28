@@ -30,6 +30,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public bool logged = false;
 
         public int userType = 0;
+        public string productSide = string.Empty;
 
         private List<Segment> segments = new List<Segment>();
         private List<Product> _products = new List<Product>();
@@ -162,6 +163,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
             await SetUserInfo();
+
+            if (_sosHub.Folio.Contains("-L-"))
+            {
+                productSide = "L";
+            }else if (_sosHub.Folio.Contains("-R-"))
+            {
+                productSide = "R";
+            }
+
             ShowLoading = false;
             StateHasChanged();
         }
@@ -296,6 +306,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             foreach (var sequence in _sosHub.SOSSequence)
             {
                 Documents.Add(sequence);
+            }
+
+            foreach (var pat in _sosHub.PATs)
+            {
+                Documents.Add(pat);
             }
 
             StateHasChanged();
@@ -781,6 +796,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 NavigationManager.NavigateTo($"/soshoe/Sequence/Update/{id}");
             }
+            else if (typeof(T) == typeof(PAT))
+            {
+                NavigationManager.NavigateTo($"/PAT/Update/{id}");
+            }
             // Añadir más casos según sea necesario
         }
 
@@ -789,6 +808,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private MudMessageBox _DeleteDistribution;
         private MudMessageBox _DeleteFlow;
         private MudMessageBox _DeleteSequence;
+        private MudMessageBox _DeletePat;
 
         public async void Delete<T>(int id) where T : class
         {
@@ -882,7 +902,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
             else if (typeof(T) == typeof(SOSSequence))
             {
-                bool? result = await _DeleteAnalysis.Show();
+                bool? result = await _DeleteSequence.Show();
                 var confirm = result is null ? "Canceled" : "Deleted!";
                 StateHasChanged();
 
@@ -901,6 +921,28 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     }
                 }
             }
+            else if (typeof(T) == typeof(PAT))
+            {
+                bool? result = await _DeletePat.Show();
+                var confirm = result is null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+
+                if (confirm == "Deleted!")
+                {
+
+                    bool res = await PATServices.DeletePat(id);
+                    if (res)
+                    {
+                        _sosHub.PATs.RemoveAll(pat => pat.PATid == id);
+
+                        Documents.RemoveAll(doc => doc is PAT pat  && pat.PATid == id);
+                        Snackbar.Clear();
+                        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                        Snackbar.Add($"{Localizer["succesRemovePat"]}", Severity.Info);
+                    }
+                }
+            }
+
 
             StateHasChanged();
         }
@@ -908,6 +950,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private int selectedRowNumber = -1;
         private int SosDocId = -1;
         private MudTable<Object> SelectTableEventDocument;
+        private int selectedRowNumberPat = -1;
+        private MudTable<Object> SelectTableEventDocumentPat;
 
         private void RowClickEventDocument(TableRowClickEventArgs<object> args)
         {
@@ -936,6 +980,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else if (args.Item is SOSSequence)
                 {
                     NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{SosDocId}");
+                }  
+                else if (args.Item is PAT)
+                {
+                    NavigationManager.NavigateTo($"/PAT/{SosDocId}");
                 }
             }
             else
@@ -968,6 +1016,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else if (element is SOSSequence sequence)
                 {
                     SosDocId = sequence.SOSSequenceId;
+                } 
+                else if (element is PAT pat)
+                {
+                    SosDocId = pat.PATid;
                 }
                 return "selected"; // Mantener la fila seleccionada
             }
@@ -992,9 +1044,57 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else if (element is SOSSequence sequence)
                 {
                     SosDocId = sequence.SOSSequenceId;
+                }   
+                else if (element is PAT pat)
+                {
+                    SosDocId = pat.PATid;
                 }
 
                 selectedRowNumber = rowNumber;
+                return "selected";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+
+        private void RowClickEventDocumentPat(TableRowClickEventArgs<object> args)
+        {
+
+            if (selectedRowNumberPat == SelectTableEventDocumentPat.Items.ToList().IndexOf(args.Item))
+            {
+               if (args.Item is PAT)
+                {
+                    NavigationManager.NavigateTo($"/PAT/{SosDocId}");
+                }
+            }
+            else
+            {
+                SelectTableEventDocumentPat.SelectedItem = args.Item;
+                selectedRowNumberPat = SelectTableEventDocumentPat.Items.ToList().IndexOf(args.Item);
+            }
+        }
+
+        private string SelectedRowDocumentPat(Object element, int rowNumber)
+        {
+            if (selectedRowNumberPat == rowNumber)
+            {
+                 if (element is PAT pat)
+                {
+                    SosDocId = pat.PATid;
+                }
+                return "selected"; // Mantener la fila seleccionada
+            }
+            else if (SelectTableEventDocumentPat.SelectedItem != null && SelectTableEventDocumentPat.SelectedItem.Equals(element))
+            {
+                 if (element is PAT pat)
+                {
+                    SosDocId = pat.PATid;
+                }
+
+                selectedRowNumberPat = rowNumber;
                 return "selected";
             }
             else

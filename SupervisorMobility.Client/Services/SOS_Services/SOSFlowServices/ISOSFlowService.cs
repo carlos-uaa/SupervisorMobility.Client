@@ -4,7 +4,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSFlowServices
     public interface ISOSFlowService
     {
        
-        Task<SOSFlow> GetSOSFlow(int SOSFlowId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
+        Task<SOSFlow> GetSOSFlow(int SOSFlowId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includePeople = false);
         Task<List<SOSFlow>> GetAllSOSFlow(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<SOSFlow> UpdateSOSFlow(SOSFlow SosEntity);
         Task<bool> DeleteSOSFlow(int SosEntity_id);

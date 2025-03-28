@@ -35,6 +35,7 @@
 @inject ISOSDistributionService SOSDistributionServices
 @inject ISOSFlowService SOSFlowServices
 @inject ISOSSequenceService SOSSequenceServices
+@inject IPATService PATServices
 
 @using System.Text.RegularExpressions
 
@@ -645,7 +646,7 @@ else
                                 </tr>
                                 <tr>
                                     <td>
-                                        <MudText>Station / Department</MudText>
+                                        <MudText>Station / Department / Side</MudText>
                                     </td>
                                     <td class="d-flex">
                                         <MudItem>
@@ -666,6 +667,13 @@ else
                                                 {
                                                     <MudSelectItem Value="type.DepartmentId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                                 }
+                                            </MudSelect>
+                                        </MudItem> 
+                                        <MudItem Class="ml-4">
+                                            <MudSelect Class="ml-4" T="string" Label="Side" ReadOnly AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide"  OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
+                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["NoSide"]</MudSelectItem>
+                                                <MudSelectItem Value="@("L")" />
+                                                <MudSelectItem Value="@("R")" />
                                             </MudSelect>
                                         </MudItem>
                                     </td>
@@ -977,7 +985,6 @@ else
                                     </MudButton>
                                 </MudItem>
                         </MudGrid>
-
                     </ChildContent>
                 </MudExpansionPanel>
                 <MudExpansionPanel IsInitiallyExpanded Style="min-width: 100%">
@@ -1294,7 +1301,7 @@ else
                                 }
                                 else if (@context is SOSSequence sequence)
                                 {
-
+                                    
                                     <MudTd DataLabel="Id">
                                         <MudCard Elevation="0" Style="width:min-content">
                                             <MudCardHeader>
@@ -1336,8 +1343,108 @@ else
                                         </MudText>
                                     </MudTd>
                                 }
+                                
                             </RowTemplate>
                         </MudTable>
+                        @if(Documents.Any(d => d is PAT)){
+                            <MudTable T="Object" Items="Documents.Where(d => d is PAT).ToList()" RowClassFunc="@SelectedRowDocumentPat" @ref="SelectTableEventDocumentPat" OnRowClick="RowClickEventDocumentPat">
+                                <HeaderContent>
+                                    
+                                    <MudTh>
+                                        Doc Type
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Aplication Year
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Supervisors
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Status
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">Actions</MudText>
+                                    </MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+
+                                  @if (context is PAT pat)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/flujo-de-trabajo.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>PAT</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="Year">
+                                            <MudText Align="Align.Center">@pat.AplicationYear</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="Supervisors">
+                                            <MudText Align="Align.Center">
+                                                <MudText>@string.Join(" / ", pat.Supervisors?.Select(s => s.Name))</MudText>
+                                            </MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="PatStatus">
+                                            <MudText Align="Align.Center">
+                                                @switch (pat.Status)
+                                                {
+                                                    case 1:
+                                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
+                                                        break;
+                                                    case 2:
+                                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                                        break;
+                                                    case 3:
+                                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                                        break;
+                                                    case 4:
+                                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                                        break;
+                                                    case 5:
+                                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                                        break;
+                                                    case 6:
+                                                        <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                                        break;
+                                                }
+                                            </MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<PAT>(pat.PATid))" OnTouch="(() => Details<PAT>(pat.PATid))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<PAT>(pat.PATid))" OnTouch="(() => Update<PAT>(pat.PATid))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<PAT>(pat.PATid))" OnTouch="(() => Delete<PAT>(pat.PATid))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                </RowTemplate>
+                            </MudTable>
+                        }
                     </ChildContent>
                 </MudExpansionPanel>
             </MudExpansionPanels>
@@ -1494,6 +1601,15 @@ else
 <MudMessageBox @ref="_DeleteSequence" Title="Warning" CancelText="Cancel">
     <MessageContent>
         Are you sure you want to <b>delete</b> this Sequence?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+        <MudMessageBox @ref="_DeletePat" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Pat?
     </MessageContent>
     <YesButton>
         <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
