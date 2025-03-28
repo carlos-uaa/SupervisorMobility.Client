@@ -17,6 +17,7 @@
 @inject ISOSDistributionService SOSDistributionServices
 @inject ISOSFlowService SOSFlowServices
 @inject ISOSSequenceService SOSSequenceServices
+@inject IPATService PATServices
 
 <style type="text/css">
 
@@ -187,7 +188,7 @@ else
 
 <MudDialog DisableSidePadding="false" @bind-IsVisible="ShowGenerateDialog" Options="dialogResourcesOptions" Style="overflow:hidden">
     <DialogContent>
-        <MudGrid Style="min-height: 45vh; max-height: 75vh; overflow:hidden">
+        <MudGrid Style="min-height: 45vh; max-height: 75vh; overflow:auto">
             <MudItem lg="12" md="12" sm="12" xs="12">
                 <MudExpansionPanels MultiExpansion="true" Style="height:100%">
                     <MudExpansionPanel Text="" Style="min-width: 100%" IsInitiallyExpanded>
@@ -424,268 +425,368 @@ else
                             </MudGrid>
                         </ChildContent>
                     </MudExpansionPanel>
+                    <MudExpansionPanel IsInitiallyExpanded Style="min-width: 100%" Class="mb-10">
+                        <TitleContent>
+                            <div class="d-flex" style="align-items: center; justify-content:center;">
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @Localizer["Documents"]
+                                </MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudTable T="Object" Items="Documents" RowClassFunc="@SelectedRowDocument" @ref="SelectTableEventDocument" OnRowClick="RowClickEventDocument">
+                                <HeaderContent>
+
+                                    <MudTh>
+                                        Doc Type
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Operation Name
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Internal Control Number
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Process Name
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">Actions</MudText>
+                                    </MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+
+                                    @if (@context is SOSAnalysis analysis)
+                                    {
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/analisis-de-los-datos.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Analysis</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.ManageSearch" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@analysis.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@analysis.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@analysis.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Details<SOSAnalysis>(analysis.SOSAnalysisId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Update<SOSAnalysis>(analysis.SOSAnalysisId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Delete<SOSAnalysis>(analysis.SOSAnalysisId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                    else if (@context is SOSCombination combination)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/combinacion.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Combination</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.CallMerge" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@combination.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@combination.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@combination.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Details<SOSCombination>(combination.SOSCombinationId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Update<SOSCombination>(combination.SOSCombinationId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Delete<SOSCombination>(combination.SOSCombinationId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                    else if (@context is SOSDistribution distribution)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/reparto-de-beneficios.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Distribution</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.Hub" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@distribution.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@distribution.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@distribution.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Details<SOSDistribution>(distribution.SOSDistributionId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Update<SOSDistribution>(distribution.SOSDistributionId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Delete<SOSDistribution>(distribution.SOSDistributionId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                    else if (@context is SOSFlow flow)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/flujo-de-datos.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Flow</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.Air" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@flow.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@flow.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@flow.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Details<SOSFlow>(flow.SOSFlowId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Update<SOSFlow>(flow.SOSFlowId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Delete<SOSFlow>(flow.SOSFlowId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                    else if (@context is SOSSequence sequence)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/flujo-de-trabajo.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Sequence</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@sequence.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@sequence.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@sequence.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Details<SOSSequence>(sequence.SOSSequenceId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Update<SOSSequence>(sequence.SOSSequenceId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Delete<SOSSequence>(sequence.SOSSequenceId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                </RowTemplate>
+                            </MudTable>
+
+                            @if (Documents.Any(d => d is PAT))
+                            {
+                                <MudTable T="Object" Items="Documents.Where(d => d is PAT).ToList()" RowClassFunc="@SelectedRowDocumentPat" @ref="SelectTableEventDocumentPat" OnRowClick="RowClickEventDocumentPat">
+                                    <HeaderContent>
+
+                                        <MudTh>
+                                            Doc Type
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudText Align="Align.Center">
+                                                Aplication Year
+                                            </MudText>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudText Align="Align.Center">
+                                                Supervisors
+                                            </MudText>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudText Align="Align.Center">
+                                                Status
+                                            </MudText>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudText Align="Align.Center">Actions</MudText>
+                                        </MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+
+                                        @if (context is PAT pat)
+                                        {
+
+                                            <MudTd DataLabel="Id">
+                                                <MudCard Elevation="0" Style="width:min-content">
+                                                    <MudCardHeader>
+                                                        <CardHeaderAvatar>
+                                                            <MudAvatar>
+                                                                <MudImage Src="Images/flujo-de-trabajo.png" />
+                                                            </MudAvatar>
+                                                        </CardHeaderAvatar>
+                                                        <CardHeaderContent>
+                                                            <MudText Typo="Typo.h6" Style="text-align:left"><b>PAT</b></MudText>
+                                                        </CardHeaderContent>
+                                                        <CardHeaderActions>
+                                                            <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                        </CardHeaderActions>
+                                                    </MudCardHeader>
+                                                </MudCard>
+                                            </MudTd>
+                                            <MudTd DataLabel="Year">
+                                                <MudText Align="Align.Center">@pat.AplicationYear</MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="Supervisors">
+                                                <MudText Align="Align.Center">
+                                                    <MudText>@string.Join(" / ", pat.Supervisors?.Select(s => s.Name))</MudText>
+                                                </MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="PatStatus">
+                                                <MudText Align="Align.Center">
+                                                    @switch (pat.Status)
+                                                    {
+                                                        case 1:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
+                                                            break;
+                                                        case 2:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                                            break;
+                                                        case 3:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                                            break;
+                                                        case 4:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                                            break;
+                                                        case 5:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                                            break;
+                                                        case 6:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                                            break;
+                                                    }
+                                                </MudText>
+                                            </MudTd>
+                                            <MudTd>
+                                                <MudText Align="Align.Center">
+                                                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                        <ActivatorContent>
+                                                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                        </ActivatorContent>
+                                                        <ChildContent>
+                                                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<PAT>(pat.PATid))" OnTouch="(() => Details<PAT>(pat.PATid))">Details</MudMenuItem>
+                                                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<PAT>(pat.PATid))" OnTouch="(() => Update<PAT>(pat.PATid))">Edit </MudMenuItem>
+                                                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<PAT>(pat.PATid))" OnTouch="(() => Delete<PAT>(pat.PATid))">Delete </MudMenuItem>
+                                                        </ChildContent>
+                                                    </MudMenu>
+                                                </MudText>
+                                            </MudTd>
+                                        }
+                                    </RowTemplate>
+                                </MudTable>
+                            }
+                        </ChildContent>
+                    </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudExpansionPanel IsInitiallyExpanded Style="min-width: 100%">
-                <TitleContent>
-                    <div class="d-flex" style="align-items: center; justify-content:center;">
-                        <MudText Typo="Typo.h6" Style="text-align: center;">
-                            @Localizer["Documents"]
-                        </MudText>
-                    </div>
-                </TitleContent>
-                <ChildContent>
-                    <MudTable T="Object" Items="Documents" RowClassFunc="@SelectedRowDocument" @ref="SelectTableEventDocument" OnRowClick="RowClickEventDocument">
-                        <HeaderContent>
-
-                            <MudTh>
-                                Doc Type
-                            </MudTh>
-                            <MudTh>
-                                <MudText Align="Align.Center">
-                                    Operation Name
-                                </MudText>
-                            </MudTh>
-                            <MudTh>
-                                <MudText Align="Align.Center">
-                                    Internal Control Number
-                                </MudText>
-                            </MudTh>
-                            <MudTh>
-                                <MudText Align="Align.Center">
-                                    Process Name
-                                </MudText>
-                            </MudTh>
-                            <MudTh>
-                                <MudText Align="Align.Center">Actions</MudText>
-                            </MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-
-                            @if (@context is SOSAnalysis analysis)
-                            {
-                                <MudTd DataLabel="Id">
-                                    <MudCard Elevation="0" Style="width:min-content">
-                                        <MudCardHeader>
-                                            <CardHeaderAvatar>
-                                                <MudAvatar>
-                                                    <MudImage Src="Images/analisis-de-los-datos.png" />
-                                                </MudAvatar>
-                                            </CardHeaderAvatar>
-                                            <CardHeaderContent>
-                                                <MudText Typo="Typo.h6" Style="text-align:left"><b>Analysis</b></MudText>
-                                            </CardHeaderContent>
-                                            <CardHeaderActions>
-                                                <MudIcon Icon="@Icons.Material.Filled.ManageSearch" Color="MudBlazor.Color.Primary"></MudIcon>
-                                            </CardHeaderActions>
-                                        </MudCardHeader>
-                                    </MudCard>
-                                </MudTd>
-                                <MudTd DataLabel="OperationName">
-                                    <MudText Align="Align.Center">@analysis.OperationName</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="InternalControlNumber">
-                                    <MudText Align="Align.Center">@analysis.InternalControlNumber</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="ProcessName">
-                                    <MudText Align="Align.Center">@analysis.ProcessName</MudText>
-                                </MudTd>
-                                <MudTd>
-                                    <MudText Align="Align.Center">
-                                        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                                            <ActivatorContent>
-                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
-                                            </ActivatorContent>
-                                            <ChildContent>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Details<SOSAnalysis>(analysis.SOSAnalysisId))">Details</MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Update<SOSAnalysis>(analysis.SOSAnalysisId))">Edit </MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Delete<SOSAnalysis>(analysis.SOSAnalysisId))">Delete </MudMenuItem>
-                                            </ChildContent>
-                                        </MudMenu>
-                                    </MudText>
-                                </MudTd>
-                            }
-                            else if (@context is SOSCombination combination)
-                            {
-
-                                <MudTd DataLabel="Id">
-                                    <MudCard Elevation="0" Style="width:min-content">
-                                        <MudCardHeader>
-                                            <CardHeaderAvatar>
-                                                <MudAvatar>
-                                                    <MudImage Src="Images/combinacion.png" />
-                                                </MudAvatar>
-                                            </CardHeaderAvatar>
-                                            <CardHeaderContent>
-                                                <MudText Typo="Typo.h6" Style="text-align:left"><b>Combination</b></MudText>
-                                            </CardHeaderContent>
-                                            <CardHeaderActions>
-                                                <MudIcon Icon="@Icons.Material.Filled.CallMerge" Color="MudBlazor.Color.Primary"></MudIcon>
-                                            </CardHeaderActions>
-                                        </MudCardHeader>
-                                    </MudCard>
-                                </MudTd>
-                                <MudTd DataLabel="OperationName">
-                                    <MudText Align="Align.Center">@combination.OperationName</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="InternalControlNumber">
-                                    <MudText Align="Align.Center">@combination.InternalControlNumber</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="ProcessName">
-                                    <MudText Align="Align.Center">@combination.ProcessName</MudText>
-                                </MudTd>
-                                <MudTd>
-                                    <MudText Align="Align.Center">
-                                        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                                            <ActivatorContent>
-                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
-                                            </ActivatorContent>
-                                            <ChildContent>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Details<SOSCombination>(combination.SOSCombinationId))">Details</MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Update<SOSCombination>(combination.SOSCombinationId))">Edit </MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Delete<SOSCombination>(combination.SOSCombinationId))">Delete </MudMenuItem>
-                                            </ChildContent>
-                                        </MudMenu>
-                                    </MudText>
-                                </MudTd>
-                            }
-                            else if (@context is SOSDistribution distribution)
-                            {
-
-                                <MudTd DataLabel="Id">
-                                    <MudCard Elevation="0" Style="width:min-content">
-                                        <MudCardHeader>
-                                            <CardHeaderAvatar>
-                                                <MudAvatar>
-                                                    <MudImage Src="Images/reparto-de-beneficios.png" />
-                                                </MudAvatar>
-                                            </CardHeaderAvatar>
-                                            <CardHeaderContent>
-                                                <MudText Typo="Typo.h6" Style="text-align:left"><b>Distribution</b></MudText>
-                                            </CardHeaderContent>
-                                            <CardHeaderActions>
-                                                <MudIcon Icon="@Icons.Material.Filled.Hub" Color="MudBlazor.Color.Primary"></MudIcon>
-                                            </CardHeaderActions>
-                                        </MudCardHeader>
-                                    </MudCard>
-                                </MudTd>
-                                <MudTd DataLabel="OperationName">
-                                    <MudText Align="Align.Center">@distribution.OperationName</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="InternalControlNumber">
-                                    <MudText Align="Align.Center">@distribution.InternalControlNumber</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="ProcessName">
-                                    <MudText Align="Align.Center">@distribution.ProcessName</MudText>
-                                </MudTd>
-                                <MudTd>
-                                    <MudText Align="Align.Center">
-                                        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                                            <ActivatorContent>
-                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
-                                            </ActivatorContent>
-                                            <ChildContent>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Details<SOSDistribution>(distribution.SOSDistributionId))">Details</MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Update<SOSDistribution>(distribution.SOSDistributionId))">Edit </MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Delete<SOSDistribution>(distribution.SOSDistributionId))">Delete </MudMenuItem>
-                                            </ChildContent>
-                                        </MudMenu>
-                                    </MudText>
-                                </MudTd>
-                            }
-                            else if (@context is SOSFlow flow)
-                            {
-
-                                <MudTd DataLabel="Id">
-                                    <MudCard Elevation="0" Style="width:min-content">
-                                        <MudCardHeader>
-                                            <CardHeaderAvatar>
-                                                <MudAvatar>
-                                                    <MudImage Src="Images/flujo-de-datos.png" />
-                                                </MudAvatar>
-                                            </CardHeaderAvatar>
-                                            <CardHeaderContent>
-                                                <MudText Typo="Typo.h6" Style="text-align:left"><b>Flow</b></MudText>
-                                            </CardHeaderContent>
-                                            <CardHeaderActions>
-                                                <MudIcon Icon="@Icons.Material.Filled.Air" Color="MudBlazor.Color.Primary"></MudIcon>
-                                            </CardHeaderActions>
-                                        </MudCardHeader>
-                                    </MudCard>
-                                </MudTd>
-                                <MudTd DataLabel="OperationName">
-                                    <MudText Align="Align.Center">@flow.OperationName</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="InternalControlNumber">
-                                    <MudText Align="Align.Center">@flow.InternalControlNumber</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="ProcessName">
-                                    <MudText Align="Align.Center">@flow.ProcessName</MudText>
-                                </MudTd>
-                                <MudTd>
-                                    <MudText Align="Align.Center">
-                                        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                                            <ActivatorContent>
-                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
-                                            </ActivatorContent>
-                                            <ChildContent>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Details<SOSFlow>(flow.SOSFlowId))">Details</MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Update<SOSFlow>(flow.SOSFlowId))">Edit </MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Delete<SOSFlow>(flow.SOSFlowId))">Delete </MudMenuItem>
-                                            </ChildContent>
-                                        </MudMenu>
-                                    </MudText>
-                                </MudTd>
-                            }
-                            else if (@context is SOSSequence sequence)
-                            {
-
-                                <MudTd DataLabel="Id">
-                                    <MudCard Elevation="0" Style="width:min-content">
-                                        <MudCardHeader>
-                                            <CardHeaderAvatar>
-                                                <MudAvatar>
-                                                    <MudImage Src="Images/flujo-de-trabajo.png" />
-                                                </MudAvatar>
-                                            </CardHeaderAvatar>
-                                            <CardHeaderContent>
-                                                <MudText Typo="Typo.h6" Style="text-align:left"><b>Sequence</b></MudText>
-                                            </CardHeaderContent>
-                                            <CardHeaderActions>
-                                                <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
-                                            </CardHeaderActions>
-                                        </MudCardHeader>
-                                    </MudCard>
-                                </MudTd>
-                                <MudTd DataLabel="OperationName">
-                                    <MudText Align="Align.Center">@sequence.OperationName</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="InternalControlNumber">
-                                    <MudText Align="Align.Center">@sequence.InternalControlNumber</MudText>
-                                </MudTd>
-                                <MudTd DataLabel="ProcessName">
-                                    <MudText Align="Align.Center">@sequence.ProcessName</MudText>
-                                </MudTd>
-                                <MudTd>
-                                    <MudText Align="Align.Center">
-                                        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                                            <ActivatorContent>
-                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
-                                            </ActivatorContent>
-                                            <ChildContent>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Details<SOSSequence>(sequence.SOSSequenceId))">Details</MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Update<SOSSequence>(sequence.SOSSequenceId))">Edit </MudMenuItem>
-                                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Delete<SOSSequence>(sequence.SOSSequenceId))">Delete </MudMenuItem>
-                                            </ChildContent>
-                                        </MudMenu>
-                                    </MudText>
-                                </MudTd>
-                            }
-                        </RowTemplate>
-                    </MudTable>
-                </ChildContent>
-            </MudExpansionPanel>
-
         </MudGrid>
     </DialogContent>
 </MudDialog>
@@ -698,6 +799,61 @@ else
         <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
     </YesButton>
 </MudMessageBox>
+
+<MudMessageBox @ref="_DeleteAnalysis" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Analysis?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteCombination" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Combination?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteDistribution" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Distribution?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteFlow" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Flow?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteSequence" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Sequence?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeletePat" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Pat?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
 
 @code {
     // Breadcrumb links
@@ -841,37 +997,43 @@ else
     private async Task<AsyncVoidMethodBuilder> FindSelectedHoe(int sosHuBiD)
     {
         Documents.Clear();
-        _SelectedHoe = await SOSHubServices.GetSOSHub(sosHuBiD, includeModel: true, includeEquipments: true, includeTools: true, includeMaterials: true, includeCollections: true, includePeopleCollections: true, includeDocuments: true);
+        _SelectedHoe = await SOSHubServices.GetSOSHub(sosHuBiD, includeModel: true, includeEquipments: true, includeTools: true, includeMaterials: true, includeCollections: true, includePeopleCollections: true, includeDocuments: true, includePats: true);
 
-        if(_SelectedHoe.SOSAnalysis?.Count() > 0) 
-        foreach (var analysis in _SelectedHoe.SOSAnalysis)
-        {
-            Documents.Add(analysis);
-        }
+        if (_SelectedHoe.SOSAnalysis?.Count() > 0)
+            foreach (var analysis in _SelectedHoe.SOSAnalysis)
+            {
+                Documents.Add(analysis);
+            }
 
-        if(_SelectedHoe.SOSCombination?.Count() > 0)
-        foreach (var combination in _SelectedHoe.SOSCombination)
-        {
-            Documents.Add(combination);
-        }
+        if (_SelectedHoe.SOSCombination?.Count() > 0)
+            foreach (var combination in _SelectedHoe.SOSCombination)
+            {
+                Documents.Add(combination);
+            }
 
         if (_SelectedHoe.SOSDistribution?.Count() > 0)
             foreach (var distribution in _SelectedHoe.SOSDistribution)
-        {
-            Documents.Add(distribution);
-        }
+            {
+                Documents.Add(distribution);
+            }
 
         if (_SelectedHoe.SOSFlow?.Count() > 0)
             foreach (var flow in _SelectedHoe.SOSFlow)
-        {
-            Documents.Add(flow);
-        }
+            {
+                Documents.Add(flow);
+            }
 
         if (_SelectedHoe.SOSSequence?.Count() > 0)
-        foreach (var sequence in _SelectedHoe.SOSSequence)
-        {
-            Documents.Add(sequence);
-        }
+            foreach (var sequence in _SelectedHoe.SOSSequence)
+            {
+                Documents.Add(sequence);
+            }
+
+        if (_SelectedHoe.PATs?.Count() > 0)
+            foreach (var pat in _SelectedHoe.PATs)
+            {
+                Documents.Add(pat);
+            }
 
         return new AsyncVoidMethodBuilder();
     }
@@ -979,6 +1141,10 @@ else
         {
             NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{id}");
         }
+        else if (typeof(T) == typeof(PAT))
+        {
+            NavigationManager.NavigateTo($"/PAT/{id}");
+        }
         // Añadir más casos según sea necesario
     }
 
@@ -1004,6 +1170,10 @@ else
         {
             NavigationManager.NavigateTo($"/soshoe/Sequence/Update/{id}");
         }
+        else if (typeof(T) == typeof(PAT))
+        {
+            NavigationManager.NavigateTo($"/PAT/Update/{id}");
+        }
         // Añadir más casos según sea necesario
     }
 
@@ -1012,6 +1182,7 @@ else
     private MudMessageBox _DeleteDistribution;
     private MudMessageBox _DeleteFlow;
     private MudMessageBox _DeleteSequence;
+    private MudMessageBox _DeletePat;
 
     public async void Delete<T>(int id) where T : class
     {
@@ -1075,13 +1246,35 @@ else
                 await SOSSequenceServices.DeleteSOSSequence(id);
             }
         }
+        else if (typeof(T) == typeof(PAT))
+        {
+            bool? result = await _DeletePat.Show();
+            var confirm = result is null ? "Canceled" : "Deleted!";
+            StateHasChanged();
+
+            if (confirm == "Deleted!")
+            {
+
+                bool res = await PATServices.DeletePat(id);
+                if (res)
+                {
+                    _sosHub.PATs.RemoveAll(pat => pat.PATid == id);
+
+                    Documents.RemoveAll(doc => doc is PAT pat && pat.PATid == id);
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"{Localizer["succesRemovePat"]}", Severity.Info);
+                }
+            }
+        }
 
 
     }
 
     private int SosDocId = -1;
     private MudTable<Object> SelectTableEventDocument;
-
+    private int selectedRowNumberPat = -1;
+    private MudTable<Object> SelectTableEventDocumentPat;
     private void RowClickEventDocument(TableRowClickEventArgs<object> args)
     {
 
@@ -1175,7 +1368,48 @@ else
             return string.Empty;
         }
     }
+    private void RowClickEventDocumentPat(TableRowClickEventArgs<object> args)
+    {
 
+        if (selectedRowNumberPat == SelectTableEventDocumentPat.Items.ToList().IndexOf(args.Item))
+        {
+            if (args.Item is PAT)
+            {
+                NavigationManager.NavigateTo($"/PAT/{SosDocId}");
+            }
+        }
+        else
+        {
+            SelectTableEventDocumentPat.SelectedItem = args.Item;
+            selectedRowNumberPat = SelectTableEventDocumentPat.Items.ToList().IndexOf(args.Item);
+        }
+    }
+
+    private string SelectedRowDocumentPat(Object element, int rowNumber)
+    {
+        if (selectedRowNumberPat == rowNumber)
+        {
+            if (element is PAT pat)
+            {
+                SosDocId = pat.PATid;
+            }
+            return "selected"; // Mantener la fila seleccionada
+        }
+        else if (SelectTableEventDocumentPat.SelectedItem != null && SelectTableEventDocumentPat.SelectedItem.Equals(element))
+        {
+            if (element is PAT pat)
+            {
+                SosDocId = pat.PATid;
+            }
+
+            selectedRowNumberPat = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
     #endregion
 
 }
