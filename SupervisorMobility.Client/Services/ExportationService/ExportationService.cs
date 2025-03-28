@@ -119,5 +119,22 @@ namespace SupervisorMobility.Client.Services.ExportationService
                 await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
             }
         }
+
+        public async Task ExportFlowToExcel(int idFlow, MultipartFormDataContent content)
+        {
+            var response = await _http.PostAsync($"Exportation/Excel/Flow/{idFlow}", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                snackbar.Add("Error while exporting, could not download file", Severity.Error);
+            }
+            else
+            {
+                var filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            }
+        }
     }
 }

@@ -10,6 +10,8 @@ using Blazor.Diagrams;
 using Blazor.Diagrams.Core.PathGenerators;
 using Blazor.Diagrams.Core.Routers;
 using Blazor.Diagrams.Options;
+using static System.Net.WebRequestMethods;
+using DocumentFormat.OpenXml.Vml;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 {
@@ -227,7 +229,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
         public bool TryGetFlowLogbooksElementAtIndex(int index, out SOSFlowLogbook? item)
         {
-            item = null;  
+            item = null;
             if (_sosFlow.FlowLogbooks == null || _sosFlow.FlowLogbooks.Count == 0)
             {
                 return false;
@@ -295,9 +297,31 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
         private async void DownloadExcel()
         {
-            //await Exportation.ExportFlowToExcel(FlowId.Value);
-        }
+            // Capture image data as Base64
+            var imageData = await JSRuntime.InvokeAsync<string>("captureSvgLayerAsImage");
 
+            // Convert Base64 to byte array
+            var imageBytes = Convert.FromBase64String(imageData.Split(',')[1]);
+
+            // Create a multipart form data content
+            var content = new MultipartFormDataContent
+            {
+                { new ByteArrayContent(imageBytes), "Diagrams", "element_image.png" }
+            };
+
+            // Send to API endpoint
+            await Exportation.ExportFlowToExcel(FlowId.Value, content);
+        }
+        //For multiple files 
+        /* Convert each Base64 image to byte array
+        //for (int i = 0; i < imagesData.Length; i++)
+        //{
+        //    if (imagesData[i] != null)
+        //    {
+        //        var imageBytes = Convert.FromBase64String(imagesData[i].Split(',')[1]);
+        //        content.Add(new ByteArrayContent(imageBytes), "files", $"image_{i + 1}.png");
+        //    }
+        }*/
 
         void HoeDetails(int HoeId)
         {
