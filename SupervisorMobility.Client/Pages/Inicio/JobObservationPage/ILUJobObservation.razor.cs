@@ -191,6 +191,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             auxILU_Level = ILULevelAux switch
             {
+                "§" => 1,
                 "" => 1,
                 " " => 1,
                 "I" => 4,
