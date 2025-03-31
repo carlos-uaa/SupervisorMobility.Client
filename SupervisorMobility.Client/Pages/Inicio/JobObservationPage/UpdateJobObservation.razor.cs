@@ -457,7 +457,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                         }
                     }
-                    }
+                    
 
                     StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
                     DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
