@@ -186,6 +186,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
                 _operations = _operations.OrderBy(o => o.Description).ToList();
 
+                if (_operations == null)
+                {
+                    _operations = new List<Operation>();
+                }
 
                 var groupedOperations = _operations
             .GroupBy(op => op.ProductName)
