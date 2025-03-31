@@ -432,7 +432,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                             if (prodName != null)
                             {
-                                var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
+
+                                if (_operations != null && _jobObservation.Operations != null)
+                                {
+                                    var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
 
                                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                                 {
@@ -448,6 +451,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 }
                             }
                         }
+                    }
                     }
 
                     StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
