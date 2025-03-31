@@ -192,13 +192,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 var groupedOperations = _operations
-            .GroupBy(op => op.ProductName)
-            .Select(g => new ProductAndStandardTime
-            {
-                ProductName = g.Key,
-                StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
-            })
-            .ToList();
+                     .Where(op => !string.IsNullOrEmpty(op.ProductName) && !string.IsNullOrEmpty(op.StandardTime))
+                     .GroupBy(op => op.ProductName)
+                     .Select(g => new ProductAndStandardTime
+                     {
+                         ProductName = g.Key,
+                         StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
+                     })
+                     .ToList();
+
 
                 int count = Math.Min(groupedOperations.Count, 5);
                 _productAndSpecification = new ProductAndStandardTime[count];
