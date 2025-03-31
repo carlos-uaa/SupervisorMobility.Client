@@ -151,6 +151,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
             if (_supervisors == null || !_supervisors.Any())
             {
+                _supervisors = new List<User>();
                 switch (user.UserType)
                 {
                     case 1:
@@ -160,11 +161,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                     case 2:
                         foreach (var sv in user.Subordinates.ToList())
                         {
-                            _supervisors.Add(sv);
+                            _supervisors?.Add(sv);
                         }
                         break;
                     case 3:
-                        _supervisors.Add(user);
+                        _supervisors?.Add(user);
                         break;
                 }
             }
