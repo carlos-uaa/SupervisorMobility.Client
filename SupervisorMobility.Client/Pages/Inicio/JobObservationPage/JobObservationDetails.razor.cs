@@ -53,8 +53,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public string observer { get; set; } = "Juan";
         public string operator1 { get; set; } = "Pedro";
 
-  
-    
+
+
         private bool searchAssychart = false;
 
         private string messageErrorFolders;
@@ -87,7 +87,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
-        
+
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
 
@@ -266,17 +266,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                         if (prodName != null)
                         {
-                            var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
-
-                            if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                            if (_operations != null && _jobObservation.Operations != null)
                             {
+                                var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
 
-                                var names = op.NameTime.Replace(',', '.').Split("§");
-                                for (int j = 0; j < 5; j++)
+                                if (op != null && !string.IsNullOrEmpty(op.NameTime))
                                 {
-                                    if (!string.IsNullOrEmpty(names[j]))
+
+                                    var names = op.NameTime.Replace(',', '.').Split("§");
+                                    for (int j = 0; j < 5; j++)
                                     {
-                                        _specifications[i].Add(names[j]);
+                                        if (!string.IsNullOrEmpty(names[j]))
+                                        {
+                                            _specifications[i].Add(names[j]);
+                                        }
                                     }
                                 }
                             }
@@ -397,7 +400,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     for (int i = 0; i < specificationsArray.Length && i < productSpecification.Length; i++)
                     {
-                        productSpecification[i] = specificationsArray[i]; 
+                        productSpecification[i] = specificationsArray[i];
                     }
                 }
                 else
@@ -478,7 +481,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     messageErrorFolders = Localizer["jobObservationDoesNotContainAValidPlant"];
                 }
 
-                if (searchAssychart && _assychart.RoutesProductsAssyChart?.Count() > 0  && _jobObservation.Operations?.Count() > 0 )
+                if (searchAssychart && _assychart.RoutesProductsAssyChart?.Count() > 0 && _jobObservation.Operations?.Count() > 0)
                 {
                     listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operations?.FirstOrDefault()?.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
                     FilterOperation = true;
@@ -486,7 +489,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             else
             {
-                NoData  = true;
+                NoData = true;
             }
 
         }//end on inizialized 
@@ -538,7 +541,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
             return new AsyncVoidMethodBuilder();
         }
-      
+
 
         private async void CloseModalFiles()
         {
@@ -548,13 +551,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }
 
-        
+
         private void OpenPhotoDialog(int index, ChecklistAnswer item)
         {
             SelectedAnswer = item;
             photoIndex = index;
             visiblePhoto = true;
-        
+
         }
 
         private async Task DownloadFile(int fileId, string filename)
