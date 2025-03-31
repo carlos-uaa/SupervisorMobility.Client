@@ -476,8 +476,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (searchAssychart && _assychart.RoutesProductsAssyChart?.Count() > 0  && _jobObservation.Operations?.Count() > 0 )
                 {
-                    listFilter = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(_jobObservation.Operations?.FirstOrDefault()?.Code.ToLower(), StringComparison.OrdinalIgnoreCase)).ToList();
-                    FilterOperation = true;
+                    var firstOperation = _jobObservation.Operations.FirstOrDefault();
+                    if (firstOperation?.Code != null)
+                    {
+                        listFilter = _assychart.RoutesProductsAssyChart
+                            .Where(r => r.Code.ToLower().Contains(firstOperation.Code.ToLower(), StringComparison.OrdinalIgnoreCase))
+                            .ToList();
+                        FilterOperation = true;
+                    }
+                    else
+                    {
+                        listFilter = new List<SOSCodePath>();
+                        FilterOperation = false;
+                    }
                 }
             }
             else
