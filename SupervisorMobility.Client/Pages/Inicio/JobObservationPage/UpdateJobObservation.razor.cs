@@ -427,24 +427,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                         for (int i = 0; i < 5; i++)
                         {
-
                             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
                             _specifications[i] = new();
 
                             if (prodName != null)
                             {
-
-                                if (_operations != null && _jobObservation.Operations != null)
+                                // Safely access the OperationId
+                                var firstOperation = _jobObservation.Operations?.FirstOrDefault();
+                                int? operationId = firstOperation?.OperationId;
+                                
+                                // Only try to find the operation if we have a valid operationId
+                                Operation op = null;
+                                if (operationId.HasValue)
                                 {
-                                    var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
+                                    op = _operations.FirstOrDefault(o => o.OperationId == operationId.Value && o.ProductName == prodName?.Code);
+                                }
 
                                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                                 {
-
                                     var names = op.NameTime.Replace(',', '.').Split("§");
                                     for (int j = 0; j < 5; j++)
                                     {
-                                        if (!string.IsNullOrEmpty(names[j]))
+                                        if (j < names.Length && !string.IsNullOrEmpty(names[j]))
                                         {
                                             _specifications[i].Add(names[j]);
                                         }
@@ -453,7 +457,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                         }
                     }
-                    }
+                    
 
                     StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
                     DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
