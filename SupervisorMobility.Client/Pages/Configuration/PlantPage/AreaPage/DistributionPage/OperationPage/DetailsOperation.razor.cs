@@ -83,6 +83,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             }
 
 
+            ListHasFiveElements(NameTimeList);
+            ListHasFiveElements(TimeList);
+            ListHasFiveElements(AdditionalTimeList);
+            ListHasFiveElements(StandardTimeList);
+
 
             _links = new List<BreadcrumbItem>
             {
@@ -97,6 +102,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             BreadcrumbService.UpdateBreadcrumbs(_links);
             showui = true;
 
+        }
+
+        private void ListHasFiveElements(List<string> list)
+        {
+            while (list.Count < 5)
+            {
+                list.Add(string.Empty);
+            }
         }
 
         // Links
