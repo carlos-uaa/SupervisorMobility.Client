@@ -1,4 +1,5 @@
 using MudBlazor;
+using SupervisorMobility.Client.Services.ProductsService;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.OperationPage
 {
@@ -27,6 +28,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         public Operation _operation { get; set; } = new();
         private bool showui = false;
 
+        public List<string> NameTimeList = new List<string>();
+        public List<string> TimeList = new List<string>();
+        public List<string> AdditionalTimeList = new List<string>();
+        public List<string> StandardTimeList = new List<string>();
+        private List<Product> _products = new List<Product>();
+        private Product _product = new Product();
+
         // Initialization
         // protected async override Task OnInitializedAsync()
         // {
@@ -48,6 +56,34 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             _area = await AreaService.GetAreaById(PlantId, AreaId);
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
             _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
+            _products = await ProductsServices.GetProducts();
+
+
+            _product = _products.Find(p => p.Code == _operation.ProductName);
+
+
+            if (!string.IsNullOrEmpty(_operation.NameTime))
+            {
+                NameTimeList = _operation.NameTime.Split('§').ToList();
+            }
+
+            if (!string.IsNullOrEmpty(_operation.Time))
+            {
+                TimeList = _operation.Time.Split('§').ToList();
+            }
+
+            if (!string.IsNullOrEmpty(_operation.AdditionalTime))
+            {
+                AdditionalTimeList = _operation.AdditionalTime.Split('§').ToList();
+            }
+
+            if (!string.IsNullOrEmpty(_operation.StandardTime))
+            {
+                StandardTimeList = _operation.StandardTime.Split('§').ToList();
+            }
+
+
+
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -101,6 +137,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         {
             NavigationManager.NavigateTo($"/plants/{PlantId}/areas/{AreaId}/distributions/{DistributionId}");
         }
+        void UpdateProduct()
+        {
 
+            _product = _products.Find(p => p.Code == _operation.ProductName);
+
+            StateHasChanged();
+        }
     }
 }
