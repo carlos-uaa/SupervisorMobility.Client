@@ -50,17 +50,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         //         };
         // }
 
-        protected override async Task OnParametersSetAsync()
+        protected async override Task OnInitializedAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
             _area = await AreaService.GetAreaById(PlantId, AreaId);
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
             _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
-            _products = await ProductsServices.GetProducts();
-
-
-            _product = _products.Find(p => p.Code == _operation.ProductName);
-
 
             if (!string.IsNullOrEmpty(_operation.NameTime))
             {
@@ -81,6 +76,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             {
                 StandardTimeList = _operation.StandardTime.Split('§').ToList();
             }
+
+            _products = await ProductsServices.GetProducts();
+            _product = _products.Find(p => p.Code == _operation.ProductName);
 
 
             ListHasFiveElements(NameTimeList);
