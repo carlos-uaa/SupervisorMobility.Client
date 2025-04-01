@@ -35,7 +35,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         public List<string> AdditionalTimeList = new List<string>();
         public List<string> StandardTimeList = new List<string>(); 
 
-        protected override async Task OnParametersSetAsync()
+        protected override async Task OnInitializedAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
             _area = await AreaService.GetAreaById(PlantId, AreaId);
