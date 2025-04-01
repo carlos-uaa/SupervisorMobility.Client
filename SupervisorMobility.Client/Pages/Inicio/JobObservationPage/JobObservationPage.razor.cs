@@ -51,7 +51,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Job observations status lists.
         public List<JobObservation> _jobObservations { get; set; } = new();
 
-        JOCountPaginationDto JOCounting { get; set; } = new JOCountPaginationDto{ DistributionCount = new(),
+        JOCountPaginationDto JOCounting { get; set; } = new JOCountPaginationDto
+        {
+            DistributionCount = new(),
             OperationCount = new(),
             OperatorCount = new(),
             StatusCount = new List<JOCount> { new(), new(), new(), new(), new(), new(), new(), new() }
@@ -94,7 +96,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         protected async override Task OnInitializedAsync()
         {
-             
+
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
@@ -212,8 +214,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             DateTime? dateToFilter = filterDate ?? default;
 
-            response = await JobObservationService.GetAllJobObservationsByFilters(dateToFilter.Value, dateToFilter.Value, idFilter, plantId, areaId, 
-                distributionId, operationId, default, statusId, user.UserId, typeId, searchString, state.Page+1, state.PageSize, (int)state.SortDirection, state.SortLabel);
+            response = await JobObservationService.GetAllJobObservationsByFilters(dateToFilter.Value, dateToFilter.Value, idFilter, plantId, areaId,
+                distributionId, operationId, default, statusId, user.UserId, typeId, searchString, state.Page + 1, state.PageSize, (int)state.SortDirection, state.SortLabel);
 
             var pps = response.JobObservations.ToArray();
 
@@ -227,9 +229,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
             else
             {
-                TotalItems = response.Count.StatusCount.Sum(item=>item.count);
+                TotalItems = response.Count.StatusCount.Sum(item => item.count);
             }
-            
+
             anyItems = response.Total == 0;
 
             JobObservationsTotalCount();
@@ -356,7 +358,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private void FilterDistributions()
         {
 
-            if(distributionId == 0)
+            if (distributionId == 0)
             {
                 SelectTableEvent.ReloadServerData();
                 return;
@@ -412,10 +414,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             JobObservationsTotalCount();
         }
 
-        public void ClearStatus(int sts,int filterType=default)
+        public void ClearStatus(int sts, int filterType = default)
         {
             statusId = sts;
-            typeId = filterType == 4? 4:default;
+            typeId = filterType == 4 ? 4 : default;
             selectedRowNumber = -1;
         }
 
@@ -814,39 +816,48 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private int selectedRowNumber = -1;
-        private MudTable<JobObservation> SelectTableEvent;
+        private MudTable<JobObservation> SelectTableEvent0;
+        private MudTable<JobObservation> SelectTableEvent1;
+        private MudTable<JobObservation> SelectTableEvent2;
+        private MudTable<JobObservation> SelectTableEvent3;
+        private MudTable<JobObservation> SelectTableEvent4;
+        private MudTable<JobObservation> SelectTableEvent5;
+        private MudTable<JobObservation> SelectTableEvent6;
+        private MudTable<JobObservation> SelectTableEvent7;
+        private MudTable<JobObservation> SelectTableEvent8;
+
 
         private void RowClickEvent(TableRowClickEventArgs<JobObservation> args, int tableId)
         {
-            List<JobObservation> filteredItems = SelectTableEvent.Items.ToList();
+            List<JobObservation> filteredItems = _jobObservations.ToList();
             switch (tableId)
             {
                 case 0:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status != 7).ToList();
+                    filteredItems = SelectTableEvent0.Items.ToList();
                     break;
                 case 1:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 1).ToList();
+                    filteredItems = SelectTableEvent1.Items.ToList();
                     break;
                 case 2:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 2).ToList();
+                    filteredItems = SelectTableEvent2.Items.ToList();
                     break;
                 case 3:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 3).ToList();
+                    filteredItems = SelectTableEvent3.Items.ToList();
                     break;
                 case 4:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 4).ToList();
+                    filteredItems = SelectTableEvent4.Items.ToList();
                     break;
                 case 5:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 5).ToList();
+                    filteredItems = SelectTableEvent5.Items.ToList();
                     break;
                 case 6:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 6).ToList();
+                    filteredItems = SelectTableEvent6.Items.ToList();
                     break;
                 case 7:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Status == 7).ToList();
+                    filteredItems = SelectTableEvent7.Items.ToList();
                     break;
                 case 8:
-                    filteredItems = SelectTableEvent.Items.Where(j => j.Type == 4).ToList();
+                    filteredItems = SelectTableEvent8.Items.ToList();
                     break;
             }
             // Obtiene el índice dentro del subconjunto filtrado
@@ -861,44 +872,74 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 // Cambia la fila seleccionada en el subconjunto filtrado
                 selectedRowNumber = rowIndex;
-                SelectTableEvent.SelectedItem = args.Item; // Actualiza la selección de la tabla
+
+                switch (tableId)
+                {
+                    case 0:
+                        SelectTableEvent0.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 1:
+                        SelectTableEvent1.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 2:
+                        SelectTableEvent2.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 3:
+                        SelectTableEvent3.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 4:
+                        SelectTableEvent4.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 5:
+                        SelectTableEvent5.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 6:
+                        SelectTableEvent6.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 7:
+                        SelectTableEvent7.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 8:
+                        SelectTableEvent8.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                }
                 StateHasChanged(); // Actualiza la UI
             }
         }
 
         private string SelectedRowClassFunc(JobObservation element, int rowNumber, int tableId)
         {
-            if (SelectTableEvent.Items != null)
+            if (_jobObservations != null)
             {
-                List<JobObservation> filteredItems = SelectTableEvent.Items.ToList();
+                List<JobObservation> filteredItems = SelectTableEven0.Items.ToList();
                 switch (tableId)
                 {
                     case 0:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Status != 7).ToList();
+                        filteredItems = SelectTableEvent0.Items.ToList();
                         break;
                     case 1:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 1).ToList();
+                        filteredItems = SelectTableEvent1.Items.ToList();
                         break;
                     case 2:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 2).ToList();
+                        filteredItems = SelectTableEvent2.Items.ToList();
                         break;
                     case 3:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 3).ToList();
+                        filteredItems = SelectTableEvent3.Items.ToList();
                         break;
                     case 4:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 4).ToList();
+                        filteredItems = SelectTableEvent4.Items.ToList();
                         break;
                     case 5:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 5).ToList();
+                        filteredItems = SelectTableEvent5.Items.ToList();
                         break;
                     case 6:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 6).ToList();
+                        filteredItems = SelectTableEvent6.Items.ToList();
                         break;
                     case 7:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Status == 7).ToList();
+                        filteredItems = SelectTableEvent7.Items.ToList();
                         break;
                     case 8:
-                        filteredItems = SelectTableEvent.Items.Where(j => j.Type == 4).ToList();
+                        filteredItems = SelectTableEvent8.Items.ToList();
                         break;
                 }
 
@@ -968,8 +1009,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             showLoading = true;
             StateHasChanged();
             visible2 = newValue;
-            
-            if(!visible2)
+
+            if (!visible2)
                 JobTabs.ActivatePanel(2);
 
             showLoading = false;
