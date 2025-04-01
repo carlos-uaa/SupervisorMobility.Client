@@ -74,10 +74,23 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
                 StandardTimeList = _operation.StandardTime.Split('§').ToList();
             }
 
+            ListHasFiveElements(NameTimeList);
+            ListHasFiveElements(TimeList);
+            ListHasFiveElements(AdditionalTimeList);
+            ListHasFiveElements(StandardTimeList);
+
             _product = _products.Find(p => p.Code == _operation.ProductName);
 
 
             showui = true;
+        }
+
+        private void ListHasFiveElements(List<string> list)
+        {
+            while (list.Count < 5)
+            {
+                list.Add(string.Empty);
+            }
         }
 
         // Links
