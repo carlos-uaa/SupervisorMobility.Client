@@ -7,6 +7,7 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IBreadcrumbService BreadcrumbService
+@inject IProductService ProductsServices
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["updateOperation"]</PageTitle>
@@ -91,8 +92,24 @@
             <MudCard>
                 <MudCardContent Style="justify-content:center">
                     <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Workspaces"></MudIcon></MudText>
-                    <MudText Align="Align.Center">@_distribution.Code</MudText>
-                    <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
+                    <MudItem Style=" display: flex;align-content: center;justify-content: center;align-items: center;">
+                        <div>
+                            <MudText Align="Align.Center">@_distribution.Code</MudText>
+                            <MudText Typo="Typo.h5" Align="Align.Center">@_distribution.Description</MudText>
+                        </div>
+                        @switch (_distribution.CriticalType)
+                        {
+                            case 1:
+                                <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                break;
+                            case 2:
+                                <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                break;
+                            case 3:
+                                <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                break;
+                        }
+                    </MudItem>
                     @if (_distribution.IsActive == true)
                     {
                         <MudText Align="Align.Center" Class="pt-2">
@@ -100,6 +117,29 @@
                         </MudText>
                     }
                     else
+                    {
+                        <MudText Align="Align.Center" Class="pa-4">
+                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                        </MudText>
+                    }
+                </MudCardContent>
+            </MudCard>
+            <MudText Typo="Typo.h4" Style="text-align:center">
+                <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowDown"></MudIcon>
+            </MudText>
+            <MudCard>
+                <MudCardContent Style="justify-content:center">
+                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Color="Color.Primary"></MudIcon></MudText>
+                    <MudText Align="Align.Center">@_product?.Code</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center">@_product?.Description</MudText>
+                    @if (_product?.IsActive == true)
+                    {
+                        <MudText Align="Align.Center" Class="pt-2">
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+
+                        </MudText>
+                    }
+                    else if (_product?.IsActive == false)
                     {
                         <MudText Align="Align.Center" Class="pa-4">
                             <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
@@ -138,6 +178,62 @@
                                         <MudSelectItem Value="5">@($"{Localizer["OPCritical"]}")</MudSelectItem>
 
                                     </MudSelect>
+
+                                <MudSelect T="string" Label=@Localizer["product"] Variant="Variant.Text" ReadOnly Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_operation.ProductName" For="@(() => _operation.ProductName)" SelectedValuesChanged="UpdateProduct">
+                                    <MudSelectItem Value="string.Empty">@Localizer["selectAProduct"]</MudSelectItem>
+                                    @foreach (Product prod in _products)
+                                    {
+                                        <MudSelectItem Value="prod.Code">@($"{prod.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+
+                                <MudSimpleTable>
+
+                                    <MudTr>
+
+                                        @foreach (var (value, index) in _operation.NameTime.Split('§').Select((value, index) => (value, index)))
+                                        {
+                                            <MudTd>
+                                                <MudTextField Label="@($"{Localizer["nameTime"]} {index + 1}")" Class="mt-3" ReadOnly
+                                                              @bind-Value="NameTimeList[index]" />
+                                            </MudTd>
+                                        }
+                                    </MudTr>
+
+                                    <MudTr>
+                                        @foreach (var (value, index) in _operation.Time.Split('§').Select((value, index) => (value, index)))
+                                        {
+                                            <MudTd>
+                                                <MudTextField Label="@($"{Localizer["Time"]} {index + 1}")" Class="mt-3" ReadOnly
+                                                              @bind-Value="TimeList[index]" />
+                                            </MudTd>
+                                        }
+
+                                    </MudTr>
+
+                                    <MudTr>
+                                        @foreach (var (value, index) in _operation.AdditionalTime.Split('§').Select((value, index) => (value, index)))
+                                        {
+                                            <MudTd>
+                                                <MudTextField Label="@($"{Localizer["additionalTime"]} {index + 1}")" Class="mt-3" ReadOnly
+                                                              @bind-Value="AdditionalTimeList[index]" />
+                                            </MudTd>
+                                        }
+
+                                    </MudTr>
+
+                                    <MudTr>
+                                        @foreach (var (value, index) in _operation.StandardTime.Split('§').Select((value, index) => (value, index)))
+                                        {
+                                            <MudTd>
+
+                                                <MudTextField Label="@($"{Localizer["standardTime"]} {index + 1}")" Class="mt-3" ReadOnly
+                                                              @bind-Value="StandardTimeList[index]" />
+                                            </MudTd>
+                                        }
+                                    </MudTr>
+
+                                </MudSimpleTable>
                                     @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_operation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
                                 </MudCardContent>
                                 <MudCardActions>
