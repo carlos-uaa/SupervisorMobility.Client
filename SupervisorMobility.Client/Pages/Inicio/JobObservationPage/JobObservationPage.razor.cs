@@ -263,7 +263,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 areaId = 0;
                 ClearFilters();
-                await SelectTableEvent.ReloadServerData();
+                await SelectTableEvent0.ReloadServerData();
                 StateHasChanged();
                 return;
 
@@ -276,7 +276,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             operatorUsers.Clear();
 
 
-            await SelectTableEvent.ReloadServerData();
+            await SelectTableEvent0.ReloadServerData();
 
 
             _areas = await AreaServices.GetAreas(plantId);
@@ -297,7 +297,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             ClearFilters();
             operatorUsers.Clear();
 
-            await SelectTableEvent.ReloadServerData();
+            await SelectTableEvent0.ReloadServerData();
 
             _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
 
@@ -325,7 +325,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             operatorId = new();
             statusId = new();
 
-            SelectTableEvent.ReloadServerData();
+            SelectTableEvent0.ReloadServerData();
 
             if (color == Color.Info)
             {
@@ -350,7 +350,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             operatorId = new();
             statusId = new();
 
-            SelectTableEvent.ReloadServerData();
+            SelectTableEvent0.ReloadServerData();
             StateHasChanged();
         }
 
@@ -360,7 +360,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (distributionId == 0)
             {
-                SelectTableEvent.ReloadServerData();
+                SelectTableEvent0.ReloadServerData();
                 return;
             }
 
@@ -371,12 +371,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == distributionId)].Operations;
 
 
-            SelectTableEvent.ReloadServerData();
+            SelectTableEvent0.ReloadServerData();
         }
 
         private void Filters()
         {
-            SelectTableEvent.ReloadServerData();
+            SelectTableEvent0.ReloadServerData();
             //_jobObservations = _filterJobObservation;
 
 
@@ -467,7 +467,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             await JobObservationService.DeleteJobObservation(jobObservationId);
             ClearFilters();
 
-            await SelectTableEvent.ReloadServerData();
+            await SelectTableEvent0.ReloadServerData();
 
             visibleDelete = false;
 
@@ -572,7 +572,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     StateHasChanged();
 
-                    await SelectTableEvent.ReloadServerData();
+                    await SelectTableEvent0.ReloadServerData();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -645,7 +645,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     StateHasChanged();
 
-                    await SelectTableEvent.ReloadServerData();
+                    await SelectTableEvent0.ReloadServerData();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -816,7 +816,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
 
         private int selectedRowNumber = -1;
-        private MudTable<JobObservation> SelectTableEvent;
+        private MudTable<JobObservation> SelectTableEvent0;
         private MudTable<JobObservation> SelectTableEvent1;
         private MudTable<JobObservation> SelectTableEvent2;
         private MudTable<JobObservation> SelectTableEvent3;
@@ -829,120 +829,128 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private void RowClickEvent(TableRowClickEventArgs<JobObservation> args, int tableId)
         {
-            List<JobObservation> filteredItems = SelectTableEvent.Items.ToList();
-            // switch (tableId)
-            // {
-            //     case 0:
-            //         filteredItems = SelectTableEvent0.Items.ToList();
-            //         break;
-            //     case 1:
-            //         filteredItems = SelectTableEvent1.Items.ToList();
-            //         break;
-            //     case 2:
-            //         filteredItems = SelectTableEvent2.Items.ToList();
-            //         break;
-            //     case 3:
-            //         filteredItems = SelectTableEvent3.Items.ToList();
-            //         break;
-            //     case 4:
-            //         filteredItems = SelectTableEvent4.Items.ToList();
-            //         break;
-            //     case 5:
-            //         filteredItems = SelectTableEvent5.Items.ToList();
-            //         break;
-            //     case 6:
-            //         filteredItems = SelectTableEvent6.Items.ToList();
-            //         break;
-            //     case 7:
-            //         filteredItems = SelectTableEvent7.Items.ToList();
-            //         break;
-            //     case 8:
-            //         filteredItems = SelectTableEvent8.Items.ToList();
-            //         break;
-            // }
+            List<JobObservation> filteredItems = _jobObservations.ToList();
+            //switch (tableId)
+            //{
+            //    case 0:
+            //        filteredItems = SelectTableEvent0.Items.ToList();
+            //        break;
+            //    case 1:
+            //        filteredItems = SelectTableEvent1.Items.ToList();
+            //        break;
+            //    case 2:
+            //        filteredItems = SelectTableEvent2.Items.ToList();
+            //        break;
+            //    case 3:
+            //        filteredItems = SelectTableEvent3.Items.ToList();
+            //        break;
+            //    case 4:
+            //        filteredItems = SelectTableEvent4.Items.ToList();
+            //        break;
+            //    case 5:
+            //        filteredItems = SelectTableEvent5.Items.ToList();
+            //        break;
+            //    case 6:
+            //        filteredItems = SelectTableEvent6.Items.ToList();
+            //        break;
+            //    case 7:
+            //        filteredItems = SelectTableEvent7.Items.ToList();
+            //        break;
+            //    case 8:
+            //        filteredItems = SelectTableEvent8.Items.ToList();
+            //        break;
+            //}
             // Obtiene el índice dentro del subconjunto filtrado
             var rowIndex = filteredItems.IndexOf(args.Item);
 
             if (selectedRowNumber == rowIndex)
             {
                 // Si la fila ya está seleccionada, se abre el diálogo (doble clic simulado)
-                OpenDialog2(args.Item.JobObservationId);
+
+                if (args.Item.Type == 3 && args.Item.Status == 7)
+                {
+                    OpenDialog3(args.Item.JobObservationId);
+                }
+                else
+                {
+                    OpenDialog2(args.Item.JobObservationId);
+                }
             }
             else
             {
                 // Cambia la fila seleccionada en el subconjunto filtrado
                 selectedRowNumber = rowIndex;
-                SelectTableEvent.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                //SelectTableEvent0.SelectedItem = args.Item; // Actualiza la selección de la tabla
 
-                // switch (tableId)
-                // {
-                //     case 0:
-                //         SelectTableEvent0.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                //     case 1:
-                //         SelectTableEvent1.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                //     case 2:
-                //         SelectTableEvent2.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                //     case 3:
-                //         SelectTableEvent3.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                //     case 4:
-                //         SelectTableEvent4.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                //     case 5:
-                //         SelectTableEvent5.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                //     case 6:
-                //         SelectTableEvent6.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                //     case 7:
-                //         SelectTableEvent7.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                //     case 8:
-                //         SelectTableEvent8.SelectedItem = args.Item; // Actualiza la selección de la tabla
-                //         break;
-                // }
+                switch (tableId)
+                {
+                    case 0:
+                        SelectTableEvent0.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 1:
+                        SelectTableEvent1.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 2:
+                        SelectTableEvent2.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 3:
+                        SelectTableEvent3.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 4:
+                        SelectTableEvent4.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 5:
+                        SelectTableEvent5.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 6:
+                        SelectTableEvent6.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 7:
+                        SelectTableEvent7.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                    case 8:
+                        SelectTableEvent8.SelectedItem = args.Item; // Actualiza la selección de la tabla
+                        break;
+                }
                 StateHasChanged(); // Actualiza la UI
             }
         }
 
         private string SelectedRowClassFunc(JobObservation element, int rowNumber, int tableId)
         {
-            if (SelectTableEvent.Items != null)
+            if (_jobObservations.Count() > 0)
             {
-                List<JobObservation> filteredItems = SelectTableEvent.Items.ToList();
-                // switch (tableId)
-                // {
-                //     case 0:
-                //         filteredItems = SelectTableEvent0.Items.ToList();
-                //         break;
-                //     case 1:
-                //         filteredItems = SelectTableEvent1.Items.ToList();
-                //         break;
-                //     case 2:
-                //         filteredItems = SelectTableEvent2.Items.ToList();
-                //         break;
-                //     case 3:
-                //         filteredItems = SelectTableEvent3.Items.ToList();
-                //         break;
-                //     case 4:
-                //         filteredItems = SelectTableEvent4.Items.ToList();
-                //         break;
-                //     case 5:
-                //         filteredItems = SelectTableEvent5.Items.ToList();
-                //         break;
-                //     case 6:
-                //         filteredItems = SelectTableEvent6.Items.ToList();
-                //         break;
-                //     case 7:
-                //         filteredItems = SelectTableEvent7.Items.ToList();
-                //         break;
-                //     case 8:
-                //         filteredItems = SelectTableEvent8.Items.ToList();
-                //         break;
-                // }
+                List<JobObservation> filteredItems = _jobObservations.ToList();
+                //switch (tableId)
+                //{
+                //    case 0:
+                //        filteredItems = SelectTableEvent0.Items.ToList();
+                //        break;
+                //    case 1:
+                //        filteredItems = SelectTableEvent1.Items.ToList();
+                //        break;
+                //    case 2:
+                //        filteredItems = SelectTableEvent2.Items.ToList();
+                //        break;
+                //    case 3:
+                //        filteredItems = SelectTableEvent3.Items.ToList();
+                //        break;
+                //    case 4:
+                //        filteredItems = SelectTableEvent4.Items.ToList();
+                //        break;
+                //    case 5:
+                //        filteredItems = SelectTableEvent5.Items.ToList();
+                //        break;
+                //    case 6:
+                //        filteredItems = SelectTableEvent6.Items.ToList();
+                //        break;
+                //    case 7:
+                //        filteredItems = SelectTableEvent7.Items.ToList();
+                //        break;
+                //    case 8:
+                //        filteredItems = SelectTableEvent8.Items.ToList();
+                //        break;
+                //}
 
                 // Solo devuelve la clase "selected" si el número de fila coincide con el seleccionado en el subconjunto filtrado
                 if (filteredItems.IndexOf(element) == selectedRowNumber)
