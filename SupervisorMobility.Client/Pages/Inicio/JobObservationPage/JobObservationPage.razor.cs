@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.JSInterop;
@@ -49,7 +50,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         //Job observations status lists.
         public List<JobObservation> _jobObservations { get; set; } = new();
-        public List<JobObservation> _jobObservationsAux { get; set; } = new();
 
         JOCountPaginationDto JOCounting { get; set; } = new JOCountPaginationDto{ DistributionCount = new(),
             OperationCount = new(),
@@ -88,9 +88,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<User> operatorUsers = new();
 
 
+        bool showLoading = true;
+        private IList<string> _sourceMsgLoading = new List<string>();
+        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
         protected async override Task OnInitializedAsync()
         {
+             
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
@@ -182,8 +199,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 //_filterJobObservation = _jobObservations;
                 //JobObservationsTotalCount();
-                StateHasChanged(); 
+                StateHasChanged();
             }
+
+
+            showLoading = false;
         }
 
         async Task<TableData<JobObservation>> LoadJobObs(TableState state)
@@ -196,6 +216,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 distributionId, operationId, default, statusId, user.UserId, typeId, searchString, state.Page+1, state.PageSize, (int)state.SortDirection, state.SortLabel);
 
             var pps = response.JobObservations.ToArray();
+
+            _jobObservations = pps.ToList();
 
             JOCounting = response.Count;
 
@@ -904,5 +926,55 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _ => "",
             };
         }
-    }
-}
+
+        public string programmedStartDate = "";
+        private bool visible2 = false;
+        private int jobId2;
+        private void OpenDialog3(int id)
+        {
+            //aquii me dio erro rde render
+            DateTime date = _jobObservations.Find(j => j.JobObservationId == id).PlannedStartDate.Value;
+            string fechaComoString = date.ToString("MM-dd-yyyy");
+
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+                var formatedStartDate = date;
+
+                var EnglishStartDate = formatedStartDate.Month.ToString() + "/" + formatedStartDate.Day.ToString() + "/" + formatedStartDate.Year.ToString();
+                var formatedStartDate2 = DateTime.ParseExact(EnglishStartDate, "M/d/yyyy", CultureInfo.InvariantCulture);
+
+                programmedStartDate = formatedStartDate2.ToString("MM-dd-yyyy");
+            }
+            else
+            {
+                var hour1 = date.ToShortDateString();
+
+                if (DateTime.TryParseExact(hour1, $"d/M/yyyy", null, DateTimeStyles.None, out var newDate1))
+                {
+                    //Console.WriteLine(newDate1);
+                }
+                else
+                    //Console.WriteLine("Unable to parse {es-ES} '{0}'", hour1);
+
+                    programmedStartDate = newDate1.ToString("MM-dd-yyyy");
+            }
+            jobId2 = id;
+            visible2 = true;
+        }
+        void Close2() => visible2 = false;
+        MudTabs JobTabs;
+        private async Task HandleVisibleChanged(bool newValue)
+        {
+            showLoading = true;
+            StateHasChanged();
+            visible2 = newValue;
+            
+            if(!visible2)
+                JobTabs.ActivatePanel(2);
+
+            showLoading = false;
+            StateHasChanged();
+        }
+
+    }//end class 
+}//end namespace    
