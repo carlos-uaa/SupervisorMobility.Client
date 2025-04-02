@@ -12,6 +12,7 @@ using SupervisorMobility.Client.Services.BreadcrumsService;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
@@ -1025,6 +1026,79 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             showLoading = false;
             StateHasChanged();
         }
+
+
+        IDialogReference dialogOperations;
+        private DialogOptions dialogOperationsOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        private async void OpenChangeOperations()
+        {
+            _operations = await OperationServices.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
+            var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "ChangeOperations", EventCallback.Factory.Create(this, ChangeOperations) } };
+            parameters.Add("_operations", _operations);
+            dialogOperations = await DialogService.ShowAsync<ChangeOperations_Dialog>("", parameters, dialogOperationsOptions);
+            await dialogOperations.Result;
+        }
+
+
+        public async Task ChangeOperations()
+        {
+            //if (_jobObservation.Justification == null || _jobObservation.Justification == "")
+            //{
+            //    Snackbar.Clear();
+            //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //    Snackbar.Add(Localizer["AddComment"], Severity.Error);
+            //    return;
+            //}
+
+            if (CultureInfo.CurrentCulture.Name == "en-US")
+            {
+               
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
+                if (result)
+                {
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
+
+                    dialogOperations.Close();
+                    visible = false;
+
+                    StateHasChanged();
+
+                    await SelectTableEvent0.ReloadServerData();
+                }
+                else
+                    await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+            }
+            else
+            {
+                
+
+                var result = await JobObservationService.UpdateJobObservation(_jobObservation, user.ObjectId);
+
+
+                if (result)
+                {
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
+
+                    dialogOperations.Close();
+                    visible = false;
+
+                    StateHasChanged();
+
+                    await SelectTableEvent0.ReloadServerData();
+                }
+                else
+                    await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+            }
+        }
+
 
     }//end class 
 }//end namespace    
