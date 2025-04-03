@@ -312,7 +312,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _plants = await PlantServices.GetPlants();
                     //_products = await ProductService.GetProducts();
                     _areas = await AreaServices.GetAreas(_jobObservation.PlantId);
-                    _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+                    _distributions = await DistributionService.GetDistributionsWithCollectionsDetails(_jobObservation.PlantId, _jobObservation.AreaId);
 
                     _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
 
