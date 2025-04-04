@@ -1,4 +1,5 @@
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using SupervisorMobility.Client.Services.ProductsService;
 
 namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.DistributionPage.OperationPage
@@ -28,28 +29,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         public Operation _operation { get; set; } = new();
         private bool showui = false;
 
-        public List<string> NameTimeList = new List<string>();
-        public List<string> TimeList = new List<string>();
-        public List<string> AdditionalTimeList = new List<string>();
-        public List<string> StandardTimeList = new List<string>();
+        public Dictionary<string,List<string>> NameTimeList = new Dictionary<string, List<string>>();
+        public Dictionary<string, List<string>> TimeList = new Dictionary<string, List<string>>();
+        public Dictionary<string, List<string>> AdditionalTimeList = new Dictionary<string, List<string>>();
+        public Dictionary<string, List<string>> StandardTimeList = new Dictionary<string, List<string>>();
         private List<Product> _products = new List<Product>();
         private Product _product = new Product();
 
-        // Initialization
-        // protected async override Task OnInitializedAsync()
-        // {
-        //     _links = new List<BreadcrumbItem>
-        //         {
-        //             new BreadcrumbItem(text: Localizer["home"], href: "/"),
-        //             new BreadcrumbItem(text: Localizer["configuration"], href: "/configuration"),
-        //             new BreadcrumbItem(text: Localizer["plants"], href: "/plants"),
-        //             new BreadcrumbItem(text: Localizer["plantDetails"], href: ""),
-        //             new BreadcrumbItem(text: Localizer["areaDetails"], href: ""),
-        //             new BreadcrumbItem(text: Localizer["distributionDetails"], href: ""),
-        //             new BreadcrumbItem(text: Localizer["updateOperation"], href: "", disabled: true)
-        //         };
-        // }
-
+        private List<string> openTabs = new List<string>();
+        private int activeTabIndex = 0;
         protected async override Task OnInitializedAsync()
         {
             _plant = await PlantService.GetPlantById(PlantId);
@@ -57,28 +45,98 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
             _distribution = await DistributionService.GetDistributionById(PlantId, AreaId, DistributionId);
             _operation = await OperationService.GetOperationById(PlantId, AreaId, DistributionId, OperationId);
 
-            if (!string.IsNullOrEmpty(_operation.NameTime))
+            if(!string.IsNullOrEmpty(_operation.ProductName))
+                openTabs = _operation.ProductName.Split('§').ToList();
+
+
+            try
             {
-                NameTimeList = _operation.NameTime.Split('�').ToList();
+                if (!string.IsNullOrEmpty(_operation.NameTime))
+                {
+                    var nameTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(_operation.NameTime);
+                    foreach (var kvp in nameTimeDict)
+                    {
+                        NameTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                    }
+                }
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Error deserializando NameTime: {ex.Message}");
+                NameTimeList = new Dictionary<string, List<string>>(); // Inicializar con valores genéricos
+                foreach(var kvp in openTabs)
+                {
+                    NameTimeList[kvp] = new List<string>();
+                }
             }
 
-            if (!string.IsNullOrEmpty(_operation.Time))
+            try
             {
-                TimeList = _operation.Time.Split('�').ToList();
+                if (!string.IsNullOrEmpty(_operation.Time))
+                {
+                    var TimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(_operation.Time);
+                    foreach (var kvp in TimeDict)
+                    {
+                        TimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                    }
+                }
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Error deserializando Time: {ex.Message}");
+                TimeList = new Dictionary<string, List<string>>(); // Inicializar con valores genéricos
+                foreach (var kvp in openTabs)
+                {
+                    TimeList[kvp] = new List<string>();
+                }
             }
 
-            if (!string.IsNullOrEmpty(_operation.AdditionalTime))
+            try
             {
-                AdditionalTimeList = _operation.AdditionalTime.Split('�').ToList();
+                if (!string.IsNullOrEmpty(_operation.AdditionalTime))
+                {
+                    var AditionalTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(_operation.AdditionalTime);
+                    foreach (var kvp in AditionalTimeDict)
+                    {
+                        AdditionalTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                    }
+                }
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Error deserializando AdditionalTime: {ex.Message}");
+                AdditionalTimeList = new Dictionary<string, List<string>>(); // Inicializar con valores genéricos
+                foreach (var kvp in openTabs)
+                {
+                    AdditionalTimeList[kvp] = new List<string>();
+                }
             }
 
-            if (!string.IsNullOrEmpty(_operation.StandardTime))
+            try
             {
-                StandardTimeList = _operation.StandardTime.Split('�').ToList();
+                if (!string.IsNullOrEmpty(_operation.StandardTime))
+                {
+                    var StandardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(_operation.StandardTime);
+                    foreach (var kvp in StandardTimeDict)
+                    {
+                        StandardTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                    }
+                }
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Error deserializando StandardTime: {ex.Message}");
+                StandardTimeList = new Dictionary<string, List<string>>(); // Inicializar con valores genéricos
+                foreach (var kvp in openTabs)
+                {
+                    StandardTimeList[kvp] = new List<string>();
+                }
             }
 
             _products = await ProductsServices.GetProducts();
-            _product = _products.Find(p => p.Code == _operation.ProductName);
+
+            if (!string.IsNullOrEmpty(_operation.ProductName))
+                _product = _products.Find(p => p.Code == openTabs.FirstOrDefault().ToString());
 
 
             ListHasFiveElements(NameTimeList);
@@ -102,11 +160,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
 
         }
 
-        private void ListHasFiveElements(List<string> list)
+        private void ListHasFiveElements(Dictionary<string, List<string>> list)
         {
-            while (list.Count < 5)
+            foreach (var kvp in list)
             {
-                list.Add(string.Empty);
+                while (kvp.Value.Count < 5)
+                {
+                    kvp.Value.Add(string.Empty);
+                }
             }
         }
 
@@ -150,8 +211,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.PlantPage.AreaPage.Distr
         }
         void UpdateProduct()
         {
-
-            _product = _products.Find(p => p.Code == _operation.ProductName);
+            string code = openTabs.ElementAt(activeTabIndex).ToString();
+            _product = _products.Find(p => p.Code == code);
 
             StateHasChanged();
         }
