@@ -1,0 +1,41 @@
+﻿@inject IStringLocalizer<Resource> Localizer
+
+
+
+<MudDialog DisableSidePadding="false">
+    <DialogContent>
+        <MudContainer Style="max-height: 20vh; overflow-y: scroll; display: flex; flex-wrap: wrap; min-height:10vh;" Class="gap-4">
+            <MudSelect T="string" Label=@Localizer["product"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_model" For="@(() => _model)">
+                <MudSelectItem Value="string.Empty">@Localizer["selectAProduct"]</MudSelectItem>
+                @foreach (Product prod in _products)
+                {
+                    <MudSelectItem Value="prod.Code">@($"{prod.Description}")</MudSelectItem>
+                }
+            </MudSelect>
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" Disabled="string.IsNullOrEmpty(_model)" @onclick="(() => AddModelSelected.InvokeAsync(_model))">@Localizer["Add"]</MudButton>
+        <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+   
+    [Parameter]
+    public EventCallback<string> AddModelSelected { get; set; }
+
+    [Parameter]
+    public List<Product> _products { get; set; } = new();
+    
+    [Parameter]
+    public string _model { get; set; } 
+
+
+    void Close() => MudDialog.Close();
+
+   
+}

@@ -1061,7 +1061,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
+                    Snackbar.Add(Localizer["OperationsChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
 
                     dialogOperations.Close();
                     visible = false;
@@ -1085,7 +1085,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                    Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
+                    Snackbar.Add(Localizer["OperationsChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
 
                     dialogOperations.Close();
                     visible = false;

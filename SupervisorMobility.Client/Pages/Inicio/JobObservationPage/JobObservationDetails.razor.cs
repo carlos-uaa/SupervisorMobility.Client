@@ -181,9 +181,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 //_jobObservation = await JobObservationService.GetJobObservationById(JobObservationId);
                 _products = await ProductService.GetProducts();
 
-                _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
+                _distributions = await DistributionService.GetDistributionsWithCollectionsDetails(_jobObservation.PlantId, _jobObservation.AreaId);
                 _distributions = _distributions.OrderBy(d => d.Description).ToList();
-                _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Operations;
+                _operations = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)]?.Operations;
                 _operations = _operations.OrderBy(o => o.Description).ToList();
 
                 if (_operations == null)
