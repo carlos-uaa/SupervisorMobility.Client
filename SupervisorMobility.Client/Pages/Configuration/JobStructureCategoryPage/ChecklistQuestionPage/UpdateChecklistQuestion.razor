@@ -64,6 +64,180 @@
                     <MudTextField Label="Question Not Good EN" Class="mt-3"
                     @bind-Value="_question.NotGoodEN" For="@(() => _question.NotGoodEN)" />
                     @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_question.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
+
+                    <MudText Class="mt-4"> Type </MudText>
+                    <MudSelect T="QuestionType" @bind-Value="questionType" Label="Select Question Type" Variant="Variant.Outlined" SelectedValuesChanged="(item)=>OnTypeSelected(item.FirstOrDefault())">
+                        @foreach (var type in _questionTypes)
+                        {
+                            <MudSelectItem Value="@type">@type.Description</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    @if (questionType != null && (questionType.Code == "MC" || questionType.Code == "TF"))
+                    {
+                        <MudText Class="mt-4"> Options </MudText>
+                        <MudContainer>
+                            <MudList>
+                                @if (_question.Options != null && _question.Options.Any())
+                                {
+                                    @foreach (var (item, index) in _question.Options.Select((item, index) => (item, index)))
+                                    {
+                                        <MudListItem>
+                                            <MudGrid>
+                                                @if (questionType.Code == "TF")
+                                                {
+                                                    <MudItem>
+                                                        <MudInputLabel>
+                                                            @(
+                                                                index switch
+                                                                {
+                                                                    0 => "Option 1",
+                                                                    1 => "Option 2",
+                                                                    2 => "Option 3",
+                                                                    _ => "Other"
+                                                                }
+                                                                )
+                                                        </MudInputLabel>
+                                                    </MudItem>
+                                                }
+                                                <MudItem>
+                                                    <MudTextField T="string" Class="mt-3" Value="item" ValueChanged="@((value) => HandleValueChanged(item, value))" Immediate="true" />
+                                                </MudItem>
+                                                @if (questionType.Code == "MC")
+                                                {
+                                                    <MudItem>
+                                                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => RemoveElement(item))">Remove</MudButton>
+                                                    </MudItem>
+                                                }
+                                            </MudGrid>
+                                        </MudListItem>
+                                    }
+                                }
+                                @if (questionType.Code == "MC")
+                                {
+                                    <MudListItem>
+                                        <MudGrid>
+                                            <MudItem>
+                                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddElement">Add Option</MudButton>
+                                            </MudItem>
+                                        </MudGrid>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </MudContainer>
+                    }
+
+                    <MudText Class="mt-4"> Dependencies </MudText>
+                    <MudSwitch @bind-Value="_dependendcy"></MudSwitch>
+
+                    @if (_dependendcy)
+                    {
+                        <MudText Class="mt-4"> Actions </MudText>
+                        <MudList>
+                            @foreach (var (action, index) in _actions.Select((item, index) => (item, index)))
+                            {
+                                if (!selectedData.ContainsKey(index))
+                                {
+                                    selectedData[index] = (new Dictionary<int, QuestionData>(), new Dictionary<int, ActionData>());
+                                }
+
+                                <MudListItem>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <MudText>IF Question(s)</MudText>
+                                        @foreach (var (qstnItem, qIdx) in action.questions.Select((qstnItem, qIdx) => (qstnItem, qIdx)))
+                                        {
+                                            if (!selectedData[index].Questions.ContainsKey(qIdx))
+                                            {
+                                                selectedData[index].Questions[qIdx] = new(); // Default value
+                                            }
+                                            if (qIdx > 0)
+                                            {
+                                                <MudText>AND</MudText>
+                                            }
+                                            <MudSelect @bind-Value="selectedData[index].Questions[qIdx].QuestionId" T="int" SelectedValuesChanged="(id)=>HandleQuestionSelection(id.First(),index, qIdx)">
+                                                @foreach (var q in _checklistCategory.ChecklistQuestions.Where(p => allowableQT.Contains(p.TypeId)))
+                                                {
+                                                    <MudSelectItem Value="@q.QuestionID">@Indexes[q.QuestionID] - @q.Prompt</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                            <MudSelect T="string" @bind-Value="selectedData[index].Questions[qIdx].Comparator" SelectedValuesChanged="(id)=>HandleQuestionOperation(id.First(),index, qIdx)">
+                                                <MudSelectItem Value="@("!")">different</MudSelectItem>
+                                                <MudSelectItem Value="@("=")">equal</MudSelectItem>
+                                            </MudSelect>
+                                            var currentQuestion = _checklistCategory.ChecklistQuestions.FirstOrDefault(q => q.QuestionID == selectedData[index].Questions[qIdx].QuestionId);
+                                            if (currentQuestion?.Options != null)
+                                            {
+                                                <MudSelect T="string" @bind-Value="selectedData[index].Questions[qIdx].QstOption" SelectedValuesChanged="(id)=>HandleQuestionOption(id.First(),index, qIdx)">
+                                                    @if (selectedData[index].Questions[qIdx].QuestionId != 0)
+                                                    {
+                                                        @foreach (var q in currentQuestion.Options)
+                                                        {
+                                                            <MudSelectItem Value="@q">@q</MudSelectItem>
+                                                        }
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+                                                <MudTextField T="string" ValueChanged="@((value) => HandleQuestionOption(value, index, qIdx))" />
+                                            }
+                                        }
+                                        <MudButton OnClick="()=>AddQuestionToAction(index)">Add Questions</MudButton>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                                        <MudText>Will</MudText>
+                                        @foreach (var (actnItem, aIdx) in action.actions.Select((actnItem, aIdx) => (actnItem, aIdx)))
+                                        {
+                                            if (!selectedData[index].Actions.ContainsKey(aIdx))
+                                            {
+                                                selectedData[index].Actions[aIdx]=new(); // Default value
+                                            }
+                                            if (aIdx > 0)
+                                            {
+                                                <MudText>AND</MudText>
+                                            }
+                                            <MudSelect @bind-Value="selectedData[index].Actions[aIdx].Operation" T="string" SelectedValuesChanged="(id)=>HandleActionSelection(id.First(),index, aIdx)">
+                                                <MudSelectItem Value="@("SET")">SET VALUE</MudSelectItem>
+                                                <MudSelectItem Value="@("DISABLE")">DISABLE QUESTION</MudSelectItem>
+                                                @if(questionType?.Code == "MC")
+                                                {
+                                                    <MudSelectItem Value="@("DBLOPT")">DISABLE OPTION</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                            switch (selectedData[index].Actions[aIdx].Operation)
+                                            {
+                                                case "SET":
+                                                    <MudTextField T="string" Value="selectedData[index].Actions[aIdx].Value" ValueChanged="@((value) => HandleActionValueModification(value, index, aIdx))" />
+                                                break;
+
+                                                case "DBLOPT":
+                                                    <MudSelect T="string" @bind-Value="selectedData[index].Actions[aIdx].Value" SelectedValuesChanged="(value)=>HandleActionValueModification(value.First(),index, aIdx)">
+                                                        @foreach (var q in _question.Options)
+                                                        {
+                                                            <MudSelectItem Value="@q">@q</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                break;
+                                            }
+                                        }
+                                        <MudButton OnClick="()=>AddAnotherToAction(index)">Add method</MudButton>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="@(() => RemoveAction(index))">Remove</MudButton>
+                                    </div>
+                                </MudListItem>
+                            }
+                            <MudListItem>
+                                <MudGrid>
+                                    <MudItem>
+                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddAction">Add Action</MudButton>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudListItem>
+                        </MudList>
+                    }
                 </MudCardContent>
                 <MudCardActions>
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">Save</MudButton>

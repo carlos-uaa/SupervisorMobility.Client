@@ -7,6 +7,5 @@
         public string Description { get; set; } = string.Empty;
         public bool? IsActive { get; set; }
 
-        public ICollection<ChecklistQuestion> ChecklistQuestions { get; set; } = new List<ChecklistQuestion>();
     }
 }
