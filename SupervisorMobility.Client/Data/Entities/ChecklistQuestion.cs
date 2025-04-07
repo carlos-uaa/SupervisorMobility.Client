@@ -1,4 +1,6 @@
 ﻿
+using Newtonsoft.Json;
+
 namespace SupervisorMobility.Client.Data.Entities
 {
     public class ChecklistQuestion
@@ -23,5 +25,10 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public string? CommentarySV { get; set; } = string.Empty;
         public string? CommentarySSV { get; set; } = string.Empty;
+
+        [JsonIgnore]
+        public bool Disable { get; set; } = false;
+        [JsonIgnore]
+        public List<string> DisabledOptions { get; set; } = new();
     }
 }

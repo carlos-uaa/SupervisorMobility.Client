@@ -1,4 +1,5 @@
 ﻿@using System.Text.RegularExpressions
+@using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities
 @inject IStringLocalizer<Resource> Localizer
 
 <MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%">
@@ -34,66 +35,55 @@
                         <td width="70%">
                             <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @((MarkupString)(currentLanguage == "es-ES" ? Regex.Replace(question.Prompt, pattern, replacement) : Regex.Replace(question.PromptEN, pattern, replacement))) </MudText>
                         </td>
+                    @if (question.Type != null)
+                    {
                         <td width="25%">
-                            @if (section != 1 || (question.CategorySequence < 4 || question.CategorySequence > 6))
+                            @if(!question.Disable)
                             {
-                                <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
-                                        <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">Yes</MudRadio>
-                                        <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">NG</MudRadio>
-                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
-                                    </MudRadioGroup>
-                                </MudItem>
-                            }
-                            else if (question.CategorySequence <= 5)
-                            {
-                                <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                    <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
-                                        <MudRadio Option="@("NG")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">NO</MudRadio>
-                                        <MudRadio Option="@("YES")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">Yes</MudRadio>
-                                        <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
-                                    </MudRadioGroup>
-                                </MudItem>
+                                @switch (question.Type.Code)
+                                {
+                                    case "TF":
+                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                            <MudRadioGroup T="string" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
+                                                <MudRadio Option="question.Options[0]" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[0]</MudRadio>
+                                                <MudRadio Option="question.Options[1]" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">@question.Options[1]</MudRadio>
+                                                <MudRadio Option="question.Options[2]" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[2]</MudRadio>
+                                            </MudRadioGroup>
+                                        </MudItem>
+                                    break;
+                                    case "MC":
+                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                            <MudSelect T="string" Label="" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="answer.Answer" SelectedValuesChanged="(an)=>{AnswerChangeOption.InvokeAsync((an.First(), question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
+                                                <MudSelectItem Disabled="true" Value="string.Empty">Select Answer</MudSelectItem>
+                                                @foreach(var opt in question.Options)
+                                                {
+                                                    @if (!question.DisabledOptions.Contains(opt))
+                                                    {
+                                                        <MudSelectItem Value="@opt">@opt</MudSelectItem>
+                                                    }
+                                                }
+                                            </MudSelect>
+                                        </MudItem>
+                                    break;
+                                    default:
+                                        <MudItem>
+                                            <MudTextField Class="ml-4" T="string" Style="max-width:70px" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}" />
+                                        </MudItem>
+                                    break;
+                                }
                             }
                             else
                             {
-                                var id1 = category.ChecklistQuestions.First(p => p.CategorySequence == 4).QuestionID;
-                                var id2 = category.ChecklistQuestions.First(p => p.CategorySequence == 5).QuestionID;
-                                var flag1 = questionAnswers[id1].Answer == "N/A" || questionAnswers[id1].Answer == "NG";
-                                var flag2 = questionAnswers[id2].Answer == "N/A" || questionAnswers[id2].Answer == "NG";
-                                if ((string.IsNullOrEmpty(questionAnswers[id1].Answer) || flag1)
-                                    && (string.IsNullOrEmpty(questionAnswers[id2].Answer) || flag2)
-                                )
-                                {
-                                    <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(id)=>OnKPIChange.InvokeAsync((id.FirstOrDefault(),category.JobCategoryStructureId))">
-                                        <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                        @if (questionAnswers[id1].Answer != "NG")
-                                        {
-                                            <MudSelectItem Value="1">@($"S&P")</MudSelectItem>
-                                        }
-                                        @if (questionAnswers[id2].Answer != "NG")
-                                        {
-                                            <MudSelectItem Value="2">@($"Q")</MudSelectItem>
-                                        }
-                                        <MudSelectItem Value="3">@($"D")</MudSelectItem>
-                                        <MudSelectItem Value="4">@($"C")</MudSelectItem>
-                                        <MudSelectItem Value="5">@($"E")</MudSelectItem>
-                                        <MudSelectItem Value="6">@($"Other")</MudSelectItem>
-                                    </MudSelect>
-                                }
-                                else
-                                {
-                                    <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.CommentarySV" Label="KPI" ReadOnly />
-                                }
+                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.Answer" ReadOnly />
                             }
                         </td>
-
-                        <td>
-                            @if (section != 1 || question.CategorySequence != 6)
-                            {
+                        @if(question.Type.Code == "TF")
+                        {
+                            <td>
                                 <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
-                            }
-                        </td>
+                            </td>
+                        }
+                    }
                     </tr>
                     @if (answer.Show)
                     {
@@ -212,6 +202,8 @@
 
     [Parameter]
     public int kpiID { get; set; }
+    [Parameter]
+    public CategoryData Data { get; set; } = new();
 
     [Parameter]
     public EventCallback<(string, int, int, int)> AnswerChangeOption { get; set; }
@@ -219,6 +211,12 @@
     public EventCallback<(ChecklistAnswer, int, ChecklistQuestion)> AddLupOpportunity { get; set; }
     [Parameter]
     public EventCallback<(ChecklistAnswer, int, ChecklistQuestion)> RemoveLupOpportunity { get; set; }
+    [Parameter]
+    public EventCallback<(int, ChecklistQuestion, string)> AddDisabledOptions { get; set; }
+    [Parameter]
+    public EventCallback<(int, ChecklistQuestion, string)> RemoveDisabledOptions { get; set; }
+    [Parameter]
+    public EventCallback<(int, ChecklistQuestion, bool)> DisableEnableQuestion { get; set; }
     [Parameter]
     public EventCallback<(InputFileChangeEventArgs, ChecklistAnswer)> UploadFiles { get; set; }
     [Parameter]
@@ -233,5 +231,80 @@
     public EventCallback<(int,int)> OnKPIChange { get; set; }
     [Parameter]
     public EventCallback<(ChecklistQuestion, int, string)> UpdateListEntry { get; set; }
+
+    private void CheckQuestions()
+    {
+        if (Data.QuestionsInCategory.Any())
+        {
+            foreach (var Qst in category.ChecklistQuestions)
+            {
+                if (Data.QuestionsInCategory.ContainsKey(Qst.QuestionID))
+                {
+                    var actions = Data.QuestionsInCategory[Qst.QuestionID];
+                    bool atLeastOneDisableTrue = false;
+
+                    foreach (var action in actions.QuestionContent)
+                    {
+                        Console.WriteLine("Hello");
+                        bool executeFlag = false;
+                        foreach (var questions in action.Value.Questions)
+                        {
+                            switch (questions.Value.Comparator)
+                            {
+                                case "!":
+                                    executeFlag = questionAnswers[questions.Value.QuestionId].Answer != questions.Value.QstOption;
+                                    break;
+
+                                case "=":
+                                    executeFlag = questionAnswers[questions.Value.QuestionId].Answer == questions.Value.QstOption;
+                                    break;
+                            }
+                            if (executeFlag == false) goto escapeWhenFalse;
+                        }
+                        foreach (var methods in action.Value.Actions)
+                        {
+
+                            switch (methods.Value.Operation)
+                            {
+                                case "SET":
+                                    questionAnswers[Qst.QuestionID].Answer = methods.Value.Value;
+                                    AnswerChangeOption.InvokeAsync((methods.Value.Value, Qst.QuestionID, section, category.JobCategoryStructureId));
+                                    break;
+
+                                case "DISABLE":
+                                    DisableEnableQuestion.InvokeAsync((category.JobCategoryStructureId, Qst, true));
+                                    Qst.Disable = true;
+                                    atLeastOneDisableTrue = true;
+                                    break;
+                                case "DBLOPT":
+                                    int index = Qst.Options.FindIndex(opt => opt == methods.Value.Value);
+                                    if (index >= 0 && !Qst.DisabledOptions.Any(p => p == methods.Value.Value))
+                                    {
+                                        AddDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, methods.Value.Value));
+                                        Qst.DisabledOptions.Add(methods.Value.Value);
+                                    }
+                                    break;
+                            }
+                        }
+                    escapeWhenFalse:;
+                        if(!executeFlag)
+                        {
+                            foreach(var DisMeth in action.Value.Actions.Values.Where(p=>p.Operation == "DBLOPT"))
+                            {
+                                RemoveDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, DisMeth.Value));
+                                Qst.DisabledOptions.Remove(DisMeth.Value);
+                            }
+                        }
+                        StateHasChanged();
+                    }
+                    if (!atLeastOneDisableTrue)
+                    {
+                        Qst.Disable = false;
+                        DisableEnableQuestion.InvokeAsync((category.JobCategoryStructureId, Qst, false));
+                    }
+                }
+            }
+        }
+    }
 
 }
