@@ -2,6 +2,7 @@
 using Blazorise.Extensions;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using FuzzyString;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -54,6 +55,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         };
 
         public int[] jobProductIds = new int[5];
+        public string[] operationSpecProduct = new string[5];
 
         AssyChart? _assychart { get; set; }
 
@@ -890,24 +892,62 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-        private async Task ShowSpecifications(int id, int productIndex)
+        private async Task ShowSpecifications(int id_Product, int productIndex)
         {
-            jobProductIds[productIndex] = id;
+            jobProductIds[productIndex] = id_Product;
             _specifications[productIndex] = new();
 
-
-
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[productIndex]);
-
+            Console.WriteLine($"Prod select: {prodName?.Code}");
 
             if (prodName != null)
             {
-                var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
+
+                Operation? op = null;
+
+                if (_jobObservation.Operations != null && _jobObservation.Operations?.Count() > 0)
+                {
+                    Console.WriteLine("Operacion en Job");
+                    var firstOperation = _jobObservation.Operations.FirstOrDefault();
+                    if (firstOperation != null)
+                    {
+                        op = _operations.FirstOrDefault(o => o.OperationId == firstOperation.OperationId && o.ProductName?.Split('§').Contains(prodName.Code) == true);
+                    }
+
+                   if (op == null)
+                    {
+                        foreach (var jobOp in _jobObservation.Operations)
+                        {
+                            op = _operations.FirstOrDefault(o => o.OperationId == jobOp.OperationId && o.ProductName?.Split('§').Contains(prodName.Code) == true);
+                            if (op != null)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (op == null)
+                {
+                    op = _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(prodName.Code) == true);
+                }
 
                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                 {
+                    Console.WriteLine("Operacion encontrada");
 
-                    var names = op.NameTime.Replace(',', '.').Split("§");
+                    operationSpecProduct[productIndex] = op.Description;
+
+                    Dictionary<string, List<string>> NameTimeList = new Dictionary<string, List<string>>();
+                    var nameTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.NameTime);
+                    foreach (var kvp in nameTimeDict)
+                    {
+                        NameTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                    }
+
+                    var names = NameTimeList[prodName.Code];
+
+
                     for (int i = 0; i < 5; i++)
                     {
                         if (!string.IsNullOrEmpty(names[i]))
@@ -1944,113 +1984,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
         }
 
-        
-
-        //Files Path
-        private CDMS_CCP_Archives? CcpFilesInFolder;
-        private CDMS_HOE_Archives? HoeFilesInFolder;
-        private CDMS_GOS_Archives? GosFilesInFolder;
-        private CDMS_CCP_Archives? AuxCcpFilesInFolder;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolder;
-        private CDMS_GOS_Archives? AuxGosFilesInFolder;
-        //Error Display Rutes Select ONLY
-        private bool folderCCPError = false;
-        private bool folderHOEError = false;
-        private bool folderGOSError = false;
-        //Display Files Errors
-        private bool folderErrorGOS = false;
-        private bool folderErrorCCP = false;
-        private bool folderErrorHOE = false;
-        private string HOErute = "";
-        private string CCPrute = "";
-        private string GOSrute = "";
-        //CommonDirection
-        private bool folderErrorGOSCD = false;
-        private bool folderErrorCCPCD = false;
-        private bool folderErrorHOECD = false;
-        private string HOEruteCD = "";
-        private string CCPruteCD = "";
-        private string GOSruteCD = "";
-        //CommonDirection Files
-        private CDMS_CCP_Archives? CcpFilesInFolderCD;
-        private CDMS_HOE_Archives? HoeFilesInFolderCD;
-        private CDMS_GOS_Archives? GosFilesInFolderCD;
-        private CDMS_CCP_Archives? AuxCcpFilesInFolderCD;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolderCD;
-        private CDMS_GOS_Archives? AuxGosFilesInFolderCD;
-
-
-
-        private int plantId = 0;
-        private bool if_pick_Plant = false;
-        private int areaId = 0;
-        private bool if_pick_Area = false;
-        private int distributionId = 0;
-        private bool if_pick_Distribution = false;
-        private int productId = 0;
-        public int idFilter;
-
-        MudTabs FilesViewer;
-        MudTabPanel HOE;
-        MudTabPanel HOECD;
-        MudTabPanel CCP;
-        MudTabPanel CCPCD;
-        MudTabPanel GOS;
-        MudTabPanel GOSCD;
-
-        
-
-        SOSCodePath CodePathDialogDisplay { get; set; }
-
+        public int idFilter;          
         private List<SOSCodePath> listFilter = new();
         bool FilterOperation = false;
 
-
-        TreeItemData nodoEncontrado { get; set; }
-        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
-
-        TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
-        TreeItemData SelectedNodeCCP { get; set; }
-        private async Task<AsyncVoidMethodBuilder> CCPFolderByDirectory(string CCPrute)
-        {
-
-            try
-            {
-
-                if (CCPrute != "")
-                {
-                    Console.WriteLine($"CCP {CCPrute}");
-
-                    CcpFilesInFolder = new CDMS_CCP_Archives();
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-                    if (CcpFilesInFolder == null)
-                        folderErrorCCP = true;
-                    else
-                    {
-                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-                        folderErrorCCP = false;
-
-                    }
-                }
-
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error CCPFolderByDirectory: {ex.Message}");
-            }
-            finally
-            {
-                StateHasChanged();
-            }
-
-            return new AsyncVoidMethodBuilder();
-
-        }
-
-        /////
-        ///
              //Guide Modal
         MudTabs guideTabs;
 
