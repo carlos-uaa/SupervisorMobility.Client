@@ -4,10 +4,12 @@ using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.JSInterop;
 using MudBlazor;
 using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
@@ -115,6 +117,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+
+        List<CategoryData> questionsData;
 
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
 
@@ -300,7 +304,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add("Loaded previous work", Severity.Info);
 
-                    ShowLoading = false;
+                    //ShowLoading = false;
                     StateHasChanged();
                 }
                 catch (Exception e)
@@ -320,6 +324,70 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
+
+            questionsData = new();
+
+            foreach (var category in _checklistCategoriesAndQuestions.Where(c=>c.Type == StructureType.Checklist))
+            {
+                var tempCD = new CategoryData();
+                tempCD.CategoryId = category.JobCategoryStructureId;
+                foreach (var _question in category.ChecklistQuestions)
+                {
+                    var tempCQD = new CategoryQuestionData();
+                    if (_question.Actions != null && _question.Actions.Any())
+                    {
+                        foreachLoop:
+                        foreach (var (item, index) in _question.Actions.Select((item, index) => (item, index)))
+                        {
+                            var act = item.Split("℘", StringSplitOptions.RemoveEmptyEntries);
+                            if (act.Length >= 2)
+                            {
+                                List<string> newQuestions = act[0].Split("⁂", StringSplitOptions.RemoveEmptyEntries).ToList();
+                                List<string> newActions = act[1].Split("⁂").ToList();
+                                if (!tempCQD.QuestionContent.ContainsKey(index))
+                                {
+                                    tempCQD.QuestionContent[index] = (new Dictionary<int, QuestionData>(), new Dictionary<int, ActionData>());
+                                }
+                                for (int i = 0; i < newQuestions.Count; i++)
+                                {
+                                    var temp = newQuestions[i].Split("§", StringSplitOptions.RemoveEmptyEntries);
+                                    if(temp.Length < 3)
+                                    {
+                                        tempCQD.QuestionContent.Remove(index);
+                                        goto foreachLoop;
+                                    }
+                                    if (!tempCQD.QuestionContent[index].Questions.ContainsKey(i))
+                                    {
+                                        tempCQD.QuestionContent[index].Questions[i] = new QuestionData(); // Default value
+                                    }
+                                    tempCQD.QuestionContent[index].Questions[i].QuestionId = temp.Length > 0 ? Int32.Parse(temp[0]) : 0;
+                                    tempCQD.QuestionContent[index].Questions[i].Comparator = temp.Length > 1 ? temp[1] : "";
+                                    tempCQD.QuestionContent[index].Questions[i].QstOption = temp.Length > 2 ? temp[2] : "";
+
+                                }
+                                for (int i = 0; i < newActions.Count; i++)
+                                {
+                                    var temp = newActions[i].Split("§", StringSplitOptions.RemoveEmptyEntries);
+                                    if ((temp.Length > 0 && (temp[0] == "SET" || temp[0] == "DBLOPT")) && temp.Length < 2)
+                                    {
+                                        tempCQD.QuestionContent.Remove(index);
+                                        goto foreachLoop;
+                                    }
+                                    if (!tempCQD.QuestionContent[index].Actions.ContainsKey(i))
+                                    {
+                                        tempCQD.QuestionContent[index].Actions[i] = new ActionData(); // Default value
+                                    }
+                                    tempCQD.QuestionContent[index].Actions[i].Operation = temp.Length > 0 ? temp[0] : "";
+                                    tempCQD.QuestionContent[index].Actions[i].Value = temp.Length > 1 ? temp[1] : "";
+
+                                }
+                            }
+                        }
+                        tempCD.QuestionsInCategory[_question.QuestionID] = tempCQD;
+                    }
+                }
+                if(tempCD.QuestionsInCategory.Any()) questionsData.Add(tempCD);
+            }
 
             ShowLoading = false;
             StateHasChanged();
@@ -2851,33 +2919,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async Task AnswerChangeOption(string option, int id, int section, int catId)
         {
             questionAnswers[id].Answer = option;
-            var entry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.QuestionID == id);
-            if (section == 1 && (entry.CategorySequence == 4 || entry.CategorySequence == 5))
-            {
-                var extraEntrySec = entry.CategorySequence == 4 ? 5 : 4;
-                var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
-                var extraEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == extraEntrySec);
-
-                string kpi = "";
-                if (entry.CategorySequence == 4)
-                {
-                    kpi = option == "YES" ? "S&P" : "";
-                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
-                        kpi += kpi.IsNullOrEmpty() ? "Q" : "/Q";
-                }
-                else //if(entry.CategorySequence == 5)
-                {
-                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
-                        kpi += "S&P";
-                    kpi += option == "YES" ? kpi.IsNullOrEmpty() ? "Q" : "/Q" : "";
-                }
-
-                questionAnswers[specialEntry].CommentarySV = kpi;
-                questionAnswers[specialEntry].Answer = "YES";
-
-                await OnKPIChangeByQuestion(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 }, catId);
-
-            }
             await LocalStorage.SetItemAsync("QAns", questionAnswers);
             //SetAsCurrentJobObservation();
         }
@@ -2939,6 +2980,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     return;
             }
             //SetAsCurrentJobObservation();
+        }
+
+        public async Task AddDisabledOptions(int categoryId, ChecklistQuestion question, string value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+
+            qst?.DisabledOptions.Add(value);
+        }
+        public async Task RemoveDisabledOptions(int categoryId, ChecklistQuestion question, string value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+
+            qst?.DisabledOptions.Remove(value);
+        }
+
+        public async Task DisableEnableQuestion(int categoryId, ChecklistQuestion question, bool value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+
+            qst.Disable = value;
         }
 
         //private void SetAsCurrentJobObservation()

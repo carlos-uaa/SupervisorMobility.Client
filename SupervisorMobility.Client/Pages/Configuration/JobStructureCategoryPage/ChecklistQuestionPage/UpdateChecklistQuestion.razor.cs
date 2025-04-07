@@ -1,4 +1,5 @@
 ﻿using MudBlazor;
+using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities;
 
 namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage.ChecklistQuestionPage
 {
@@ -283,15 +284,5 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             _actions.RemoveAt(index);
         }
     }
-    public class QuestionData
-    {
-        public int QuestionId { get; set; }
-        public string Comparator { get; set; }
-        public string QstOption { get; set; }
-    }
-    public class ActionData
-    {
-        public string Operation { get; set; }
-        public string? Value { get; set; }
-    }
+    
 }
