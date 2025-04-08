@@ -44,7 +44,7 @@
                                 {
                                     case "TF":
                                         <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudRadioGroup T="string" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
+                                                <MudRadioGroup T="string" Value="answer.Answer" ValueChanged="async (an)=>{await AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); await CheckQuestionsAsync();}">
                                                 <MudRadio Option="question.Options[0]" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[0]</MudRadio>
                                                 <MudRadio Option="question.Options[1]" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">@question.Options[1]</MudRadio>
                                                 <MudRadio Option="question.Options[2]" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[2]</MudRadio>
@@ -53,7 +53,7 @@
                                     break;
                                     case "MC":
                                         <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudSelect T="string" Label="" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="answer.Answer" SelectedValuesChanged="(an)=>{AnswerChangeOption.InvokeAsync((an.First(), question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
+                                                <MudSelect T="string" Label="" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="answer.Answer" SelectedValuesChanged="async (an)=>{await AnswerChangeOption.InvokeAsync((an.First(), question.QuestionID, secNum, category.JobCategoryStructureId)); await CheckQuestionsAsync();}">
                                                 <MudSelectItem Disabled="true" Value="string.Empty">Select Answer</MudSelectItem>
                                                 @foreach(var opt in question.Options)
                                                 {
@@ -67,7 +67,7 @@
                                     break;
                                     default:
                                         <MudItem>
-                                            <MudTextField Class="ml-4" T="string" Style="max-width:70px" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}" />
+                                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Value="answer.Answer" ValueChanged="async (an)=>{await AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); await CheckQuestionsAsync();}" />
                                         </MudItem>
                                     break;
                                 }
@@ -232,79 +232,101 @@
     [Parameter]
     public EventCallback<(ChecklistQuestion, int, string)> UpdateListEntry { get; set; }
 
-    private void CheckQuestions()
+    private async Task CheckQuestionsAsync()
     {
-        if (Data.QuestionsInCategory.Any())
+        if (!Data.QuestionsInCategory.Any())
+            return;
+
+        foreach (var Qst in category.ChecklistQuestions)
         {
-            foreach (var Qst in category.ChecklistQuestions)
+            if (!Data.QuestionsInCategory.TryGetValue(Qst.QuestionID, out var actions))
+                continue;
+
+            bool shouldDisable = false;
+            var optionsToDisable = new HashSet<string>();
+            var optionsToEnable = new HashSet<string>();
+
+            foreach (var action in actions.QuestionContent)
             {
-                if (Data.QuestionsInCategory.ContainsKey(Qst.QuestionID))
+                bool executeFlag = true;
+
+                foreach (var condition in action.Value.Questions)
                 {
-                    var actions = Data.QuestionsInCategory[Qst.QuestionID];
-                    bool atLeastOneDisableTrue = false;
+                    var qa = questionAnswers[condition.Value.QuestionId];
+                    var expected = condition.Value.QstOption;
 
-                    foreach (var action in actions.QuestionContent)
+                    executeFlag = condition.Value.Comparator switch
                     {
-                        Console.WriteLine("Hello");
-                        bool executeFlag = false;
-                        foreach (var questions in action.Value.Questions)
-                        {
-                            switch (questions.Value.Comparator)
-                            {
-                                case "!":
-                                    executeFlag = questionAnswers[questions.Value.QuestionId].Answer != questions.Value.QstOption;
-                                    break;
+                        "!" => qa.Answer != expected,
+                        "=" => qa.Answer == expected,
+                        _ => executeFlag
+                    };
 
-                                case "=":
-                                    executeFlag = questionAnswers[questions.Value.QuestionId].Answer == questions.Value.QstOption;
-                                    break;
-                            }
-                            if (executeFlag == false) goto escapeWhenFalse;
-                        }
-                        foreach (var methods in action.Value.Actions)
-                        {
+                    if (!executeFlag)
+                        break;
+                }
 
-                            switch (methods.Value.Operation)
-                            {
-                                case "SET":
-                                    questionAnswers[Qst.QuestionID].Answer = methods.Value.Value;
-                                    AnswerChangeOption.InvokeAsync((methods.Value.Value, Qst.QuestionID, section, category.JobCategoryStructureId));
-                                    break;
+                if (executeFlag)
+                {
+                    foreach (var method in action.Value.Actions)
+                    {
+                        var op = method.Value.Operation;
+                        var val = method.Value.Value;
 
-                                case "DISABLE":
-                                    DisableEnableQuestion.InvokeAsync((category.JobCategoryStructureId, Qst, true));
-                                    Qst.Disable = true;
-                                    atLeastOneDisableTrue = true;
-                                    break;
-                                case "DBLOPT":
-                                    int index = Qst.Options.FindIndex(opt => opt == methods.Value.Value);
-                                    if (index >= 0 && !Qst.DisabledOptions.Any(p => p == methods.Value.Value))
-                                    {
-                                        AddDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, methods.Value.Value));
-                                        Qst.DisabledOptions.Add(methods.Value.Value);
-                                    }
-                                    break;
-                            }
-                        }
-                    escapeWhenFalse:;
-                        if(!executeFlag)
+                        switch (op)
                         {
-                            foreach(var DisMeth in action.Value.Actions.Values.Where(p=>p.Operation == "DBLOPT"))
-                            {
-                                RemoveDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, DisMeth.Value));
-                                Qst.DisabledOptions.Remove(DisMeth.Value);
-                            }
+                            case "SET":
+                                if (questionAnswers[Qst.QuestionID].Answer != val)
+                                {
+                                    questionAnswers[Qst.QuestionID].Answer = val;
+                                    await AnswerChangeOption.InvokeAsync((val, Qst.QuestionID, section, category.JobCategoryStructureId));
+                                }
+                                break;
+
+                            case "DISABLE":
+                                shouldDisable = true;
+                                break;
+
+                            case "DBLOPT":
+                                if (!Qst.DisabledOptions.Contains(val))
+                                    optionsToDisable.Add(val);
+                                break;
                         }
-                        StateHasChanged();
                     }
-                    if (!atLeastOneDisableTrue)
+                }
+                else
+                {
+                    foreach (var method in action.Value.Actions.Values.Where(a => a.Operation == "DBLOPT"))
                     {
-                        Qst.Disable = false;
-                        DisableEnableQuestion.InvokeAsync((category.JobCategoryStructureId, Qst, false));
+                        if (Qst.DisabledOptions.Contains(method.Value))
+                            optionsToEnable.Add(method.Value);
                     }
                 }
             }
+
+            // Apply DISABLE / ENABLE
+            if (Qst.Disable != shouldDisable)
+            {
+                Qst.Disable = shouldDisable;
+                await DisableEnableQuestion.InvokeAsync((category.JobCategoryStructureId, Qst, shouldDisable));
+            }
+
+            // Disable Options
+            foreach (var opt in optionsToDisable)
+            {
+                Qst.DisabledOptions.Add(opt);
+                await AddDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, opt));
+            }
+
+            // Enable Options
+            foreach (var opt in optionsToEnable)
+            {
+                Qst.DisabledOptions.Remove(opt);
+                await RemoveDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, opt));
+            }
         }
+
+        StateHasChanged(); // Trigger re-render once at the end
     }
 
 }
