@@ -706,13 +706,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //SetAsCurrentJobObservation();
 
             var groupedOperations = _operations
-            .GroupBy(op => op.ProductName)
-            .Select(g => new ProductAndStandardTime
-            {
-                ProductName = g.Key,
-                StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
-            })
-            .ToList();
+                .SelectMany(op => op.ProductName.Split('§').Select(product => new { Product = product, Operation = op }))
+                .GroupBy(x => x.Product)
+                .Select(g => new ProductAndStandardTime
+                {
+                    ProductName = g.Key,
+                    StandardTime = g.Select(x => x.Operation.StandardTime).FirstOrDefault()
+                })
+                .ToList();
 
             int count = Math.Min(groupedOperations.Count, 5);
             _productAndSpecification = new ProductAndStandardTime[count];
@@ -721,7 +722,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 var productName = groupedOperations[i].ProductName;
 
-                var standardTimeParts = groupedOperations[i].StandardTime.Split('§');
+                var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(groupedOperations[i].StandardTime);
+               
+                var standardTimeParts = standardTimeDict[productName].Split('§');
+
                 if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
                 {
                     var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
@@ -743,6 +747,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     };
                 }
             }
+
 
 
             await Task.Delay(150);
