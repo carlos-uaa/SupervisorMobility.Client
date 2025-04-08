@@ -35,55 +35,69 @@
                         <td width="70%">
                             <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @((MarkupString)(currentLanguage == "es-ES" ? Regex.Replace(question.Prompt, pattern, replacement) : Regex.Replace(question.PromptEN, pattern, replacement))) </MudText>
                         </td>
-                    @if (question.Type != null)
-                    {
-                        <td width="25%">
-                            @if(!question.Disable)
-                            {
-                                @switch (question.Type.Code)
-                                {
-                                    case "TF":
-                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudRadioGroup T="string" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
-                                                <MudRadio Option="question.Options[0]" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[0]</MudRadio>
-                                                <MudRadio Option="question.Options[1]" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">@question.Options[1]</MudRadio>
-                                                <MudRadio Option="question.Options[2]" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[2]</MudRadio>
-                                            </MudRadioGroup>
-                                        </MudItem>
-                                    break;
-                                    case "MC":
-                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                            <MudSelect T="string" Label="" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="answer.Answer" SelectedValuesChanged="(an)=>{AnswerChangeOption.InvokeAsync((an.First(), question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
-                                                <MudSelectItem Disabled="true" Value="string.Empty">Select Answer</MudSelectItem>
-                                                @foreach(var opt in question.Options)
-                                                {
-                                                    @if (!question.DisabledOptions.Contains(opt))
-                                                    {
-                                                        <MudSelectItem Value="@opt">@opt</MudSelectItem>
-                                                    }
-                                                }
-                                            </MudSelect>
-                                        </MudItem>
-                                    break;
-                                    default:
-                                        <MudItem>
-                                            <MudTextField Class="ml-4" T="string" Style="max-width:70px" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}" />
-                                        </MudItem>
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.Answer" ReadOnly />
-                            }
-                        </td>
-                        @if(question.Type.Code == "TF")
+                        @if (question.Type != null)
                         {
+                            <td width="25%">
+                                @if (!question.Disable)
+                                {
+                                    @switch (question.Type.Code)
+                                    {
+                                        case "TF":
+                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                    <MudRadioGroup T="string" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
+                                                    @if (question.Options != null && question.Options.Count > 0)
+                                                    {
+                                                        <MudRadio Option="question.Options[0]" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[0]</MudRadio>
+                                                    }
+                                                    @if (question.Options != null && question.Options.Count > 1)
+                                                    {
+                                                        <MudRadio Option="question.Options[1]" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">@question.Options[1]</MudRadio>
+                                                    }
+                                                    @if (question.Options != null && question.Options.Count > 2)
+                                                    {
+                                                        <MudRadio Option="question.Options[2]" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[2]</MudRadio>
+                                                    }
+                                                    </MudRadioGroup>
+                                                </MudItem>
+                                            break;
+                                        case "MC":
+                                            <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                <MudSelect T="string" Label="" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="answer.Answer" SelectedValuesChanged="(an)=>{AnswerChangeOption.InvokeAsync((an.First(), question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
+                                                    <MudSelectItem Disabled="true" Value="string.Empty">Select Answer</MudSelectItem>
+                                                    @foreach (var opt in question.Options)
+                                                    {
+                                                        @if (!question.DisabledOptions.Contains(opt))
+                                                        {
+                                                            <MudSelectItem Value="@opt">@opt</MudSelectItem>
+                                                        }
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+                                            break;
+                                        default:
+                                            <MudItem>
+                                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}" />
+                                            </MudItem>
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.Answer" ReadOnly />
+                                }
+                            </td>
+                            @if (question.Type.Code == "TF")
+                            {
+                                <td>
+                                    <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
+                                </td>
+                            }
+                        }else{
                             <td>
-                                <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
+                            </td>
+                            <td>
                             </td>
                         }
-                    }
                     </tr>
                     @if (answer.Show)
                     {
@@ -156,7 +170,7 @@
                                         </MudItem>
                                     </MudItem>
                                     @{
-                                        bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || (section == 1 && (question.CategorySequence == 4 || question.CategorySequence == 5)?answer.Answer != "YES" :answer.Answer != "NG");
+                                        bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || (section == 1 && (question.CategorySequence == 4 || question.CategorySequence == 5) ? answer.Answer != "YES" : answer.Answer != "NG");
                                         string answerCommentarySV = answer.CommentarySV ?? "";
                                     }
                                     <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">
@@ -169,7 +183,7 @@
                                                    @onclick="(() => UpdateListEntry.InvokeAsync((question, secNum, answerCommentarySV)))">
                                             Enviar al Lup
                                         </MudButton>
-                                        <MudTextField Disabled="@(user.UserType > 2)" T="string" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" TextChanged="()=>AnswerComentaryUpdate.InvokeAsync()"/>
+                                        <MudTextField Disabled="@(user.UserType > 2)" T="string" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" TextChanged="()=>AnswerComentaryUpdate.InvokeAsync()" />
                                     </MudItem>
                                 </MudItem>
                             </td>
@@ -228,7 +242,7 @@
     [Parameter]
     public EventCallback AnswerComentaryUpdate { get; set; }
     [Parameter]
-    public EventCallback<(int,int)> OnKPIChange { get; set; }
+    public EventCallback<(int, int)> OnKPIChange { get; set; }
     [Parameter]
     public EventCallback<(ChecklistQuestion, int, string)> UpdateListEntry { get; set; }
 
@@ -287,9 +301,9 @@
                             }
                         }
                     escapeWhenFalse:;
-                        if(!executeFlag)
+                        if (!executeFlag)
                         {
-                            foreach(var DisMeth in action.Value.Actions.Values.Where(p=>p.Operation == "DBLOPT"))
+                            foreach (var DisMeth in action.Value.Actions.Values.Where(p => p.Operation == "DBLOPT"))
                             {
                                 RemoveDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, DisMeth.Value));
                                 Qst.DisabledOptions.Remove(DisMeth.Value);
