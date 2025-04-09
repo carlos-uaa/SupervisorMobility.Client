@@ -983,7 +983,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (prodName != null)
             {
-
                 Operation? op = null;
 
                 if (_jobObservation.Operations != null && _jobObservation.Operations?.Count() > 0)
@@ -1173,7 +1172,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //_jobObservation.OperationId = 0;
 
             _jobObservation.OperationTimesJson = BuildOperationTimesJson();
-            //_jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.ModelsSpecification = string.Join("|", productSpecification);
             _jobObservation.StepsNumber = string.Join("|", StepsNumber);
             _jobObservation.DoubleManagment = string.Join("|", DoubleManagment);
             _jobObservation.Waiting = string.Join("|", Waiting);
