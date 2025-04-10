@@ -119,6 +119,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+        private Dictionary<int, IEnumerable<string>> MultiQuestionAnswers { get; set; } = new();
 
         List<CategoryData> questionsData;
 
@@ -254,6 +255,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     imagesFromCamera = await LocalStorage.GetItemAsync<Dictionary<int, List<string>>>("QAnsImgFC") ?? new(); 
                     currentImage = await LocalStorage.GetItemAsync<string>("SignatureImg") ?? string.Empty; 
                     questionAnswers = await LocalStorage.GetItemAsync<Dictionary<int, ChecklistAnswer>>("QAns") ?? new(); 
+                    MultiQuestionAnswers = await LocalStorage.GetItemAsync<Dictionary<int, IEnumerable<string>>>("MQAns") ?? new(); 
                     taktTime = await LocalStorage.GetItemAsync<double?>("taktTime") ?? 1.46; 
                     StepsNumber = await LocalStorage.GetItemAsync<int?[]>("StepsNumber") ?? new int?[5];
                     CycleTimes = await LocalStorage.GetItemAsync<string?[]>("CycleTimes") ?? new string?[5]; 
@@ -270,6 +272,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     bool skipQA = !questionAnswers.Any();
                     bool skipIFF = !imagesFromFile.Any();
                     bool skipIFC = !imagesFromCamera.Any();
+                    bool skipMQA = !MultiQuestionAnswers.Any();
 
                     foreach (var category in _checklistCategoriesAndQuestions)
                     {
@@ -288,6 +291,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                             if (skipIFC) { imagesFromCamera.Add(question.QuestionID, new()); }
                             else if (!skipQA) { questionAnswers[question.QuestionID].capturedImages.AddRange(imagesFromCamera[question.QuestionID]); }
+                            if (question.Type?.Code == "MCM" && skipMQA) MultiQuestionAnswers.Add(question.QuestionID, new List<string>());
                         }
                     }
 
@@ -416,6 +420,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             bool skipQA = !questionAnswers.Any();
             bool skipIFF = !imagesFromFile.Any();
             bool skipIFC = !imagesFromCamera.Any();
+            bool skipMQA = !MultiQuestionAnswers.Any();
 
             foreach (var category in _checklistCategoriesAndQuestions)
             {
@@ -429,6 +434,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     if (skipQA) questionAnswers.Add(question.QuestionID, newChAnswer);
                     if (skipIFF) imagesFromFile.Add(question.QuestionID, new ());
                     if (skipIFC) imagesFromCamera.Add(question.QuestionID, new ());
+                    if (question.Type?.Code == "MCM" && skipMQA) MultiQuestionAnswers.Add(question.QuestionID, new List<string>());
                 }
             }
 
@@ -1240,6 +1246,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
             }
 
+            await TransformToSingle();
 
             //_jobObservation.Lup = _tempLup.Keys.ToList();
             foreach (var question in questionAnswers)
@@ -2864,6 +2871,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             await LocalStorage.SetItemAsync("QAns", questionAnswers);
             //SetAsCurrentJobObservation();
         }
+        private async Task MultiAnswerChangeOption(IEnumerable<string> options, int id)
+        {
+            MultiQuestionAnswers[id] = options;
+            questionAnswers[id].Answer = string.Join(",", options);
+            await LocalStorage.SetItemAsync("MQAns", MultiQuestionAnswers);
+            //SetAsCurrentJobObservation();
+        }
+        private async Task TransformToSingle()
+        {
+            foreach (var pair in MultiQuestionAnswers)
+            {
+                questionAnswers[pair.Key].Answer = string.Join(",", pair.Value);
+            }
+        }
         private async Task AnswerComentaryUpdate()
         {
             await LocalStorage.SetItemAsync("QAns", questionAnswers);
@@ -2970,6 +2991,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 , SyncLocalStorage.ContainKey("QAnsImgFC")
                 , SyncLocalStorage.ContainKey("SignatureImg")
                 , SyncLocalStorage.ContainKey("QAns")
+                , SyncLocalStorage.ContainKey("MQAns")
                 , SyncLocalStorage.ContainKey("taktTime")
                 , SyncLocalStorage.ContainKey("HoeStandardTime")
                 , SyncLocalStorage.ContainKey("StepsNumber")
@@ -3124,7 +3146,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 "JobObs","OpTimes","LupToAdd","area_ListS","area_ListQ",
                 "area_ListD","area_ListC","area_ListOther","QAnsImgFF",
                 "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
-                ,"DblManagement","Waiting","CC", "CJO","JobProductsIds", "CycleTimes"});
+                ,"DblManagement","Waiting","CC", "CJO","JobProductsIds", "CycleTimes", "MQAns"});
         }
     }
 }

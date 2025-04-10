@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Timers;
 using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservationNew;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities;
 
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
@@ -138,6 +139,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+        private Dictionary<int, IEnumerable<string>> MultiQuestionAnswers { get; set; } = new();
         private Dictionary<int, List<int>> questionDelete = new Dictionary<int, List<int>>();
 
         Dictionary<int, string> imageUrls = new Dictionary<int, string>();
@@ -163,6 +165,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<LupOpportunity> area_ListD = new List<LupOpportunity>();
         public List<LupOpportunity> area_ListC = new List<LupOpportunity>();
         public List<LupOpportunity> area_ListOther = new List<LupOpportunity>();
+
+        List<CategoryData> questionsData;
 
         List<Lup> lupInsidences = new();
 
@@ -267,6 +271,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 newChAnswer.QuestionID = question.QuestionID;
                                 newChAnswer.Prompt = question.Prompt;
                                 questionAnswers.Add(question.QuestionID, newChAnswer);
+                                if (question.Type?.Code == "MCM")
+                                {
+                                    MultiQuestionAnswers.Add(question.QuestionID, new List<string>());
+                                }
                             }
                             else
                             {
@@ -280,8 +288,73 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     }
                                 }
                                 questionAnswers[question.QuestionID] = item;
+                                if (question.Type?.Code == "MCM") { MultiQuestionAnswers.Add(question.QuestionID, item.Answer.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)); }
                             }
                         }
+                    }
+
+                    questionsData = new();
+
+                    foreach (var category in _checklistCategoriesAndQuestions.Where(c => c.Type == StructureType.Checklist))
+                    {
+                        var tempCD = new CategoryData();
+                        tempCD.CategoryId = category.JobCategoryStructureId;
+                        foreach (var _question in category.ChecklistQuestions)
+                        {
+                            var tempCQD = new CategoryQuestionData();
+                            if (_question.Actions != null && _question.Actions.Any())
+                            {
+                            foreachLoop:
+                                foreach (var (item, index) in _question.Actions.Select((item, index) => (item, index)))
+                                {
+                                    var act = item.Split("℘", StringSplitOptions.RemoveEmptyEntries);
+                                    if (act.Length >= 2)
+                                    {
+                                        List<string> newQuestions = act[0].Split("⁂", StringSplitOptions.RemoveEmptyEntries).ToList();
+                                        List<string> newActions = act[1].Split("⁂").ToList();
+                                        if (!tempCQD.QuestionContent.ContainsKey(index))
+                                        {
+                                            tempCQD.QuestionContent[index] = (new Dictionary<int, QuestionData>(), new Dictionary<int, ActionData>());
+                                        }
+                                        for (int i = 0; i < newQuestions.Count; i++)
+                                        {
+                                            var temp = newQuestions[i].Split("§", StringSplitOptions.RemoveEmptyEntries);
+                                            if (temp.Length < 3)
+                                            {
+                                                tempCQD.QuestionContent.Remove(index);
+                                                goto foreachLoop;
+                                            }
+                                            if (!tempCQD.QuestionContent[index].Questions.ContainsKey(i))
+                                            {
+                                                tempCQD.QuestionContent[index].Questions[i] = new QuestionData(); // Default value
+                                            }
+                                            tempCQD.QuestionContent[index].Questions[i].QuestionId = temp.Length > 0 ? Int32.Parse(temp[0]) : 0;
+                                            tempCQD.QuestionContent[index].Questions[i].Comparator = temp.Length > 1 ? temp[1] : "";
+                                            tempCQD.QuestionContent[index].Questions[i].QstOption = temp.Length > 2 ? temp[2] : "";
+
+                                        }
+                                        for (int i = 0; i < newActions.Count; i++)
+                                        {
+                                            var temp = newActions[i].Split("§", StringSplitOptions.RemoveEmptyEntries);
+                                            if ((temp.Length > 0 && (temp[0] == "SET" || temp[0] == "DBLOPT")) && temp.Length < 2)
+                                            {
+                                                tempCQD.QuestionContent.Remove(index);
+                                                goto foreachLoop;
+                                            }
+                                            if (!tempCQD.QuestionContent[index].Actions.ContainsKey(i))
+                                            {
+                                                tempCQD.QuestionContent[index].Actions[i] = new ActionData(); // Default value
+                                            }
+                                            tempCQD.QuestionContent[index].Actions[i].Operation = temp.Length > 0 ? temp[0] : "";
+                                            tempCQD.QuestionContent[index].Actions[i].Value = temp.Length > 1 ? temp[1] : "";
+
+                                        }
+                                    }
+                                }
+                                tempCD.QuestionsInCategory[_question.QuestionID] = tempCQD;
+                            }
+                        }
+                        if (tempCD.QuestionsInCategory.Any()) questionsData.Add(tempCD);
                     }
 
                     //glosary
@@ -2534,6 +2607,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task<AsyncVoidMethodBuilder> GenerateChecklistAnswers()
         {
+            await TransformToSingle();
 
             if (_jobObservation.ChecklistAnswers.Count > 0)
             {
@@ -2745,8 +2819,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
                 }
             }
-
-
 
             return new AsyncVoidMethodBuilder();
         }
@@ -3193,39 +3265,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task AnswerChangeOption(string option, int id, int section, int catId)
         {
-            var answer = questionAnswers[id];
-            answer.Answer = option;
-
-            var entry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.QuestionID == id);
-            if (section == 1 && (entry.CategorySequence == 4 || entry.CategorySequence == 5))
-            {
-                var extraEntrySec = entry.CategorySequence == 4 ? 5 : 4;
-                var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
-
-                var extraEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == extraEntrySec);
-
-                string kpi = "";
-                if (entry.CategorySequence == 4)
-                {
-                    kpi = option == "YES" ? "S&P" : "";
-                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
-                        kpi += kpi.IsNullOrEmpty() ? "Q" : "/Q";
-                }
-                else //if(entry.CategorySequence == 5)
-                {
-                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
-                        kpi += "S&P";
-                    kpi += option == "YES" ? kpi.IsNullOrEmpty() ? "Q" : "/Q" : "";
-                }
-
-
-                questionAnswers[specialEntry].CommentarySV = kpi;
-                questionAnswers[specialEntry].Answer = "YES";
-
-                ModifyKPIByQuestion(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 }, catId);
-
-            }
+            questionAnswers[id].Answer = option;
             //SetAsCurrentJobObservation();
+        }
+        private async Task MultiAnswerChangeOption(IEnumerable<string> options, int id)
+        {
+            MultiQuestionAnswers[id] = options;
+            questionAnswers[id].Answer = string.Join(",", options);
+            //SetAsCurrentJobObservation();
+        }
+        private async Task TransformToSingle()
+        {
+            foreach (var pair in MultiQuestionAnswers)
+            {
+                questionAnswers[pair.Key].Answer = string.Join(",", pair.Value);
+            }
         }
 
         private async void RemoveLupOppportunity(ChecklistAnswer item, int section, ChecklistQuestion question)
@@ -3375,7 +3429,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         }
         bool ShowOperationsDialog { get; set; } = false;
 
+        public async Task AddDisabledOptions(int categoryId, ChecklistQuestion question, string value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
 
+            qst?.DisabledOptions.Add(value);
+        }
+        public async Task RemoveDisabledOptions(int categoryId, ChecklistQuestion question, string value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+
+            qst?.DisabledOptions.Remove(value);
+        }
+
+        public async Task DisableEnableQuestion(int categoryId, ChecklistQuestion question, bool value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+
+            qst.Disable = value;
+        }
 
         private async void UpdateShowOperations()
         {

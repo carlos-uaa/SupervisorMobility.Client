@@ -28,6 +28,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         Dictionary<int, (Dictionary<int, QuestionData> Questions, Dictionary<int, ActionData> Actions)> selectedData;
         public Dictionary<int, int> Indexes { get; set; } = new();
         private bool _dependendcy = false;
+        private static readonly HashSet<string> CodesToShowOptions = new() { "MC", "TF", "MCM" };
+        private static readonly HashSet<string> CodesToAllowMoreOptions = new() { "MC", "MCM" };
 
         // Initialization
         protected async override Task OnInitializedAsync()
