@@ -32,6 +32,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 
         private IEnumerable<string> selectedItems = new List<string>();
         private bool _open = false;
+        private static readonly HashSet<string> CodesToShowOptions = new() { "MC", "TF", "MCM" };
+        private static readonly HashSet<string> CodesToAllowMoreOptions = new() { "MC", "MCM" };
         // Initialization
         protected async override Task OnInitializedAsync()
         {
