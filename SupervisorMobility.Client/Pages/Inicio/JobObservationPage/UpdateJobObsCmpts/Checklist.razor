@@ -1,7 +1,8 @@
 ﻿@using System.Text.RegularExpressions
+@using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities
 @inject IStringLocalizer<Resource> Localizer
 
-<MudExpansionPanel Text=@category.Description IsInitiallyExpanded=true Style="min-width: 100%">
+<MudExpansionPanel IsInitiallyExpanded=true Style="min-width: 100%">
     <TitleContent>
         @title
         <MudText Typo="Typo.h6" Style="text-align: center;">
@@ -22,372 +23,173 @@
                             @Localizer["Answers"]
                         </MudText>
                     </th>
-                    <th>
-                    </th>
                 </tr>
             </thead>
             <tbody>
-
                 @foreach (var question in category.ChecklistQuestions)
                 {
                     int secNum = section;
                     string pattern = @"\\n"; string replacement = "<br />";
-                    @if (_jobObservation.ChecklistAnswers.Any(ck => ck.QuestionID == question.QuestionID))
-                    {
-                        ChecklistAnswer answer = _jobObservation.ChecklistAnswers.ToList().Find(ck => ck.QuestionID == question.QuestionID);
-                        <tr>
-                            <td width="70%">
-                                <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b> @((MarkupString)(currentLanguage == "es-ES" ? Regex.Replace(question.Prompt, pattern, replacement) : Regex.Replace(question.PromptEN, pattern, replacement))) </MudText>
-                            </td>
-                            <td width="25%">
-                                @if (section != 1 || (question.CategorySequence < 4 || question.CategorySequence > 6))
-                                {
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
-                                            <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">Yes</MudRadio>
-                                            <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">NG</MudRadio>
-                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
-                                }
-                                else if (question.CategorySequence <= 5)
-                                {
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
-                                            <MudRadio Option="@("NG")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">NO</MudRadio>
-                                            <MudRadio Option="@("YES")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">Yes</MudRadio>
-                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
-                                }
-                                else
-                                {
-                                    var id1 = category.ChecklistQuestions.First(p => p.CategorySequence == 4).QuestionID;
-                                    var id2 = category.ChecklistQuestions.First(p => p.CategorySequence == 5).QuestionID;
-                                    var flag1 = questionAnswers[id1].Answer == "N/A" || questionAnswers[id1].Answer == "NG";
-                                    var flag2 = questionAnswers[id2].Answer == "N/A" || questionAnswers[id2].Answer == "NG";
-                                    if ((string.IsNullOrEmpty(questionAnswers[id1].Answer) || flag1)
-                                        && (string.IsNullOrEmpty(questionAnswers[id2].Answer) || flag2)
-                                    )
-                                    {
-                                        <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(id)=>OnKPIChange.InvokeAsync((id.FirstOrDefault(), category.JobCategoryStructureId))">
-                                            <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                            @if (questionAnswers[id1].Answer != "NG")
-                                            {
-                                                <MudSelectItem Value="1">@($"S&P")</MudSelectItem>
-                                            }
-                                            @if (questionAnswers[id2].Answer != "NG")
-                                            {
-                                                <MudSelectItem Value="2">@($"Q")</MudSelectItem>
-                                            }
-                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
-                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
-                                            <MudSelectItem Value="5">@($"E")</MudSelectItem>
-                                            <MudSelectItem Value="6">@($"Other")</MudSelectItem>
-                                        </MudSelect>
-                                    }
-                                    else
-                                    {
-                                        <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.CommentarySV" Label="KPI" ReadOnly />
-                                    }
-                                }
-                            </td>
-                            <td>
-                                @if (section != 1 || question.CategorySequence != 6)
-                                {
-                                    <MudButton Style=" display: -webkit-box;" FullWidth="true" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => answer.Show = !answer.Show)">
-                                    </MudButton>
-                                }
-                            </td>
-                        </tr>
-                        @if (answer.Show)
+                    ChecklistAnswer answer = questionAnswers[question.QuestionID];
+                    <tr>
+                        <td width="70%">
+                            <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @((MarkupString)(currentLanguage == "es-ES" ? Regex.Replace(question.Prompt, pattern, replacement) : Regex.Replace(question.PromptEN, pattern, replacement))) </MudText>
+                        </td>
+                        @if (question.Type != null)
                         {
-                            <tr>
-                                <td colspan="3">
-                                    <MudItem Style="display:flex; justify-content: space-around; flex-wrap: nowrap;">
-                                        <MudItem Style="width: 60%; display: flex; justify-content: center; flex-direction: column">
-
-                                            @if (_jobObservation.Status != 6)
-                                            {
-                                                <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
-
-                                                    @if (answer.capturedImages.Count() + answer.capturedImagesFiles.Count() + answer.Evidences.Count() < 6)
-                                                    {
-                                                        <InputFile id="@(answer.QuestionID.ToString())" OnChange="@( (e) => UploadFiles.InvokeAsync((e, answer)))" hidden single accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
-                                                        <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2 mb-4"
-                                                                   HtmlTag="label"
-                                                                   Variant="Variant.Filled"
-                                                                   Color="Color.Primary"
-                                                                   StartIcon="@Icons.Material.Filled.Image"
-                                                                   for="@(answer.QuestionID.ToString())">
-                                                            Load picture
-                                                        </MudButton>
-                                                    }
-
-                                                    @if (answer.capturedImages.Count() + answer.capturedImagesFiles.Count() + answer.Evidences.Count < 6)
-                                                    {
-
-                                                        <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
-                                                            <MudIconButton @onclick="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" OnTouch="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
-                                                        </MudTooltip>
-                                                    }
-
-                                                </MudItem>
-                                            }
-                                            <MudItem Class="d-flex" Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
-
-                                                <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
-                                                    @if (answer.Evidences.ToList().Count > 0)
-                                                    {
-                                                        <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Right" Arrow="true">
-                                                            <MudIcon Icon=@Icons.Material.Filled.PhotoLibrary Color="Color.Info" Style="cursor:pointer" Class="ml-4" @onclick="@(() => OpenPhotoDialog.InvokeAsync((0, answer)))" OnTouch="@(() => OpenPhotoDialog.InvokeAsync((0, answer)))"></MudIcon>
-                                                        </MudTooltip>
-                                                    }
-                                                    @if (answer.Evidences.ToList().Count > 0)
-                                                    {
-                                                        <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: center;">
-
-                                                            @foreach (var (evidence, index) in answer.Evidences.Select((evidence, index) => (evidence, index)))
-                                                            {
-                                                                <MudItem Class=" mr-8 mb-4">
-                                                                    <MudItem Style="display:flex; flex-direction: column; align-items: center;">
-                                                                        <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
-                                                                            <MudTooltip Text="Show images" Color="Color.Info" Placement="Placement.Top" Arrow="true" ShowOnFocus="true">
-                                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src=@imageUrls[evidence.FileUploadId] Alt="Evidence" Elevation="25" Class="rounded-lg" Style="cursor:pointer" @onclick="(() => OpenPhotoDialog.InvokeAsync((index, answer)))" OnTouch="(() => OpenPhotoDialog.InvokeAsync((index, answer)))" />
-                                                                            </MudTooltip>
-                                                                            <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveEvidenceAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveEvidenceAnswer.InvokeAsync((answer, index))"></MudIcon>
-                                                                            </MudTooltip>
-                                                                        </MudItem>
-
-                                                                        <MudTooltip Text=@Localizer["download"] Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="true">
-                                                                            <MudButton @onclick="@(() => DownloadFile.InvokeAsync((evidence.FileUploadId, evidence?.FileName)) )" OnTouch="@(() => DownloadFile.InvokeAsync((evidence.FileUploadId, evidence?.FileName)) )">
-                                                                                <MudItem>
-                                                                                    <MudChip Variant="Variant.Text" Style="cursor:pointer" Icon="@Icons.Material.Filled.Download" Text="@(evidence?.FileName.Length > 13 ? evidence?.FileName.Substring(0,10) + "..." : evidence?.FileName )" Color="Color.Info" />
-                                                                                </MudItem>
-                                                                            </MudButton>
-                                                                        </MudTooltip>
-                                                                    </MudItem>
-                                                                </MudItem>
-                                                            }
-                                                        </MudItem>
-                                                    }
-                                                </MudItem>
-
-                                                <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
-
-                                                    @foreach (var (file, index) in answer.capturedImagesFiles.Select((file, index) => (file, index)))
-                                                    {
-                                                        <MudItem Class=" mr-8 mb-4">
-                                                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
-                                                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageFileAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageFileAnswer.InvokeAsync((answer, index))"></MudIcon>
-                                                                </MudTooltip>
-                                                            </MudItem>
-                                                            <MudListItem Icon="@Icons.Material.Filled.PhotoSizeSelectActual" @key="@file">
-                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src="@answer.MediaUris.ElementAt(index)" Elevation="25" Class="rounded-lg" />
-                                                            </MudListItem>
-                                                        </MudItem>
-                                                    }
-
-                                                    @foreach (var (image, index) in answer.capturedImages.Select((image, index) => (image, index)))
-                                                    {
-                                                        <MudItem Class=" mr-8 mb-4">
-                                                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
-                                                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageAnswer.InvokeAsync((answer, index))"></MudIcon>
-                                                                </MudTooltip>
-                                                            </MudItem>
-                                                            <MudListItem Icon="@Icons.Material.Filled.CameraAlt" @key="@image">
-                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="90" Width="160" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
-                                                            </MudListItem>
-                                                        </MudItem>
-                                                    }
-                                                </MudItem>
-                                            </MudItem>
-                                        </MudItem>
-                                        @{
-                                            bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || (section == 1 && (question.CategorySequence == 4 || question.CategorySequence == 5) ? answer.Answer != "YES" : answer.Answer != "NG");
-                                        }
-                                        <MudItem Style="width: 30%" Class="ma-5">
-                                            <MudTextField Disabled="@(user.UserType > 3 || _jobObservation.Status == 6)" T="string" Style="margin-block: 5px; margin-bottom: 10px;" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
-                                            <MudButton Class="my-2"
-                                                       Variant="Variant.Filled"
-                                                       Color="Color.Primary"
-                                                       EndIcon="@Icons.Material.Filled.Send"
-                                                       Disabled="@isDisabled"
-                                                       @onclick="(() => UpdateListEntry.InvokeAsync((question, secNum, answer.CommentarySV)))">
-                                                Enviar al Lup
-                                            </MudButton>
-                                            <MudTextField Disabled="@(user.UserType > 2 || _jobObservation.Status == 6)" T="string" Style="margin-block: 5px; margin-bottom: 10px;" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" />
-                                        </MudItem>
-                                    </MudItem>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        ChecklistAnswer answer = questionAnswers[question.QuestionID];
-                        <tr>
-                            <td width="70%">
-                                <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @((MarkupString)(currentLanguage == "es-ES" ? Regex.Replace(question.Prompt, pattern, replacement) : Regex.Replace(question.PromptEN, pattern, replacement)))</MudText>
-                            </td>
                             <td width="25%">
-                                @if (section != 1 || (question.CategorySequence < 4 || question.CategorySequence > 6))
+                                @if (!question.Disable)
                                 {
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
-                                            <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">Yes</MudRadio>
-                                            <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">NG</MudRadio>
-                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
-                                }
-                                else if (question.CategorySequence <= 5)
-                                {
-                                    <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                        <MudRadioGroup T="string" SelectedOption="answer.Answer" SelectedOptionChanged="(an)=>AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId))" Disabled="@(_jobObservation.Status == 6)">
-                                            <MudRadio Option="@("NG")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">NO</MudRadio>
-                                            <MudRadio Option="@("YES")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">Yes</MudRadio>
-                                            <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">N/A</MudRadio>
-                                        </MudRadioGroup>
-                                    </MudItem>
+                                    @switch (question.Type.Code)
+                                    {
+                                        case "TF":
+                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                    <MudRadioGroup T="string" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
+                                                    @if (question.Options != null && question.Options.Count > 0)
+                                                    {
+                                                        <MudRadio Option="question.Options[0]" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[0]</MudRadio>
+                                                    }
+                                                    @if (question.Options != null && question.Options.Count > 1)
+                                                    {
+                                                        <MudRadio Option="question.Options[1]" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="(() => AddLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question)))">@question.Options[1]</MudRadio>
+                                                    }
+                                                    @if (question.Options != null && question.Options.Count > 2)
+                                                    {
+                                                        <MudRadio Option="question.Options[2]" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => {questionAnswers[question.QuestionID].Show = true; RemoveLupOpportunity.InvokeAsync((questionAnswers[question.QuestionID], secNum, question));})">@question.Options[2]</MudRadio>
+                                                    }
+                                                    </MudRadioGroup>
+                                                </MudItem>
+                                            break;
+                                        case "MC":
+                                            <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                <MudSelect T="string" Label="" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="answer.Answer" SelectedValuesChanged="(an)=>{AnswerChangeOption.InvokeAsync((an.First(), question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}">
+                                                    <MudSelectItem Disabled="true" Value="string.Empty">Select Answer</MudSelectItem>
+                                                    @foreach (var opt in question.Options)
+                                                    {
+                                                        @if (!question.DisabledOptions.Contains(opt))
+                                                        {
+                                                            <MudSelectItem Value="@opt">@opt</MudSelectItem>
+                                                        }
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+                                            break;
+                                        default:
+                                            <MudItem>
+                                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Value="answer.Answer" ValueChanged="(an)=>{AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); CheckQuestions();}" />
+                                            </MudItem>
+                                            break;
+                                    }
                                 }
                                 else
                                 {
-                                    var id1 = category.ChecklistQuestions.First(p => p.CategorySequence == 4).QuestionID;
-                                    var id2 = category.ChecklistQuestions.First(p => p.CategorySequence == 5).QuestionID;
-                                    var flag1 = questionAnswers[id1].Answer == "N/A" || questionAnswers[id1].Answer == "NG";
-                                    var flag2 = questionAnswers[id2].Answer == "N/A" || questionAnswers[id2].Answer == "NG";
-                                    if ((string.IsNullOrEmpty(questionAnswers[id1].Answer) || flag1)
-                                        && (string.IsNullOrEmpty(questionAnswers[id2].Answer) || flag2)
-                                    )
-                                    {
-                                        <MudSelect T="int" Label="KPI" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@kpiID" SelectedValuesChanged="(id)=>OnKPIChange.InvokeAsync((id.FirstOrDefault(), category.JobCategoryStructureId))">
-                                            <MudSelectItem Disabled="true" Value="0">Select KPI</MudSelectItem>
-                                            @if (questionAnswers[id1].Answer != "NG")
-                                            {
-                                                <MudSelectItem Value="1">@($"S&P")</MudSelectItem>
-                                            }
-                                            @if (questionAnswers[id2].Answer != "NG")
-                                            {
-                                                <MudSelectItem Value="2">@($"Q")</MudSelectItem>
-                                            }
-                                            <MudSelectItem Value="3">@($"D")</MudSelectItem>
-                                            <MudSelectItem Value="4">@($"C")</MudSelectItem>
-                                            <MudSelectItem Value="5">@($"E")</MudSelectItem>
-                                            <MudSelectItem Value="6">@($"Other")</MudSelectItem>
-                                        </MudSelect>
-                                    }
-                                    else
-                                    {
-                                        <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.CommentarySV" Label="KPI" ReadOnly />
-                                    }
+                                    <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.Answer" ReadOnly />
                                 }
                             </td>
-
-                            <td>
-                                @if (section != 1 || question.CategorySequence != 6)
-                                {
+                            @if (question.Type.Code == "TF")
+                            {
+                                <td>
                                     <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
-                                }
+                                </td>
+                            }
+                        }else{
+                            <td>
                             </td>
-                        </tr>
-                        @if (answer.Show)
-                        {
-                            <tr>
-                                <td colspan="3">
-                                    <MudItem Style="display:flex; justify-content: space-around; flex-wrap: nowrap;">
-                                        <MudItem Style="width: 60%; display: flex; justify-content: center; flex-direction: column">
+                            <td>
+                            </td>
+                        }
+                    </tr>
+                    @if (answer.Show)
+                    {
+                        <tr>
+                            <td colspan="3">
+                                <MudItem Style="display:flex; justify-content: space-around; flex-wrap: nowrap;">
+                                    <MudItem Style="width: 60%; display: flex; justify-content: center; flex-direction: column">
 
-                                            @if (_jobObservation.Status != 6)
-                                            {
+                                        @if (_jobObservation.Status != 6)
+                                        {
 
-                                                <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+                                            <MudItem Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
 
-                                                    @if (answer.capturedImages.Count() + answer.capturedImagesFiles.Count() + answer.Evidences.Count() < 5)
-                                                    {
-                                                        <InputFile id="@(question.QuestionID.ToString())" OnChange="@( (e) => UploadFiles.InvokeAsync((e, answer)))" hidden single accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
-                                                        <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
-                                                                   HtmlTag="label"
-                                                                   Variant="Variant.Filled"
-                                                                   Color="Color.Primary"
-                                                                   StartIcon="@Icons.Material.Filled.Image"
-                                                                   for="@(question.QuestionID.ToString())">
-                                                            Load picture
-                                                        </MudButton>
-                                                    }
+                                                @if (answer.capturedImages.Count() + answer.capturedImagesFiles?.Count() + answer.Evidences?.Count() < 5)
+                                                {
+                                                    <InputFile id="@(question.QuestionID.ToString())" OnChange="@( (e) => UploadFiles.InvokeAsync((e, answer)))" hidden single accept=".jpg, .jpeg, .gif, .svg, .png"></InputFile>
+                                                    <MudButton Class="flex-initial d-flex flex-grow-0 px-9 py-2"
+                                                               HtmlTag="label"
+                                                               Variant="Variant.Filled"
+                                                               Color="Color.Primary"
+                                                               StartIcon="@Icons.Material.Filled.Image"
+                                                               for="@(question.QuestionID.ToString())">
+                                                        Load picture
+                                                    </MudButton>
+                                                }
 
-                                                    @if (answer.capturedImages.Count() + answer.capturedImagesFiles.Count() + answer.Evidences.Count < 5)
-                                                    {
+                                                @if (answer.capturedImages.Count() + answer.capturedImagesFiles?.Count() + answer.Evidences?.Count < 5)
+                                                {
+                                                    <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
+                                                        <MudIconButton @onclick="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" OnTouch="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
+                                                    </MudTooltip>
+                                                }
 
-                                                        <MudTooltip Text="Take photo" Color="Color.Info" Placement="Placement.Right" Arrow="true">
-                                                            <MudIconButton @onclick="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" OnTouch="(() => OpenCameraAnswerDialog.InvokeAsync(answer))" Color="Color.Info" Size="Size.Small" Icon="@Icons.Material.Filled.AddAPhoto"></MudIconButton>
-                                                        </MudTooltip>
-                                                    }
+                                            </MudItem>
+                                        }
+                                        <MudItem Class="d-flex" Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
 
-                                                </MudItem>
-                                            }
-                                            <MudItem Class="d-flex" Style="display: flex; align-content: space-between; flex-wrap: wrap; justify-content: space-evenly; align-items: center;">
+                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
 
-                                                <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
-
-                                                    @foreach (var (file, index) in answer.capturedImagesFiles.Select((file, index) => (file, index)))
-                                                    {
-                                                        <MudItem Class=" mr-8 mb-4">
-                                                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
-                                                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageFileAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageFileAnswer.InvokeAsync((answer, index))"></MudIcon>
-                                                                </MudTooltip>
-                                                            </MudItem>
-                                                            <MudListItem Icon="@Icons.Material.Filled.PictureInPicture" @key="@file">
-                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="180" Width="320" Src="@answer.MediaUris.ElementAt(index)" Elevation="25" Class="rounded-lg" />
-                                                            </MudListItem>
+                                                @foreach (var (file, index) in answer.MediaUris.Select((file, index) => (file, index)))
+                                                {
+                                                    <MudItem Class=" mr-8 mb-4">
+                                                        <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                            <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageFileAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageFileAnswer.InvokeAsync((answer, index))"></MudIcon>
+                                                            </MudTooltip>
                                                         </MudItem>
-                                                    }
-                                                </MudItem>
-                                                <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
+                                                        <MudListItem Icon="@Icons.Material.Filled.PictureInPicture" @key="@file">
+                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="180" Width="320" Src="@file" Elevation="25" Class="rounded-lg" />
+                                                        </MudListItem>
+                                                    </MudItem>
+                                                }
+                                            </MudItem>
+                                            <MudItem Class="d-flex" Style="flex-direction: row; flex-wrap: wrap; justify-content: flex-start;">
 
-                                                    @foreach (var (image, index) in answer.capturedImages.Select((image, index) => (image, index)))
-                                                    {
-                                                        <MudItem Class=" mr-8 mb-4">
-                                                            <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
-                                                                <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
-                                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageAnswer.InvokeAsync((answer, index))"></MudIcon>
-                                                                </MudTooltip>
-                                                            </MudItem>
-                                                            <MudListItem Icon="@Icons.Material.Filled.Camera" @key="@image">
-                                                                <MudImage ObjectFit="ObjectFit.Cover" Height="180" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
-                                                            </MudListItem>
+                                                @foreach (var (image, index) in answer.capturedImages.Select((image, index) => (image, index)))
+                                                {
+                                                    <MudItem Class=" mr-8 mb-4">
+                                                        <MudItem Style="text-align:end !important; margin-right: -15px; margin-bottom: -7px; cursor:pointer">
+                                                            <MudTooltip Text="Delete photo" Color="Color.Error" Placement="Placement.Right" Arrow="true">
+                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => RemoveImageAnswer.InvokeAsync((answer, index))" OnTouch="() => RemoveImageAnswer.InvokeAsync((answer, index))"></MudIcon>
+                                                            </MudTooltip>
                                                         </MudItem>
-                                                    }
-                                                </MudItem>
+                                                        <MudListItem Icon="@Icons.Material.Filled.Camera" @key="@image">
+                                                            <MudImage ObjectFit="ObjectFit.Cover" Height="180" Width="320" Src=@image Alt="Evidence" Elevation="25" Class="rounded-lg" />
+                                                        </MudListItem>
+                                                    </MudItem>
+                                                }
                                             </MudItem>
                                         </MudItem>
-                                        @{
-                                            bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || (section == 1 && (question.CategorySequence == 4 || question.CategorySequence == 5) ? answer.Answer != "YES" : answer.Answer != "NG");
-                                        }
-                                        <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">
-                                            <MudTextField Disabled="@(user.UserType > 3 || _jobObservation.Status == 6)" T="string" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
-                                            <MudButton Class="my-2"
-                                                       Variant="Variant.Filled"
-                                                       Color="Color.Primary"
-                                                       EndIcon="@Icons.Material.Filled.Send"
-                                                       Disabled="@isDisabled"
-                                                       @onclick="(() => UpdateListEntry.InvokeAsync((question, secNum, answer.CommentarySV)))">
-                                                Enviar al Lup
-                                            </MudButton>
-                                            <MudTextField Disabled="@(user.UserType > 2 || _jobObservation.Status == 6)" T="string" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" />
-                                        </MudItem>
                                     </MudItem>
-                                </td>
-                            </tr>
-                        }
-
+                                    @{
+                                        bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || (section == 1 && (question.CategorySequence == 4 || question.CategorySequence == 5) ? answer.Answer != "YES" : answer.Answer != "NG");
+                                        string answerCommentarySV = answer.CommentarySV ?? "";
+                                    }
+                                    <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">
+                                        <MudTextField Disabled="@(user.UserType > 3)" T="string" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" TextChanged="()=>AnswerComentaryUpdate.InvokeAsync()" />
+                                        <MudButton Class="my-2"
+                                                   Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   EndIcon="@Icons.Material.Filled.Send"
+                                                   Disabled="@isDisabled"
+                                                   @onclick="(() => UpdateListEntry.InvokeAsync((question, secNum, answerCommentarySV)))">
+                                            Enviar al Lup
+                                        </MudButton>
+                                        <MudTextField Disabled="@(user.UserType > 2)" T="string" Label="Senior Supervisor Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySSV" Lines="3" TextChanged="()=>AnswerComentaryUpdate.InvokeAsync()" />
+                                    </MudItem>
+                                </MudItem>
+                            </td>
+                        </tr>
                     }
                 }
-
             </tbody>
         </MudSimpleTable>
     </ChildContent>
@@ -396,24 +198,26 @@
 @code {
     [Parameter]
     public string title { get; set; } = "";
-    [Parameter]
-    public string currentLanguage { get; set; }
 
     [Parameter]
-    public User user { get; set; } = new();
-    [Parameter]
     public JobCategoryStructure category { get; set; }
+
     [Parameter]
     public int section { get; set; }
-    [Parameter]
-    public JobObservation _jobObservation { get; set; } = new();
+
     [Parameter]
     public Dictionary<int, ChecklistAnswer> questionAnswers { get; set; }
     [Parameter]
-    public Dictionary<int, string> imageUrls { get; set; } = new Dictionary<int, string>();
+    public string currentLanguage { get; set; }
+    [Parameter]
+    public User user { get; set; } = new();
+    [Parameter]
+    public JobObservation _jobObservation { get; set; } = new();
 
     [Parameter]
     public int kpiID { get; set; }
+    [Parameter]
+    public CategoryData Data { get; set; } = new();
 
     [Parameter]
     public EventCallback<(string, int, int, int)> AnswerChangeOption { get; set; }
@@ -422,27 +226,99 @@
     [Parameter]
     public EventCallback<(ChecklistAnswer, int, ChecklistQuestion)> RemoveLupOpportunity { get; set; }
     [Parameter]
+    public EventCallback<(int, ChecklistQuestion, string)> AddDisabledOptions { get; set; }
+    [Parameter]
+    public EventCallback<(int, ChecklistQuestion, string)> RemoveDisabledOptions { get; set; }
+    [Parameter]
+    public EventCallback<(int, ChecklistQuestion, bool)> DisableEnableQuestion { get; set; }
+    [Parameter]
     public EventCallback<(InputFileChangeEventArgs, ChecklistAnswer)> UploadFiles { get; set; }
     [Parameter]
     public EventCallback<ChecklistAnswer> OpenCameraAnswerDialog { get; set; }
-    [Parameter]
-    public EventCallback<(int, ChecklistAnswer)> OpenPhotoDialog { get; set; }
-    [Parameter]
-    public EventCallback<(ChecklistAnswer, int)> RemoveEvidenceAnswer { get; set; }
-    [Parameter]
-    public EventCallback<(int, string)> DownloadFile { get; set; }
     [Parameter]
     public EventCallback<(ChecklistAnswer, int)> RemoveImageFileAnswer { get; set; }
     [Parameter]
     public EventCallback<(ChecklistAnswer, int)> RemoveImageAnswer { get; set; }
     [Parameter]
-    public EventCallback<(ChecklistQuestion, int, string)> UpdateListEntry { get; set; }
+    public EventCallback AnswerComentaryUpdate { get; set; }
     [Parameter]
-    public EventCallback<(int,int)> OnKPIChange { get; set; }
+    public EventCallback<(int, int)> OnKPIChange { get; set; }
+    [Parameter]
+    public EventCallback<(ChecklistQuestion, int, string)> UpdateListEntry { get; set; }
 
-    private void OnChange(ChecklistAnswer answer, int secNum, ChecklistQuestion question)
+    private void CheckQuestions()
     {
-        answer.Show = true;
-        _ = RemoveLupOpportunity.InvokeAsync((answer, secNum, question));
+        if (Data.QuestionsInCategory.Any())
+        {
+            foreach (var Qst in category.ChecklistQuestions)
+            {
+                if (Data.QuestionsInCategory.ContainsKey(Qst.QuestionID))
+                {
+                    var actions = Data.QuestionsInCategory[Qst.QuestionID];
+                    bool atLeastOneDisableTrue = false;
+
+                    foreach (var action in actions.QuestionContent)
+                    {
+                        Console.WriteLine("Hello");
+                        bool executeFlag = false;
+                        foreach (var questions in action.Value.Questions)
+                        {
+                            switch (questions.Value.Comparator)
+                            {
+                                case "!":
+                                    executeFlag = questionAnswers[questions.Value.QuestionId].Answer != questions.Value.QstOption;
+                                    break;
+
+                                case "=":
+                                    executeFlag = questionAnswers[questions.Value.QuestionId].Answer == questions.Value.QstOption;
+                                    break;
+                            }
+                            if (executeFlag == false) goto escapeWhenFalse;
+                        }
+                        foreach (var methods in action.Value.Actions)
+                        {
+
+                            switch (methods.Value.Operation)
+                            {
+                                case "SET":
+                                    questionAnswers[Qst.QuestionID].Answer = methods.Value.Value;
+                                    AnswerChangeOption.InvokeAsync((methods.Value.Value, Qst.QuestionID, section, category.JobCategoryStructureId));
+                                    break;
+
+                                case "DISABLE":
+                                    DisableEnableQuestion.InvokeAsync((category.JobCategoryStructureId, Qst, true));
+                                    Qst.Disable = true;
+                                    atLeastOneDisableTrue = true;
+                                    break;
+                                case "DBLOPT":
+                                    int index = Qst.Options.FindIndex(opt => opt == methods.Value.Value);
+                                    if (index >= 0 && !Qst.DisabledOptions.Any(p => p == methods.Value.Value))
+                                    {
+                                        AddDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, methods.Value.Value));
+                                        Qst.DisabledOptions.Add(methods.Value.Value);
+                                    }
+                                    break;
+                            }
+                        }
+                    escapeWhenFalse:;
+                        if (!executeFlag)
+                        {
+                            foreach (var DisMeth in action.Value.Actions.Values.Where(p => p.Operation == "DBLOPT"))
+                            {
+                                RemoveDisabledOptions.InvokeAsync((category.JobCategoryStructureId, Qst, DisMeth.Value));
+                                Qst.DisabledOptions.Remove(DisMeth.Value);
+                            }
+                        }
+                        StateHasChanged();
+                    }
+                    if (!atLeastOneDisableTrue)
+                    {
+                        Qst.Disable = false;
+                        DisableEnableQuestion.InvokeAsync((category.JobCategoryStructureId, Qst, false));
+                    }
+                }
+            }
+        }
     }
+
 }
