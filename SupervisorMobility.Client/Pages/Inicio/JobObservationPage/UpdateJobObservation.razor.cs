@@ -325,6 +325,77 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         _operations = new List<Operation>();
                     }
 
+                    if (!string.IsNullOrEmpty(_jobObservation.ProductSpecifications) &&
+                       _jobObservation.ProductSpecifications != "||||")
+                    {
+                        string[] specificationsArray = _jobObservation.ProductSpecifications.Split('|');
+
+                        for (int i = 0; i < specificationsArray.Length && i < productSpecification.Length; i++)
+                        {
+                            productSpecification[i] = specificationsArray[i];
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < productSpecification.Length; i++)
+                        {
+                            productSpecification[i] = "";
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(_jobObservation.ProductIds))
+                    {
+                        string[] productIdsArray = _jobObservation.ProductIds.Split('|');
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            if (i < productIdsArray.Length && int.TryParse(productIdsArray[i].Trim(), out int productId))
+                            {
+                                jobProductIds[i] = productId;
+                            }
+                            else
+                            {
+                                jobProductIds[i] = 0;
+                            }
+                        }
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
+                            _specifications[i] = new();
+
+                            if (prodName != null)
+                            {
+                                Operation op = string.IsNullOrEmpty(productSpecification[i]) ? _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(prodName.Code) == true) : _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(prodName.Code) == true && o.NameTime.Contains(productSpecification[i]) == true);
+
+
+                                if (op != null && !string.IsNullOrEmpty(op.NameTime))
+                                {
+                                    operationSpecProduct[i] = op.Description;
+
+                                    Dictionary<string, List<string>> NameTimeList = new Dictionary<string, List<string>>();
+                                    var nameTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.NameTime);
+                                    foreach (var kvp in nameTimeDict)
+                                    {
+                                        NameTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                                    }
+
+                                    var names = NameTimeList[prodName.Code];
+
+                                    for (int j = 0; j < 5; j++)
+                                    {
+                                        if (j < names.Count() && !string.IsNullOrEmpty(names[j]))
+                                        {
+                                            _specifications[i].Add(names[j]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+
                     var groupedOperations = _operations
                         .SelectMany(op => op.ProductName.Split('§').Select(product => new { Product = product, Operation = op }))
                         .GroupBy(x => x.Product)
@@ -336,18 +407,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         .ToList();
 
                     int count = Math.Min(groupedOperations.Count, 5);
-                    _productAndSpecification = new ProductAndStandardTime[count];
+                    _productAndSpecification = new ProductAndStandardTime[5];
 
-                    for (int i = 0; i < count; i++)
+                    for (int i = 0; i < 5; i++)
                     {
-                        var productName = groupedOperations[i].ProductName;
+                        var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
 
-                        var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(groupedOperations[i].StandardTime);
+                        var productName = selectedProduct.Code;
+
+                        var operation = string.IsNullOrEmpty(productSpecification[i]) ? _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true) : _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true && o.NameTime.Contains(productSpecification[i]) == true);
+
+                        var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(operation.StandardTime);
 
                         var standardTimeParts = standardTimeDict[productName].Split('§');
-                        if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
+
+                        int indexOfSpec = string.IsNullOrEmpty(productSpecification[i]) ? 0 : Array.IndexOf(_specifications[i].ToArray(), productSpecification[i]);
+
+                        if (decimal.TryParse(standardTimeParts[indexOfSpec], out decimal standardTimeValue))
                         {
                             var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
+                            Console.WriteLine($"{productSpecification[i]} {productName}: {roundedStandardTime}");
 
                             _productAndSpecification[i] = new ProductAndStandardTime
                             {
@@ -357,6 +436,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                         else
                         {
+                            Console.WriteLine($"{productName}: Invalid StandardTime");
                             _productAndSpecification[i] = new ProductAndStandardTime
                             {
                                 ProductName = productName,
@@ -364,6 +444,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             };
                         }
                     }
+
 
 
                     if (_jobObservation.KpiId != null)
@@ -412,65 +493,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     //    _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
 
-                    if (!string.IsNullOrEmpty(_jobObservation.ProductIds))
-                    {
-                        string[] productIdsArray = _jobObservation.ProductIds.Split('|');
-
-                        for (int i = 0; i < 5; i++)
-                        {
-                            if (i < productIdsArray.Length && int.TryParse(productIdsArray[i].Trim(), out int productId))
-                            {
-                                jobProductIds[i] = productId;
-                            }
-                            else
-                            {
-                                jobProductIds[i] = 0;
-                            }
-                        }
-
-                        for (int i = 0; i < 5; i++)
-                        {
-                            var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
-                            _specifications[i] = new();
-
-                            if (prodName != null)
-                            {
-                                
-                                var firstOperation = _jobObservation.Operations?.FirstOrDefault();
-                                int? operationId = firstOperation?.OperationId;
-                                
-                                
-                                Operation op = null;
-                                if (operationId.HasValue)
-                                {
-                                    op = _operations.FirstOrDefault(o => o.OperationId == operationId.Value && o.ProductName.Contains(prodName.Code));
-                                }
-
-                                if (op != null && !string.IsNullOrEmpty(op.NameTime))
-                                {
-                                    operationSpecProduct[i] = op.Description;
-
-                                    Dictionary<string, List<string>> NameTimeList = new Dictionary<string, List<string>>();
-                                    var nameTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.NameTime);
-                                    foreach (var kvp in nameTimeDict)
-                                    {
-                                        NameTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
-                                    }
-
-                                    var names = NameTimeList[prodName.Code];
-
-                                    for (int j = 0; j < 5; j++)
-                                    {
-                                        if (j < names.Count() && !string.IsNullOrEmpty(names[j]))
-                                        {
-                                            _specifications[i].Add(names[j]);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
+                   
 
                     StepsNumber = ConvertStringToArray(_jobObservation?.StepsNumber);
                     DoubleManagment = ConvertStringToArray(_jobObservation?.DoubleManagment);
@@ -524,23 +547,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     }
 
 
-                    if (!string.IsNullOrEmpty(_jobObservation.ProductSpecifications) &&
-                        _jobObservation.ProductSpecifications != "||||")
-                    {
-                        string[] specificationsArray = _jobObservation.ProductSpecifications.Split('|');
-
-                        for (int i = 0; i < specificationsArray.Length && i < productSpecification.Length; i++)
-                        {
-                            productSpecification[i] = specificationsArray[i];
-                        }
-                    }
-                    else
-                    {
-                        for (int i = 0; i < productSpecification.Length; i++)
-                        {
-                            productSpecification[i] = "";
-                        }
-                    }
+                   
 
 
                     StateHasChanged();
@@ -1853,6 +1860,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             jobProductId = 0;
             _specifications = new();
+            _productAndSpecification = new ProductAndStandardTime[5];
+
+            for (int i = 0; i < 5; i++)
+            {
+                _productAndSpecification[i] = new ProductAndStandardTime
+                {
+                    ProductName = "",
+                    StandardTime = "0.00"
+                };
+            }
+
             _operations = await OperationService.GetOperations(_jobObservation.PlantId, _jobObservation.AreaId, _jobObservation.DistributionId);
         }
 
@@ -2268,34 +2286,69 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
+        List<bool> loadSpec = new List<bool>() { false, false, false, false, false };
         public void InitializeCycleTimes(string specification, int index)
         {
+            loadSpec[index] = true;
+            StateHasChanged();
+            Console.WriteLine($"Spect: {specification}");
             productSpecification[index] = specification;
             _filteredOperations = new();
-            StepsNumber = new int?[5];
-            DoubleManagment = new int?[5];
-            Waiting = new int?[5];
+            //StepsNumber = new int?[5];
+            //DoubleManagment = new int?[5];
+            //Waiting = new int?[5]; 
 
-            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductIds[index]);
+
+            Console.WriteLine($"Prdo: {selectedProduct.Code}");
             if (selectedProduct != null)
             {
-                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
-
-            }
-            var standardTimeIndex = _specifications[index].FindIndex(s => s == productSpecification[index]);
-
-            foreach (var op in _filteredOperations)
-            {
-                if (op.StandardTime != null)
+                var op = string.IsNullOrEmpty(specification) ? _operations.FirstOrDefault(o => o.ProductName?.Contains(selectedProduct.Code) == true) : _operations.FirstOrDefault(o => o.ProductName?.Contains(selectedProduct.Code) == true && o.NameTime.Contains(specification) == true);
+                Console.WriteLine($"Op: {op?.Description}");
+                if (op != null && !string.IsNullOrEmpty(op.StandardTime))
                 {
+                    var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.StandardTime);
+                    if (standardTimeDict != null && standardTimeDict.ContainsKey(selectedProduct.Code))
+                    {
+                        var standardTimeParts = standardTimeDict[selectedProduct.Code].Split('§');
 
-                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("§");
-                    hoeStandardTime = double.Parse(hoeTimes[standardTimeIndex], CultureInfo.InvariantCulture);
-                    hoeStandardTime = Math.Round(hoeStandardTime, 2);
-                    Console.WriteLine(hoeStandardTime);
+                        int indexOfSpec = string.IsNullOrEmpty(specification) ? 0 : Array.IndexOf(_specifications[index].ToArray(), specification);
+                        Console.WriteLine($"IndexOfSpec: {indexOfSpec}");
+
+                        if (decimal.TryParse(standardTimeParts[indexOfSpec], out decimal standardTimeValue))
+                        {
+                            var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
+                            Console.WriteLine($"{specification} {selectedProduct.Code}: {roundedStandardTime}");
+
+                            _productAndSpecification[index] = new ProductAndStandardTime
+                            {
+                                ProductName = selectedProduct.Code,
+                                StandardTime = roundedStandardTime
+                            };
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{selectedProduct.Code}: Invalid StandardTime");
+                            _productAndSpecification[index] = new ProductAndStandardTime
+                            {
+                                ProductName = selectedProduct.Code,
+                                StandardTime = "0.00"
+                            };
+                        }
+                    }
                 }
             }
+
+
+            _jobObservation.ModelsSpecification = string.Join("|", productSpecification);
+
+            //SyncLocalStorage.SetItem("JobObs", _jobObservation);
+            //SyncLocalStorage.SetItem("OpTimes", OperationTimes);
+            //SetAsCurrentJobObservation();
+            loadSpec[index] = false;
+            StateHasChanged();
         }
+
 
 
         private double GetRandomNumber(double min, double max)
