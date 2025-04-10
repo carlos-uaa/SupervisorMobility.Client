@@ -167,17 +167,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         protected async override Task OnInitializedAsync()
         {
 
-             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");    
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
             try
             {
@@ -257,14 +257,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     taktTime = await LocalStorage.GetItemAsync<double?>("taktTime") ?? 1.46; 
                     StepsNumber = await LocalStorage.GetItemAsync<int?[]>("StepsNumber") ?? new int?[5];
                     CycleTimes = await LocalStorage.GetItemAsync<string?[]>("CycleTimes") ?? new string?[5]; 
-                    jobProductIds = await LocalStorage.GetItemAsync<int[]>("JobProductsIds") ?? new int[5]; 
+                    jobProductIds = await LocalStorage.GetItemAsync<int[]>("JobProductsIds") ?? new int[5];
+                    _specifications = await LocalStorage.GetItemAsync<List<List<string>>>("Specifications") ?? new List<List<string>>();
+                    productSpecification = await LocalStorage.GetItemAsync<string[]>("ProductSpecifications") ?? new string[5];
+                    _products= await LocalStorage.GetItemAsync<List<Product>>("Products") ?? new();
+                    operationSpecProduct = await LocalStorage.GetItemAsync<string[]>("OperationSpecProduct") ?? new string[5];
+
                     DoubleManagment = await LocalStorage.GetItemAsync<int?[]>("DblManagement") ?? new int?[5]; 
                     Waiting = await LocalStorage.GetItemAsync<int?[]>("Waiting") ?? new int?[5]; 
                     currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 0; 
                     hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; 
 
                     //jobProductId = _jobObservation.ProductId ?? 0;
-                    //productSpecification = _jobObservation.ModelsSpecification;
                     kpiID = _jobObservation.KpiId ?? 0;
 
                     bool skipQA = !questionAnswers.Any();
@@ -622,7 +626,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _assychart = null;
             jobProductId = 0;
             _specifications = new();
-            //productSpecification = string.Empty;
+            productSpecification = new string[5];
 
             if (user.UserType == 1)
             {
@@ -686,7 +690,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 new List<string>()  // Product 5
             };
             jobProductId = 0;
-            //productSpecification = string.Empty;
+            productSpecification = new string[5];
 
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _products = _products.OrderBy(p => p.Description).ToList();
@@ -942,8 +946,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //    }
             //}
 
-            //_jobObservation.ModelsSpecification = productSpecification;
-            //SyncLocalStorage.SetItem("HoeStandardTime", hoeStandardTime);
+            _jobObservation.ModelsSpecification = string.Join("|", productSpecification);
+
+            SyncLocalStorage.SetItem("HoeStandardTime", hoeStandardTime);
+            SyncLocalStorage.SetItem("Specifications", _specifications);
+            SyncLocalStorage.SetItem("ProductSpecifications", productSpecification);
+            SyncLocalStorage.SetItem("OperationSpecProduct", operationSpecProduct);
             //SyncLocalStorage.SetItem("JobObs", _jobObservation);
             //SyncLocalStorage.SetItem("OpTimes", OperationTimes);
             //SetAsCurrentJobObservation();
@@ -975,7 +983,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (prodName != null)
             {
-
                 Operation? op = null;
 
                 if (_jobObservation.Operations != null && _jobObservation.Operations?.Count() > 0)
@@ -1007,7 +1014,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                 {
-                    Console.WriteLine("Operacion encontrada");
+                    Console.WriteLine($"Operacion encontrada {op.Description}");
 
                     operationSpecProduct[productIndex] = op.Description;
 
@@ -1035,6 +1042,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             //_jobObservation.ProductId = id;
             await LocalStorage.SetItemAsync("JobProductsIds", jobProductIds);
+            await LocalStorage.SetItemAsync("Specifications", _specifications);
+            await LocalStorage.SetItemAsync("Products", _products);
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             StateHasChanged();
@@ -1163,7 +1172,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //_jobObservation.OperationId = 0;
 
             _jobObservation.OperationTimesJson = BuildOperationTimesJson();
-            //_jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.ModelsSpecification = string.Join("|", productSpecification);
             _jobObservation.StepsNumber = string.Join("|", StepsNumber);
             _jobObservation.DoubleManagment = string.Join("|", DoubleManagment);
             _jobObservation.Waiting = string.Join("|", Waiting);
@@ -3042,11 +3051,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _operations = _operations.OrderBy(o => o.Description).ToList();
 
                 var groupedOperations = _operations
-                    .GroupBy(op => op.ProductName)
+                    .SelectMany(op => op.ProductName.Split('§').Select(product => new { Product = product, Operation = op }))
+                    .GroupBy(x => x.Product)
                     .Select(g => new ProductAndStandardTime
                     {
                         ProductName = g.Key,
-                        StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
+                        StandardTime = g.Select(x => x.Operation.StandardTime).FirstOrDefault()
                     })
                     .ToList();
 
@@ -3057,7 +3067,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     var productName = groupedOperations[i].ProductName;
 
-                    var standardTimeParts = groupedOperations[i].StandardTime.Split('§');
+                    var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(groupedOperations[i].StandardTime);
+
+                    var standardTimeParts = standardTimeDict[productName].Split('§');
+
                     if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
                     {
                         var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
@@ -3123,8 +3136,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             SyncLocalStorage.RemoveItems(new string[]{ 
                 "JobObs","OpTimes","LupToAdd","area_ListS","area_ListQ",
                 "area_ListD","area_ListC","area_ListOther","QAnsImgFF",
-                "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
-                ,"DblManagement","Waiting","CC", "CJO","JobProductsIds", "CycleTimes"});
+                "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber" , "OperationSpecProduct",
+                "DblManagement","Waiting","CC", "CJO","JobProductsIds", "Specifications", "ProductSpecifications","Products", "CycleTimes"});
         }
     }
 }

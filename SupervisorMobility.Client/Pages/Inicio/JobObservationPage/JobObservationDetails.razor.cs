@@ -5,6 +5,7 @@ using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservationNew;
@@ -102,6 +103,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private string?[] CycleTimes = new string?[5] { "", "", "", "", "" };
         private string?[] WaitingTimes = new string?[5] { "", "", "", "", "" };
         public string[] productSpecification = new string[5];
+        public string[] operationSpecProduct = new string[5];
 
 
         List<List<string>> _specifications { get; set; } = new List<List<string>>
@@ -192,14 +194,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
 
                 var groupedOperations = _operations
-                     .Where(op => !string.IsNullOrEmpty(op.ProductName) && !string.IsNullOrEmpty(op.StandardTime))
-                     .GroupBy(op => op.ProductName)
-                     .Select(g => new ProductAndStandardTime
-                     {
-                         ProductName = g.Key,
-                         StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
-                     })
-                     .ToList();
+                     .SelectMany(op => op.ProductName.Split('§').Select(product => new { Product = product, Operation = op }))
+                        .GroupBy(x => x.Product)
+                        .Select(g => new ProductAndStandardTime
+                        {
+                            ProductName = g.Key,
+                            StandardTime = g.Select(x => x.Operation.StandardTime).FirstOrDefault()
+                        })
+                        .ToList();
 
 
                 int count = Math.Min(groupedOperations.Count, 5);
@@ -208,8 +210,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 for (int i = 0; i < count; i++)
                 {
                     var productName = groupedOperations[i].ProductName;
+                    Console.WriteLine($"Key: {productName}");
+                    var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(groupedOperations[i].StandardTime);
 
-                    var standardTimeParts = groupedOperations[i].StandardTime.Split('§');
+                    var standardTimeParts = standardTimeDict[productName].Split('§');
                     if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
                     {
                         var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
@@ -239,9 +243,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 SSV_LupList = _jobObservation.Lup.Where(l => !l.EndDate.HasValue).ToList();
 
 
-                var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
-                if (jobProductId != 0)
-                    _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
+                //var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+
+                //if (jobProductId != 0)
+                    //_filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
 
 
                 if (!string.IsNullOrEmpty(_jobObservation.ProductIds))
@@ -270,20 +275,30 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             // Safely access the OperationId
                             var firstOperation = _jobObservation.Operations?.FirstOrDefault();
                             int? operationId = firstOperation?.OperationId;
-                            
+                            Console.WriteLine($" operation id: {operationId}");
                             // Only try to find the operation if we have a valid operationId
                             Operation op = null;
                             if (operationId.HasValue)
                             {
-                                op = _operations.FirstOrDefault(o => o.OperationId == operationId.Value && o.ProductName == prodName?.Code);
+                                op = _operations.FirstOrDefault(o => o.OperationId == operationId.Value && o.ProductName.Contains(prodName.Code));
                             }
 
                             if (op != null && !string.IsNullOrEmpty(op.NameTime))
                             {
-                                var names = op.NameTime.Replace(',', '.').Split("§");
+                                operationSpecProduct[i] = op.Description;
+
+                                Dictionary<string, List<string>> NameTimeList = new Dictionary<string, List<string>>();
+                                var nameTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.NameTime);
+                                foreach (var kvp in nameTimeDict)
+                                {
+                                    NameTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                                }
+
+                                var names = NameTimeList[prodName.Code];
+
                                 for (int j = 0; j < 5; j++)
                                 {
-                                    if (j < names.Length && !string.IsNullOrEmpty(names[j]))
+                                    if (j < names.Count() && !string.IsNullOrEmpty(names[j]) )
                                     {
                                         _specifications[i].Add(names[j]);
                                     }
