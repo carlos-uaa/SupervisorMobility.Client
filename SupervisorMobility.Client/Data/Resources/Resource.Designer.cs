@@ -151,7 +151,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Add existing product.
+        ///   Busca una cadena traducida similar a Add existing model.
         /// </summary>
         public static string addExistingProduct {
             get {
@@ -178,7 +178,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Adding an existing product.
+        ///   Busca una cadena traducida similar a Adding an existing model.
         /// </summary>
         public static string addingAnExistingProduct {
             get {
@@ -196,7 +196,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Add Product.
+        ///   Busca una cadena traducida similar a Add Model.
         /// </summary>
         public static string addProduct {
             get {
@@ -381,6 +381,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string approvePAT {
             get {
                 return ResourceManager.GetString("approvePAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Job observation is cyclical?.
+        /// </summary>
+        public static string Are_the_cycles_continuous_ {
+            get {
+                return ResourceManager.GetString("Are the cycles continuous?", resourceCulture);
             }
         }
         
@@ -664,7 +673,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Can not Add This Product because is already added.
+        ///   Busca una cadena traducida similar a Can not Add This Model because is already added.
         /// </summary>
         public static string cannotAddThisProductBecauseIsAlreadyAdded {
             get {
@@ -781,7 +790,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Administration module to manage the system information and to make modifications to plants, products, groups, users, etc..
+        ///   Busca una cadena traducida similar a Administration module to manage the system information and to make modifications to plants, models, groups, users, etc..
         /// </summary>
         public static string configurationDescription {
             get {
@@ -862,7 +871,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Create a new product.
+        ///   Busca una cadena traducida similar a Create a new model.
         /// </summary>
         public static string createANewProduct {
             get {
@@ -880,7 +889,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Create Distribution To Product.
+        ///   Busca una cadena traducida similar a Create Distribution To Model.
         /// </summary>
         public static string createDistributionToProduct {
             get {
@@ -1141,7 +1150,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Delete Product.
+        ///   Busca una cadena traducida similar a Delete Model.
         /// </summary>
         public static string deleteProduct {
             get {
@@ -1384,7 +1393,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Edit Product.
+        ///   Busca una cadena traducida similar a Edit Model.
         /// </summary>
         public static string editProduct {
             get {
@@ -1609,7 +1618,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a First select a product.
+        ///   Busca una cadena traducida similar a First select a model.
         /// </summary>
         public static string firstSelectAProduct {
             get {
@@ -1852,6 +1861,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a .
+        /// </summary>
+        public static string HOE___SOS {
+            get {
+                return ResourceManager.GetString("HOE / SOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a HOE&apos;s Name.
         /// </summary>
         public static string HOEName {
@@ -1965,6 +1983,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string HubCollectionTitle {
             get {
                 return ResourceManager.GetString("HubCollectionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ILU Training.
+        /// </summary>
+        public static string ILU_Training {
+            get {
+                return ResourceManager.GetString("ILU Training", resourceCulture);
             }
         }
         
@@ -2590,7 +2617,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a New Product.
+        ///   Busca una cadena traducida similar a New Model.
         /// </summary>
         public static string newProduct {
             get {
@@ -3229,7 +3256,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Create, update, delete and manage plants, areas, distributions, products and operations..
+        ///   Busca una cadena traducida similar a Create, update, delete and manage plants, areas, distributions, models and operations..
         /// </summary>
         public static string plantsConfigDescription {
             get {
@@ -3265,7 +3292,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Product.
+        ///   Busca una cadena traducida similar a Model.
         /// </summary>
         public static string product {
             get {
@@ -3274,7 +3301,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Product Details.
+        ///   Busca una cadena traducida similar a Model Details.
         /// </summary>
         public static string productDetails {
             get {
@@ -3283,7 +3310,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Products.
+        ///   Busca una cadena traducida similar a Models.
         /// </summary>
         public static string products {
             get {
@@ -3292,7 +3319,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Create, update, delete and manage products and distributions..
+        ///   Busca una cadena traducida similar a Create, update, delete and manage models and distributions..
         /// </summary>
         public static string productsConfigDescription {
             get {
@@ -3598,7 +3625,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Select prod..
+        ///   Busca una cadena traducida similar a Select model.
         /// </summary>
         public static string selectAProduct {
             get {
@@ -3648,6 +3675,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string serverNotResponse {
             get {
                 return ResourceManager.GetString("serverNotResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Set ILU Level.
+        /// </summary>
+        public static string Set_ILU_Level {
+            get {
+                return ResourceManager.GetString("Set ILU Level", resourceCulture);
             }
         }
         
@@ -4084,7 +4120,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a There are no products created for this distribution.
+        ///   Busca una cadena traducida similar a There are no models created for this distribution.
         /// </summary>
         public static string thereAreNoProductsCreatedForThisDistribution {
             get {
@@ -4354,7 +4390,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Update Product.
+        ///   Busca una cadena traducida similar a Update Model.
         /// </summary>
         public static string updateProduct {
             get {
@@ -4386,6 +4422,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string userNotFoundPleaseContactYourAdmin {
             get {
                 return ResourceManager.GetString("userNotFoundPleaseContactYourAdmin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a .
+        /// </summary>
+        public static string usersManagement {
+            get {
+                return ResourceManager.GetString("usersManagement", resourceCulture);
             }
         }
         
