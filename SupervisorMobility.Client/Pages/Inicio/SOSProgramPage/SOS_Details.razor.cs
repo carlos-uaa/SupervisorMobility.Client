@@ -135,7 +135,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         DateTime LastdayYear = DateTime.Now;
         int JobsPorDia = 1;
 
-        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = false };
+        private DialogOptions dialogOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+        private DialogOptions FirstSuggestionDialogOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = false };
         private DialogOptions dialogSVOptions = new() { CloseOnEscapeKey = false, DisableBackdropClick = true, CloseButton = false };
 
         TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
@@ -170,7 +171,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private List<User> _UsersSV_Copy = new();
 
         private bool isButtonDisabled = false;
-        private bool SVSinCharge = false;
+        private bool ViewDialogFirstSuggestion = false;
 
         //sv panel
         private bool visibleSVDialog = false;
@@ -2052,7 +2053,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                 //ShowLoading = false;
                 enableCreateSuggestion = false;
-                SVSinCharge = false;
+                ViewDialogFirstSuggestion = false;
                 isButtonDisabled = false;
                 StateHasChanged();
             }
@@ -2153,7 +2154,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private void OpenDialogSuggestSV()
         {
             if (SV_Manager.Count == 0)
-                SVSinCharge = true;
+                ViewDialogFirstSuggestion = true;
 
             MonthlyView = true;
             SuggestionMode = true;
