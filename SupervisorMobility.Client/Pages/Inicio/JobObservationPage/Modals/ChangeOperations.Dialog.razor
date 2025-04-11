@@ -1,0 +1,93 @@
+﻿@inject IStringLocalizer<Resource> Localizer
+
+<style>
+
+    .toggle-group-container {
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .toggle-group-container-dialog {
+        height: 50vh;
+        display: flex;
+        flex-wrap: wrap;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .toggle-column {
+        flex-basis: calc(25% - 10px);
+        margin: 5px;
+    }
+</style>
+
+<MudDialog DisableSidePadding="false">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; min-height:60vh;" Class="gap-4">
+
+            <MudTextField @bind-Value="searchTerm" Placeholder="Buscar operación..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+
+
+            <MudToggleGroup Vertical T="Operation" SelectionMode="SelectionMode.MultiSelection" @bind-values="_jobObservation.Operations" @bind-attributes="_jobObservation.Operations" Color="Color.Secondary" CheckMark Class="toggle-group-container-dialog">
+                @foreach (Operation operation in FilteredOperations)
+                {
+                    <div class="toggle-column">
+
+                        <MudToggleItem Value="@(operation)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                            @($"{operation.Code} - {operation.Description}")
+                            @switch (operation.CriticalType)
+                            {
+                                case 1:
+                                    <MudItem>
+                                        <img src="Images/A.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 2:
+                                    <MudItem>
+                                        <img src="Images/B.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                                case 3:
+                                    <MudItem>
+                                        <img src="Images/C.png" Height="25" Width="25" />
+                                    </MudItem>
+                                    break;
+                            }
+                        </MudToggleItem>
+                    </div>
+                }
+            </MudToggleGroup>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" @onclick="(() => ChangeOperations.InvokeAsync())">@Localizer["save"]</MudButton>
+        <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public JobObservation _jobObservation { get; set; } = new();
+
+    [Parameter]
+    public EventCallback ChangeOperations { get; set; }
+
+    [Parameter]
+    public List<Operation> _operations { get; set; } = new();
+
+
+    void Close() => MudDialog.Close();
+
+    private string searchTerm = "";
+
+
+    private IEnumerable<Operation> FilteredOperations =>
+              _operations.Where(op =>
+                  string.IsNullOrEmpty(searchTerm) ||
+                  (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                  (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+}

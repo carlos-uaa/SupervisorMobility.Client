@@ -1,0 +1,40 @@
+﻿<MudDialog>
+    <TitleContent>
+        Questions on which it depends
+    </TitleContent>
+    <DialogContent>
+        <MudToggleGroup Vertical T="ChecklistQuestion" SelectionMode="SelectionMode.SingleSelection" @bind-Value="SelectedQuestion" Color="Color.Secondary" CheckMark Class="toggle-group-container-dialog">
+            
+            @foreach (var question in Questions)
+            {
+                <div class="toggle-column">
+
+                    <MudToggleItem T="ChecklistQuestion" Value="@(question)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                        @($" - {question.Prompt}")
+                    </MudToggleItem>
+                </div>
+            }
+        </MudToggleGroup>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+    [Parameter]
+    public List<ChecklistQuestion> Questions { get; set; }
+
+    [Parameter]
+    public ChecklistQuestion SelectedQuestion { get; set; }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(SelectedQuestion));
+    } 
+
+    private void Cancel() => MudDialog.Cancel();
+}

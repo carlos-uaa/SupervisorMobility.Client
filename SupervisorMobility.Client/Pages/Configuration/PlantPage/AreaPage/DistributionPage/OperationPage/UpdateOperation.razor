@@ -9,6 +9,9 @@
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IBreadcrumbService BreadcrumbService
 
+
+@inject IDialogService DialogService
+
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["updateOperation"]</PageTitle>
 
@@ -140,61 +143,71 @@
                                 </MudSelect>
                                 @*<MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_operation.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />*@
 
-                                <MudSelect T="string" Label=@Localizer["product"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_operation.ProductName" For="@(() => _operation.ProductName)" SelectedValuesChanged="UpdateProduct">
-                                    <MudSelectItem Value="string.Empty">@Localizer["selectAProduct"]</MudSelectItem>
-                                    @foreach (Product prod in _products)
+                                <MudDynamicTabs @bind-ActivePanelIndex="@activeTabIndex" Class="mb-10"
+                                                AddTab="@AddTabCallback" CloseTab="@RemoveTabCallback" AddIconToolTip="Click to add a new product" CloseIconToolTip="Close tab. All data will be lost">
+                                    @foreach (var tab in openTabs)
                                     {
-                                        <MudSelectItem Value="prod.Code">@($"{prod.Description}")</MudSelectItem>
+                                        <MudTabPanel @onclick="() => UpdateProduct()" Icon="@(openTabs.IndexOf(tab) == 0 ? Icons.Material.Filled.FolderOpen : null)" ID="@tab">
+                                            <TabContent>
+                                                @tab
+                                            </TabContent>
+                                            <ChildContent>
+                                                <MudSimpleTable>
+
+                                                    <MudTr>
+
+                                                        @foreach (var (value, index) in NameTimeList[tab].Select((value, index) => (value, index)))
+                                                        {
+                                                            <MudTd>
+                                                                <MudTextField Label="@($"{Localizer["nameTime"]} {index + 1}")" Class="mt-3" 
+                                                                              @bind-Value="NameTimeList[tab][index]" />
+                                                            </MudTd>
+                                                        }
+                                                    </MudTr>
+
+                                                    <MudTr>
+                                                        @foreach (var (value, index) in TimeList[tab].Select((value, index) => (value, index)))
+                                                        {
+                                                            <MudTd>
+                                                                <MudTextField Label="@($"{Localizer["Time"]} {index + 1}")" Class="mt-3" 
+                                                                              @bind-Value="TimeList[tab][index]" />
+                                                            </MudTd>
+                                                        }
+
+                                                    </MudTr>
+
+                                                    <MudTr>
+                                                        @foreach (var (value, index) in AdditionalTimeList[tab].Select((value, index) => (value, index)))
+                                                        {
+                                                            <MudTd>
+                                                                <MudTextField Label="@($"{Localizer["additionalTime"]} {index + 1}")" Class="mt-3" 
+                                                                              @bind-Value="AdditionalTimeList[tab][index]" />
+                                                            </MudTd>
+                                                        }
+
+                                                    </MudTr>
+
+                                                    <MudTr>
+                                                        @foreach (var (value, index) in StandardTimeList[tab].Select((value, index) => (value, index)))
+                                                        {
+                                                            <MudTd>
+
+                                                                <MudTextField Label="@($"{Localizer["standardTime"]} {index + 1}")" Class="mt-3" 
+                                                                              @bind-Value="StandardTimeList[tab][index]" />
+                                                            </MudTd>
+                                                        }
+                                                    </MudTr>
+
+                                                </MudSimpleTable>
+
+                                            </ChildContent>
+                                        </MudTabPanel>
                                     }
-                                </MudSelect>
+                                </MudDynamicTabs>
 
-                                <MudSimpleTable>
 
-                                    <MudTr>
 
-                                        @foreach (var (value, index) in _operation.NameTime.Split('§').Select((value, index) => (value, index)))
-                                        {
-                                            <MudTd>
-                                                <MudTextField Label="@($"{Localizer["nameTime"]} {index + 1}")" Class="mt-3"
-                                                              @bind-Value="NameTimeList[index]" />
-                                            </MudTd>
-                                        }
-                                    </MudTr>
 
-                                    <MudTr>
-                                        @foreach (var (value, index) in _operation.Time.Split('§').Select((value, index) => (value, index)))
-                                        {
-                                            <MudTd>
-                                                <MudTextField Label="@($"{Localizer["Time"]} {index + 1}")" Class="mt-3"
-                                                              @bind-Value="TimeList[index]" />
-                                            </MudTd>
-                                        }
-
-                                    </MudTr>  
-
-                                    <MudTr>
-                                        @foreach (var (value, index) in _operation.AdditionalTime.Split('§').Select((value, index) => (value, index)))
-                                        {
-                                            <MudTd>
-                                                <MudTextField Label="@($"{Localizer["additionalTime"]} {index + 1}")" Class="mt-3"
-                                                              @bind-Value="AdditionalTimeList[index]" />
-                                            </MudTd>
-                                        }
-
-                                    </MudTr>
-
-                                    <MudTr>
-                                        @foreach (var (value, index) in _operation.StandardTime.Split('§').Select((value, index) => (value, index)))
-                                        {
-                                            <MudTd>
-
-                                                <MudTextField Label="@($"{Localizer["standardTime"]} {index + 1}")" Class="mt-3"
-                                                              @bind-Value="StandardTimeList[index]" />
-                                            </MudTd>
-                                        }
-                                    </MudTr>
-
-                                </MudSimpleTable>
                             </MudCardContent>
                             <MudCardActions>
                                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@Localizer["save"]</MudButton>

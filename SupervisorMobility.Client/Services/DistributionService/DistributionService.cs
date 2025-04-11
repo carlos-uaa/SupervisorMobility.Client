@@ -99,6 +99,22 @@ namespace SupervisorMobility.Client.Services.DistributionService
             var distributions = JsonSerializer.Deserialize<List<Distribution>>(content, _options);
 
             return distributions;
+
+        }
+        
+        public async Task<List<Distribution>> GetDistributionsWithCollectionsDetails(int plantId, int areaId)
+        {
+            var response = await _http.GetAsync($"plants/{plantId}/areas/{areaId}/distributions/Details?includecollections=true");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var distributions = JsonSerializer.Deserialize<List<Distribution>>(content, _options);
+
+            return distributions;
         }
 
         // Update distribution

@@ -809,39 +809,49 @@
                                                                         <b>@(section)-@question.CategorySequence.</b> @((MarkupString)(currentLanguage == "es-ES" ? Regex.Replace(question.Prompt, pattern, replacement) : Regex.Replace(question.PromptEN, pattern, replacement)))
                                                                     </MudText>
                                                                 </td>
-                                                                <td width="25%">
-                                                                    @if (section != 1 || (question.CategorySequence < 4 || question.CategorySequence > 6))
+                                                                @if (question.Type != null)
+                                                                {
+                                                                    <td width="25%">
+                                                                        @switch (question.Type.Code)
+                                                                        {
+                                                                            case "TF":
+                                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                                    <MudRadioGroup T="string" Value="answer.Answer" Disabled="true">
+                                                                                        <MudRadio Option="question.Options[0]" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">@question.Options[0]</MudRadio>
+                                                                                        <MudRadio Option="question.Options[1]" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">@question.Options[1]</MudRadio>
+                                                                                        <MudRadio Option="question.Options[2]" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">@question.Options[2]</MudRadio>
+                                                                                    </MudRadioGroup>
+                                                                                </MudItem>
+                                                                                break;
+                                                                            case "MC":
+                                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                                    <MudSelect T="string" Label="" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="answer.Answer" Disabled="true">
+                                                                                        <MudSelectItem Disabled="true" Value="string.Empty">Select Answer</MudSelectItem>
+                                                                                        @foreach (var opt in question.Options)
+                                                                                        {
+                                                                                            @if (!question.DisabledOptions.Contains(opt))
+                                                                                            {
+                                                                                                <MudSelectItem Value="@opt">@opt</MudSelectItem>
+                                                                                            }
+                                                                                        }
+                                                                                    </MudSelect>
+                                                                                </MudItem>
+                                                                                break;
+                                                                            default:
+                                                                                <MudItem>
+                                                                                    <MudTextField Class="ml-4" T="string" Value="answer.Answer" Disabled="true" />
+                                                                                </MudItem>
+                                                                                break;
+                                                                        }
+                                                                    </td>
+                                                                    @if (question.Type.Code == "TF")
                                                                     {
-                                                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                                                            <MudRadioGroup T="string" @bind-SelectedOption="answer.Answer" Disabled="true">
-                                                                                <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">Yes</MudRadio>
-                                                                                <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">NG</MudRadio>
-                                                                                <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">N/A</MudRadio>
-                                                                            </MudRadioGroup>
-                                                                        </MudItem>
+                                                                        <td>
+                                                                            <MudButton Style=" display: -webkit-box;" FullWidth="true" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => answer.Show = !answer.Show)">
+                                                                            </MudButton>
+                                                                        </td>
                                                                     }
-                                                                    else if (question.CategorySequence <= 5)
-                                                                    {
-                                                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                                                            <MudRadioGroup T="string" SelectedOption="answer.Answer" Disabled="true">
-                                                                                <MudRadio Option="@("NG")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">NO</MudRadio>
-                                                                                <MudRadio Option="@("YES")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">Yes</MudRadio>
-                                                                                <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">N/A</MudRadio>
-                                                                            </MudRadioGroup>
-                                                                        </MudItem>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.CommentarySV" Label="KPI" ReadOnly />
-                                                                    }
-                                                                </td>
-                                                                <td>
-                                                                    @if (section != 1 || question.CategorySequence != 6)
-                                                                    {
-                                                                        <MudButton Style=" display: -webkit-box;" FullWidth="true" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => answer.Show = !answer.Show)">
-                                                                        </MudButton>
-                                                                    }
-                                                                </td>
+                                                                }
                                                             </tr>
                                                             @if (answer.Show)
                                                             {
@@ -907,36 +917,64 @@
                                                                     <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @((MarkupString)(currentLanguage == "es-ES" ? Regex.Replace(question.Prompt, pattern, replacement) : Regex.Replace(question.PromptEN, pattern, replacement))) </MudText>
                                                                 </td>
 
-                                                                <td width="25%">
-                                                                    @if (section != 1 || (question.CategorySequence < 4 || question.CategorySequence > 6))
-                                                                    {
-                                                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                                                            <MudRadioGroup T="string" @bind-SelectedOption="answer.Answer" Disabled="true">
-                                                                                <MudRadio Option="@("YES")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">Yes</MudRadio>
-                                                                                <MudRadio Option="@("NG")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">NG</MudRadio>
-                                                                                <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">N/A</MudRadio>
-                                                                            </MudRadioGroup>
-                                                                        </MudItem>
-                                                                    }
-                                                                    else if (question.CategorySequence <= 5)
-                                                                    {
-                                                                        <MudItem style="align-content: end; display: flex; justify-content: center;">
-                                                                            <MudRadioGroup T="string" SelectedOption="answer.Answer" Disabled="true">
-                                                                                <MudRadio Option="@("NG")" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">NO</MudRadio>
-                                                                                <MudRadio Option="@("YES")" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">Yes</MudRadio>
-                                                                                <MudRadio Option="@("N/A")" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">N/A</MudRadio>
-                                                                            </MudRadioGroup>
-                                                                        </MudItem>
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.CommentarySV" Label="KPI" ReadOnly />
-                                                                    }
-                                                                </td>
+                                                                @if (question.Type != null)
+                                                                {
+                                                                    <td width="25%">
+                                                                        @switch (question.Type.Code)
+                                                                        {
+                                                                            case "TF":
+                                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                                    <MudRadioGroup T="string" Value="answer.Answer" Disabled="true">
+                                                                                        <MudRadio Option="question.Options[0]" Color="Color.Success" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">@question.Options[0]</MudRadio>
+                                                                                        <MudRadio Option="question.Options[1]" Color="Color.Error" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">@question.Options[1]</MudRadio>
+                                                                                        <MudRadio Option="question.Options[2]" Color="Color.Info" UnCheckedColor="Color.Info" Dense="true" @onchange="@(() => answer.Show = true)">@question.Options[2]</MudRadio>
+                                                                                    </MudRadioGroup>
+                                                                                </MudItem>
+                                                                                break;
+                                                                            case "MC":
+                                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                                    <MudSelect T="string" Label="" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="answer.Answer" Disabled="true">
+                                                                                        <MudSelectItem Disabled="true" Value="string.Empty">Select Answer</MudSelectItem>
+                                                                                        @foreach (var opt in question.Options)
+                                                                                        {
+                                                                                            @if (!question.DisabledOptions.Contains(opt))
+                                                                                            {
+                                                                                                <MudSelectItem Value="@opt">@opt</MudSelectItem>
+                                                                                            }
+                                                                                        }
+                                                                                    </MudSelect>
+                                                                                </MudItem>
+                                                                                break;
 
-                                                                <td>
-                                                                    <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
-                                                                </td>
+                                                                            case "MCM":
+                                                                                <MudItem style="align-content: end; display: flex; justify-content: center;">
+                                                                                    <MudSelect T="string" Label="" MultiSelection="true" @bind-Value="answer.Answer" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" Disabled="true">
+                                                                                        <MudSelectItem Disabled="true" Value="string.Empty">Select Answers</MudSelectItem>
+                                                                                        @foreach (var opt in question.Options)
+                                                                                        {
+                                                                                            @if (!question.DisabledOptions.Contains(opt))
+                                                                                            {
+                                                                                                <MudSelectItem Value="@opt">@opt</MudSelectItem>
+                                                                                            }
+                                                                                        }
+                                                                                    </MudSelect>
+                                                                                </MudItem>
+                                                                                break;
+                                                                            default:
+                                                                                <MudItem>
+                                                                                    <MudTextField Class="ml-4" T="string" Value="answer.Answer" Disabled="true" />
+                                                                                </MudItem>
+                                                                                break;
+                                                                        }
+                                                                    </td>
+                                                                    @if (question.Type.Code == "TF")
+                                                                    {
+                                                                        <td>
+                                                                            <MudButton Style=" display: -webkit-box;" FullWidth="true" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => answer.Show = !answer.Show)">
+                                                                            </MudButton>
+                                                                        </td>
+                                                                    }
+                                                                }
                                                             </tr>
                                                             @if (answer.Show)
                                                             {
@@ -1057,134 +1095,154 @@
                                                     </MudSelect>
                                                 </th>
                                             </tr>
-                                            @*                                                 <tr>
-                                                    <th></th>
-                                                    <th>
-                                                        @if (jobProductIds[0] != 0)
-                                                        {
+                                            <tr>
+                                                <th></th>
+                                                <th>
+                                                    @if (jobProductIds[0] != 0)
+                                                    {
+                                                        <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4" 
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[0]">
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                            @if (_specifications.Count > 0 && _specifications[0] != null)
+                                                            {
+                                                                @foreach (var type in _specifications[0])
+                                                                {
+                                                                    <MudSelectItem T="string" Value="@(type)">
+                                                                        <MudTooltip Text="@operationSpecProduct[0]">
+                                                                            @type
+                                                                        </MudTooltip>
+                                                                    </MudSelectItem>
+                                                                }
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudSelect ReadOnly  T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[0]" Disabled>
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                        </MudSelect>
+                                                    }
+                                                </th>
+                                                <th>
+                                                    @if (jobProductIds[1] != 0)
+                                                    {
+                                                        <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4" 
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[1]">
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                            @if (_specifications.Count > 0 && _specifications[1] != null)
+                                                            {
+                                                                @foreach (var type in _specifications[1])
+                                                                {
+                                                                    <MudSelectItem T="string" Value="@(type)">
+                                                                        <MudTooltip Text="@operationSpecProduct[1]">
+                                                                            @type
+                                                                        </MudTooltip>
+                                                                    </MudSelectItem>
+                                                                }
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    else
+                                                    {
                                                         <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[0]">
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                                @if (_specifications.Count > 0 && _specifications[0] != null)
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[1]" Disabled>
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                        </MudSelect>
+                                                    }
+                                                </th>
+                                                <th>
+                                                    @if (jobProductIds[2] != 0)
+                                                    {
+                                                        <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4" 
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[2]">
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                            @if (_specifications.Count > 0 && _specifications[2] != null)
+                                                            {
+                                                                @foreach (var type in _specifications[2])
                                                                 {
-                                                                    @foreach (var type in _specifications[0])
-                                                                    {
-                                                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
-                                                                    }
+                                                                    <MudSelectItem T="string" Value="@(type)">
+                                                                        <MudTooltip Text="@operationSpecProduct[2]">
+                                                                            @type
+                                                                        </MudTooltip>
+                                                                    </MudSelectItem>
                                                                 }
-                                                            </MudSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <MudSelect T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[0]" Disabled>
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                            </MudSelect>
-                                                        }
-                                                    </th>
-                                                    <th>
-                                                        @if (jobProductIds[1] != 0)
-                                                        {
-                                                            <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[1]" >
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                                @if (_specifications.Count > 0 && _specifications[1] != null)
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4" 
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[2]" Disabled>
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                        </MudSelect>
+                                                    }
+                                                </th>
+                                                <th>
+                                                    @if (jobProductIds[3] != 0)
+                                                    {
+                                                        <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4" 
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[3]">
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                            @if (_specifications.Count > 0 && _specifications[3] != null)
+                                                            {
+                                                                @foreach (var type in _specifications[3])
                                                                 {
-                                                                    @foreach (var type in _specifications[1])
-                                                                    {
-                                                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
-                                                                    }
+                                                                    <MudSelectItem T="string" Value="@(type)">
+                                                                        <MudTooltip Text="@operationSpecProduct[3]">
+                                                                            @type
+                                                                        </MudTooltip>
+                                                                    </MudSelectItem>
                                                                 }
-                                                            </MudSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[1]" Disabled>
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                            </MudSelect>
-                                                        }
-                                                    </th>
-                                                    <th>
-                                                        @if (jobProductIds[2] != 0)
-                                                        {
-                                                            <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[2]" >
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                                @if (_specifications.Count > 0 && _specifications[2] != null)
-                                                                {
-                                                                    @foreach (var type in _specifications[2])
-                                                                    {
-                                                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
-                                                                    }
-                                                                }
-                                                            </MudSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[2]" Disabled>
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                            </MudSelect>
-                                                        }
-                                                    </th>
-                                                    <th>
-                                                        @if (jobProductIds[3] != 0)
-                                                        {
-                                                            <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[3]" >
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                                @if (_specifications.Count > 0 && _specifications[3] != null)
-                                                                {
-                                                                    @foreach (var type in _specifications[3])
-                                                                    {
-                                                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
-                                                                    }
-                                                                }
-                                                            </MudSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[3]" Disabled>
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                            </MudSelect>
-                                                        }
-                                                    </th>
-                                                    <th>
-                                                        @if (jobProductIds[4] != 0)
-                                                        {
-                                                            <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[4]" >
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                                @if (_specifications.Count > 0 && _specifications[4] != null)
-                                                                {
-                                                                    @foreach (var type in _specifications[4])
-                                                                    {
-                                                                        <MudSelectItem T="string" Value="@(type)">@type</MudSelectItem>
-                                                                    }
-                                                                }
-                                                            </MudSelect>
-                                                        }
-                                                        else
-                                                        {
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    else
+                                                    {
                                                         <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
-                                                                       AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
-                                                                       @bind-Value="productSpecification[4]" Disabled>
-                                                                <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
-                                                            </MudSelect>
-                                                        }
-                                                    </th>
-                                                </tr> *@
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[3]" Disabled>
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                        </MudSelect>
+                                                    }
+                                                </th>
+                                                <th>
+                                                    @if (jobProductIds[4] != 0)
+                                                    {
+                                                        <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4" 
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[4]">
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                            @if (_specifications.Count > 0 && _specifications[4] != null)
+                                                            {
+                                                                @foreach (var type in _specifications[4])
+                                                                {
+                                                                    <MudSelectItem T="string" Value="@(type)">
+                                                                        <MudTooltip Text="@operationSpecProduct[4]">
+                                                                            @type
+                                                                        </MudTooltip>
+                                                                    </MudSelectItem>
+                                                                }
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudSelect ReadOnly T="string" Label=@Localizer["Spec."] Variant="Variant.Text" Class="mr-4"
+                                                                   AdornmentIcon="@Icons.Material.Filled.DirectionsCar" AdornmentColor="Color.Info"
+                                                                   @bind-Value="productSpecification[4]" Disabled>
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["selectAnSpecification"]</MudSelectItem>
+                                                        </MudSelect>
+                                                    }
+                                                </th>
+                                            </tr>
                                             <tr>
                                                 <th>Distribution Standard time (cs)</th>
 
@@ -1195,10 +1253,7 @@
                                                        _productAndSpecification.Any(ps => ps.ProductName == p.Code))
                                                        )
                                                         {
-                                                            var standardTime = _productAndSpecification
-                                                            .FirstOrDefault(ps => ps.ProductName == _products
-                                                            .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
-
+                                                            var standardTime = _productAndSpecification[i]?.StandardTime;
                                                             @standardTime
                                                         }
                                                     </th>
@@ -1222,9 +1277,7 @@
                                                     var standardTime = "0.0";
                                                     if (jobProductIds[i] != 0)
                                                     {
-                                                        standardTime = _productAndSpecification
-                                                        .FirstOrDefault(ps => ps.ProductName == _products
-                                                        .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+                                                        standardTime = _productAndSpecification[i]?.StandardTime;
                                                     }
 
                                                     if (double.TryParse(standardTime, out double standardTimeValue))
@@ -1306,9 +1359,7 @@
                                                     var standardTime = "0.0";
                                                     if (jobProductIds[i] != 0)
                                                     {
-                                                        standardTime = _productAndSpecification
-                                                        .FirstOrDefault(ps => ps.ProductName == _products
-                                                        .First(p => p.ProductId == jobProductIds[i]).Code)?.StandardTime;
+                                                        standardTime = _productAndSpecification[i]?.StandardTime;
                                                     }
 
                                                     if (double.TryParse(standardTime, out double standardTimeValue))

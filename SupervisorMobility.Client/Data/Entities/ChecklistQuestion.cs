@@ -1,4 +1,7 @@
-﻿namespace SupervisorMobility.Client.Data.Entities
+﻿
+using Newtonsoft.Json;
+
+namespace SupervisorMobility.Client.Data.Entities
 {
     public class ChecklistQuestion
     {
@@ -11,11 +14,21 @@
         public int CategorySequence { get; set; }
         public string Container { get; set; } = "QuestionContainer";
         public bool? IsActive { get; set; } = false;
+        public int TypeId { get; set; }
+        public QuestionType Type { get; set; }
+
+        public List<string>? Options { get; set; }
+        public List<string>? Actions { get; set; }
         public int JobCategoryStructureId { get; set; }
         public bool show { get; set; } = false;
         public ICollection<FileUpload>? Evidences { get; set; } = new List<FileUpload>();
 
         public string? CommentarySV { get; set; } = string.Empty;
         public string? CommentarySSV { get; set; } = string.Empty;
+
+        [JsonIgnore]
+        public bool Disable { get; set; } = false;
+        [JsonIgnore]
+        public List<string> DisabledOptions { get; set; } = new();
     }
 }

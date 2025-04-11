@@ -1,18 +1,23 @@
 ﻿using BlazorCameraStreamer;
 using Blazorise.Extensions;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using FuzzyString;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.JSInterop;
 using MudBlazor;
 using Newtonsoft.Json.Linq;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities;
 using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -54,6 +59,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         };
 
         public int[] jobProductIds = new int[5];
+        public string[] operationSpecProduct = new string[5];
 
         AssyChart? _assychart { get; set; }
 
@@ -115,6 +121,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         public List<JobCategoryStructure> _checklistCategoriesAndQuestions { get; set; } = new();
         private Dictionary<int, string> questionResponses = new Dictionary<int, string>();
         private Dictionary<int, ChecklistAnswer> questionAnswers = new Dictionary<int, ChecklistAnswer>();
+        private Dictionary<int, IEnumerable<string>> MultiQuestionAnswers { get; set; } = new();
+
+        List<CategoryData> questionsData;
 
         public List<ChecklistAnswer> _checklistAnswers { get; set; } = new();
 
@@ -161,17 +170,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         protected async override Task OnInitializedAsync()
         {
 
-             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
-             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");    
+            _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+            _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
             try
             {
@@ -248,22 +257,28 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     imagesFromCamera = await LocalStorage.GetItemAsync<Dictionary<int, List<string>>>("QAnsImgFC") ?? new(); 
                     currentImage = await LocalStorage.GetItemAsync<string>("SignatureImg") ?? string.Empty; 
                     questionAnswers = await LocalStorage.GetItemAsync<Dictionary<int, ChecklistAnswer>>("QAns") ?? new(); 
+                    MultiQuestionAnswers = await LocalStorage.GetItemAsync<Dictionary<int, IEnumerable<string>>>("MQAns") ?? new(); 
                     taktTime = await LocalStorage.GetItemAsync<double?>("taktTime") ?? 1.46; 
                     StepsNumber = await LocalStorage.GetItemAsync<int?[]>("StepsNumber") ?? new int?[5];
                     CycleTimes = await LocalStorage.GetItemAsync<string?[]>("CycleTimes") ?? new string?[5]; 
-                    jobProductIds = await LocalStorage.GetItemAsync<int[]>("JobProductsIds") ?? new int[5]; 
+                    jobProductIds = await LocalStorage.GetItemAsync<int[]>("JobProductsIds") ?? new int[5];
+                    _specifications = await LocalStorage.GetItemAsync<List<List<string>>>("Specifications") ?? new List<List<string>>();
+                    productSpecification = await LocalStorage.GetItemAsync<string[]>("ProductSpecifications") ?? new string[5];
+                    _products= await LocalStorage.GetItemAsync<List<Product>>("Products") ?? new();
+                    operationSpecProduct = await LocalStorage.GetItemAsync<string[]>("OperationSpecProduct") ?? new string[5];
+
                     DoubleManagment = await LocalStorage.GetItemAsync<int?[]>("DblManagement") ?? new int?[5]; 
                     Waiting = await LocalStorage.GetItemAsync<int?[]>("Waiting") ?? new int?[5]; 
                     currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 0; 
                     hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; 
 
                     //jobProductId = _jobObservation.ProductId ?? 0;
-                    //productSpecification = _jobObservation.ModelsSpecification;
                     kpiID = _jobObservation.KpiId ?? 0;
 
                     bool skipQA = !questionAnswers.Any();
                     bool skipIFF = !imagesFromFile.Any();
                     bool skipIFC = !imagesFromCamera.Any();
+                    bool skipMQA = !MultiQuestionAnswers.Any();
 
                     foreach (var category in _checklistCategoriesAndQuestions)
                     {
@@ -282,6 +297,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                             if (skipIFC) { imagesFromCamera.Add(question.QuestionID, new()); }
                             else if (!skipQA) { questionAnswers[question.QuestionID].capturedImages.AddRange(imagesFromCamera[question.QuestionID]); }
+                            if (question.Type?.Code == "MCM" && skipMQA) MultiQuestionAnswers.Add(question.QuestionID, new List<string>());
                         }
                     }
 
@@ -300,7 +316,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add("Loaded previous work", Severity.Info);
 
-                    ShowLoading = false;
+                    //ShowLoading = false;
                     StateHasChanged();
                 }
                 catch (Exception e)
@@ -320,6 +336,70 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             glosary = await GlosaryService.GetGlosary();
             _glosaryInfo = glosary.ToDictionary(x => x.Name, x => x);
+
+            questionsData = new();
+
+            foreach (var category in _checklistCategoriesAndQuestions.Where(c=>c.Type == StructureType.Checklist))
+            {
+                var tempCD = new CategoryData();
+                tempCD.CategoryId = category.JobCategoryStructureId;
+                foreach (var _question in category.ChecklistQuestions)
+                {
+                    var tempCQD = new CategoryQuestionData();
+                    if (_question.Actions != null && _question.Actions.Any())
+                    {
+                        foreachLoop:
+                        foreach (var (item, index) in _question.Actions.Select((item, index) => (item, index)))
+                        {
+                            var act = item.Split("℘", StringSplitOptions.RemoveEmptyEntries);
+                            if (act.Length >= 2)
+                            {
+                                List<string> newQuestions = act[0].Split("⁂", StringSplitOptions.RemoveEmptyEntries).ToList();
+                                List<string> newActions = act[1].Split("⁂").ToList();
+                                if (!tempCQD.QuestionContent.ContainsKey(index))
+                                {
+                                    tempCQD.QuestionContent[index] = (new Dictionary<int, QuestionData>(), new Dictionary<int, ActionData>());
+                                }
+                                for (int i = 0; i < newQuestions.Count; i++)
+                                {
+                                    var temp = newQuestions[i].Split("§", StringSplitOptions.RemoveEmptyEntries);
+                                    if(temp.Length < 3)
+                                    {
+                                        tempCQD.QuestionContent.Remove(index);
+                                        goto foreachLoop;
+                                    }
+                                    if (!tempCQD.QuestionContent[index].Questions.ContainsKey(i))
+                                    {
+                                        tempCQD.QuestionContent[index].Questions[i] = new QuestionData(); // Default value
+                                    }
+                                    tempCQD.QuestionContent[index].Questions[i].QuestionId = temp.Length > 0 ? Int32.Parse(temp[0]) : 0;
+                                    tempCQD.QuestionContent[index].Questions[i].Comparator = temp.Length > 1 ? temp[1] : "";
+                                    tempCQD.QuestionContent[index].Questions[i].QstOption = temp.Length > 2 ? temp[2] : "";
+
+                                }
+                                for (int i = 0; i < newActions.Count; i++)
+                                {
+                                    var temp = newActions[i].Split("§", StringSplitOptions.RemoveEmptyEntries);
+                                    if ((temp.Length > 0 && (temp[0] == "SET" || temp[0] == "DBLOPT")) && temp.Length < 2)
+                                    {
+                                        tempCQD.QuestionContent.Remove(index);
+                                        goto foreachLoop;
+                                    }
+                                    if (!tempCQD.QuestionContent[index].Actions.ContainsKey(i))
+                                    {
+                                        tempCQD.QuestionContent[index].Actions[i] = new ActionData(); // Default value
+                                    }
+                                    tempCQD.QuestionContent[index].Actions[i].Operation = temp.Length > 0 ? temp[0] : "";
+                                    tempCQD.QuestionContent[index].Actions[i].Value = temp.Length > 1 ? temp[1] : "";
+
+                                }
+                            }
+                        }
+                        tempCD.QuestionsInCategory[_question.QuestionID] = tempCQD;
+                    }
+                }
+                if(tempCD.QuestionsInCategory.Any()) questionsData.Add(tempCD);
+            }
 
             ShowLoading = false;
             StateHasChanged();
@@ -346,6 +426,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             bool skipQA = !questionAnswers.Any();
             bool skipIFF = !imagesFromFile.Any();
             bool skipIFC = !imagesFromCamera.Any();
+            bool skipMQA = !MultiQuestionAnswers.Any();
 
             foreach (var category in _checklistCategoriesAndQuestions)
             {
@@ -359,6 +440,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     if (skipQA) questionAnswers.Add(question.QuestionID, newChAnswer);
                     if (skipIFF) imagesFromFile.Add(question.QuestionID, new ());
                     if (skipIFC) imagesFromCamera.Add(question.QuestionID, new ());
+                    if (question.Type?.Code == "MCM" && skipMQA) MultiQuestionAnswers.Add(question.QuestionID, new List<string>());
                 }
             }
 
@@ -552,7 +634,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _assychart = null;
             jobProductId = 0;
             _specifications = new();
-            //productSpecification = string.Empty;
+            productSpecification = new string[5];
 
             if (user.UserType == 1)
             {
@@ -616,7 +698,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 new List<string>()  // Product 5
             };
             jobProductId = 0;
-            //productSpecification = string.Empty;
+            productSpecification = new string[5];
 
             _products = _distributions[_distributions.FindIndex(d => d.DistributionId == _jobObservation.DistributionId)].Products;
             _products = _products.OrderBy(p => p.Description).ToList();
@@ -636,43 +718,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //SetAsCurrentJobObservation();
 
             var groupedOperations = _operations
-            .GroupBy(op => op.ProductName)
-            .Select(g => new ProductAndStandardTime
-            {
-                ProductName = g.Key,
-                StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
-            })
-            .ToList();
+                .SelectMany(op => op.ProductName.Split('§').Select(product => new { Product = product, Operation = op }))
+                .GroupBy(x => x.Product)
+                .Select(g => new ProductAndStandardTime
+                {
+                    ProductName = g.Key,
+                    StandardTime = g.Select(x => x.Operation.StandardTime).FirstOrDefault()
+                })
+                .ToList();
 
             int count = Math.Min(groupedOperations.Count, 5);
-            _productAndSpecification = new ProductAndStandardTime[count];
+            _productAndSpecification = new ProductAndStandardTime[5];
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < 5; i++)
             {
-                var productName = groupedOperations[i].ProductName;
-
-                var standardTimeParts = groupedOperations[i].StandardTime.Split('§');
-                if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
-                {
-                    var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
-                    Console.WriteLine($"{productName}: {roundedStandardTime}");
-
+                
                     _productAndSpecification[i] = new ProductAndStandardTime
                     {
-                        ProductName = productName,
-                        StandardTime = roundedStandardTime
-                    };
-                }
-                else
-                {
-                    Console.WriteLine($"{productName}: Invalid StandardTime");
-                    _productAndSpecification[i] = new ProductAndStandardTime
-                    {
-                        ProductName = productName,
+                        ProductName = "",
                         StandardTime = "0.00"
                     };
-                }
+                
             }
+
 
 
             await Task.Delay(150);
@@ -827,51 +895,70 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-
+        List<bool> loadSpec = new List<bool>() { false,false,false,false,false };
         public void InitializeCycleTimes(string specification, int index)
         {
+            loadSpec[index] = true;
+            StateHasChanged();
+            Console.WriteLine($"Spect: {specification}");
             productSpecification[index] = specification;
             _filteredOperations = new();
-            StepsNumber = new int?[5];
-            DoubleManagment = new int?[5];
-            Waiting = new int?[5];
+            //StepsNumber = new int?[5];
+            //DoubleManagment = new int?[5];
+            //Waiting = new int?[5]; 
 
-            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductId);
+            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductIds[index]);
+
+            Console.WriteLine($"Prdo: {selectedProduct.Code}");
             if (selectedProduct != null)
             {
-                _filteredOperations = _operations.Where(op => op.ProductName != null && op.ProductName.Contains(selectedProduct.Code)).ToList();
-
-            }
-            var standardTimeIndex = _specifications[index].FindIndex(s => s == productSpecification[index]);
-
-            foreach (var op in _filteredOperations)
-            {
-                if (op.StandardTime != null)
+                var op = string.IsNullOrEmpty(specification) ? _operations.FirstOrDefault(o => o.ProductName?.Contains(selectedProduct.Code) == true) :  _operations.FirstOrDefault(o => o.ProductName?.Contains(selectedProduct.Code) == true && o.NameTime.Contains(specification) == true );
+                Console.WriteLine($"Op: {op?.Description}");
+                if (op != null && !string.IsNullOrEmpty(op.StandardTime))
                 {
+                    var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.StandardTime);
+                    if (standardTimeDict != null && standardTimeDict.ContainsKey(selectedProduct.Code))
+                    {
+                        var standardTimeParts = standardTimeDict[selectedProduct.Code].Split('§');
 
-                    var hoeTimes = op.StandardTime.Replace(',', '.').Split("§");
-                    hoeStandardTime = double.Parse(hoeTimes[standardTimeIndex], CultureInfo.InvariantCulture);
-                    hoeStandardTime = Math.Round(hoeStandardTime, 2);
-                    Console.WriteLine(hoeStandardTime);
+                        int indexOfSpec = string.IsNullOrEmpty(specification) ? 0 : Array.IndexOf(_specifications[index].ToArray(), specification);
+                        Console.WriteLine($"IndexOfSpec: {indexOfSpec}");
+
+                        if (decimal.TryParse(standardTimeParts[indexOfSpec], out decimal standardTimeValue))
+                        {
+                            var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
+                            Console.WriteLine($"{specification} {selectedProduct.Code}: {roundedStandardTime}");
+
+                            _productAndSpecification[index] = new ProductAndStandardTime
+                            {
+                                ProductName = selectedProduct.Code,
+                                StandardTime = roundedStandardTime
+                            };
+                        }else
+                        {
+                            Console.WriteLine($"{selectedProduct.Code}: Invalid StandardTime");
+                            _productAndSpecification[index] = new ProductAndStandardTime
+                            {
+                                ProductName = selectedProduct.Code,
+                                StandardTime = "0.00"
+                            };
+                        }
+                    }
                 }
             }
-            //foreach (var op in _filteredOperations)
-            //{
-            //    if (!OperationTimes.ContainsKey(op.OperationId))
-            //    {
-            //        OperationTimes[op.OperationId] = new Dictionary<int, double>();
-            //        for (int i = 1; i <= 5; i++)
-            //        {
-            //            OperationTimes[op.OperationId][i] = 0.0;
-            //        }
-            //    }
-            //}
 
-            //_jobObservation.ModelsSpecification = productSpecification;
-            //SyncLocalStorage.SetItem("HoeStandardTime", hoeStandardTime);
+
+            _jobObservation.ModelsSpecification = string.Join("|", productSpecification);
+
+            SyncLocalStorage.SetItem("HoeStandardTime", hoeStandardTime);
+            SyncLocalStorage.SetItem("Specifications", _specifications);
+            SyncLocalStorage.SetItem("ProductSpecifications", productSpecification);
+            SyncLocalStorage.SetItem("OperationSpecProduct", operationSpecProduct);
             //SyncLocalStorage.SetItem("JobObs", _jobObservation);
             //SyncLocalStorage.SetItem("OpTimes", OperationTimes);
             //SetAsCurrentJobObservation();
+            loadSpec[index] = false;
+            StateHasChanged();
         }
 
 
@@ -890,24 +977,61 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             }
         }
 
-        private async Task ShowSpecifications(int id, int productIndex)
+        private async Task ShowSpecifications(int id_Product, int productIndex)
         {
-            jobProductIds[productIndex] = id;
+            jobProductIds[productIndex] = id_Product;
             _specifications[productIndex] = new();
 
-
-
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[productIndex]);
-
+            Console.WriteLine($"Prod select: {prodName?.Code}");
 
             if (prodName != null)
             {
-                var op = _operations.Where(o => o.OperationId == _jobObservation.Operations?.FirstOrDefault().OperationId).FirstOrDefault(p => p.ProductName == prodName?.Code);
+                Operation? op = null;
+
+                if (_jobObservation.Operations != null && _jobObservation.Operations?.Count() > 0)
+                {
+                    Console.WriteLine("Operacion en Job");
+                    var firstOperation = _jobObservation.Operations.FirstOrDefault();
+                    if (firstOperation != null)
+                    {
+                        op = _operations.FirstOrDefault(o => o.OperationId == firstOperation.OperationId && o.ProductName?.Split('§').Contains(prodName.Code) == true);
+                    }
+
+                   if (op == null)
+                    {
+                        foreach (var jobOp in _jobObservation.Operations)
+                        {
+                            op = _operations.FirstOrDefault(o => o.OperationId == jobOp.OperationId && o.ProductName?.Split('§').Contains(prodName.Code) == true);
+                            if (op != null)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (op == null)
+                {
+                    op = _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(prodName.Code) == true);
+                }
 
                 if (op != null && !string.IsNullOrEmpty(op.NameTime))
                 {
+                    Console.WriteLine($"Operacion encontrada {op.Description}");
 
-                    var names = op.NameTime.Replace(',', '.').Split("§");
+                    operationSpecProduct[productIndex] = op.Description;
+
+                    Dictionary<string, List<string>> NameTimeList = new Dictionary<string, List<string>>();
+                    var nameTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.NameTime);
+                    foreach (var kvp in nameTimeDict)
+                    {
+                        NameTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                    }
+
+                    var names = NameTimeList[prodName.Code];
+
+
                     for (int i = 0; i < 5; i++)
                     {
                         if (!string.IsNullOrEmpty(names[i]))
@@ -915,6 +1039,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             _specifications[productIndex].Add(names[i]);
                         }
                     }
+
+                    var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.StandardTime);
+                    if (standardTimeDict != null && standardTimeDict.ContainsKey(prodName.Code))
+                    {
+                        var standardTimeParts = standardTimeDict[prodName.Code].Split('§');
+
+                        
+                        if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
+                        {
+                            var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
+                           
+                            _productAndSpecification[productIndex] = new ProductAndStandardTime
+                            {
+                                ProductName = prodName.Code,
+                                StandardTime = roundedStandardTime
+                            };
+                        }
+                        else
+                        {
+                            
+                            _productAndSpecification[productIndex] = new ProductAndStandardTime
+                            {
+                                ProductName = prodName.Code,
+                                StandardTime = "0.00"
+                            };
+                        }
+                    }
+
+
                 }
             }
 
@@ -922,6 +1075,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             //_jobObservation.ProductId = id;
             await LocalStorage.SetItemAsync("JobProductsIds", jobProductIds);
+            await LocalStorage.SetItemAsync("Specifications", _specifications);
+            await LocalStorage.SetItemAsync("Products", _products);
 
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             StateHasChanged();
@@ -1050,7 +1205,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //_jobObservation.OperationId = 0;
 
             _jobObservation.OperationTimesJson = BuildOperationTimesJson();
-            //_jobObservation.ModelsSpecification = productSpecification;
+            _jobObservation.ModelsSpecification = string.Join("|", productSpecification);
             _jobObservation.StepsNumber = string.Join("|", StepsNumber);
             _jobObservation.DoubleManagment = string.Join("|", DoubleManagment);
             _jobObservation.Waiting = string.Join("|", Waiting);
@@ -1127,6 +1282,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _jobObservation.EndDate = newDate2;
             }
 
+            await TransformToSingle();
 
             //_jobObservation.Lup = _tempLup.Keys.ToList();
             foreach (var question in questionAnswers)
@@ -1944,113 +2100,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
         }
 
-        
-
-        //Files Path
-        private CDMS_CCP_Archives? CcpFilesInFolder;
-        private CDMS_HOE_Archives? HoeFilesInFolder;
-        private CDMS_GOS_Archives? GosFilesInFolder;
-        private CDMS_CCP_Archives? AuxCcpFilesInFolder;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolder;
-        private CDMS_GOS_Archives? AuxGosFilesInFolder;
-        //Error Display Rutes Select ONLY
-        private bool folderCCPError = false;
-        private bool folderHOEError = false;
-        private bool folderGOSError = false;
-        //Display Files Errors
-        private bool folderErrorGOS = false;
-        private bool folderErrorCCP = false;
-        private bool folderErrorHOE = false;
-        private string HOErute = "";
-        private string CCPrute = "";
-        private string GOSrute = "";
-        //CommonDirection
-        private bool folderErrorGOSCD = false;
-        private bool folderErrorCCPCD = false;
-        private bool folderErrorHOECD = false;
-        private string HOEruteCD = "";
-        private string CCPruteCD = "";
-        private string GOSruteCD = "";
-        //CommonDirection Files
-        private CDMS_CCP_Archives? CcpFilesInFolderCD;
-        private CDMS_HOE_Archives? HoeFilesInFolderCD;
-        private CDMS_GOS_Archives? GosFilesInFolderCD;
-        private CDMS_CCP_Archives? AuxCcpFilesInFolderCD;
-        private CDMS_HOE_Archives? AuxHoeFilesInFolderCD;
-        private CDMS_GOS_Archives? AuxGosFilesInFolderCD;
-
-
-
-        private int plantId = 0;
-        private bool if_pick_Plant = false;
-        private int areaId = 0;
-        private bool if_pick_Area = false;
-        private int distributionId = 0;
-        private bool if_pick_Distribution = false;
-        private int productId = 0;
-        public int idFilter;
-
-        MudTabs FilesViewer;
-        MudTabPanel HOE;
-        MudTabPanel HOECD;
-        MudTabPanel CCP;
-        MudTabPanel CCPCD;
-        MudTabPanel GOS;
-        MudTabPanel GOSCD;
-
-        
-
-        SOSCodePath CodePathDialogDisplay { get; set; }
-
+        public int idFilter;          
         private List<SOSCodePath> listFilter = new();
         bool FilterOperation = false;
 
-
-        TreeItemData nodoEncontrado { get; set; }
-        CDMS_CCP_Directory CCPFolders { get; set; } = new CDMS_CCP_Directory();
-
-        TreeItemData rootNodeCCP { get; set; } = new TreeItemData();
-        TreeItemData SelectedNodeCCP { get; set; }
-        private async Task<AsyncVoidMethodBuilder> CCPFolderByDirectory(string CCPrute)
-        {
-
-            try
-            {
-
-                if (CCPrute != "")
-                {
-                    Console.WriteLine($"CCP {CCPrute}");
-
-                    CcpFilesInFolder = new CDMS_CCP_Archives();
-                    CcpFilesInFolder = await CDMSServices.GetFilesCCP(CCPrute);
-                    if (CcpFilesInFolder == null)
-                        folderErrorCCP = true;
-                    else
-                    {
-                        AuxCcpFilesInFolder = ObjectCloner.ObjectCloner.DeepClone(CcpFilesInFolder);
-                        folderErrorCCP = false;
-
-                    }
-                }
-
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error CCPFolderByDirectory: {ex.Message}");
-            }
-            finally
-            {
-                StateHasChanged();
-            }
-
-            return new AsyncVoidMethodBuilder();
-
-        }
-
-        /////
-        ///
              //Guide Modal
         MudTabs guideTabs;
 
@@ -2851,35 +2904,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private async Task AnswerChangeOption(string option, int id, int section, int catId)
         {
             questionAnswers[id].Answer = option;
-            var entry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.QuestionID == id);
-            if (section == 1 && (entry.CategorySequence == 4 || entry.CategorySequence == 5))
-            {
-                var extraEntrySec = entry.CategorySequence == 4 ? 5 : 4;
-                var specialEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == 6).QuestionID;
-                var extraEntry = _checklistCategoriesAndQuestions.First(p => p.JobCategoryStructureId == catId).ChecklistQuestions.First(p => p.CategorySequence == extraEntrySec);
-
-                string kpi = "";
-                if (entry.CategorySequence == 4)
-                {
-                    kpi = option == "YES" ? "S&P" : "";
-                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
-                        kpi += kpi.IsNullOrEmpty() ? "Q" : "/Q";
-                }
-                else //if(entry.CategorySequence == 5)
-                {
-                    if (questionAnswers[extraEntry.QuestionID].Answer == "YES")
-                        kpi += "S&P";
-                    kpi += option == "YES" ? kpi.IsNullOrEmpty() ? "Q" : "/Q" : "";
-                }
-
-                questionAnswers[specialEntry].CommentarySV = kpi;
-                questionAnswers[specialEntry].Answer = "YES";
-
-                await OnKPIChangeByQuestion(kpi switch { "" => 0, "S&P" => 1, "Q" => 2, _ => 7 }, catId);
-
-            }
             await LocalStorage.SetItemAsync("QAns", questionAnswers);
             //SetAsCurrentJobObservation();
+        }
+        private async Task MultiAnswerChangeOption(IEnumerable<string> options, int id)
+        {
+            MultiQuestionAnswers[id] = options;
+            questionAnswers[id].Answer = string.Join(",", options);
+            await LocalStorage.SetItemAsync("MQAns", MultiQuestionAnswers);
+            //SetAsCurrentJobObservation();
+        }
+        private async Task TransformToSingle()
+        {
+            foreach (var pair in MultiQuestionAnswers)
+            {
+                questionAnswers[pair.Key].Answer = string.Join(",", pair.Value);
+            }
         }
         private async Task AnswerComentaryUpdate()
         {
@@ -2941,6 +2981,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //SetAsCurrentJobObservation();
         }
 
+        public async Task AddDisabledOptions(int categoryId, ChecklistQuestion question, string value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+
+            qst?.DisabledOptions.Add(value);
+        }
+        public async Task RemoveDisabledOptions(int categoryId, ChecklistQuestion question, string value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+
+            qst?.DisabledOptions.Remove(value);
+        }
+
+        public async Task DisableEnableQuestion(int categoryId, ChecklistQuestion question, bool value)
+        {
+            var cat = _checklistCategoriesAndQuestions.FirstOrDefault(p => p.JobCategoryStructureId == categoryId);
+            var qst = cat?.ChecklistQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+
+            qst.Disable = value;
+        }
+
         //private void SetAsCurrentJobObservation()
         //{
         //    if (!session)
@@ -2964,6 +3027,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 , SyncLocalStorage.ContainKey("QAnsImgFC")
                 , SyncLocalStorage.ContainKey("SignatureImg")
                 , SyncLocalStorage.ContainKey("QAns")
+                , SyncLocalStorage.ContainKey("MQAns")
                 , SyncLocalStorage.ContainKey("taktTime")
                 , SyncLocalStorage.ContainKey("HoeStandardTime")
                 , SyncLocalStorage.ContainKey("StepsNumber")
@@ -3036,26 +3100,36 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 _operations = _operations.OrderBy(o => o.Description).ToList();
 
                 var groupedOperations = _operations
-                    .GroupBy(op => op.ProductName)
+                    .SelectMany(op => op.ProductName.Split('§').Select(product => new { Product = product, Operation = op }))
+                    .GroupBy(x => x.Product)
                     .Select(g => new ProductAndStandardTime
                     {
                         ProductName = g.Key,
-                        StandardTime = g.Select(op => op.StandardTime).FirstOrDefault()
+                        StandardTime = g.Select(x => x.Operation.StandardTime).FirstOrDefault()
                     })
                     .ToList();
 
                 int count = Math.Min(groupedOperations.Count, 5);
-                _productAndSpecification = new ProductAndStandardTime[count];
+                _productAndSpecification = new ProductAndStandardTime[5];
 
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < 5; i++)
                 {
-                    var productName = groupedOperations[i].ProductName;
+                    var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
 
-                    var standardTimeParts = groupedOperations[i].StandardTime.Split('§');
-                    if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
+                    var productName = selectedProduct.Code;
+
+                    var operation = string.IsNullOrEmpty(productSpecification[i]) ? _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true) : _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true && o.NameTime.Contains(productSpecification[i]) == true);
+                   
+                    var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(operation.StandardTime);
+
+                    var standardTimeParts = standardTimeDict[productName].Split('§');
+
+                    int indexOfSpec = string.IsNullOrEmpty(productSpecification[i]) ? 0 : Array.IndexOf(_specifications[i].ToArray(), productSpecification[i]);
+
+                    if (decimal.TryParse(standardTimeParts[indexOfSpec], out decimal standardTimeValue))
                     {
                         var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
-                        Console.WriteLine($"{productName}: {roundedStandardTime}");
+                        Console.WriteLine($"{productSpecification[i]} {productName}: {roundedStandardTime}");
 
                         _productAndSpecification[i] = new ProductAndStandardTime
                         {
@@ -3117,8 +3191,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             SyncLocalStorage.RemoveItems(new string[]{ 
                 "JobObs","OpTimes","LupToAdd","area_ListS","area_ListQ",
                 "area_ListD","area_ListC","area_ListOther","QAnsImgFF",
-                "QAnsImgFC","SignatureImg","QAns","taktTime", "HoeStandardTime","StepsNumber"
-                ,"DblManagement","Waiting","CC", "CJO","JobProductsIds", "CycleTimes"});
+                "QAnsImgFC", "SignatureImg", "QAns", "taktTime", "HoeStandardTime", "StepsNumber", "OperationSpecProduct",
+                "DblManagement", "Waiting", "CC", "CJO", "JobProductsIds", "Specifications", 
+                "ProductSpecifications", "Products", "CycleTimes", "MQAns"});
         }
     }
 }
