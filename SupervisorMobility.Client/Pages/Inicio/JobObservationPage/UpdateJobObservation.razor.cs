@@ -14,6 +14,7 @@ using System.Timers;
 using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservationNew;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities;
+using DocumentFormat.OpenXml.Bibliography;
 
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
@@ -482,41 +483,67 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     int count = Math.Min(groupedOperations.Count, 5);
                     _productAndSpecification = new ProductAndStandardTime[5];
 
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
-
-                        var productName = selectedProduct.Code;
-
-                        var operation = string.IsNullOrEmpty(productSpecification[i]) ? _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true) : _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true && o.NameTime.Contains(productSpecification[i]) == true);
-
-                        var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(operation.StandardTime);
-
-                        var standardTimeParts = standardTimeDict[productName].Split('§');
-
-                        int indexOfSpec = string.IsNullOrEmpty(productSpecification[i]) ? 0 : Array.IndexOf(_specifications[i].ToArray(), productSpecification[i]);
-
-                        if (decimal.TryParse(standardTimeParts[indexOfSpec], out decimal standardTimeValue))
+                   
+                        for (int i = 0; i < 5; i++)
                         {
-                            var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
-                            Console.WriteLine($"{productSpecification[i]} {productName}: {roundedStandardTime}");
+                            var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
+                            if (selectedProduct != null)
+                            {
+                                var productName = selectedProduct?.Code;
+                                if (!string.IsNullOrEmpty(productName))
+                                {
 
+                                    var operation = string.IsNullOrEmpty(productSpecification[i]) ? _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(productName) == true) : _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(productName) == true && o.NameTime.Contains(productSpecification[i]) == true);
+
+                                    if (operation != null)
+                                    {
+
+                                        var standardTimeDict = operation != null ? JsonSerializer.Deserialize<Dictionary<string, string>>(operation.StandardTime) : new Dictionary<string, string>();
+
+                                        if (standardTimeDict != null && standardTimeDict.ContainsKey(productName))
+                                        {
+                                            var standardTimeParts = standardTimeDict[productName].Split('§');
+
+                                            int indexOfSpec = string.IsNullOrEmpty(productSpecification[i]) ? 0 : Array.IndexOf(_specifications[i].ToArray(), productSpecification[i]);
+
+                                            if (decimal.TryParse(standardTimeParts[indexOfSpec], out decimal standardTimeValue))
+                                            {
+                                                var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
+                                                Console.WriteLine($"{productSpecification[i]} {productName}: {roundedStandardTime}");
+
+                                                _productAndSpecification[i] = new ProductAndStandardTime
+                                                {
+                                                    ProductName = productName,
+                                                    StandardTime = roundedStandardTime
+                                                };
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine($"{productName}: Invalid StandardTime");
+                                                _productAndSpecification[i] = new ProductAndStandardTime
+                                                {
+                                                    ProductName = productName,
+                                                    StandardTime = "0.00"
+                                                };
+                                            }
+
+                                            continue;
+                                        }
+                                    }
+                                }
+                            }
+
+
+                            Console.WriteLine($" Key not found in standardTimeDict");
                             _productAndSpecification[i] = new ProductAndStandardTime
                             {
-                                ProductName = productName,
-                                StandardTime = roundedStandardTime
-                            };
-                        }
-                        else
-                        {
-                            Console.WriteLine($"{productName}: Invalid StandardTime");
-                            _productAndSpecification[i] = new ProductAndStandardTime
-                            {
-                                ProductName = productName,
+                                ProductName = "Name",
                                 StandardTime = "0.00"
                             };
+
                         }
-                    }
+
+                    
 
 
 
