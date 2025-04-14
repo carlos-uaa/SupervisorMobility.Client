@@ -27,7 +27,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class CreateJobObservationNew
     {
-
+        
         [Parameter]
         public string date { get; set; }
         public string hour1 { get; set; }
