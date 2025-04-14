@@ -2294,10 +2294,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             jobProductIds[productIndex] = id;
             _specifications[productIndex] = new();
 
-
-
             var prodName = _products.FirstOrDefault(p => p.ProductId == jobProductIds[productIndex]);
-
+            Console.WriteLine($"Prod select: {prodName?.Code}");
 
             if (prodName != null)
             {
@@ -2353,6 +2351,35 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             _specifications[productIndex].Add(names[i]);
                         }
                     }
+
+                    var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.StandardTime);
+                    if (standardTimeDict != null && standardTimeDict.ContainsKey(prodName.Code))
+                    {
+                        var standardTimeParts = standardTimeDict[prodName.Code].Split('§');
+
+
+                        if (decimal.TryParse(standardTimeParts[0], out decimal standardTimeValue))
+                        {
+                            var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
+
+                            _productAndSpecification[productIndex] = new ProductAndStandardTime
+                            {
+                                ProductName = prodName.Code,
+                                StandardTime = roundedStandardTime
+                            };
+                        }
+                        else
+                        {
+
+                            _productAndSpecification[productIndex] = new ProductAndStandardTime
+                            {
+                                ProductName = prodName.Code,
+                                StandardTime = "0.00"
+                            };
+                        }
+                    }
+
+
                 }
             }
 
