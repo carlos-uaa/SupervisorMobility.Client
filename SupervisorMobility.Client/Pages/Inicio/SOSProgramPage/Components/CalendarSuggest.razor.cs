@@ -144,115 +144,105 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
                 dist => dist.distribution.Operations.Count()
             );
 
+            var calendarMonths = new List<MonthModel>();
             var currentDate = StartDay;
             var remainingDistributions = new Queue<string>(Distributions);
-            var calendarMonthsDict = new Dictionary<string, MonthModel>();
-            var allDays = new List<DayModel>();
+            var currentYear = StartDay.Year;
+            var monthsProcessed = 0;
 
-            // Primera pasada: asignar distribuciones a meses completos
-            while (remainingDistributions.Count > 0)
+            // Primera vuelta: 1 distribución por mes
+            while (remainingDistributions.Count > 0 && monthsProcessed < 12)
             {
                 var currentDist = remainingDistributions.Dequeue();
-                var operationsToAssign = operationsByDist[currentDist];
+                var monthModel = CreateMonthModel(currentDate);
+                var operationsAssigned = 0;
                 var daysSinceLastOperation = SeparateDays + 1; // Forzar primera operación
 
-                while (operationsToAssign > 0)
+                // Procesar todos los días hábiles del mes
+                foreach (var dayModel in monthModel.Days.Where(d => !d.IsEmpty && !d.IsWeekend))
                 {
-                    // Obtener o crear el mes actual
-                    var monthKey = $"{currentDate.Year}-{currentDate.Month}";
-                    if (!calendarMonthsDict.TryGetValue(monthKey, out var monthModel))
+                    if (operationsByDist[currentDist] <= 0) break;
+
+                    daysSinceLastOperation++;
+
+                    if (daysSinceLastOperation > SeparateDays)
                     {
-                        monthModel = CreateMonthModel(currentDate);
-                        calendarMonthsDict.Add(monthKey, monthModel);
+                        var ops = Math.Min(OpDia, operationsByDist[currentDist]);
+                        dayModel.HasOperation = true;
+                        dayModel.Distribution = currentDist;
+                        dayModel.OperationText = $"Dist {currentDist} x{ops}";
+                        operationsByDist[currentDist] -= ops;
+                        operationsAssigned += ops;
+                        daysSinceLastOperation = 0;
                     }
+                }
 
-                    // Encontrar el día actual en el mes
-                    var dayModel = monthModel.Days.FirstOrDefault(d => d.Date == currentDate.Date && !d.IsEmpty && !d.IsWeekend);
+                calendarMonths.Add(monthModel);
+                currentDate = currentDate.AddMonths(1);
+                monthsProcessed++;
+            }
 
-                    if (dayModel != null)
+            // Segunda vuelta: distribuciones restantes en meses existentes
+            if (remainingDistributions.Count > 0)
+            {
+                foreach (var monthModel in calendarMonths)
+                {
+                    if (remainingDistributions.Count == 0) break;
+
+                    var currentDist = remainingDistributions.Dequeue();
+                    var daysSinceLastOperation = SeparateDays + 1;
+
+                    // Procesar días disponibles (sin operaciones asignadas)
+                    foreach (var dayModel in monthModel.Days
+                        .Where(d => !d.IsEmpty && !d.IsWeekend && !d.HasOperation)
+                        .OrderBy(d => d.Date))
                     {
+                        if (operationsByDist[currentDist] <= 0) break;
+
                         daysSinceLastOperation++;
 
                         if (daysSinceLastOperation > SeparateDays)
                         {
-                            var ops = Math.Min(OpDia, operationsToAssign);
+                            var ops = Math.Min(OpDia, operationsByDist[currentDist]);
                             dayModel.HasOperation = true;
                             dayModel.Distribution = currentDist;
                             dayModel.OperationText = $"Dist {currentDist} x{ops}";
-                            operationsToAssign -= ops;
+                            operationsByDist[currentDist] -= ops;
                             daysSinceLastOperation = 0;
                         }
                     }
-
-                    // Avanzar al siguiente día hábil
-                    currentDate = GetNextBusinessDay(currentDate);
-
-                    // Si hemos terminado el año, reiniciar
-                    if (currentDate.Year > StartDay.Year)
-                    {
-                        currentDate = new DateTime(StartDay.Year, 1, 1);
-                    }
                 }
             }
 
-            // Segunda pasada: llenar espacios vacíos con operaciones restantes
-            var remainingOperations = operationsByDist.Where(kvp => kvp.Value > 0).ToList();
-            if (remainingOperations.Any())
+            // Tercera vuelta: si aún quedan operaciones, distribuirlas en espacios vacíos
+            if (operationsByDist.Any(kvp => kvp.Value > 0))
             {
-                currentDate = StartDay;
-                var maxIterations = 365 * 2; // Prevenir bucles infinitos
-
-                while (remainingOperations.Any(kvp => kvp.Value > 0) && maxIterations-- > 0)
+                foreach (var monthModel in calendarMonths)
                 {
-                    var monthKey = $"{currentDate.Year}-{currentDate.Month}";
-                    if (calendarMonthsDict.TryGetValue(monthKey, out var monthModel))
+                    foreach (var dayModel in monthModel.Days
+                        .Where(d => !d.IsEmpty && !d.IsWeekend && !d.HasOperation)
+                        .OrderBy(d => d.Date))
                     {
-                        var dayModel = monthModel.Days.FirstOrDefault(d =>
-                            d.Date == currentDate.Date &&
-                            !d.IsEmpty &&
-                            !d.IsWeekend &&
-                            !d.HasOperation);
+                        var remainingDist = operationsByDist.FirstOrDefault(kvp => kvp.Value > 0).Key;
+                        if (string.IsNullOrEmpty(remainingDist)) break;
 
-                        if (dayModel != null)
-                        {
-                            var dist = remainingOperations.First(kvp => kvp.Value > 0).Key;
-                            var ops = Math.Min(OpDia, operationsByDist[dist]);
-
-                            dayModel.HasOperation = true;
-                            dayModel.Distribution = dist;
-                            dayModel.OperationText = $"Dist {dist} x{ops}";
-                            operationsByDist[dist] -= ops;
-                        }
-                    }
-
-                    currentDate = GetNextBusinessDay(currentDate);
-
-                    // Si hemos terminado el año, reiniciar
-                    if (currentDate.Year > StartDay.Year)
-                    {
-                        currentDate = new DateTime(StartDay.Year, 1, 1);
+                        var ops = Math.Min(OpDia, operationsByDist[remainingDist]);
+                        dayModel.HasOperation = true;
+                        dayModel.Distribution = remainingDist;
+                        dayModel.OperationText = $"Dist {remainingDist} x{ops}";
+                        operationsByDist[remainingDist] -= ops;
                     }
                 }
             }
 
-            // Ordenar los meses y asignar a CalendarMonths
-            CalendarMonths = calendarMonthsDict.Values
-                .OrderBy(m => m.Year)
-                .ThenBy(m => m.Days.First(d => !d.IsEmpty).Date.Month)
-                .ToList();
+            CalendarMonths = calendarMonths;
         }
-
+        
         private DateTime GetNextBusinessDay(DateTime date)
         {
             do
             {
                 date = date.AddDays(1);
-
-                // Si pasamos a un nuevo año, reiniciamos
-                if (date.Year > StartDay.Year)
-                {
-                    date = new DateTime(StartDay.Year, 1, 1);
-                }
             }
             while (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
 
