@@ -24,7 +24,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         public List<int> allowableQT { get; set; } = new();
 
         public List<(List<string> questions, List<string> actions)> _actions = new();
-        Dictionary<int, (Dictionary<int, int> Questions, Dictionary<int, string> Actions)> selectedData;
+        Dictionary<Guid, (Dictionary<Guid, int> Questions, Dictionary<Guid, string> Actions)> selectedData;
+        List<Guid> SelectedDataIds = new();
+        List<(List<Guid>QID, List<Guid>AID)> SelectedDataInnerIds = new();
         public Dictionary<int, int> Indexes { get; set; } = new();
         QuestionType questionType { get; set; }
         public List<Pillar> _pillars { get; set; } = new();
@@ -34,6 +36,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         private bool _open = false;
         private static readonly HashSet<string> CodesToShowOptions = new() { "MC", "TF", "MCM" };
         private static readonly HashSet<string> CodesToAllowMoreOptions = new() { "MC", "MCM" };
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -88,8 +91,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                 }
             }
 
-            var result = await JobStructureCategoriesService.CreateQuestion(categoryId, _question);
-            NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
+            try
+            {
+                var result = await JobStructureCategoriesService.CreateQuestion(categoryId, _question);
+                NavigationManager.NavigateTo($"checklistcategories/category/{categoryId}");
+            }
+            catch(Exception e) 
+            {
+                _question.Actions = new();
+            }
         }
 
         // Cancel submit form
@@ -182,11 +192,32 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 
         void AddQuestionToAction(int index)
         {
+            var temp = Guid.NewGuid();
+            SelectedDataInnerIds[index].QID.Add(temp);
+            selectedData[SelectedDataIds[index]].Questions.Add(temp, 0);
+
             _actions[index].questions.Add("");
         }
+        void RemoveQuestion(int index, int qIdx)
+        {
+            _actions[index].questions.RemoveAt(qIdx);
+            selectedData[SelectedDataIds[index]].Questions.Remove(SelectedDataInnerIds[index].QID[qIdx]);
+            SelectedDataInnerIds[index].QID.RemoveAt(qIdx);
+        }
+        
         void AddAnotherToAction(int index)
         {
+            var temp = Guid.NewGuid();
+            SelectedDataInnerIds[index].AID.Add(temp);
+            selectedData[SelectedDataIds[index]].Actions.Add(temp, "");
+
             _actions[index].actions.Add("");
+        }
+        void RemoveAction(int index, int aIdx)
+        {
+            _actions[index].actions.RemoveAt(aIdx);
+            selectedData[SelectedDataIds[index]].Actions.Remove(SelectedDataInnerIds[index].AID[aIdx]);
+            SelectedDataInnerIds[index].AID.RemoveAt(aIdx);
         }
 
         private void OnTypeSelected(QuestionType value)
@@ -221,17 +252,32 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         private void RemoveElement(string index)
         {
             _question.Options?.Remove(index);
+            StateHasChanged();
         }
         private void AddAction()
         {
             List<string> newQuestions = new List<string> { "" };
             List<string> newActions = new List<string> { "" };
+
+            var temp = Guid.NewGuid();
+            SelectedDataIds.Add(temp);
+            selectedData[temp] = (new Dictionary<Guid, int>(), new Dictionary<Guid, string>());
+
+            var temp2 = Guid.NewGuid();
+            var temp3 = Guid.NewGuid();
+            SelectedDataInnerIds.Add((new List<Guid> { temp2 }, new List<Guid> { temp3 }));
+            selectedData[temp].Questions.Add(temp2, 0);
+            selectedData[temp].Actions.Add(temp3, "");
+
             _actions.Add((newQuestions, newActions));
         }
 
         private void RemoveAction(int index)
         {
             _actions.RemoveAt(index);
+            selectedData.Remove(SelectedDataIds[index]);
+            SelectedDataIds.RemoveAt(index);
+            StateHasChanged();
         }
 
         //private async Task OpenDialog()

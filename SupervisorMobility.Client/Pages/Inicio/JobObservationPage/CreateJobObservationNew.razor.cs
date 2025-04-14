@@ -453,7 +453,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             //await GetUserAsync();
 
-            ShowLoading = false;
+            //ShowLoading = false;
             StateHasChanged();
 
             if (user != null)
