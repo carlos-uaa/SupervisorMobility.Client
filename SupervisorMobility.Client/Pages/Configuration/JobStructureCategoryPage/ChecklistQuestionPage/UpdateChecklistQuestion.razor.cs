@@ -237,6 +237,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         }
         private void HandleQuestionOption(string option, int index, int qIndex)
         {
+            selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIndex]].QstOption = option;
             var temp = _actions[index].questions[qIndex].Split("§");
             if (temp.Length > 2)
             {

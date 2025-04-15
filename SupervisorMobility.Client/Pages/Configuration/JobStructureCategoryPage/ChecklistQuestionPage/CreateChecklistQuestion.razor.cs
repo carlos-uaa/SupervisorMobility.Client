@@ -1,5 +1,6 @@
 ﻿using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities;
 using System.Reflection.Metadata;
 using static MudBlazor.CategoryTypes;
 
@@ -24,7 +25,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         public List<int> allowableQT { get; set; } = new();
 
         public List<(List<string> questions, List<string> actions)> _actions = new();
-        Dictionary<Guid, (Dictionary<Guid, int> Questions, Dictionary<Guid, string> Actions)> selectedData;
+        Dictionary<Guid, (Dictionary<Guid, QuestionData> Questions, Dictionary<Guid, ActionData> Actions)> selectedData;
         List<Guid> SelectedDataIds = new();
         List<(List<Guid>QID, List<Guid>AID)> SelectedDataInnerIds = new();
         public Dictionary<int, int> Indexes { get; set; } = new();
@@ -160,6 +161,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         }
         private void HandleQuestionOption(string option, int index, int qIndex)
         {
+            selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIndex]].QstOption = option;
             var temp = _actions[index].questions[qIndex].Split("§");
             if (temp.Length > 2)
             {
@@ -178,6 +180,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         }
         private void HandleActionValueModification(string value, int index, int aIndex)
         {
+            selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIndex]].Value = value;
             var temp = _actions[index].actions[aIndex].Split("§");
             if (temp.Length > 1)
             {
@@ -195,7 +198,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             var temp = Guid.NewGuid();
             SelectedDataInnerIds[index].QID.Add(temp);
-            selectedData[SelectedDataIds[index]].Questions.Add(temp, 0);
+            selectedData[SelectedDataIds[index]].Questions.Add(temp, new QuestionData());
 
             _actions[index].questions.Add("");
         }
@@ -210,7 +213,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             var temp = Guid.NewGuid();
             SelectedDataInnerIds[index].AID.Add(temp);
-            selectedData[SelectedDataIds[index]].Actions.Add(temp, "");
+            selectedData[SelectedDataIds[index]].Actions.Add(temp, new ActionData());
 
             _actions[index].actions.Add("");
         }
@@ -262,13 +265,13 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 
             var temp = Guid.NewGuid();
             SelectedDataIds.Add(temp);
-            selectedData[temp] = (new Dictionary<Guid, int>(), new Dictionary<Guid, string>());
+            selectedData[temp] = (new Dictionary<Guid, QuestionData>(), new Dictionary<Guid, ActionData>());
 
             var temp2 = Guid.NewGuid();
             var temp3 = Guid.NewGuid();
             SelectedDataInnerIds.Add((new List<Guid> { temp2 }, new List<Guid> { temp3 }));
-            selectedData[temp].Questions.Add(temp2, 0);
-            selectedData[temp].Actions.Add(temp3, "");
+            selectedData[temp].Questions.Add(temp2, new());
+            selectedData[temp].Actions.Add(temp3, new());
 
             _actions.Add((newQuestions, newActions));
         }

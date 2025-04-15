@@ -141,7 +141,7 @@
                                 @foreach (var (action, index) in _actions.Select((item, index) => (item, index)))
                                 {
                                     <div style="width: 100%">
-                                        <MudExpansionPanel Text="@("Policy N° "+(index+1))" Class="force-full-width" >
+                                        <MudExpansionPanel Text="@("Policy N° "+(index+1))" Class="force-full-width" IsExpanded="true">
                                             <TitleContent>
                                                 <div class="d-flex">
                                                     <MudText Style="margin-top:13px;">Ploicy N° @(index+1)</MudText>
@@ -160,10 +160,10 @@
                                                                     <MudListItem>
                                                                         <MudGrid Spacing="1" Justify="Justify.Center">
                                                                             @{
-                                                                                var currentQuestion = _checklistCategory.ChecklistQuestions.FirstOrDefault(q => q.QuestionID == selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIdx]]);
+                                                                                var currentQuestion = _checklistCategory.ChecklistQuestions.FirstOrDefault(q => q.QuestionID == selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIdx]].QuestionId);
                                                                             }
                                                                             <MudItem xs="4">
-                                                                                <MudSelect @bind-Value="selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIdx]]" T="int" SelectedValuesChanged="(id)=>HandleQuestionSelection(id.First(),index, qIdx)">
+                                                                                <MudSelect @bind-Value="selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIdx]].QuestionId" T="int" SelectedValuesChanged="(id)=>HandleQuestionSelection(id.First(),index, qIdx)">
                                                                                     @foreach (var q in _checklistCategory.ChecklistQuestions.Where(p => allowableQT.Contains(p.TypeId)))
                                                                                     {
                                                                                         <MudSelectItem Value="@q.QuestionID">@Indexes[q.QuestionID] - @q.Prompt</MudSelectItem>
@@ -171,7 +171,7 @@
                                                                                 </MudSelect>
                                                                             </MudItem>
                                                                             <MudItem xs="3">
-                                                                                <MudSelect T="string" SelectedValuesChanged="(id)=>HandleQuestionOperation(id.First(),index, qIdx)">
+                                                                                <MudSelect T="string" @bind-Value="selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIdx]].Comparator" SelectedValuesChanged="(id)=>HandleQuestionOperation(id.First(),index, qIdx)">
                                                                                     <MudSelectItem Value="@("!")">different</MudSelectItem>
                                                                                     <MudSelectItem Value="@("=")">equal</MudSelectItem>
                                                                                 </MudSelect>
@@ -179,7 +179,7 @@
                                                                             <MudItem xs="4">
                                                                                 @if (currentQuestion?.Options != null)
                                                                                 {
-                                                                                    <MudSelect T="string" SelectedValuesChanged="(id)=>HandleQuestionOption(id.First(),index, qIdx)">
+                                                                                    <MudSelect T="string" @bind-Value="selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIdx]].QstOption" SelectedValuesChanged="(id)=>HandleQuestionOption(id.First(),index, qIdx)">
                                                                                         @foreach (var q in currentQuestion.Options)
                                                                                         {
                                                                                             <MudSelectItem Value="@q">@q</MudSelectItem>
@@ -188,7 +188,7 @@
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    <MudTextField T="string" ValueChanged="@((value) => HandleQuestionOption(value, index, qIdx))" />
+                                                                                    <MudTextField T="string" Value="selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIdx]].QstOption" ValueChanged="@((value) => HandleQuestionOption(value, index, qIdx))" />
                                                                                 }
                                                                             </MudItem>
                                                                             <MudItem xs="1">
@@ -216,10 +216,10 @@
                                                                     <MudListItem>
                                                                         <MudGrid Spacing="1" Justify="Justify.Center">
                                                                             @{
-                                                                                var actionFlag = OperationsThatAddValueField.Contains(selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIdx]]);
+                                                                                var actionFlag = OperationsThatAddValueField.Contains(selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIdx]].Operation);
                                                                             }
                                                                             <MudItem xs="@(actionFlag?4:5)">
-                                                                                <MudSelect @bind-Value="selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIdx]]" T="string" SelectedValuesChanged="(id)=>HandleActionSelection(id.First(),index, aIdx)">
+                                                                                <MudSelect @bind-Value="selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIdx]].Operation" T="string" SelectedValuesChanged="(id)=>HandleActionSelection(id.First(),index, aIdx)">
                                                                                     <MudSelectItem Value="@("SET")">SET VALUE</MudSelectItem>
                                                                                     <MudSelectItem Value="@("DISABLE")">DISABLE QUESTION</MudSelectItem>
                                                                                     @if (CodesToAllowMoreOptions.Contains(questionType?.Code))
@@ -231,13 +231,15 @@
                                                                             @if(actionFlag)
                                                                             {
                                                                                 <MudItem xs="7">
-                                                                                    @switch (selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIdx]])
+                                                                                    @switch (selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIdx]].Operation)
                                                                                     {
                                                                                         case "SET":
-                                                                                            <MudTextField T="string" ValueChanged="@((value) => HandleActionValueModification(value, index, aIdx))" />
+                                                                                            <MudTextField T="string" Value="selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIdx]].Value" 
+                                                                                                ValueChanged="@((value) => HandleActionValueModification(value, index, aIdx))" />
                                                                                             break;
                                                                                         case "DBLOPT":
-                                                                                            <MudSelect T="string" SelectedValuesChanged="(value)=>HandleActionValueModification(value.First(),index, aIdx)">
+                                                                                            <MudSelect T="string" @bind-Value="selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIdx]].Value"
+                                                                                                 SelectedValuesChanged="(value)=>HandleActionValueModification(value.First(),index, aIdx)">
                                                                                                 @foreach (var q in _question.Options)
                                                                                                 {
                                                                                                     <MudSelectItem Value="@q">@q</MudSelectItem>
