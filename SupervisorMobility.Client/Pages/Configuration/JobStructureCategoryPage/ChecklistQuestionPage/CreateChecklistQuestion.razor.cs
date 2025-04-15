@@ -36,6 +36,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         private bool _open = false;
         private static readonly HashSet<string> CodesToShowOptions = new() { "MC", "TF", "MCM" };
         private static readonly HashSet<string> CodesToAllowMoreOptions = new() { "MC", "MCM" };
+        private static readonly HashSet<string> OperationsThatAddValueField = new() { "SET", "DBLOPT" };
 
         // Initialization
         protected async override Task OnInitializedAsync()
