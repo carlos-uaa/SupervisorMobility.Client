@@ -500,7 +500,6 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                                 }
 
                             }
-
                         }
 
                     }

@@ -27,7 +27,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 {
     public partial class CreateJobObservationNew
     {
-
+        
         [Parameter]
         public string date { get; set; }
         public string hour1 { get; set; }
@@ -453,7 +453,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             //await GetUserAsync();
 
-            ShowLoading = false;
+            //ShowLoading = false;
             StateHasChanged();
 
             if (user != null)
@@ -3116,35 +3116,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     var selectedProduct = _products.FirstOrDefault(p => p.ProductId == jobProductIds[i]);
 
-                    var productName = selectedProduct.Code;
-
-                    var operation = string.IsNullOrEmpty(productSpecification[i]) ? _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true) : _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true && o.NameTime.Contains(productSpecification[i]) == true);
-                   
-                    var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(operation.StandardTime);
-
-                    var standardTimeParts = standardTimeDict[productName].Split('§');
-
-                    int indexOfSpec = string.IsNullOrEmpty(productSpecification[i]) ? 0 : Array.IndexOf(_specifications[i].ToArray(), productSpecification[i]);
-
-                    if (decimal.TryParse(standardTimeParts[indexOfSpec], out decimal standardTimeValue))
+                    if (selectedProduct != null)
                     {
-                        var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
-                        Console.WriteLine($"{productSpecification[i]} {productName}: {roundedStandardTime}");
 
-                        _productAndSpecification[i] = new ProductAndStandardTime
+                        var productName = selectedProduct.Code;
+
+                        var operation = string.IsNullOrEmpty(productSpecification[i]) ? _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true) : _operations.FirstOrDefault(o => o.ProductName?.Split('§').Contains(selectedProduct.Code) == true && o.NameTime.Contains(productSpecification[i]) == true);
+
+                        var standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(operation.StandardTime);
+
+                        var standardTimeParts = standardTimeDict[productName].Split('§');
+
+                        int indexOfSpec = string.IsNullOrEmpty(productSpecification[i]) ? 0 : Array.IndexOf(_specifications[i].ToArray(), productSpecification[i]);
+
+                        if (decimal.TryParse(standardTimeParts[indexOfSpec], out decimal standardTimeValue))
                         {
-                            ProductName = productName,
-                            StandardTime = roundedStandardTime
-                        };
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{productName}: Invalid StandardTime");
-                        _productAndSpecification[i] = new ProductAndStandardTime
+                            var roundedStandardTime = Math.Round(standardTimeValue, 2).ToString("F2");
+                            Console.WriteLine($"{productSpecification[i]} {productName}: {roundedStandardTime}");
+
+                            _productAndSpecification[i] = new ProductAndStandardTime
+                            {
+                                ProductName = productName,
+                                StandardTime = roundedStandardTime
+                            };
+                        }
+                        else
                         {
-                            ProductName = productName,
-                            StandardTime = "0.00"
-                        };
+                            Console.WriteLine($"{productName}: Invalid StandardTime");
+                            _productAndSpecification[i] = new ProductAndStandardTime
+                            {
+                                ProductName = productName,
+                                StandardTime = "0.00"
+                            };
+                        }
                     }
                 }
 

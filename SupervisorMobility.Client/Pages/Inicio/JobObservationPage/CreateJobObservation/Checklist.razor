@@ -32,12 +32,12 @@
                     string pattern = @"\\n"; string replacement = "<br />";
                     ChecklistAnswer answer = questionAnswers[question.QuestionID];
                     <tr>
-                        <td width="70%">
+                        <td width="60%">
                             <MudText Align="Align.Justify"><b>@(section)-@question.CategorySequence.</b>  @((MarkupString)(currentLanguage == "es-ES" ? Regex.Replace(question.Prompt, pattern, replacement) : Regex.Replace(question.PromptEN, pattern, replacement))) </MudText>
                         </td>
                     @if (question.Type != null)
                     {
-                        <td width="25%">
+                        <td width="35%">
                             @if(!question.Disable)
                             {
                                 @switch (question.Type.Code)
@@ -84,22 +84,19 @@
                                     break;
                                     default:
                                         <MudItem>
-                                                <MudTextField Class="ml-4" T="string" Value="answer.Answer" ValueChanged="async (an)=>{await AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); await CheckQuestionsAsync();}" />
+                                                <MudTextField Variant="Variant.Outlined" Lines="4" Class="ml-4" T="string" Value="answer.Answer" ValueChanged="async (an)=>{await AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); await CheckQuestionsAsync();}" />
                                         </MudItem>
                                     break;
                                 }
                             }
                             else
                             {
-                                <MudTextField Class="ml-4" T="string" Text="@answer.Answer" ReadOnly />
+                                <MudTextField Lines="1" Class="ml-4" T="string" Text="@answer.Answer" ReadOnly />
                             }
                         </td>
-                        @if(question.Type.Code == "TF")
-                        {
-                            <td>
-                                <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
-                            </td>
-                        }
+                        <td>
+                            <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
+                        </td>
                     }
                     </tr>
                     @if (answer.Show)
@@ -173,7 +170,7 @@
                                         </MudItem>
                                     </MudItem>
                                     @{
-                                        bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || (section == 1 && (question.CategorySequence == 4 || question.CategorySequence == 5)?answer.Answer != "YES" :answer.Answer != "NG");
+                                        bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV);
                                         string answerCommentarySV = answer.CommentarySV ?? "";
                                     }
                                     <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">

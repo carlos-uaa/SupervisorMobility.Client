@@ -547,7 +547,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Product.
+        ///   Looks up a localized string similar to Unit.
         /// </summary>
         public static string ACLabelProduct {
             get {
@@ -619,7 +619,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This JobAllocation has no products added..
+        ///   Looks up a localized string similar to This JobAllocation has no units added..
         /// </summary>
         public static string ACNoProducts {
             get {
@@ -736,7 +736,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select a Product.
+        ///   Looks up a localized string similar to Select a unit.
         /// </summary>
         public static string ACPHProduct {
             get {
@@ -799,7 +799,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Product Resume.
+        ///   Looks up a localized string similar to Unit Resume.
         /// </summary>
         public static string ACProductResume {
             get {
@@ -1069,7 +1069,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create Distribution To Product.
+        ///   Looks up a localized string similar to Create Distribution To Unit.
         /// </summary>
         public static string DistributionCreate {
             get {
@@ -1141,7 +1141,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New distribution In Product.
+        ///   Looks up a localized string similar to New distribution In Unit.
         /// </summary>
         public static string DistributionNewProduct {
             get {
@@ -1168,7 +1168,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Distribution Update For Product.
+        ///   Looks up a localized string similar to Distribution Update For Unit.
         /// </summary>
         public static string DistributionUpdateProduct {
             get {
@@ -1326,6 +1326,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string GlosaryTitle {
             get {
                 return ResourceManager.GetString("GlosaryTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string GlosaryTitle1 {
+            get {
+                return ResourceManager.GetString("GlosaryTitle1", resourceCulture);
             }
         }
         
@@ -2248,7 +2257,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 🔮 Rummaging through the database to unravel the secrets of the distributions and find the hidden products..
+        ///   Looks up a localized string similar to 🔮 Rummaging through the database to unravel the secrets of the distributions and find the hidden units..
         /// </summary>
         public static string Loading3 {
             get {
@@ -2491,7 +2500,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Are you sure you want to delete this Product?.
+        ///   Looks up a localized string similar to Are you sure you want to delete this Unit?.
         /// </summary>
         public static string ProductMsgDelete {
             get {
@@ -2509,7 +2518,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Product Code.
+        ///   Looks up a localized string similar to Unit Code.
         /// </summary>
         public static string ProductsCode {
             get {
@@ -2518,7 +2527,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Create Product.
+        ///   Looks up a localized string similar to Create Units.
         /// </summary>
         public static string ProductsCreate {
             get {
@@ -2536,7 +2545,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delete Product.
+        ///   Looks up a localized string similar to Delete Unit.
         /// </summary>
         public static string ProductsDelete {
             get {
@@ -2545,7 +2554,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Product Description.
+        ///   Looks up a localized string similar to Unit Description.
         /// </summary>
         public static string ProductsDescription {
             get {
@@ -2554,7 +2563,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to See Details Product.
+        ///   Looks up a localized string similar to See Details Unit.
         /// </summary>
         public static string ProductsDetails {
             get {
@@ -2563,7 +2572,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Product Details.
+        ///   Looks up a localized string similar to Unit Details.
         /// </summary>
         public static string ProductsDetailsTitle {
             get {
@@ -2581,7 +2590,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Update Product.
+        ///   Looks up a localized string similar to Update Unit.
         /// </summary>
         public static string ProductsEdit {
             get {
@@ -2590,7 +2599,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Product Id.
+        ///   Looks up a localized string similar to Unit Id.
         /// </summary>
         public static string ProductsId {
             get {
@@ -2608,7 +2617,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Products.
+        ///   Looks up a localized string similar to Units.
         /// </summary>
         public static string ProductsTitle {
             get {
@@ -2617,7 +2626,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Update Product.
+        ///   Looks up a localized string similar to Update Unit.
         /// </summary>
         public static string ProductsUpdate {
             get {
@@ -2730,6 +2739,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string SDTTitile {
             get {
                 return ResourceManager.GetString("SDTTitile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string SDTTitle {
+            get {
+                return ResourceManager.GetString("SDTTitle", resourceCulture);
             }
         }
         
