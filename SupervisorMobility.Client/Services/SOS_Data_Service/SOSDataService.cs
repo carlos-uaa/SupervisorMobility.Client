@@ -5,6 +5,7 @@ using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
 using System.Diagnostics;
 using System.Linq;
 using DocumentFormat.OpenXml.Wordprocessing;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Services.SOS_Data_Service
 {
@@ -339,10 +340,437 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             return new AsyncVoidMethodBuilder();
         }
 
-        public async Task<AsyncVoidMethodBuilder> SetSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
-            List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia)
+        //public async Task<AsyncVoidMethodBuilder> SetSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
+        //    List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia)
+        //{
+        //    List<JobObservation> availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
+
+        //    this.diasSeparate = diasSeparate;
+        //    this.Startday = Startday;
+        //    this.JobsPorDia = JobsPorDia;
+        //    this.Year = Startday.Year;
+        //    this.YearLoop = 0;
+
+        //    Suggested_SOS_Registers_UserOperationRelationship?.Clear();
+        //    try
+        //    {
+        //        TimeSpan? startHour = new TimeSpan(00, 00, 00);
+
+
+        //        if (_All_Suggested_SOSJobobservation.Count == 0)
+        //        {
+        //            foreach (var item in Dist_Manager)
+        //            {
+
+        //                if (item.isSelected)
+        //                {
+        //                    foreach (var op in item.distribution.Operations)
+        //                    {
+        //                        // Obtener el SupervisorId de SV_Manager usando el índice calculado
+        //                        int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
+        //                        int supervisorId = SV_Manager[supervisorIndex].UserId;
+
+        //                        if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
+        //                        {
+
+        //                            List<JobObservation> findedJobs = availableJobs.Where(j => j.DistributionId == item.distribution.DistributionId).ToList();
+
+        //                            JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any(jo => jo.OperationId == op.OperationId));
+
+        //                            if (findedJob != null)
+        //                            {
+        //                                JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
+
+        //                                // Asignar el SupervisorId a _newSuggestion
+        //                                if (findedJob.SupervisorId == null)
+        //                                {
+        //                                    _newSuggestionExist.SupervisorId = supervisorId;
+        //                                }
+
+
+        //                                SOSRegUserOperationRelationship regAuxExist = new();
+        //                                regAuxExist.Register = new();
+        //                                regAuxExist.Register.SOSReviewProgramid = _sos_plan.SOSid;
+        //                                regAuxExist.Register.OperationId = op.OperationId;
+        //                                regAuxExist.Register.SupervisorId = supervisorId;
+        //                                regAuxExist.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+
+        //                                regAuxExist.Exist = false;
+        //                                regAuxExist.StateUpdate = true;
+        //                                Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAuxExist);
+
+
+        //                                _newSuggestionExist.Plant = _sos_plan.Plant;
+        //                                _newSuggestionExist.Area = _sos_plan.Area;
+        //                                _newSuggestionExist.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+
+        //                                _newSuggestionExist.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+        //                                var operationsList = _newSuggestionExist.Operations?.ToList() ?? new List<Operation>();
+        //                                if (!operationsList.Any(o => o.OperationId == op.OperationId))
+        //                                {
+        //                                    operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
+        //                                }
+        //                                _newSuggestionExist.Operations = operationsList;
+
+        //                                //_newSuggestionExist.Operation = op;
+        //                                //if (_newSuggestionExist.OperationId == 0)
+        //                                //{
+        //                                //    _newSuggestionExist.OperationId = op.OperationId;
+        //                                //}
+
+        //                                _newSuggestionExist.Option = 2;
+        //                                _newSuggestionExist.Type = 3;
+        //                                _newSuggestionExist.Status = 7;
+        //                                _newSuggestionExist.SectionIds = jobCategoryStructureIds;
+
+        //                                _newSuggestionExist.IsActive = true;
+
+        //                                DateTime parsedDate = Startday;
+        //                                parsedDate = await FindNextAvailableDate((DateTime)_newSuggestionExist.StartDate, true, supervisorId);
+
+        //                                _newSuggestionExist.StartDate = parsedDate;
+        //                                _newSuggestionExist.PlannedStartDate = parsedDate;
+
+        //                                //se elimina la job del siguiene año para evitar duplicados
+        //                                availableJobs.RemoveAll(j => j.JobObservationId == findedJob.JobObservationId);
+
+        //                                _All_Suggested_SOSJobobservation.Add(_newSuggestionExist);
+        //                            }
+        //                            else
+        //                            {
+        //                                JobObservationNulls _newSuggestion = new();
+
+
+        //                                // Asignar el SupervisorId a _newSuggestion
+        //                                _newSuggestion.SupervisorId = supervisorId;
+
+
+        //                                SOSRegUserOperationRelationship regAux = new();
+        //                                regAux.Register = new();
+        //                                regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
+        //                                regAux.Register.OperationId = op.OperationId;
+        //                                regAux.Register.SupervisorId = supervisorId;
+        //                                regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+
+        //                                regAux.Exist = false;
+        //                                regAux.StateUpdate = true;
+        //                                Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+
+
+        //                                _newSuggestion.PlantId = (int)_sos_plan.PlantId;
+        //                                _newSuggestion.Plant = _sos_plan.Plant;
+        //                                _newSuggestion.AreaId = (int)_sos_plan.AreaId;
+        //                                _newSuggestion.Area = _sos_plan.Area;
+
+        //                                _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+        //                                _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
+
+        //                                //_newSuggestion.Operation = op;
+        //                                //_newSuggestion.OperationId = op.OperationId;
+
+
+        //                                _newSuggestion.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+        //                                var operationsList = _newSuggestion.Operations?.ToList() ?? new List<Operation>();
+        //                                if (!operationsList.Any(o => o.OperationId == op.OperationId))
+        //                                {
+        //                                    operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
+        //                                }
+        //                                _newSuggestion.Operations = operationsList;
+
+        //                                _newSuggestion.Option = 2;
+        //                                _newSuggestion.Type = 3;
+        //                                _newSuggestion.Status = 7;
+        //                                _newSuggestion.SectionIds = jobCategoryStructureIds;
+
+        //                                _newSuggestion.IsActive = true;
+
+        //                                DateTime parsedDate = Startday;
+        //                                parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
+
+        //                                _newSuggestion.StartDate = parsedDate;
+        //                                _newSuggestion.PlannedStartDate = parsedDate;
+
+
+        //                                _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+        //                            }
+
+        //                        }
+
+        //                    }
+        //                }
+
+        //            }
+        //            //var OperationsInDist = _All_Operations.Where(o => o.id)
+
+
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error CreateSuggestion: {ex.Message}");
+
+        //    }
+        //    finally
+        //    {
+        //        //ShowLoading = false;
+        //        //isButtonDisabled = false;
+        //    }
+
+        //    Suggested_Registers_Matrix?.Clear();
+
+
+        //    foreach (var dist in _distributions)
+        //    {
+        //        for (int i = 1; i < 13; i++)
+        //        {
+        //            int currentindex = i;
+        //            var matchingRegisters = _All_Suggested_SOSJobobservation?
+        //               .Where(r => r.DistributionId == dist.DistributionId && r.StartDate.Value.Month == currentindex)
+        //               .ToList();
+
+        //            Suggested_Registers_Matrix.Add((dist.DistributionId, currentindex), matchingRegisters);
+        //        }
+        //    }
+        //    return new AsyncVoidMethodBuilder();
+        //}
+
+
+
+        //public async Task<AsyncVoidMethodBuilder> SetNewConfigSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
+        //    List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom)
+        //{
+
+        //    List<JobObservation>? availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
+
+        //    this.diasSeparate = diasSeparate;
+        //    this.Startday = Startday;
+        //    this.JobsPorDia = JobsPorDia;
+        //    this.Year = Startday.Year;
+        //    this.YearLoop = 0;
+
+        //    _All_Suggested_SOSJobobservation?.Clear();
+        //    Suggested_SOS_Registers_UserOperationRelationship?.Clear();
+
+        //    Random random = new Random();
+
+        //    switch (OptionRandom)
+        //    {
+        //        case 0:
+        //            _All_Operations?.Clear();
+        //            foreach (var item in Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution))
+        //            {
+        //                _All_Operations.AddRange(item.Operations);
+        //            }
+        //            break;
+        //        case 1:
+        //            _All_Operations?.Clear();
+        //            foreach (var item in Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution))
+        //            {
+        //                _All_Operations.AddRange(item.Operations);
+        //            }
+        //            _All_Operations = _All_Operations.OrderBy(x => random.Next()).ToList();
+        //            //OperationIterator = OperationIterator.OrderBy(x => random.Next()).ToList();
+
+        //            break;
+        //        case 2:
+        //            var _distributionsRandom = Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution).OrderBy(x => random.Next()).ToList();
+        //            _All_Operations?.Clear();
+        //            foreach (var item in _distributionsRandom)
+        //            {
+        //                _All_Operations.AddRange(item.Operations);
+        //            }
+        //            break;
+        //    }
+
+        //    TimeSpan? startHour = new TimeSpan(00, 00, 00);
+
+        //    List<Distribution> selectedDistributions = Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution).ToList();
+        //    try
+        //    {
+
+        //        if (_All_Suggested_SOSJobobservation.Count == 0)
+        //        {
+
+        //            foreach (var op in _All_Operations)
+        //            {
+        //                if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
+        //                {
+
+        //                    int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
+
+
+        //                    int supervisorId = SV_Manager[supervisorIndex].UserId;
+
+
+        //                    //Buscamos el id de distribucion al que pertenece la operacion
+        //                    int distID = selectedDistributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId)).DistributionId;
+
+        //                    //Filtrar las jobs siguiente año disponibles por distribucion para evitar usar Jobs de alguna otra distribucion
+        //                    List<JobObservation> findedJobs = availableJobs?.Where(j => j.DistributionId == distID).ToList();
+        //                    //(En caso de que esten incompletas)
+        //                    //Buscar alguna que tenga la operacion
+        //                    //o en su defecto usar la primera job disponible sin operacion para no tener registros en bdd
+        //                    JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any(jo => jo.OperationId == op.OperationId));
+
+
+
+        //                    if (findedJob != null)
+        //                    {
+        //                        JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
+
+
+        //                        if (findedJob.SupervisorId == null)
+        //                        {
+        //                            _newSuggestionExist.SupervisorId = supervisorId;
+        //                        }
+
+
+        //                        SOSRegUserOperationRelationship regAuxExist = new();
+        //                        regAuxExist.Register = new();
+        //                        regAuxExist.Register.SOSReviewProgramid = _sos_plan.SOSid;
+        //                        regAuxExist.Register.OperationId = op.OperationId;
+        //                        regAuxExist.Register.SupervisorId = supervisorId;
+        //                        regAuxExist.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+
+        //                        regAuxExist.Exist = false;
+        //                        regAuxExist.StateUpdate = true;
+        //                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAuxExist);
+
+        //                        _newSuggestionExist.Plant = _sos_plan.Plant;
+        //                        _newSuggestionExist.Area = _sos_plan.Area;
+        //                        _newSuggestionExist.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+
+        
+
+
+        //                        _newSuggestionExist.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+        //                        var operationsList = _newSuggestionExist.Operations?.ToList() ?? new List<Operation>();
+        //                        if (!operationsList.Any(o => o.OperationId == op.OperationId))
+        //                        {
+        //                            operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
+        //                        }
+        //                        _newSuggestionExist.Operations = operationsList;
+
+        //                        _newSuggestionExist.Option = 2;
+        //                        _newSuggestionExist.Type = 3;
+        //                        _newSuggestionExist.Status = 7;
+        //                        _newSuggestionExist.SectionIds = jobCategoryStructureIds;
+        //                        _newSuggestionExist.IsActive = true;
+
+        //                        DateTime parsedDate = Startday;
+        //                        parsedDate = await FindNextAvailableDate((DateTime)_newSuggestionExist.StartDate, true, supervisorId);
+
+        //                        _newSuggestionExist.StartDate = parsedDate;
+        //                        _newSuggestionExist.PlannedStartDate = parsedDate;
+
+
+        //                        availableJobs.RemoveAll(j => j.JobObservationId == findedJob.JobObservationId);
+        //                        _All_Suggested_SOSJobobservation.Add(_newSuggestionExist);
+        //                    }
+        //                    else
+        //                    {
+        //                        JobObservationNulls _newSuggestion = new();
+        //                        // Asignar el SupervisorId a _newSuggestion
+        //                        _newSuggestion.SupervisorId = supervisorId;
+
+
+        //                        SOSRegUserOperationRelationship regAux = new();
+        //                        regAux.Register = new();
+        //                        regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
+        //                        regAux.Register.OperationId = op.OperationId;
+        //                        regAux.Register.SupervisorId = supervisorId;
+        //                        regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+
+        //                        regAux.Exist = false;
+        //                        regAux.StateUpdate = true;
+        //                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
+
+
+
+        //                        _newSuggestion.PlantId = (int)_sos_plan.PlantId;
+        //                        _newSuggestion.Plant = _sos_plan.Plant;
+        //                        _newSuggestion.AreaId = (int)_sos_plan.AreaId;
+        //                        _newSuggestion.Area = _sos_plan.Area;
+
+        //                        _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
+        //                        _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
+
+        //                        //_newSuggestion.Operation = op;
+        //                        //_newSuggestion.OperationId = op.OperationId;
+
+        //                        var operationsList = _newSuggestion.Operations?.ToList() ?? new List<Operation>();
+        //                        if (!operationsList.Any(o => o.OperationId == op.OperationId))
+        //                        {
+        //                            operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
+        //                        }
+        //                        _newSuggestion.Operations = operationsList;
+
+
+        //                        _newSuggestion.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+        //                        _newSuggestion.Option = 2;
+        //                        _newSuggestion.Type = 3;
+        //                        _newSuggestion.Status = 7;
+        //                        _newSuggestion.SectionIds = jobCategoryStructureIds;
+        //                        _newSuggestion.IsActive = true;
+
+        //                        DateTime parsedDate = Startday;
+        //                        parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
+
+        //                        _newSuggestion.StartDate = parsedDate;
+        //                        _newSuggestion.PlannedStartDate = parsedDate;
+
+
+        //                        _All_Suggested_SOSJobobservation.Add(_newSuggestion);
+        //                    }
+        //                }
+        //            }
+        //        }
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error CreateSuggestion: {ex.Message}");
+
+        //    }
+        //    finally
+        //    {
+        //        Suggested_Registers_Matrix?.Clear();
+
+
+        //        foreach (var dist in _distributions)
+        //        {
+        //            for (int i = 1; i < 13; i++)
+        //            {
+        //                int currentindex = i;
+        //                var matchingRegisters = _All_Suggested_SOSJobobservation?
+        //                   .Where(r => r.DistributionId == dist.DistributionId && r.StartDate.Value.Month == currentindex)
+        //                   .ToList();
+
+        //                Suggested_Registers_Matrix.Add((dist.DistributionId, currentindex), matchingRegisters);
+        //            }
+        //        }
+
+        //    }
+
+        //    return new AsyncVoidMethodBuilder();
+        //}
+
+        public async Task<AsyncVoidMethodBuilder> SetSuggestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
+    List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom, int DistribucionesPorMes)
         {
-            List<JobObservation> availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
+            // Inicialización común
+            List<JobObservation> availableJobs = await JobObsServices.GetAllNextYearJobsObservations(
+                _sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
 
             this.diasSeparate = diasSeparate;
             this.Startday = Startday;
@@ -350,533 +778,493 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             this.Year = Startday.Year;
             this.YearLoop = 0;
 
-            Suggested_SOS_Registers_UserOperationRelationship?.Clear();
-            try
-            {
-                TimeSpan? startHour = new TimeSpan(00, 00, 00);
-
-
-                if (_All_Suggested_SOSJobobservation.Count == 0)
-                {
-                    foreach (var item in Dist_Manager)
-                    {
-
-                        if (item.isSelected)
-                        {
-                            foreach (var op in item.distribution.Operations)
-                            {
-                                // Obtener el SupervisorId de SV_Manager usando el índice calculado
-                                int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
-                                int supervisorId = SV_Manager[supervisorIndex].UserId;
-
-                                if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
-                                {
-
-                                    List<JobObservation> findedJobs = availableJobs.Where(j => j.DistributionId == item.distribution.DistributionId).ToList();
-
-                                    JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any(jo => jo.OperationId == op.OperationId));
-
-                                    if (findedJob != null)
-                                    {
-                                        JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
-
-                                        // Asignar el SupervisorId a _newSuggestion
-                                        if (findedJob.SupervisorId == null)
-                                        {
-                                            _newSuggestionExist.SupervisorId = supervisorId;
-                                        }
-
-
-                                        SOSRegUserOperationRelationship regAuxExist = new();
-                                        regAuxExist.Register = new();
-                                        regAuxExist.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                                        regAuxExist.Register.OperationId = op.OperationId;
-                                        regAuxExist.Register.SupervisorId = supervisorId;
-                                        regAuxExist.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-
-                                        regAuxExist.Exist = false;
-                                        regAuxExist.StateUpdate = true;
-                                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAuxExist);
-
-
-                                        _newSuggestionExist.Plant = _sos_plan.Plant;
-                                        _newSuggestionExist.Area = _sos_plan.Area;
-                                        _newSuggestionExist.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-
-                                        _newSuggestionExist.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-                                        var operationsList = _newSuggestionExist.Operations?.ToList() ?? new List<Operation>();
-                                        if (!operationsList.Any(o => o.OperationId == op.OperationId))
-                                        {
-                                            operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
-                                        }
-                                        _newSuggestionExist.Operations = operationsList;
-
-                                        //_newSuggestionExist.Operation = op;
-                                        //if (_newSuggestionExist.OperationId == 0)
-                                        //{
-                                        //    _newSuggestionExist.OperationId = op.OperationId;
-                                        //}
-
-                                        _newSuggestionExist.Option = 2;
-                                        _newSuggestionExist.Type = 3;
-                                        _newSuggestionExist.Status = 7;
-                                        _newSuggestionExist.SectionIds = jobCategoryStructureIds;
-
-                                        _newSuggestionExist.IsActive = true;
-
-                                        DateTime parsedDate = Startday;
-                                        parsedDate = await FindNextAvailableDate((DateTime)_newSuggestionExist.StartDate, true, supervisorId);
-
-                                        _newSuggestionExist.StartDate = parsedDate;
-                                        _newSuggestionExist.PlannedStartDate = parsedDate;
-
-                                        //se elimina la job del siguiene año para evitar duplicados
-                                        availableJobs.RemoveAll(j => j.JobObservationId == findedJob.JobObservationId);
-
-                                        _All_Suggested_SOSJobobservation.Add(_newSuggestionExist);
-                                    }
-                                    else
-                                    {
-                                        JobObservationNulls _newSuggestion = new();
-
-
-                                        // Asignar el SupervisorId a _newSuggestion
-                                        _newSuggestion.SupervisorId = supervisorId;
-
-
-                                        SOSRegUserOperationRelationship regAux = new();
-                                        regAux.Register = new();
-                                        regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                                        regAux.Register.OperationId = op.OperationId;
-                                        regAux.Register.SupervisorId = supervisorId;
-                                        regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-
-                                        regAux.Exist = false;
-                                        regAux.StateUpdate = true;
-                                        Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
-
-
-                                        _newSuggestion.PlantId = (int)_sos_plan.PlantId;
-                                        _newSuggestion.Plant = _sos_plan.Plant;
-                                        _newSuggestion.AreaId = (int)_sos_plan.AreaId;
-                                        _newSuggestion.Area = _sos_plan.Area;
-
-                                        _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                                        _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
-
-                                        //_newSuggestion.Operation = op;
-                                        //_newSuggestion.OperationId = op.OperationId;
-
-
-                                        _newSuggestion.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-                                        var operationsList = _newSuggestion.Operations?.ToList() ?? new List<Operation>();
-                                        if (!operationsList.Any(o => o.OperationId == op.OperationId))
-                                        {
-                                            operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
-                                        }
-                                        _newSuggestion.Operations = operationsList;
-
-                                        _newSuggestion.Option = 2;
-                                        _newSuggestion.Type = 3;
-                                        _newSuggestion.Status = 7;
-                                        _newSuggestion.SectionIds = jobCategoryStructureIds;
-
-                                        _newSuggestion.IsActive = true;
-
-                                        DateTime parsedDate = Startday;
-                                        parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
-
-                                        _newSuggestion.StartDate = parsedDate;
-                                        _newSuggestion.PlannedStartDate = parsedDate;
-
-
-                                        _All_Suggested_SOSJobobservation.Add(_newSuggestion);
-                                    }
-
-                                }
-
-                            }
-                        }
-
-                    }
-                    //var OperationsInDist = _All_Operations.Where(o => o.id)
-
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error CreateSuggestion: {ex.Message}");
-
-            }
-            finally
-            {
-                //ShowLoading = false;
-                //isButtonDisabled = false;
-            }
-
-            Suggested_Registers_Matrix?.Clear();
-
-
-            foreach (var dist in _distributions)
-            {
-                for (int i = 1; i < 13; i++)
-                {
-                    int currentindex = i;
-                    var matchingRegisters = _All_Suggested_SOSJobobservation?
-                       .Where(r => r.DistributionId == dist.DistributionId && r.StartDate.Value.Month == currentindex)
-                       .ToList();
-
-                    Suggested_Registers_Matrix.Add((dist.DistributionId, currentindex), matchingRegisters);
-                }
-            }
-            return new AsyncVoidMethodBuilder();
-        }
-        public async Task<AsyncVoidMethodBuilder> SetNewConfigSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
-            List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom)
-        {
-
-            List<JobObservation>? availableJobs = await JobObsServices.GetAllNextYearJobsObservations(_sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
-
-            this.diasSeparate = diasSeparate;
-            this.Startday = Startday;
-            this.JobsPorDia = JobsPorDia;
-            this.Year = Startday.Year;
-            this.YearLoop = 0;
+            
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
 
-            Random random = new Random();
+            // Preparar distribuciones y operaciones según la opción seleccionada
+            var selectedDistributions = Dist_Manager.Where(d => d.isSelected).Select(d => d.distribution).ToList();
+            PrepareOperationsByOption(OptionRandom, selectedDistributions);
 
-            switch (OptionRandom)
-            {
-                case 0:
-                    _All_Operations?.Clear();
-                    foreach (var item in Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution))
-                    {
-                        _All_Operations.AddRange(item.Operations);
-                    }
-                    break;
-                case 1:
-                    _All_Operations?.Clear();
-                    foreach (var item in Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution))
-                    {
-                        _All_Operations.AddRange(item.Operations);
-                    }
-                    _All_Operations = _All_Operations.OrderBy(x => random.Next()).ToList();
-                    //OperationIterator = OperationIterator.OrderBy(x => random.Next()).ToList();
-
-                    break;
-                case 2:
-                    var _distributionsRandom = Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution).OrderBy(x => random.Next()).ToList();
-                    _All_Operations?.Clear();
-                    foreach (var item in _distributionsRandom)
-                    {
-                        _All_Operations.AddRange(item.Operations);
-                    }
-                    break;
-            }
-
-            TimeSpan? startHour = new TimeSpan(00, 00, 00);
-
-            List<Distribution> selectedDistributions = Dist_Manager.Where(item => item.isSelected).Select(item => item.distribution).ToList();
             try
             {
-
                 if (_All_Suggested_SOSJobobservation.Count == 0)
                 {
-
-                    foreach (var op in _All_Operations)
+                    switch (OptionRandom)
                     {
-                        if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
-                        {
+                        case 3: // Opción especial 1 distribución por mes
+                            await ProcessOption3(_sos_plan, selectedDistributions, SV_Manager, availableJobs);
+                            break;
 
-                            int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
-
-
-                            int supervisorId = SV_Manager[supervisorIndex].UserId;
-
-
-                            //Buscamos el id de distribucion al que pertenece la operacion
-                            int distID = selectedDistributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId)).DistributionId;
-
-                            //Filtrar las jobs siguiente año disponibles por distribucion para evitar usar Jobs de alguna otra distribucion
-                            List<JobObservation> findedJobs = availableJobs?.Where(j => j.DistributionId == distID).ToList();
-                            //(En caso de que esten incompletas)
-                            //Buscar alguna que tenga la operacion
-                            //o en su defecto usar la primera job disponible sin operacion para no tener registros en bdd
-                            JobObservation? findedJob = findedJobs.Find(j => j.Operations.Any(jo => jo.OperationId == op.OperationId));
-
-
-
-                            if (findedJob != null)
-                            {
-                                JobObservationNulls _newSuggestionExist = _mapper.Map<JobObservationNulls>(findedJob);
-
-
-                                if (findedJob.SupervisorId == null)
-                                {
-                                    _newSuggestionExist.SupervisorId = supervisorId;
-                                }
-
-
-                                SOSRegUserOperationRelationship regAuxExist = new();
-                                regAuxExist.Register = new();
-                                regAuxExist.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                                regAuxExist.Register.OperationId = op.OperationId;
-                                regAuxExist.Register.SupervisorId = supervisorId;
-                                regAuxExist.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-
-                                regAuxExist.Exist = false;
-                                regAuxExist.StateUpdate = true;
-                                Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAuxExist);
-
-                                _newSuggestionExist.Plant = _sos_plan.Plant;
-                                _newSuggestionExist.Area = _sos_plan.Area;
-                                _newSuggestionExist.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-
-                                //if(_newSuggestionExist.OperationId == 0)
-                                //{
-                                //    _newSuggestionExist.OperationId = op.OperationId;
-                                //}
-
-                                //_newSuggestionExist.Operation = op;
-
-
-                                _newSuggestionExist.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-                                var operationsList = _newSuggestionExist.Operations?.ToList() ?? new List<Operation>();
-                                if (!operationsList.Any(o => o.OperationId == op.OperationId))
-                                {
-                                    operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
-                                }
-                                _newSuggestionExist.Operations = operationsList;
-
-                                _newSuggestionExist.Option = 2;
-                                _newSuggestionExist.Type = 3;
-                                _newSuggestionExist.Status = 7;
-                                _newSuggestionExist.SectionIds = jobCategoryStructureIds;
-
-                                _newSuggestionExist.IsActive = true;
-
-                                DateTime parsedDate = Startday;
-                                parsedDate = await FindNextAvailableDate((DateTime)_newSuggestionExist.StartDate, true, supervisorId);
-
-                                _newSuggestionExist.StartDate = parsedDate;
-                                _newSuggestionExist.PlannedStartDate = parsedDate;
-
-
-                                availableJobs.RemoveAll(j => j.JobObservationId == findedJob.JobObservationId);
-                                _All_Suggested_SOSJobobservation.Add(_newSuggestionExist);
-                            }
-                            else
-                            {
-                                JobObservationNulls _newSuggestion = new();
-                                // Asignar el SupervisorId a _newSuggestion
-                                _newSuggestion.SupervisorId = supervisorId;
-
-
-                                SOSRegUserOperationRelationship regAux = new();
-                                regAux.Register = new();
-                                regAux.Register.SOSReviewProgramid = _sos_plan.SOSid;
-                                regAux.Register.OperationId = op.OperationId;
-                                regAux.Register.SupervisorId = supervisorId;
-                                regAux.Register.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-
-                                regAux.Exist = false;
-                                regAux.StateUpdate = true;
-                                Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, regAux);
-
-
-
-                                _newSuggestion.PlantId = (int)_sos_plan.PlantId;
-                                _newSuggestion.Plant = _sos_plan.Plant;
-                                _newSuggestion.AreaId = (int)_sos_plan.AreaId;
-                                _newSuggestion.Area = _sos_plan.Area;
-
-                                _newSuggestion.Distribution = _distributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId));
-                                _newSuggestion.DistributionId = _newSuggestion.Distribution.DistributionId;
-
-                                //_newSuggestion.Operation = op;
-                                //_newSuggestion.OperationId = op.OperationId;
-
-                                var operationsList = _newSuggestion.Operations?.ToList() ?? new List<Operation>();
-                                if (!operationsList.Any(o => o.OperationId == op.OperationId))
-                                {
-                                    operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
-                                }
-                                _newSuggestion.Operations = operationsList;
-
-
-                                _newSuggestion.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
-
-                                _newSuggestion.Option = 2;
-                                _newSuggestion.Type = 3;
-                                _newSuggestion.Status = 7;
-                                _newSuggestion.SectionIds = jobCategoryStructureIds;
-                                _newSuggestion.IsActive = true;
-
-                                DateTime parsedDate = Startday;
-                                parsedDate = await FindNextAvailableDate(parsedDate, true, supervisorId);
-
-                                _newSuggestion.StartDate = parsedDate;
-                                _newSuggestion.PlannedStartDate = parsedDate;
-
-                               
-                                _All_Suggested_SOSJobobservation.Add(_newSuggestion);
-                            }
-                        }
+                        default: // Opciones 0, 1 y 2
+                            await ProcessStandardOptions(_sos_plan, selectedDistributions, SV_Manager, availableJobs, OptionRandom);
+                            break;
                     }
                 }
-
-
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error CreateSuggestion: {ex.Message}");
-
             }
             finally
             {
-                Suggested_Registers_Matrix?.Clear();
-
-
-                foreach (var dist in _distributions)
-                {
-                    for (int i = 1; i < 13; i++)
-                    {
-                        int currentindex = i;
-                        var matchingRegisters = _All_Suggested_SOSJobobservation?
-                           .Where(r => r.DistributionId == dist.DistributionId && r.StartDate.Value.Month == currentindex)
-                           .ToList();
-
-                        Suggested_Registers_Matrix.Add((dist.DistributionId, currentindex), matchingRegisters);
-                    }
-                }
-
+                GenerateSuggestedRegistersMatrix();
             }
 
             return new AsyncVoidMethodBuilder();
         }
 
+        // Métodos auxiliares
 
-        public async Task<DateTime> FindNextAvailableDate(DateTime startAvailabeDate, bool isSuggest, int id_SV = 0)
+        private void PrepareOperationsByOption(int option, List<Distribution> selectedDistributions)
         {
-            int yearToCheck = this.Year;
-            DateTime initialDayOfYear = new DateTime(startAvailabeDate.Year, startAvailabeDate.Month, startAvailabeDate.Day);
+            _All_Operations?.Clear();
+            var random = new Random();
 
-            if(YearLoop > 0)
+            switch (option)
             {
+                case 0:
+                case 3: // Orden original por distribución
+                    foreach (var dist in selectedDistributions)
+                    {
+                        _All_Operations.AddRange(dist.Operations);
+                    }
+                    break;
+
+                case 1: // Operaciones mezcladas
+                    foreach (var dist in selectedDistributions)
+                    {
+                        _All_Operations.AddRange(dist.Operations);
+                    }
+                    _All_Operations = _All_Operations.OrderBy(x => random.Next()).ToList();
+                    break;
+
+                case 2: // Distribuciones mezcladas
+                    var shuffledDistributions = selectedDistributions.OrderBy(x => random.Next()).ToList();
+                    foreach (var dist in shuffledDistributions)
+                    {
+                        _All_Operations.AddRange(dist.Operations);
+                    }
+                    break;
+
+                
+            }
+        }
+
+        private async Task ProcessStandardOptions(SOSReviewProgram _sos_plan, List<Distribution> selectedDistributions,
+            List<User> SV_Manager, List<JobObservation> availableJobs, int option)
+        {
+            foreach (var op in _All_Operations)
+            {
+                if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
+                {
+                    int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
+                    int supervisorId = SV_Manager[supervisorIndex].UserId;
+                    int distID = selectedDistributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId)).DistributionId;
+
+                    await ProcessSingleOperation(_sos_plan, op, supervisorId, distID, SV_Manager, availableJobs);
+                }
+            }
+        }
+
+        //aqui me quede ver como trabaja la asignacion por mes, actulizar el metodo que optiene las fechas disponibles
+        private async Task ProcessOption3(SOSReviewProgram _sos_plan, List<Distribution> selectedDistributions,
+            List<User> SV_Manager, List<JobObservation> availableJobs)
+        {
+            var currentDate = Startday;
+            var remainingDistributions = new Queue<Distribution>(selectedDistributions);
+            var calendarMonths = new List<DateTime>();
+
+            // Crear lista de meses del año
+            for (int i = 0; i < 12; i++)
+            {
+                calendarMonths.Add(new DateTime(Startday.Year, Startday.Month, 1).AddMonths(i));
+            }
+
+            //Filtrar meses al año
+            calendarMonths = calendarMonths.Where(c => c.Year == Startday.Year).ToList();
+
+                int auxSaveJobs = JobsPorDia;
+            //do while en un for (Experimentando limites)
+            for (int monthIndex = 0; remainingDistributions.Count > 0; monthIndex++)
+            {
+                var currentDist = remainingDistributions.Dequeue();
+                var monthStart = calendarMonths[monthIndex];
+                // Procesar operaciones de la distribución actual
+                foreach (var op in currentDist.Operations)
+                {
+                    Console.WriteLine($"Start {auxSaveJobs}");
+                    int supervisorIndex = _All_Operations.FindIndex(o => o.OperationId == op.OperationId) % SV_Manager.Count;
+                    int supervisorId = SV_Manager[supervisorIndex].UserId;
+
+                    await ProcessSingleOperationMonth(_sos_plan, op, supervisorId, currentDist, SV_Manager, availableJobs, monthStart.Month);
+                    Console.WriteLine($"End {JobsPorDia}");
+      
+                }
+
+                JobsPorDia = auxSaveJobs;
+            }
+
+        }
+
+        private void UpdateRegisterRelations(SOSReviewProgram _sos_plan, Operation op, int supervisorId, List<User> SV_Manager, bool existing)
+        {
+            var relationship = new SOSRegUserOperationRelationship
+            {
+                Register = new()
+                {
+                    SOSReviewProgramid = _sos_plan.SOSid,
+                    OperationId = op.OperationId,
+                    SupervisorId = supervisorId,
+                    Supervisor = SV_Manager.Find(u => u.UserId == supervisorId)
+                },
+                Exist = existing,
+                StateUpdate = true
+            };
+
+            Suggested_SOS_Registers_UserOperationRelationship.Add(op.OperationId, relationship);
+        }
+
+        private void GenerateSuggestedRegistersMatrix()
+        {
+            Suggested_Registers_Matrix?.Clear();
+
+            foreach (var dist in _distributions)
+            {
+                for (int month = 1; month <= 12; month++)
+                {
+                    var registers = _All_Suggested_SOSJobobservation?
+                       .Where(r => r.DistributionId == dist.DistributionId && r.StartDate?.Month == month)
+                       .ToList();
+
+                    Suggested_Registers_Matrix.Add((dist.DistributionId, month), registers);
+                }
+            }
+        }
+
+        private async Task ProcessSingleOperation(SOSReviewProgram _sos_plan, Operation op, int supervisorId, int distId, List<User> SV_Manager, List<JobObservation> availableJobs)
+        {
+            //Buscamos si ya existe alguna job con esa operacion.
+            JobObservation? existingJob = availableJobs?
+                .Where(j => j.DistributionId == distId)
+                .FirstOrDefault(j => j.Operations.Any(o => o.OperationId == op.OperationId));
+
+            DateTime operationDate = Startday;
+
+                
+            var dist = _distributions.Find(d => d.DistributionId == distId);
+
+            if (existingJob != null)
+            {
+                var job = _mapper.Map<JobObservationNulls>(existingJob);
+
+                job.SupervisorId = supervisorId;
+                job.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+                //se asignan/actualizan los valores/objetos para evitar errores en la visualizacion previa
+                job.Plant = _sos_plan.Plant;
+                job.Area = _sos_plan.Area;
+                job.Distribution = dist;
+                job.DistributionId = distId;
+
+                //Operaciones de la job
+                var operationsList = job.Operations?.ToList() ?? new List<Operation>();
+                if (!operationsList.Any(o => o.OperationId == op.OperationId))
+                {
+                    operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
+                }
+                job.Operations = operationsList;
+
+                //actualizacion del status de la job, se cambia a planeada, se asigna al sos y se actualizan las categorias disponibles
+                job.Option = 2;
+                job.Type = 3;
+                job.Status = 7;
+                job.SectionIds = jobCategoryStructureIds;
+                job.IsActive = true;
+
+                //Se valida si el dia en que estaba registrada esta disponible, 
+                operationDate = await FindNextAvailableDate((DateTime)job.StartDate, true, supervisorId);
+           
+                job.StartDate = operationDate;
+                job.PlannedStartDate = operationDate;
+
+                UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: true);
+                availableJobs.Remove(existingJob);
+                _All_Suggested_SOSJobobservation.Add(job);
+            }
+            else
+            {
+                var job = new JobObservationNulls
+                {
+                    SupervisorId = supervisorId,
+                    Supervisor = SV_Manager.Find(u => u.UserId == supervisorId),
+                    PlantId = (int)_sos_plan.PlantId,
+                    AreaId = (int)_sos_plan.AreaId,
+                    Plant = _sos_plan.Plant,
+                    Area = _sos_plan.Area,
+                    DistributionId = distId,
+                    Distribution = dist,
+                    Option = 2,
+                    Type = 3,
+                    Status = 7,
+                    SectionIds = jobCategoryStructureIds,
+                    IsActive = true,
+                    Operations = new List<Operation> { op },
+                };
+
+                operationDate = await FindNextAvailableDate(operationDate, true, supervisorId);
+
+                job.StartDate = operationDate;
+                job.PlannedStartDate = operationDate;
+
+                UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: false);
+                _All_Suggested_SOSJobobservation.Add(job);
+            }
+        }
+        private async Task ProcessSingleOperationMonth(SOSReviewProgram _sos_plan, Operation op, int supervisorId, Distribution dist, List<User> SV_Manager, List<JobObservation> availableJobs, int Month)
+        {
+            //Buscamos si ya existe alguna job con esa operacion.
+            JobObservation? existingJob = availableJobs?
+                .Where(j => j.DistributionId == dist.DistributionId)
+                .FirstOrDefault(j => j.Operations.Any(o => o.OperationId == op.OperationId));
+
+            DateTime operationDate = new DateTime(year: Startday.Year, month: Month, day: Startday.Day);
+
+
+            if (existingJob != null)
+            {
+                var job = _mapper.Map<JobObservationNulls>(existingJob);
+
+                job.SupervisorId = supervisorId;
+                job.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
+
+                //se asignan/actualizan los valores/objetos para evitar errores en la visualizacion previa
+                job.Plant = _sos_plan.Plant;
+                job.Area = _sos_plan.Area;
+                job.Distribution = dist;
+                job.DistributionId = dist.DistributionId;
+
+                //Operaciones de la job
+                var operationsList = job.Operations?.ToList() ?? new List<Operation>();
+                if (!operationsList.Any(o => o.OperationId == op.OperationId))
+                {
+                    operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
+                }
+                job.Operations = operationsList;
+
+                //actualizacion del status de la job, se cambia a planeada, se asigna al sos y se actualizan las categorias disponibles
+                job.Option = 2;
+                job.Type = 3;
+                job.Status = 7;
+                job.SectionIds = jobCategoryStructureIds;
+                job.IsActive = true;
+
+                //Se valida si el dia en que estaba registrada esta disponible, 
+                operationDate = await FindNextAvailableDate((DateTime)job.StartDate, true, supervisorId);
+
+                job.StartDate = operationDate;
+                job.PlannedStartDate = operationDate;
+
+                UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: true);
+                availableJobs.Remove(existingJob);
+                _All_Suggested_SOSJobobservation.Add(job);
+            }
+            else
+            {
+                var job = new JobObservationNulls
+                {
+                    SupervisorId = supervisorId,
+                    Supervisor = SV_Manager.Find(u => u.UserId == supervisorId),
+                    PlantId = (int)_sos_plan.PlantId,
+                    AreaId = (int)_sos_plan.AreaId,
+                    Plant = _sos_plan.Plant,
+                    Area = _sos_plan.Area,
+                    DistributionId = dist.DistributionId,
+                    Distribution = dist,
+                    Option = 2,
+                    Type = 3,
+                    Status = 7,
+                    SectionIds = jobCategoryStructureIds,
+                    IsActive = true,
+                    Operations = new List<Operation> { op },
+                };
+
+                operationDate = await FindNextAvailableDateInMonth(operationDate, true, Month, supervisorId);
+
+                job.StartDate = operationDate;
+                job.PlannedStartDate = operationDate;
+
+                UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: false);
+                _All_Suggested_SOSJobobservation.Add(job);
+            }
+        }
+
+       
+        public async Task<DateTime> FindNextAvailableDateInMonth(DateTime startDate, bool isSuggest, int Month, int supervisorId = 0)
+        {
+            DateTime currentDate = startDate;
+            int attempts = 0;
+            int maxAttempts = 365; // Máximo de días a verificar para evitar bucles infinitos
+
+
+            if (YearLoop > 0)
+            {
+                Console.WriteLine($"Start Vueltas al mes: {YearLoop}");
                 if (YearLoop == diasSeparate)
                 {
                     YearLoop = 0;
+                    JobsPorDia += 1;
                 }
 
-                startAvailabeDate = initialDayOfYear.AddDays(YearLoop);
+                currentDate = currentDate.AddDays(YearLoop);
             }
 
-            while (true)
+            while (attempts < maxAttempts)
             {
-
-
-                if (startAvailabeDate < DateTime.Today)
+                // Saltar fines de semana
+                if (currentDate.DayOfWeek == DayOfWeek.Saturday)
                 {
-                    startAvailabeDate = initialDayOfYear.AddDays(YearLoop);
+                    currentDate = currentDate.AddDays(2);
+                    attempts += 2;
+                    continue;
+                }
+                else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    currentDate = currentDate.AddDays(1);
+                    attempts++;
+                    continue;
                 }
 
+                // Verificar disponibilidad según el modo
+                bool isAvailable;
                 if (isSuggest)
                 {
-                    if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
-                    {
-                        return startAvailabeDate;
-                    }
-                    else if (await IsWeekend(startAvailabeDate))
-                    {
-                        if (startAvailabeDate.DayOfWeek == DayOfWeek.Saturday)
-                        {
-                            startAvailabeDate = startAvailabeDate.AddDays(2);
-                            if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
-                            {
-                                return startAvailabeDate;
-                            }
-                        }
-                        else if (startAvailabeDate.DayOfWeek == DayOfWeek.Sunday)
-                        {
-                            startAvailabeDate = startAvailabeDate.AddDays(1);
-                            if (!(await IsDateSuggestAlreadyUsed(startAvailabeDate, id_SV)) && !(await IsWeekend(startAvailabeDate)))
-                            {
-                                return startAvailabeDate;
-                            }
-                        }
-                    }
+                    isAvailable = !(await IsDateSuggestAlreadyUsed(currentDate, supervisorId));
                 }
                 else
                 {
-                    if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
-                    {
-                        return startAvailabeDate;
-                    }
-                    else if (await IsWeekend(startAvailabeDate))
-                    {
-                        if (startAvailabeDate.DayOfWeek == DayOfWeek.Saturday)
-                        {
-                            startAvailabeDate = startAvailabeDate.AddDays(2);
-                            if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
-                            {
-                                return startAvailabeDate;
-                            }
-                        }
-                        else if (startAvailabeDate.DayOfWeek == DayOfWeek.Sunday)
-                        {
-                            startAvailabeDate = startAvailabeDate.AddDays(1);
-                            if (!(await IsDateAlreadyUsed(startAvailabeDate)) && !(await IsWeekend(startAvailabeDate)))
-                            {
-                                return startAvailabeDate;
-                            }
-                        }
-                    }
+                    isAvailable = !(await IsDateAlreadyUsed(currentDate));
                 }
 
-                startAvailabeDate = startAvailabeDate.AddDays(diasSeparate);
-
-                if (startAvailabeDate.Year != yearToCheck)
+                if (isAvailable && currentDate.Month == Month)
                 {
-                    YearLoop += 1;
-
-                    if(YearLoop == diasSeparate)
-                    {
-                        JobsPorDia +=1;
-                    }
-
-                    //this.JobsPorDia += 1;
-                    // Ajustar el año de la fecha para que permanezca en el mismo año
-                    startAvailabeDate = new DateTime(yearToCheck, startAvailabeDate.Month, startAvailabeDate.Day);
-
-                    //throw new InvalidOperationException("No se pudo encontrar una fecha disponible en el año actual.");
+                    return currentDate;
                 }
 
-              
+                // Avanzar al siguiente día hábil con separación
+                currentDate = currentDate.AddDays(diasSeparate);
+                attempts += diasSeparate;
+
+                // Mantener dentro del año actual
+                if (currentDate.Month != Month)
+                {
+                    Console.WriteLine($"Vueltas mes: {YearLoop}");
+
+
+                    if (YearLoop == diasSeparate)
+                    {
+                        YearLoop = 0;
+                        JobsPorDia += 1;
+                    }
+
+                    currentDate = new DateTime(Year, Month, startDate.Day).AddDays(YearLoop); // Reiniciar desde enero
+                    YearLoop++;
+                }
             }
 
-
-
-            return startAvailabeDate.AddDays(-1);
+            throw new InvalidOperationException("No se pudo encontrar una fecha disponible después de múltiples intentos.");
         }
 
+        public async Task<DateTime> FindNextAvailableDate(DateTime startDate, bool isSuggest, int id_SV = 0)
+        {
+            int currentYear = DateTime.Today.Year;
+            DateTime currentDate = AdjustStartDate(startDate, YearLoop);
+            int maxAttempts = 366; // máximo días del año
+            int attempts = 0;
+
+            while (attempts < maxAttempts)
+            {
+                currentDate = SkipWeekend(currentDate);
+
+                bool isUsed = isSuggest
+                    ? await IsDateSuggestAlreadyUsed(currentDate, id_SV)
+                    : await IsDateAlreadyUsed(currentDate);
+
+                if (!isUsed && currentDate.Year == Year)
+                    return currentDate;
+
+                currentDate = currentDate.AddDays(diasSeparate);
+                attempts++;
+
+                if (currentDate.Year != Year)
+                {
+                    // Verifica si todos los días del año ya tienen JobsPorDia
+                    if (await AllWorkingDaysInYearAreFull(JobsPorDia, id_SV))
+                    {
+                        JobsPorDia++; // aumenta la carga
+                        YearLoop = 0; // reinicia el loop
+                    }
+
+                    // Recalcula nueva fecha base desde donde reiniciar
+                    DateTime restartDate = AdjustStartDate(startDate, YearLoop++);
+                    return await FindNextAvailableDate(restartDate, isSuggest, id_SV);
+                }
+            }
+
+            throw new InvalidOperationException("No se pudo encontrar una fecha disponible después de múltiples intentos.");
+        }
+
+        private DateTime SkipWeekend(DateTime date)
+        {
+            if (date.DayOfWeek == DayOfWeek.Saturday) return date.AddDays(2);
+            if (date.DayOfWeek == DayOfWeek.Sunday) return date.AddDays(1);
+            return date;
+        }
+
+        private DateTime AdjustStartDate(DateTime start, int offset)
+        {
+            DateTime today = DateTime.Today;
+
+            if (Year < today.Year)
+                throw new InvalidOperationException("No se pueden asignar fechas en años anteriores al actual.");
+
+            if (Year == today.Year)
+            {
+                DateTime baseDate = today.AddDays(offset);
+                return baseDate.Year == Year ? baseDate : today;
+            }
+
+            return new DateTime(Year, 1, 1).AddDays(offset);
+        }
+        private async Task<bool> AllWorkingDaysInYearAreFull(int jobsPerDay, int supervisorId)
+        {
+            DateTime start = (Year == DateTime.Today.Year) ? DateTime.Today : new DateTime(Year, 1, 1);
+            DateTime end = new DateTime(Year, 12, 31);
+
+            for (DateTime date = start; date <= end; date = date.AddDays(1))
+            {
+                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                    continue;
+
+                int count = _All_Suggested_SOSJobobservation
+                    .Count(j => j.PlannedStartDate.Value.Date == date.Date && j.SupervisorId == supervisorId);
+
+                if (count < jobsPerDay)
+                    return false; // hay huecos
+            }
+
+            return true; // todos los días hábiles están llenos
+        }
+
+
+        //Primera version
         private async Task<bool> IsDateAlreadyUsed(DateTime dateToCheck)
         {
             int count = _All_SOSJobobservation.Count(o => o.PlannedStartDate.Value.Date == dateToCheck.Date);
             return count > JobsPorDia;
         }
-
+        //version anterior
         private async Task<bool> IsDateSuggestAlreadyUsed(DateTime dateToCheck, int id_SV)
         {
             if (id_SV != 0)

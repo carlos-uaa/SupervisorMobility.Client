@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using System.Globalization;
 using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
 
@@ -5,6 +6,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
 {
     public partial class CalendarSuggest
     {
+        [Parameter]
+        public bool IsDialog { get; set; } = false; 
         [Parameter]
         public int OpDia { get; set; } = 2;
         [Parameter]
@@ -16,8 +19,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
        
         [Parameter]
         public List<DistSelect> Dist_Manager { get; set; } = new List<DistSelect>();
-
+        [Parameter]
+        public EventCallback StartCreateSuggestion { get; set; }
         public string DistributionsInput { get; set; } = "1,2";
+
+        public int Year { get; set; } = 0;
 
         private string currentRandomDistribution = null;
         // Distribuciones y colores
@@ -25,12 +31,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
         private Dictionary<string, string> DistributionColors = new Dictionary<string, string>();
         // Modelo para el calendario
         private List<MonthModel> CalendarMonths = new List<MonthModel>();
-
+        bool Dev_env { get; set; }
         protected override void OnInitialized()
         {
+            Dev_env = Environment.IsDevelopment();
             DistributionsInput = string.Join(",", Dist_Manager.Where(d => d.isSelected == true).Select(d => d.distribution.Description).ToList());
             Distributions = Dist_Manager.Where(d => d.isSelected).Select(d => d.distribution.Description).ToList();
-
+            Year = StartDay.Year;
             GenerateRandomColors();
             GenerateCalendar();
         }

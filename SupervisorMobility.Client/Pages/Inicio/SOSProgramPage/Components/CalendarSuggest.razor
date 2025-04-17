@@ -2,6 +2,9 @@
 @using System.Globalization
 @using MudBlazor
 
+
+@inject Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment Environment
+
 <style>
     /* Contenedor principal */
     .calendar-container {
@@ -107,15 +110,19 @@
 <!-- Controles -->
 <MudGrid Class="mb-6">
 
+    @if(IsDialog){
     <MudItem xs="12" class="mt-4">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GenerateCalendar" FullWidth="true">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="(() => StartCreateSuggestion.InvokeAsync())" FullWidth="true">
             Generar Calendario
         </MudButton>
     </MudItem>
+    }
 </MudGrid>
 <!-- Calendario -->
+@if(Dev_env){
+
 <div class="calendar-container">
-    @foreach (var month in CalendarMonths)
+    @foreach (var month in CalendarMonths.Where(y => y.Year == Year))
     {
         <MudPaper Elevation="2" Class="month-container pa-2 mb-4">
             <MudText Typo="Typo.h6" Class="text-center mb-2">@month.MonthName.ToUpper()</MudText>
@@ -144,4 +151,7 @@
         </MudPaper>
     }
 </div>
+}else{
+
+}
 
