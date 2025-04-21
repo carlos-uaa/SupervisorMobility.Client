@@ -2257,8 +2257,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
         }
 
+        bool visibleApplySuggest { get; set; } = false;
+        private void OpenApplySuggestDialog()
+        {
+            visibleApplySuggest = true;
+        }
+
+        void CloseApplySuggesModal() => visibleApplySuggest = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+
         private async Task<AsyncVoidMethodBuilder> ApplySuggest()
         {
+            visibleApplySuggest = false;
 
             DistSelect? tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
 

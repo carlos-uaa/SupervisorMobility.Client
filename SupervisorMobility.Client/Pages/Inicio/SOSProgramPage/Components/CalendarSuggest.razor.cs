@@ -104,37 +104,49 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
         private void GenerateCalendarStandardTypes()
         {
             currentRandomDistribution = null;
-            // Preparar las operaciones por distribución
-            var operationsByDist = Dist_Manager.Where(d => d.isSelected == true).ToDictionary(
-                dist => dist.distribution.Description,
-                dist => dist.distribution.Operations.Count()
-            );
 
-            // Generar 12 meses
+            var today = DateTime.Today;
+            int year = StartDay.Year;
+
+            var operationsByDist = Dist_Manager
+                .Where(d => d.isSelected)
+                .ToDictionary(
+                    dist => dist.distribution.Description,
+                    dist => dist.distribution.Operations.Count()
+                );
+
+            int daysSinceLastOperation = SeparateDays + 1;
+
             for (int monthOffset = 0; monthOffset < 12; monthOffset++)
             {
                 var currentDate = StartDay.AddMonths(monthOffset);
                 var monthModel = CreateMonthModel(currentDate);
 
-                // Contadores para lógica de asignación
-                int daysSinceLastOperation = SeparateDays + 1;
-
-                // Generar días del mes
-                for (int day = 1; day <= monthModel.Days.Count(d => !d.IsEmpty); day++)
+                foreach (var dayModel in monthModel.Days
+                    .Where(d =>
+                        !d.IsEmpty &&
+                        !d.IsWeekend &&
+                        (year > today.Year || d.Date >= today))
+                    .OrderBy(d => d.Date))
                 {
-                    var dayModel = monthModel.Days[monthModel.Days.FindIndex(d => d.DayNumber == day)];
+                    daysSinceLastOperation++;
 
-                    if (!dayModel.IsWeekend)
+                    if (daysSinceLastOperation > SeparateDays)
                     {
-                        daysSinceLastOperation++;
-
-                        if (daysSinceLastOperation > SeparateDays)
+                        // Verifica si hay alguna distribución aún con operaciones pendientes
+                        if (operationsByDist.Any(kvp => kvp.Value > 0))
                         {
                             switch (OptionRandom)
                             {
-                                case 0: AssignContinuousDistribution(operationsByDist, ref daysSinceLastOperation, dayModel); break;
-                                case 1: AssignRandomDistribution(operationsByDist, ref daysSinceLastOperation, dayModel); break;
-                                case 2: AssignRandomCompleteDistribution(ref daysSinceLastOperation, dayModel, operationsByDist); break;
+                                case 0:
+                                    AssignContinuousDistribution(operationsByDist, ref daysSinceLastOperation, dayModel);
+                                    break;
+                                case 1:
+                                    AssignRandomDistribution(operationsByDist, ref daysSinceLastOperation, dayModel);
+                                    break;
+                                case 2:
+                                    AssignRandomCompleteDistribution(ref daysSinceLastOperation, dayModel, operationsByDist);
+                                    break;
                             }
                         }
                     }
@@ -144,18 +156,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
             }
         }
 
-        private void GenerateCalendarType3()
+
+        //version 0 sin respetar las reglas de asignacion
+        private void GenerateCalendarType3_()
         {
-            var operationsByDist = Dist_Manager.Where(d => d.isSelected == true).ToDictionary(
-                dist => dist.distribution.Description,
-                dist => dist.distribution.Operations.Count()
-            );
+            var operationsByDist = Dist_Manager.Where(d => d.isSelected)
+                .ToDictionary(d => d.distribution.Description, d => d.distribution.Operations.Count());
 
             var calendarMonths = new List<MonthModel>();
             var currentDate = StartDay;
-            var remainingDistributions = new Queue<string>(Distributions);
             var currentYear = StartDay.Year;
             var monthsProcessed = 0;
+
+            var remainingDistributions = new Queue<string>(Distributions);
+            int initialOpDia = OpDia;
 
             // Primera vuelta: 1 distribución por mes
             while (remainingDistributions.Count > 0 && monthsProcessed < 12)
@@ -163,24 +177,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
                 var currentDist = remainingDistributions.Dequeue();
                 var monthModel = CreateMonthModel(currentDate);
                 var operationsAssigned = 0;
-                var daysSinceLastOperation = SeparateDays + 1; // Forzar primera operación
+                int workDayCounter = SeparateDays + 1; // para forzar la primera operación
 
-                // Procesar todos los días hábiles del mes
-                foreach (var dayModel in monthModel.Days.Where(d => !d.IsEmpty && !d.IsWeekend))
+                foreach (var day in monthModel.Days.Where(d =>
+                    !d.IsEmpty &&
+                    !d.IsWeekend &&
+                    (d.Date >= DateTime.Today || currentYear > DateTime.Today.Year)))
                 {
                     if (operationsByDist[currentDist] <= 0) break;
 
-                    daysSinceLastOperation++;
+                    workDayCounter++;
 
-                    if (daysSinceLastOperation > SeparateDays)
+                    if (workDayCounter > SeparateDays)
                     {
                         var ops = Math.Min(OpDia, operationsByDist[currentDist]);
-                        dayModel.HasOperation = true;
-                        dayModel.Distribution = currentDist;
-                        dayModel.OperationText = $"Dist {currentDist} x{ops}";
+                        day.HasOperation = true;
+                        day.Distribution = currentDist;
+                        day.OperationText = $"Dist {currentDist} x{ops}";
                         operationsByDist[currentDist] -= ops;
                         operationsAssigned += ops;
-                        daysSinceLastOperation = 0;
+                        workDayCounter = 0;
                     }
                 }
 
@@ -189,62 +205,183 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
                 monthsProcessed++;
             }
 
-            // Segunda vuelta: distribuciones restantes en meses existentes
-            if (remainingDistributions.Count > 0)
+            // Segunda vuelta: llenar huecos en meses ya generados
+            while (remainingDistributions.Count > 0)
             {
-                foreach (var monthModel in calendarMonths)
+                foreach (var month in calendarMonths)
                 {
                     if (remainingDistributions.Count == 0) break;
 
                     var currentDist = remainingDistributions.Dequeue();
-                    var daysSinceLastOperation = SeparateDays + 1;
+                    int workDayCounter = SeparateDays + 1;
 
-                    // Procesar días disponibles (sin operaciones asignadas)
-                    foreach (var dayModel in monthModel.Days
-                        .Where(d => !d.IsEmpty && !d.IsWeekend && !d.HasOperation)
+                    foreach (var day in month.Days
+                        .Where(d => !d.IsEmpty && !d.IsWeekend && !d.HasOperation &&
+                                    (d.Date >= DateTime.Today || currentYear > DateTime.Today.Year))
                         .OrderBy(d => d.Date))
                     {
                         if (operationsByDist[currentDist] <= 0) break;
 
-                        daysSinceLastOperation++;
+                        workDayCounter++;
 
-                        if (daysSinceLastOperation > SeparateDays)
+                        if (workDayCounter > SeparateDays)
                         {
                             var ops = Math.Min(OpDia, operationsByDist[currentDist]);
-                            dayModel.HasOperation = true;
-                            dayModel.Distribution = currentDist;
-                            dayModel.OperationText = $"Dist {currentDist} x{ops}";
+                            day.HasOperation = true;
+                            day.Distribution = currentDist;
+                            day.OperationText = $"Dist {currentDist} x{ops}";
                             operationsByDist[currentDist] -= ops;
-                            daysSinceLastOperation = 0;
+                            workDayCounter = 0;
                         }
                     }
                 }
             }
 
-            // Tercera vuelta: si aún quedan operaciones, distribuirlas en espacios vacíos
-            if (operationsByDist.Any(kvp => kvp.Value > 0))
+            // Tercera vuelta: si aún quedan operaciones, incrementar OpDia y reiniciar desde el inicio
+            while (operationsByDist.Any(kvp => kvp.Value > 0))
             {
-                foreach (var monthModel in calendarMonths)
+                foreach (var month in calendarMonths)
                 {
-                    foreach (var dayModel in monthModel.Days
-                        .Where(d => !d.IsEmpty && !d.IsWeekend && !d.HasOperation)
+                    foreach (var day in month.Days
+                        .Where(d => !d.IsEmpty && !d.IsWeekend && !d.HasOperation &&
+                                    (d.Date >= DateTime.Today || currentYear > DateTime.Today.Year))
                         .OrderBy(d => d.Date))
                     {
-                        var remainingDist = operationsByDist.FirstOrDefault(kvp => kvp.Value > 0).Key;
-                        if (string.IsNullOrEmpty(remainingDist)) break;
+                        var nextDist = operationsByDist.FirstOrDefault(kvp => kvp.Value > 0);
+                        if (string.IsNullOrEmpty(nextDist.Key)) break;
 
-                        var ops = Math.Min(OpDia, operationsByDist[remainingDist]);
-                        dayModel.HasOperation = true;
-                        dayModel.Distribution = remainingDist;
-                        dayModel.OperationText = $"Dist {remainingDist} x{ops}";
-                        operationsByDist[remainingDist] -= ops;
+                        var ops = Math.Min(OpDia, nextDist.Value);
+                        day.HasOperation = true;
+                        day.Distribution = nextDist.Key;
+                        day.OperationText = $"Dist {nextDist.Key} x{ops}";
+                        operationsByDist[nextDist.Key] -= ops;
+                    }
+                }
+
+                // Si sigue habiendo operaciones pendientes y no hay espacio, aumentamos la carga diaria
+                if (operationsByDist.Any(kvp => kvp.Value > 0))
+                {
+                    OpDia++;
+                }
+            }
+
+            CalendarMonths = calendarMonths;
+        }
+
+        private void GenerateCalendarType3()
+        {
+            var operationsByDist = Dist_Manager
+                .Where(d => d.isSelected)
+                .ToDictionary(d => d.distribution.Description, d => d.distribution.Operations.Count());
+
+            var remainingDistributions = new Queue<string>(Distributions);
+            var calendarMonths = new List<MonthModel>();
+            int distribucionesPorMes = 1;
+            int year = StartDay.Year;
+            DateTime today = DateTime.Today;
+            int currentLoop = 0;
+            int jobsPerDay = OpDia; // funciona como JobsPorDia
+            int separation = SeparateDays;
+
+            // Crear calendario de meses del año
+            var baseCalendar = Enumerable.Range(0, 12)
+                .Select(i => CreateMonthModel(new DateTime(year, 1, 1).AddMonths(i)))
+                .ToList();
+
+            calendarMonths.AddRange(baseCalendar);
+
+            while (remainingDistributions.Count > 0)
+            {
+                foreach (var month in calendarMonths)
+                {
+                    int distThisMonth = 0;
+
+                    while (remainingDistributions.Count > 0 && distThisMonth < distribucionesPorMes)
+                    {
+                        var distKey = remainingDistributions.Dequeue();
+                        int opsRemaining = operationsByDist[distKey];
+                        int workDayCounter = separation + 1;
+
+                        var validDays = month.Days
+                            .Where(d =>
+                                !d.IsWeekend &&
+                                !d.IsEmpty &&
+                                !d.HasOperation &&
+                                (year > today.Year || d.Date >= today))
+                            .OrderBy(d => d.Date)
+                            .ToList();
+
+                        foreach (var day in validDays)
+                        {
+                            if (opsRemaining <= 0) break;
+
+                            workDayCounter++;
+
+                            // Verificamos si el día ya tiene tareas, y si se llegó al máximo permitido
+                            int countToday = month.Days.Count(d =>
+                                d.HasOperation &&
+                                d.Date == day.Date &&
+                                d.Distribution == distKey);
+
+                            if (workDayCounter > separation && countToday < jobsPerDay)
+                            {
+                                int opsToAssign = Math.Min(jobsPerDay, opsRemaining);
+                                day.HasOperation = true;
+                                day.Distribution = distKey;
+                                day.OperationText = $"Dist {distKey} x{opsToAssign}";
+                                operationsByDist[distKey] -= opsToAssign;
+                                opsRemaining -= opsToAssign;
+                                workDayCounter = 0;
+                            }
+                        }
+
+                        // Si aún quedan operaciones, lo volvemos a poner en la cola
+                        if (operationsByDist[distKey] > 0)
+                            remainingDistributions.Enqueue(distKey);
+
+                        distThisMonth++;
+                    }
+                }
+
+                // Si todavía quedan distribuciones siguiente vuelta al año
+                if (remainingDistributions.Count > 0)
+                {
+                    currentLoop++;
+                    distribucionesPorMes += 1;
+
+                    // Si todos los días posibles están llenos con jobsPerDay, incrementamos
+                    if (AllCalendarFull(calendarMonths, jobsPerDay, year, today))
+                    {
+                        jobsPerDay++;
+                        currentLoop = 0;
                     }
                 }
             }
 
             CalendarMonths = calendarMonths;
         }
-        
+
+        private bool AllCalendarFull(List<MonthModel> months, int maxJobsPerDay, int year, DateTime today)
+        {
+            foreach (var month in months)
+            {
+                foreach (var day in month.Days.Where(d =>
+                    !d.IsWeekend &&
+                    !d.IsEmpty &&
+                    (year > today.Year || d.Date >= today)))
+                {
+                    int opsThatDay = month.Days.Count(d =>
+                        d.HasOperation && d.Date == day.Date);
+
+                    if (opsThatDay < maxJobsPerDay)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+
         private DateTime GetNextBusinessDay(DateTime date)
         {
             do
@@ -305,6 +442,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
                 daysSinceLastOperation = 0;
             }
         }
+
+
+
 
         private void AssignRandomDistribution(Dictionary<string, int> operationsByDist, ref int daysSinceLastOperation, DayModel dayModel)
         {

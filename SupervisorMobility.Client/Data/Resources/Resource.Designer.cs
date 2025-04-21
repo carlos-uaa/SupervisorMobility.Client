@@ -439,6 +439,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Are you sure you want to confirm this SOS?.
+        /// </summary>
+        public static string areYouSueYourWantToConfirmThisSOS {
+            get {
+                return ResourceManager.GetString("areYouSueYourWantToConfirmThisSOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Are you sure you want to delete this PAT?.
         /// </summary>
         public static string areYouSueYourWantToDeleteThisPAT {
