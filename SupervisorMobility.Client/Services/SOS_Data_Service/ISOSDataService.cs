@@ -40,11 +40,14 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         //FUNCTIONS
         //Set Jobs
         Task<AsyncVoidMethodBuilder> SetSosJobObservation(int sos, List<Distribution> _distributions, string jobCategoryStructureIds);
-       //Crear primera sugerencia
-        Task<AsyncVoidMethodBuilder> SetSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager, List<User> SV_Manager,int diasSeparate, DateTime Startday,int JobsPorDia);
+        //Crear sugerencias
+        //Task<AsyncVoidMethodBuilder> SetSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager, List<User> SV_Manager,int diasSeparate, DateTime Startday,int JobsPorDia);
 
-        Task<AsyncVoidMethodBuilder> SetNewConfigSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
-            List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom);
+        //Task<AsyncVoidMethodBuilder> SetNewConfigSugestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
+        //    List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom);
+
+        Task<AsyncVoidMethodBuilder> SetSuggestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager, List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom, int DistribucionesPorMes);
+
 
         Task<DateTime> FindNextAvailableDate(DateTime startAvailabeDate, bool isSuggest, int id_SV = 0);
 
