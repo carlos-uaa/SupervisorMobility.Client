@@ -102,7 +102,7 @@
         {
             <div class="legend-item">
                 <div class="legend-color" style="background-color: @DistributionColors[dist.distribution.Description];"></div>
-                <span>Dist @dist.distribution.Description</span>
+                <span>@dist.distribution.Description</span>
             </div>
         }
     </div>
@@ -110,48 +110,51 @@
 <!-- Controles -->
 <MudGrid Class="mb-6">
 
-    @if(IsDialog){
-    <MudItem xs="12" class="mt-4">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="(() => StartCreateSuggestion.InvokeAsync())" FullWidth="true">
-            Generar Calendario
-        </MudButton>
-    </MudItem>
+    @if (IsDialog)
+    {
+        <MudItem xs="12" class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="(() => StartCreateSuggestion.InvokeAsync())" FullWidth="true">
+                Generar Calendario
+            </MudButton>
+        </MudItem>
     }
 </MudGrid>
 <!-- Calendario -->
-@if(Dev_env){
+@if (Dev_env)
+{
+    <div class="calendar-container">
+        @foreach (var month in CalendarMonths.Where(y => y.Year == Year))
+        {
+            <MudPaper Elevation="2" Class="month-container pa-2 mb-4">
+                <MudText Typo="Typo.h6" Class="text-center mb-2">@month.MonthName.ToUpper()</MudText>
 
-<div class="calendar-container">
-    @foreach (var month in CalendarMonths.Where(y => y.Year == Year))
-    {
-        <MudPaper Elevation="2" Class="month-container pa-2 mb-4">
-            <MudText Typo="Typo.h6" Class="text-center mb-2">@month.MonthName.ToUpper()</MudText>
+                <!-- Días de la semana -->
+                <div class="weekdays">
+                    @foreach (var day in new[] { "S", "M", "T", "W", "T", "F", "S" })
+                    {
+                        <div class="weekday">@day</div>
+                    }
+                </div>
 
-            <!-- Días de la semana -->
-            <div class="weekdays">
-                @foreach (var day in new[] { "S", "M", "T", "W", "T", "F", "S" })
-                {
-                    <div class="weekday">@day</div>
-                }
-            </div>
-
-            <!-- Días del mes -->
-            <div class="days-grid">
-                @foreach (var day in month.Days)
-                {
-                    <div class="@GetDayClasses(day)" style="@GetDayStyle(day)">
-                        <div class="day-number">@day.DayNumber</div>
-                        @if (day.HasOperation)
-                        {
-                            <div class="operation-text">@day.OperationText</div>
-                        }
-                    </div>
-                }
-            </div>
-        </MudPaper>
-    }
-</div>
-}else{
+                <!-- Días del mes -->
+                <div class="days-grid">
+                    @foreach (var day in month.Days)
+                    {
+                        <div class="@GetDayClasses(day)" style="@GetDayStyle(day)">
+                            <div class="day-number">@day.DayNumber</div>
+                            @if (day.HasOperation)
+                            {
+                                <div class="operation-text">@day.OperationText</div>
+                            }
+                        </div>
+                    }
+                </div>
+            </MudPaper>
+        }
+    </div>
+}
+else
+{
 
 }
 
