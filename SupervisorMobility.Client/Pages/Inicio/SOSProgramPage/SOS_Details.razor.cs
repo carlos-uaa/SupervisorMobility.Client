@@ -133,6 +133,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         DateTime FirstdayYear = DateTime.Now;
         DateTime LastdayYear = DateTime.Now;
         int JobsPorDia = 1;
+        int DistribucionesPorMes = 1;
 
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
         private DialogOptions FirstSuggestionDialogOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.Large, FullWidth = true, DisableBackdropClick = true, CloseButton = false };
@@ -2044,7 +2045,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0 && Startday.Date != DateTime.Now.AddDays(-1).Date)
             {
-                await SOSDataServices.SetSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia);
+                await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes);
                 await PrepareSuggestDataTable();
 
                 await DialogService.ShowMessageBox("Info!", "Suggestion created!", yesText: "OK!");
@@ -2117,7 +2118,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             DateTime StartdayUTC = Startday.ToUniversalTime(); // Para asegurarte de que siempre sea UTC
 
 
-            await SOSDataServices.SetNewConfigSugestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, StartdayUTC, JobsPorDia, OptionRandom);
+            await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, StartdayUTC, JobsPorDia, OptionRandom, DistribucionesPorMes);
 
 
             await DialogService.ShowMessageBox("Info!", "New suggestion created!", yesText: "OK!");
@@ -2256,8 +2257,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             }
         }
 
+        bool visibleApplySuggest { get; set; } = false;
+        private void OpenApplySuggestDialog()
+        {
+            visibleApplySuggest = true;
+        }
+
+        void CloseApplySuggesModal() => visibleApplySuggest = false;
+        private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+
         private async Task<AsyncVoidMethodBuilder> ApplySuggest()
         {
+            visibleApplySuggest = false;
 
             DistSelect? tmpSuggdist = Dist_Manager?.Find(d => d.distribution.ShowDetails == true);
 

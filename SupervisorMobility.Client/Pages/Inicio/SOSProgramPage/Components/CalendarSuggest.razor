@@ -2,6 +2,9 @@
 @using System.Globalization
 @using MudBlazor
 
+
+@inject Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment Environment
+
 <style>
     /* Contenedor principal */
     .calendar-container {
@@ -91,48 +94,6 @@
         border: 1px solid #ddd;
     }
 </style>
-
-<!-- Controles -->
-<MudGrid Class="mb-6">
-
-    <MudItem xs="12" class="mt-4">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GenerateCalendar" FullWidth="true">
-            Generar Calendario
-        </MudButton>
-    </MudItem>
-</MudGrid>
-<!-- Calendario -->
-<div class="calendar-container">
-    @foreach (var month in CalendarMonths)
-    {
-        <MudPaper Elevation="2" Class="month-container pa-2 mb-4">
-            <MudText Typo="Typo.h6" Class="text-center mb-2">@month.MonthName.ToUpper()</MudText>
-
-            <!-- Días de la semana -->
-            <div class="weekdays">
-                @foreach (var day in new[] { "S", "M", "T", "W", "T", "F", "S" })
-                {
-                    <div class="weekday">@day</div>
-                }
-            </div>
-
-            <!-- Días del mes -->
-            <div class="days-grid">
-                @foreach (var day in month.Days)
-                {
-                    <div class="@GetDayClasses(day)" style="@GetDayStyle(day)">
-                        <div class="day-number">@day.DayNumber</div>
-                        @if (day.HasOperation)
-                        {
-                            <div class="operation-text">@day.OperationText</div>
-                        }
-                    </div>
-                }
-            </div>
-        </MudPaper>
-    }
-</div>
-
 <!-- Leyenda -->
 <MudPaper Elevation="0" Class="mt-6 pa-4">
     <MudText Typo="Typo.h6" Class="mb-2">Leyenda de Distribuciones</MudText>
@@ -141,8 +102,50 @@
         {
             <div class="legend-item">
                 <div class="legend-color" style="background-color: @DistributionColors[dist.distribution.Description];"></div>
-                <span>Dist @dist.distribution.Description</span>
+                <span>@dist.distribution.Description</span>
             </div>
         }
     </div>
 </MudPaper>
+<!-- Controles -->
+<MudGrid Class="mb-6">
+
+    @if (IsDialog)
+    {
+        <MudItem xs="12" class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="(() => StartCreateSuggestion.InvokeAsync())" FullWidth="true">
+                Generar Calendario
+            </MudButton>
+        </MudItem>
+    }
+</MudGrid>
+<!-- Calendario -->
+
+    <div class="calendar-container">
+        @foreach (var month in CalendarMonths.Where(y => y.Year == Year))
+        {
+            <MudPaper Elevation="2" Class="month-container pa-2 mb-4">
+                <MudText Typo="Typo.h6" Class="text-center mb-2">@month.MonthName.ToUpper()</MudText>
+
+                <!-- Días de la semana -->
+                <div class="weekdays">
+                    @foreach (var day in new[] { "S", "M", "T", "W", "T", "F", "S" })
+                    {
+                        <div class="weekday">@day</div>
+                    }
+                </div>
+
+                <!-- Días del mes -->
+                <div class="days-grid">
+                    @foreach (var day in month.Days)
+                    {
+                        <div class="@GetDayClasses(day)" style="@GetDayStyle(day)">
+                            <div class="day-number">@day.DayNumber</div>
+                        </div>
+                    }
+                </div>
+            </MudPaper>
+        }
+    </div>
+
+
