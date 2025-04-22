@@ -72,6 +72,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? SectionIds { get; set; }
 
         public FileUpload? SignatureImage { get; set; } = new();
-        public bool WillNotRequireSSVAproval { get; set; } = false;
+        public bool WillNotRequireSSVApproval { get; set; } = false;
     }
 }
