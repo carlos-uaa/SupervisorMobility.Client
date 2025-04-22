@@ -34,6 +34,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         private static readonly HashSet<string> CodesToAllowMoreOptions = new() { "MC", "MCM" };
         private static readonly HashSet<string> OperationsThatAddValueField = new() { "SET", "DBLOPT" };
 
+        private int _expandedPanelIndex = -1;
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -314,6 +315,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             selectedData[temp].Actions.Add(temp3, new ActionData());
 
             _actions.Add((newQuestions, newActions));
+            _expandedPanelIndex = _actions.Count - 1;
         }
 
         private void RemoveAction(int index)
@@ -321,6 +323,18 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             _actions.RemoveAt(index);
             selectedData.Remove(SelectedDataIds[index]);
             SelectedDataIds.RemoveAt(index);
+        }
+
+        private void OnExpansionChanged(int index, bool expanded)
+        {
+            if (expanded)
+            {
+                _expandedPanelIndex = index;
+            }
+            else if (_expandedPanelIndex == index)
+            {
+                _expandedPanelIndex = -1;
+            }
         }
     }
     
