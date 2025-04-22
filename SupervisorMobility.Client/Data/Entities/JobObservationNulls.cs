@@ -76,5 +76,6 @@ namespace SupervisorMobility.Client.Data.Entities
         public string? SectionIds { get; set; }
         public ICollection<ChecklistAnswer> ChecklistAnswers { get; set; } = new List<ChecklistAnswer>();
         public FileUpload? SignatureImage { get; set; } = new();
+        public bool WillNotRequireSSVAproval { get; set; } = false;
     }
 }
