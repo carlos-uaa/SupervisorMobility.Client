@@ -2843,6 +2843,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //SetAsCurrentJobObservation();
         }
 
+        private async Task DisableNeedOfSSV()
+        {
+            _jobObservation.WillNotRequireSSVAproval = true;
+            Snackbar.Add(Localizer["SSVReqFalse"], Severity.Warning);
+            await LocalStorage.SetItemAsync("JobObs", _jobObservation);
+            StateHasChanged();
+        }
+        private async Task EnableNeedOfSSV()
+        {
+            _jobObservation.WillNotRequireSSVAproval = false;
+            Snackbar.Add(Localizer["SSVReqTrue"], Severity.Success);
+            await LocalStorage.SetItemAsync("JobObs", _jobObservation);
+        }
+
         private async Task UpdateOperation()
         {
             jobProductId = 0;
