@@ -2845,14 +2845,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private async Task DisableNeedOfSSV()
         {
-            _jobObservation.WillNotRequireSSVAproval = true;
+            _jobObservation.WillNotRequireSSVApproval = true;
             Snackbar.Add(Localizer["SSVReqFalse"], Severity.Warning);
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
             StateHasChanged();
         }
         private async Task EnableNeedOfSSV()
         {
-            _jobObservation.WillNotRequireSSVAproval = false;
+            _jobObservation.WillNotRequireSSVApproval = false;
             Snackbar.Add(Localizer["SSVReqTrue"], Severity.Success);
             await LocalStorage.SetItemAsync("JobObs", _jobObservation);
         }
