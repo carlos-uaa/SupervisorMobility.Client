@@ -96,12 +96,9 @@
                                         <MudTextField Class="ml-4" T="string" Text="@answer.Answer" ReadOnly />
                                     }
                                 </td>
-                                @if (question.Type.Code == "TF")
-                                {
-                                    <td>
-                                        <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
-                                    </td>
-                                }
+                                <td>
+                                    <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
+                                </td>
                             }
                         </tr>
                         @if (answer.Show)
@@ -211,7 +208,7 @@
                                             </MudItem>
                                         </MudItem>
                                         @{
-                                            bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || (section == 1 && (question.CategorySequence == 4 || question.CategorySequence == 5) ? answer.Answer != "YES" : answer.Answer != "NG");
+                                            bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV);
                                         }
                                         <MudItem Style="width: 30%" Class="ma-5">
                                             <MudTextField Disabled="@(user.UserType > 3 || _jobObservation.Status == 6)" T="string" Style="margin-block: 5px; margin-bottom: 10px;" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />
@@ -239,7 +236,7 @@
                             </td>
                             @if (question.Type != null)
                             {
-                                <td width="25%">
+                                <td width="25%" colspan="@(question.Type.Code != "TF"?2:1)">
                                     @if (!question.Disable)
                                     {
                                         @switch (question.Type.Code)
@@ -286,22 +283,19 @@
                                                 break;
                                             default:
                                                 <MudItem>
-                                                    <MudTextField Class="ml-4" T="string" Style="max-width:70px" Value="answer.Answer" ValueChanged="async (an)=>{await AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); await CheckQuestionsAsync();}" />
+                                                    <MudTextField Variant="Variant.Outlined" Lines="4" Class="ml-4" T="string" Value="answer.Answer" ValueChanged="async (an)=>{await AnswerChangeOption.InvokeAsync((an, question.QuestionID, secNum, category.JobCategoryStructureId)); await CheckQuestionsAsync();}" />
                                                 </MudItem>
                                                 break;
                                         }
                                     }
                                     else
                                     {
-                                        <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="@answer.Answer" ReadOnly />
+                                        <MudTextField Lines="1" Class="ml-4" T="string" Style="max-width:70px" Text="@answer.Answer" ReadOnly />
                                     }
                                 </td>
-                                @if (question.Type.Code == "TF")
-                                {
-                                    <td>
-                                        <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
-                                    </td>
-                                }
+                                <td>
+                                    <MudButton Style=" display: -webkit-box;" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@(question.show ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() => questionAnswers[question.QuestionID].Show = !questionAnswers[question.QuestionID].Show)"></MudButton>
+                                </td>
                             }
                         </tr>
                         @if (answer.Show)
@@ -376,7 +370,7 @@
                                             </MudItem>
                                         </MudItem>
                                         @{
-                                            bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV) || (section == 1 && (question.CategorySequence == 4 || question.CategorySequence == 5) ? answer.Answer != "YES" : answer.Answer != "NG");
+                                            bool isDisabled = string.IsNullOrEmpty(answer.CommentarySV);
                                         }
                                         <MudItem Style="display:flex; flex-direction: column;  width: 30%" Class="ma-5">
                                             <MudTextField Disabled="@(user.UserType > 3 || _jobObservation.Status == 6)" T="string" Label="Comment" Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="@answer.CommentarySV" Lines="3" />

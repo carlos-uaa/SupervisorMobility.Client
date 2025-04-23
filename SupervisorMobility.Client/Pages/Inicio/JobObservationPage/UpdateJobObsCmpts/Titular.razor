@@ -70,7 +70,7 @@
                             }
                         </MudSelect>
                     </td>
-                    <td class="d-flex mt-3">
+                    <td class="d-block mt-3">
                         @if (user.UserType == 1)
                         {
                             @if (_jobObservation.AreaId != 0)
@@ -205,9 +205,10 @@
                             </MudSelect>
                         }
                     </td>
-                    <td style="display: flex; justify-content: space-between;">
+                    <td class="d-block mt-3">
                         @*class="d-flex mt-3"*@
-                        <div style="width: 50%;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div style="width: 50%;">
                             @*Mud select for Operator *@
                             <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)" ReadOnly="@(_jobObservation.Status == 6)">
                                 <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperator"]</MudSelectItem>
@@ -356,6 +357,52 @@
                                 <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="No operator selected" Label="ILU Level" ReadOnly />
                             }
                         </div>
+                        </div>
+                        @if (_jobObservation.SupervisorId != 0)
+                        {
+                            <MudCard Class="mt-3">
+                                <MudCardContent style="display: flex; justify-content: space-between;">
+                                    <div style="width: 70%" class="ml-2">
+                                        <MudText Typo="Typo.caption">@Localizer["UseOfSSV"]</MudText>
+                                    </div>
+
+                                    @* @if (!_jobObservation.WillNotRequireSSVAproval)
+                                {
+                                <MudTooltip Text="@Localizer["Enabled"]">
+                                <MudChip Color="Color.Success" Variant="Variant.Filled">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" />
+                                </MudChip>
+                                </MudTooltip>
+                                }
+                                else
+                                {
+                                <MudTooltip Text="@Localizer["Disabled"]">
+                                <MudChip Color="Color.Success" Variant="Variant.Filled">
+                                <MudIcon Icon="@Icons.Material.Filled.WarningAmber" />
+                                </MudChip>
+                                </MudTooltip>
+                                } *@
+                                    @if (_jobObservation.WillNotRequireSSVApproval)
+                                    {
+                                        @* <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="@EnableSSV" StartIcon="@Icons.Material.Filled.AddModerator">
+                                            @Localizer["Enabled"]
+                                </MudButton> *@
+                                        <MudButton Color="Color.Warning" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.RemoveModerator">
+                                            @Localizer["Disabled"]
+                                        </MudButton>
+                                    }
+                                    else
+                                    {
+                                        @* <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="@DisableSSV" StartIcon="@Icons.Material.Filled.RemoveModerator">
+                                            @Localizer["Disabled"]
+                                </MudButton> *@
+                                        <MudButton Color="Color.Success" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddModerator">
+                                            @Localizer["Enabled"]
+                                        </MudButton>
+                                    }
+                                </MudCardContent>
+                            </MudCard>
+                        }
                     </td>
                 </tr>
             </tbody>
@@ -402,6 +449,10 @@
     [Parameter]
     public EventCallback ShowOperators { get; set; }
     [Parameter]
+    public EventCallback EnableNeedOfSSV { get; set; }
+    [Parameter]
+    public EventCallback DisableNeedOfSSV { get; set; }
+    [Parameter]
     public EventCallback<int> UpdateOperation { get; set; }
     [Parameter]
     public EventCallback<bool> UpdateShowOperations { get; set; }
@@ -420,5 +471,18 @@
         Snackbar.Add(Localizer["btnChangeDate"], Severity.Info);
     }
 
+    private void EnableSSV()
+    {
+        _jobObservation.WillNotRequireSSVApproval = true;
+        EnableNeedOfSSV.InvokeAsync();
+        StateHasChanged();
+    }
+
+    private void DisableSSV()
+    {
+        _jobObservation.WillNotRequireSSVApproval = false;
+        DisableNeedOfSSV.InvokeAsync();
+        StateHasChanged();
+    }
 
 }

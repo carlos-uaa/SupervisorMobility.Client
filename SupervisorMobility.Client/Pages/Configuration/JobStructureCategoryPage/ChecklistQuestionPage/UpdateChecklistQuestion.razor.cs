@@ -25,12 +25,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         public List<int> allowableQT { get; set; } = new();
 
         public List<(List<string> questions, List<string> actions)> _actions = new();
-        Dictionary<int, (Dictionary<int, QuestionData> Questions, Dictionary<int, ActionData> Actions)> selectedData;
+        Dictionary<Guid, (Dictionary<Guid, QuestionData> Questions, Dictionary<Guid, ActionData> Actions)> selectedData;
+        List<Guid> SelectedDataIds = new();
+        List<(List<Guid> QID, List<Guid> AID)> SelectedDataInnerIds = new();
         public Dictionary<int, int> Indexes { get; set; } = new();
         private bool _dependendcy = false;
         private static readonly HashSet<string> CodesToShowOptions = new() { "MC", "TF", "MCM" };
         private static readonly HashSet<string> CodesToAllowMoreOptions = new() { "MC", "MCM" };
+        private static readonly HashSet<string> OperationsThatAddValueField = new() { "SET", "DBLOPT" };
 
+        private int _expandedPanelIndex = -1;
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -69,6 +73,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             BreadcrumbService.UpdateBreadcrumbs(_links);
 
             _question.Options = _question.Options??new();
+            _question.Actions = _question.Actions??new();
 
             selectedData = new();
             if (_question.Actions != null && _question.Actions.Any())
@@ -80,36 +85,35 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
                     List<string> newQuestions = act[0].Split("⁂").ToList();
                     List<string> newActions = act[1].Split("⁂").ToList();
                     _actions.Add((newQuestions, newActions));
-                    if (!selectedData.ContainsKey(index))
-                    {
-                        selectedData[index] = (new Dictionary<int, QuestionData>(), new Dictionary<int, ActionData>());
-                    }
+
+                    var temp1 = Guid.NewGuid();
+                    SelectedDataIds.Add(temp1);
+                    SelectedDataInnerIds.Add((new List<Guid> {  }, new List<Guid> {  }));
+                    selectedData[temp1] = (new Dictionary<Guid, QuestionData>(), new Dictionary<Guid, ActionData>()) ;
+
                     for (int i = 0; i < newQuestions.Count; i++)
                     {
                         var temp = newQuestions[i].Split("§", StringSplitOptions.RemoveEmptyEntries);
-                        if (!selectedData[index].Questions.ContainsKey(i))
-                        {
-                            selectedData[index].Questions[i] = new QuestionData(); // Default value
-                        }
-                        selectedData[index].Questions[i].QuestionId = temp.Length > 0 ? Int32.Parse(temp[0]) : 0;
-                        selectedData[index].Questions[i].Comparator = temp.Length > 1 ? temp[1] : "";
-                        selectedData[index].Questions[i].QstOption = temp.Length > 2 ? temp[2] : "";
-
+                        var QidTemp = Guid.NewGuid();
+                        SelectedDataInnerIds[index].QID.Add(QidTemp);
+                        selectedData[temp1].Questions[QidTemp] = new QuestionData { 
+                            QuestionId = temp.Length > 0 ? Int32.Parse(temp[0]) : 0,
+                            Comparator = temp.Length > 1 ? temp[1] : "",
+                            QstOption = temp.Length > 2 ? temp[2] : ""
+                        };
                     }
                     for (int i = 0; i < newActions.Count; i++)
                     {
                         var temp = newActions[i].Split("§", StringSplitOptions.RemoveEmptyEntries);
-                        if (!selectedData[index].Actions.ContainsKey(i))
-                        {
-                            selectedData[index].Actions[i] = new ActionData(); // Default value
-                        }
-                        selectedData[index].Actions[i].Operation = temp.Length > 0 ? temp[0] : "";
-                        selectedData[index].Actions[i].Value = temp.Length > 1 ? temp[1] : "";
-
+                        var AidTemp = Guid.NewGuid();
+                        SelectedDataInnerIds[index].AID.Add(AidTemp);
+                        selectedData[temp1].Actions[AidTemp] = new ActionData {
+                            Operation = temp.Length > 0 ? temp[0] : "",
+                            Value = temp.Length > 1 ? temp[1] : ""
+                        };
                     }
                 }
             }
-            _question.Actions = new();
         }
 
         // Update question
@@ -234,6 +238,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         }
         private void HandleQuestionOption(string option, int index, int qIndex)
         {
+            selectedData[SelectedDataIds[index]].Questions[SelectedDataInnerIds[index].QID[qIndex]].QstOption = option;
             var temp = _actions[index].questions[qIndex].Split("§");
             if (temp.Length > 2)
             {
@@ -252,7 +257,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         }
         private void HandleActionValueModification(string value, int index, int aIndex)
         {
-            selectedData[index].Actions[aIndex].Value = value;
+            selectedData[SelectedDataIds[index]].Actions[SelectedDataInnerIds[index].AID[aIndex]].Value = value;
             var temp = _actions[index].actions[aIndex].Split("§");
             if (temp.Length > 1)
             {
@@ -268,22 +273,68 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 
         void AddQuestionToAction(int index)
         {
+            var temp = Guid.NewGuid();
+            SelectedDataInnerIds[index].QID.Add(temp);
+            selectedData[SelectedDataIds[index]].Questions.Add(temp, new QuestionData());
+
             _actions[index].questions.Add("");
+        }
+        void RemoveQuestion(int index, int qIdx)
+        {
+            _actions[index].questions.RemoveAt(qIdx);
+            selectedData[SelectedDataIds[index]].Questions.Remove(SelectedDataInnerIds[index].QID[qIdx]);
+            SelectedDataInnerIds[index].QID.RemoveAt(qIdx);
         }
         void AddAnotherToAction(int index)
         {
+            var temp = Guid.NewGuid();
+            SelectedDataInnerIds[index].AID.Add(temp);
+            selectedData[SelectedDataIds[index]].Actions.Add(temp, new ActionData());
+
             _actions[index].actions.Add("");
+        }
+        void RemoveAction(int index, int aIdx)
+        {
+            _actions[index].actions.RemoveAt(aIdx);
+            selectedData[SelectedDataIds[index]].Actions.Remove(SelectedDataInnerIds[index].AID[aIdx]);
+            SelectedDataInnerIds[index].AID.RemoveAt(aIdx);
         }
         private void AddAction()
         {
             List<string> newQuestions = new List<string> { "" };
             List<string> newActions = new List<string> { "" };
+
+            var temp = Guid.NewGuid();
+            SelectedDataIds.Add(temp);
+            selectedData[temp] = (new Dictionary<Guid, QuestionData>(), new Dictionary<Guid, ActionData>());
+
+            var temp2 = Guid.NewGuid();
+            var temp3 = Guid.NewGuid();
+            SelectedDataInnerIds.Add((new List<Guid> { temp2 }, new List<Guid> { temp3 }));
+            selectedData[temp].Questions.Add(temp2, new QuestionData());
+            selectedData[temp].Actions.Add(temp3, new ActionData());
+
             _actions.Add((newQuestions, newActions));
+            _expandedPanelIndex = _actions.Count - 1;
         }
 
         private void RemoveAction(int index)
         {
             _actions.RemoveAt(index);
+            selectedData.Remove(SelectedDataIds[index]);
+            SelectedDataIds.RemoveAt(index);
+        }
+
+        private void OnExpansionChanged(int index, bool expanded)
+        {
+            if (expanded)
+            {
+                _expandedPanelIndex = index;
+            }
+            else if (_expandedPanelIndex == index)
+            {
+                _expandedPanelIndex = -1;
+            }
         }
     }
     

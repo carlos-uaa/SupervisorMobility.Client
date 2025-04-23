@@ -1,0 +1,53 @@
+# Opt out of CI triggers
+trigger: none
+
+# Configure PR trigger
+pr:
+  branches:
+    include:
+    - '*'
+  autoCancel: true
+  drafts: true
+
+stages:
+- stage: pr_agent
+  displayName: 'PR Agent Stage'
+  jobs:
+  - job: pr_agent_job
+    displayName: 'PR Agent Job'
+    pool:
+      vmImage: 'ubuntu-latest'
+    container:
+      image: codiumai/pr-agent:latest
+      options: --entrypoint ""
+    variables:
+      - group: pr_agent
+    steps:
+    - script: |
+        echo "Running PR Agent action step"
+
+        # Construct PR_URL
+        PR_URL="${SYSTEM_COLLECTIONURI}${SYSTEM_TEAMPROJECT}/_git/${BUILD_REPOSITORY_NAME}/pullrequest/${SYSTEM_PULLREQUEST_PULLREQUESTID}"
+        echo "PR_URL=$PR_URL"
+
+        # Extract organization URL from System.CollectionUri
+        ORG_URL=$(echo "$(System.CollectionUri)" | sed 's/\/$//') # Remove trailing slash if present
+        echo "Organization URL: $ORG_URL"
+
+        export azure_devops__org="$ORG_URL"
+        export config__git_provider="azure"
+        export openai__key: $(AZURE_OPENAI_KEY)
+        export azure_devops__pat: $(System.AccessToken)
+
+        pr-agent --pr_url="$PR_URL" describe
+        pr-agent --pr_url="$PR_URL" review
+        pr-agent --pr_url="$PR_URL" improve
+      env:
+        AZURE_DEVOPS.PAT: $(System.AccessToken)
+        AZURE_DEVOPS.ORG: $(AZURE_DEVOPS_ORG)
+        OPENAI.API_TYPE: 'azure'
+        OPENAI.KEY: $(AZURE_OPENAI_KEY)
+        OPENAI.VERSION: $(AZURE_OPENAI_API_VERSION)
+        OPENAI.API_BASE: $(AZURE_OPENAI_ENDPOINT)
+        CONFIG.MODEL: $(AZURE_OPENAI_DEPLOYMENT)
+      displayName: 'Run Qodo Merge'

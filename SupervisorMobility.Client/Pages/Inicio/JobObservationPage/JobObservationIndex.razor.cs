@@ -47,7 +47,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         }
 
-        public List<string> header = new List<string> { "Area", "Distribuidor", "Producto" };
+        public List<string> header = new List<string> { "Area", "Distribuidor", "Unidad" };
 
         DisplayNameLabelClass model = new();
 

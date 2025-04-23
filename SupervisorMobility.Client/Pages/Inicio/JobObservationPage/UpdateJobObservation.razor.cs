@@ -1981,6 +1981,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _specifications = new();
         }
 
+        private async Task DisableNeedOfSSV()
+        {
+            _jobObservation.WillNotRequireSSVApproval = true;
+            Snackbar.Add(Localizer["SSVReqFalse"], Severity.Warning);
+            StateHasChanged();
+        }
+        private async Task EnableNeedOfSSV()
+        {
+            _jobObservation.WillNotRequireSSVApproval = false;
+            Snackbar.Add(Localizer["SSVReqTrue"], Severity.Success);
+        }
+
         public async void ModifyKPI(int kpi, int catId)
         {
             kpiID = kpi;

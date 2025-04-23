@@ -45,19 +45,22 @@
         <th>
             <MudText Style="text-align:center; font-weight:bold;">
                     @Localizer["signatureOfThe"]
-                    @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("SSV"))
+                    @if (!_jobObservation.WillNotRequireSSVApproval)
                     {
-                        Glosary word;
-                        word = _glosaryInfo["SSV"];
-                    <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
-                        <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
-                            <MudText Style="font-weight:bold">@word.Name</MudText>
-                        </MudBadge>
-                    </MudTooltip>
-                    }
-                    else
-                    {
-                    <span style="font-weight: bold"> SSV</span>
+                        @if (_glosaryInfo != null && _glosaryInfo.ContainsKey("SSV"))
+                        {
+                            Glosary word;
+                            word = _glosaryInfo["SSV"];
+                        <MudTooltip Text="@word.Description" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+                            <MudBadge Dot=true Color="Color.Info" Style="cursor: pointer">
+                                <MudText Style="font-weight:bold">@($" ({word.Name})")</MudText>
+                            </MudBadge>
+                        </MudTooltip>
+                        }
+                        else
+                        {
+                        <span style="font-weight: bold"> (SSV)</span>
+                        }
                     }
             </MudText>
         </th>
@@ -82,6 +85,12 @@
                                 @Localizer["signIt"]
                         </MudButton>
                         }
+                    }
+                    else if (_jobObservation.WillNotRequireSSVApproval)
+                    {
+                        <MudButton Class="mr-10" StartIcon="@Icons.Material.Filled.BorderColor" Color="Color.Info" @onclick="(() => OpenSignComment.InvokeAsync())" Disabled="_jobObservation.Status == 6">
+                                @Localizer["signIt"]
+                        </MudButton>
                     }
                     else if (_jobObservation.SsvSignature == "Signed")
                     {
