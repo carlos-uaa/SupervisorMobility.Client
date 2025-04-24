@@ -47,6 +47,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         //    List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom);
 
         Task<AsyncVoidMethodBuilder> SetSuggestionJobObservation(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager, List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom, int DistribucionesPorMes);
+        Task<AsyncVoidMethodBuilder> SetSuggestionJobObservation_OptionsJob(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager, List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom, int DistribucionesPorMes, int JobOption);
 
 
         Task<DateTime> FindNextAvailableDate(DateTime startAvailabeDate, bool isSuggest, int id_SV = 0);

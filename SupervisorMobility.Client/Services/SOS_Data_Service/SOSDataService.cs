@@ -3,9 +3,6 @@ using System.Runtime.CompilerServices;
 using AutoMapper;
 using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
 using System.Diagnostics;
-using System.Linq;
-using DocumentFormat.OpenXml.Wordprocessing;
-using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Services.SOS_Data_Service
 {
@@ -354,7 +351,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             this.Year = Startday.Year;
             this.YearLoop = 0;
 
-            
+
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
@@ -391,7 +388,107 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             return new AsyncVoidMethodBuilder();
         }
 
+        public async Task<AsyncVoidMethodBuilder> SetSuggestionJobObservation_OptionsJob(SOSReviewProgram _sos_plan, List<DistSelect> Dist_Manager,
+            List<User> SV_Manager, int diasSeparate, DateTime Startday, int JobsPorDia, int OptionRandom, int DistribucionesPorMes, int JobOption)
+        {
+            // Inicialización común
+            List<JobObservation> availableJobs = await JobObsServices.GetAllNextYearJobsObservations(
+                _sos_plan.PlantId, _sos_plan.AreaId, (int)_sos_plan.AplicationYear);
+
+            this.diasSeparate = diasSeparate;
+            this.Startday = Startday;
+            this.JobsPorDia = JobsPorDia;
+            this.Year = Startday.Year;
+            this.YearLoop = 0;
+
+
+
+            _All_Suggested_SOSJobobservation?.Clear();
+            Suggested_SOS_Registers_UserOperationRelationship?.Clear();
+
+            // Preparar distribuciones y operaciones según la opción seleccionada
+            var selectedDistributions = Dist_Manager.Where(d => d.isSelected).Select(d => d.distribution).ToList();
+
+            if (OptionRandom == 2)
+            {
+                //Distribuciones mezcladas
+                selectedDistributions = selectedDistributions.OrderBy(x => Guid.NewGuid()).ToList();
+            }
+
+
+            try
+            {
+                if (_All_Suggested_SOSJobobservation.Count == 0)
+                {
+                    switch (JobOption)
+                    {
+                        case 2: // Opción 1 - Jobs por operacion en el mismo dia de la distribucion
+                            await ProcessMultipleJobsDistributionOption(_sos_plan, selectedDistributions, SV_Manager, availableJobs);
+                            break;
+                        case 3: // Opción 2 - Job por distribucion con todas las operaciones
+                            await ProcessDistributionOption(_sos_plan, selectedDistributions, SV_Manager, availableJobs);
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error CreateSuggestion: {ex.Message}");
+            }
+            finally
+            {
+                GenerateSuggestedRegistersMatrix();
+            }
+
+            return new AsyncVoidMethodBuilder();
+        }
+
         // Métodos auxiliares
+        private async Task ProcessMultipleJobsDistributionOption(SOSReviewProgram _sos_plan, List<Distribution> selectedDistributions,
+            List<User> SV_Manager, List<JobObservation> availableJobs)
+        {
+            foreach (var dist in selectedDistributions)
+            {
+                //optener fecha disponible o siguiente
+                DateTime operationDate = new DateTime(year: 1, month: 1, day: 1);
+
+                foreach (var op in dist.Operations)
+                {
+                    if (!_All_SOSJobobservation.Any(j => j.Operations.Any(jo => jo.OperationId == op.OperationId)))
+                    {
+                        int supervisorIndex = _All_Operations.IndexOf(op) % SV_Manager.Count;
+                        int supervisorId = SV_Manager[supervisorIndex].UserId;
+                        int distID = selectedDistributions.Find(d => d.Operations.Any(o => o.OperationId == op.OperationId)).DistributionId;
+                           
+                        if(operationDate.Year == 1 && operationDate.Month == 1 && operationDate.Day == 1 )
+                            operationDate = await FindNextAvailableDate(this.Startday, true, supervisorId); 
+
+                        await ProcessSingleOperation(_sos_plan, op, supervisorId, distID, SV_Manager, operationDate);
+                    }
+                }
+            }
+        }
+
+        private async Task ProcessDistributionOption(SOSReviewProgram _sos_plan, List<Distribution> selectedDistributions,
+           List<User> SV_Manager, List<JobObservation> availableJobs)
+        {
+            foreach (var dist in selectedDistributions)
+            {
+                //optener fecha disponible o siguiente
+                int supervisorIndex = selectedDistributions.IndexOf(dist) % SV_Manager.Count;
+                int supervisorId = SV_Manager[supervisorIndex].UserId;
+                int distID = dist.DistributionId;
+
+                DateTime operationDate = await FindNextAvailableDate(this.Startday, true, supervisorId);
+
+                if (!_All_SOSJobobservation.Any(j => j.DistributionId == dist.DistributionId))
+                {
+                    await ProcessSingleOperation(_sos_plan, dist.Operations, supervisorId, distID, SV_Manager, operationDate);
+                }
+
+            }
+        }
+
 
         private void PrepareOperationsByOption(int option, List<Distribution> selectedDistributions)
         {
@@ -424,7 +521,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                     }
                     break;
 
-                
+
             }
         }
 
@@ -540,7 +637,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
             DateTime operationDate = Startday;
 
-                
+
             var dist = _distributions.Find(d => d.DistributionId == distId);
 
             if (existingJob != null)
@@ -573,7 +670,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                 //Se valida si el dia en que estaba registrada esta disponible, 
                 operationDate = await FindNextAvailableDate((DateTime)job.StartDate, true, supervisorId);
-           
+
                 job.StartDate = operationDate;
                 job.PlannedStartDate = operationDate;
 
@@ -687,6 +784,71 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                 _All_Suggested_SOSJobobservation.Add(job);
             }
         }
+        private async Task ProcessSingleOperation(SOSReviewProgram _sos_plan, Operation op, int supervisorId, int distId, List<User> SV_Manager, DateTime operationDate)
+        {
+
+            var dist = _distributions.Find(d => d.DistributionId == distId);
+
+            var job = new JobObservationNulls
+            {
+                SupervisorId = supervisorId,
+                Supervisor = SV_Manager.Find(u => u.UserId == supervisorId),
+                PlantId = (int)_sos_plan.PlantId,
+                AreaId = (int)_sos_plan.AreaId,
+                Plant = _sos_plan.Plant,
+                Area = _sos_plan.Area,
+                DistributionId = distId,
+                Distribution = dist,
+                Option = 2,
+                Type = 3,
+                Status = 7,
+                SectionIds = jobCategoryStructureIds,
+                IsActive = true,
+                Operations = new List<Operation> { op },
+            };
+
+            job.StartDate = operationDate;
+            job.PlannedStartDate = operationDate;
+
+            UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: false);
+            _All_Suggested_SOSJobobservation.Add(job);
+
+        }
+
+        private async Task ProcessSingleOperation(SOSReviewProgram _sos_plan, List<Operation> operations, int supervisorId, int distId, List<User> SV_Manager, DateTime operationDate)
+        {
+
+            var dist = _distributions.Find(d => d.DistributionId == distId);
+
+            var job = new JobObservationNulls
+            {
+                SupervisorId = supervisorId,
+                Supervisor = SV_Manager.Find(u => u.UserId == supervisorId),
+                PlantId = (int)_sos_plan.PlantId,
+                AreaId = (int)_sos_plan.AreaId,
+                Plant = _sos_plan.Plant,
+                Area = _sos_plan.Area,
+                DistributionId = distId,
+                Distribution = dist,
+                Option = 2,
+                Type = 3,
+                Status = 7,
+                SectionIds = jobCategoryStructureIds,
+                IsActive = true,
+                Operations = operations ,
+            };
+
+            job.StartDate = operationDate;
+            job.PlannedStartDate = operationDate;
+
+            foreach(var op in operations)
+            {
+                UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: false);
+            }
+
+            _All_Suggested_SOSJobobservation.Add(job);
+
+        }
 
 
         public async Task<DateTime> FindNextAvailableDateInMonth(DateTime startDate, bool isSuggest, int Month, int supervisorId = 0)
@@ -717,7 +879,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                         ? await IsDateSuggestAlreadyUsed(currentDate, supervisorId)
                         : await IsDateAlreadyUsed(currentDate);
 
-                    if (!isUsed && currentDate >= DateTime.Today)
+                    if (!isUsed && currentDate >= DateTime.Today && currentDate >= this.Startday)
                         return currentDate;
                 }
 
@@ -775,7 +937,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                 // Validar si es hábil y disponible
                 if (!await IsWeekend(searchDate))
                 {
-                    
+
                     if (year == today.Year && searchDate < today)
                     {
                         searchDate = today;
@@ -786,7 +948,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                         ? await IsDateSuggestAlreadyUsed(searchDate, supervisorId)
                         : await IsDateAlreadyUsed(searchDate);
 
-                    if (!isUsed)
+                    if (!isUsed && searchDate >= DateTime.Today && searchDate >= this.Startday)
                         return searchDate;
                 }
 
