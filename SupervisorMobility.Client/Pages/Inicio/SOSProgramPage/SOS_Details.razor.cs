@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
+using System.Collections.Generic;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -2044,14 +2045,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0 && Startday.Date != DateTime.Now.AddDays(-1).Date)
             {
-                if(ModeOrganization == 1)
-                {
-                    await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes);
-                }
-                else
-                {
-                    await SOSDataServices.SetSuggestionJobObservation_OptionsJob(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes, ModeOrganization);
-                }
+                //if(ModeOrganization == 1)
+                //{
+                //    await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes);
+                //}
+                //else
+                //{
+                //    await SOSDataServices.SetSuggestionJobObservation_OptionsJob(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes, ModeOrganization);
+                //}
+
+                await SOSDataServices.SetSuggestion(_sos_plan, Dist_Manager, SV_Manager, Startday);
 
                 await PrepareSuggestDataTable();
 
@@ -2125,14 +2128,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             DateTime StartdayUTC = Startday.ToUniversalTime(); // Para asegurarte de que siempre sea UTC
 
 
-            if (ModeOrganization == 1)
-            {
-                await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes);
-            }
-            else
-            {
-                await SOSDataServices.SetSuggestionJobObservation_OptionsJob(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes, ModeOrganization);
-            }
+            //if(ModeOrganization == 1)
+            //{
+            //    await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes);
+            //}
+            //else
+            //{
+            //    await SOSDataServices.SetSuggestionJobObservation_OptionsJob(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes, ModeOrganization);
+            //}
+
+            await SOSDataServices.SetSuggestion(_sos_plan, Dist_Manager, SV_Manager, Startday);
 
             await DialogService.ShowMessageBox("Info!", "New suggestion created!", yesText: "OK!");
 
