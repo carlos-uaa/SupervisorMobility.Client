@@ -39,6 +39,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         private static readonly HashSet<string> CodesToAllowMoreOptions = new() { "MC", "MCM" };
         private static readonly HashSet<string> OperationsThatAddValueField = new() { "SET", "DBLOPT" };
 
+        private int _expandedPanelIndex = -1;
         // Initialization
         protected async override Task OnInitializedAsync()
         {
@@ -274,6 +275,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             selectedData[temp].Actions.Add(temp3, new());
 
             _actions.Add((newQuestions, newActions));
+            _expandedPanelIndex = _actions.Count - 1;
         }
 
         private void RemoveAction(int index)
@@ -284,31 +286,16 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
             StateHasChanged();
         }
 
-        //private async Task OpenDialog()
-        //{
-        //    var parameters = new DialogParameters
-        //    {
-        //        { "Questions", _checklistCategory.ChecklistQuestions.Where(p=>p.QuestionID != _question.QuestionID).ToList() },
-        //        { "SelectedQuestion", _question.Dependencies != null ? _checklistCategory.ChecklistQuestions.Where(p=> _question.Dependencies.Any(d=>d.QuestionID == p.QuestionID)).ToList() : new() }
-        //    };
-        //    var dialogResult = await DialogService.Show<Components.DependenciesDialog>("Add Items", parameters).Result;
-
-        //    if (!dialogResult.Canceled)
-        //    {
-        //        var temp = dialogResult.Data as List<ChecklistQuestion>;
-        //        var temp2 = temp.Select(q => new ChecklistQuestionDependency { QuestionID = q.QuestionID }).ToList();
-        //        foreach (var newDep in temp2)
-        //        {
-        //            var existingDep = _question.Dependencies.FirstOrDefault(d => d.QuestionID == newDep.QuestionID);
-
-        //            if (existingDep == null)
-        //            {
-        //                _question.Dependencies.Add(newDep);
-        //            }
-        //        }
-        //        var selectedDependencyQIDs = temp2.Select(d => d.QuestionID).ToList();
-        //        _question.Dependencies.RemoveAll(d => !selectedDependencyQIDs.Contains(d.QuestionID));
-        //    }
-        //}
+        private void OnExpansionChanged(int index, bool expanded)
+        {
+            if (expanded)
+            {
+                _expandedPanelIndex = index;
+            }
+            else if (_expandedPanelIndex == index)
+            {
+                _expandedPanelIndex = -1;
+            }
+        }
     }
 }
