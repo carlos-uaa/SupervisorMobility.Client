@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
+using System.Collections.Generic;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -132,6 +133,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         DateTime Startday = DateTime.Now;
         DateTime FirstdayYear = DateTime.Now;
         DateTime LastdayYear = DateTime.Now;
+        int ModeOrganization = 1;
         int JobsPorDia = 1;
         int DistribucionesPorMes = 1;
 
@@ -179,7 +181,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private int selectedSVPanel = 0;
         private int selectedSOPPanel = 0;
 
-        //schedule
         List<string> monthNames = new List<string>();
         List<string> days = new List<string>();
         List<Week> weeks = new List<Week>();
@@ -485,7 +486,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             StateHasChanged();
         }
 
-        private void OpenDialog4(string date)
+        public void OpenDialog4(string date)
         {
             searchString = "";
             date = date.Replace("/", "-");
@@ -505,8 +506,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             //await JS.InvokeVoidAsync("blazorUtils.truncateText");
 
         }
-
-
         private void GenerateCalendarHead()
         {
             if (startDate.DayOfWeek == DayOfWeek.Monday)
@@ -571,6 +570,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             loadingSchedule = false;
 
         }
+
 
 
 
@@ -906,7 +906,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
 
 
-        private async void CreateJobObservation(int month, int DistributionId, int OperationId)
+        public async void CreateJobObservation(int month, int DistributionId, int OperationId)
         {
             disableBtnCreateSos = true;
             StateHasChanged();
@@ -1027,7 +1027,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             StateHasChanged();
         }
 
-        private async void CreateJobObservationInMonth(int day, int DistributionId, int OperationId)
+        public async void CreateJobObservationInMonth(int day, int DistributionId, int OperationId)
         {
             disableBtnCreateSos = true;
             StateHasChanged();
@@ -1274,7 +1274,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         TimeSpan? startHour { get; set; }
         DateTime? plannedStartDate = new();
         DateTime? plannedEndDate = new();
-        private async void OpenDialog2(int id)
+        public async void OpenDialog2(int id)
         {
             jobId = id;
             _jobObservation = await JobObsServices.GetJobObservationById(jobId, true, true, true, includeCkAnswers: true);
@@ -1483,7 +1483,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private int jobId2;
 
 
-        private void OpenDialog3(int id, DateTime date)
+        public void OpenDialog3(int id, DateTime date)
         {
             jobId2 = id;
             //verificar formato de envio
@@ -1521,7 +1521,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             opInDistDialog.isActive = false;
             ShowGraphicDonnut = false;
         }
-        private void OpenGraphicDonnut(SosJobCount item)
+        public void OpenGraphicDonnut(SosJobCount item)
         {
             opInDistDialog = item;
             opInDistDialog.isActive = true;
@@ -1641,7 +1641,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         }
 
-        private async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
+        public async Task<AsyncVoidMethodBuilder> OpenDialogCodePath(SOSCodePath itemselected, int panelSelect)
         {
 
             SOSCodePathId = itemselected.SOSCodePathId;
@@ -1686,7 +1686,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private bool visible5 = false;
         public List<JobObservationNulls> _DayJobObservations { get; set; } = new();
 
-        private void OpenDialog5(string date)
+        public  void OpenDialog5(string date)
         {
             searchString = "";
             var compare = DateTime.ParseExact(date, "d/M/yyyy", null);
@@ -1710,7 +1710,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
         //
 
-        private async void ShowBtnPress(int distribution_Id)
+        public async void ShowBtnPress(int distribution_Id)
         {
             //Console.WriteLine($"Btn Press dist: {distribution_Id} - {DateTime.Now}");
             Distribution? tmpdist = _distributions.FirstOrDefault(f => f.DistributionId == distribution_Id);
@@ -1960,7 +1960,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             return _Users.Where(x => x.Name.ToLower().Contains(value.ToLower(), StringComparison.InvariantCultureIgnoreCase));
         }
 
-        private int ObtenerDiasLaburables()
+        public int ObtenerDiasLaburables()
         {
             DateTime fechaInicio = new DateTime(_yearMonth.Value.Year, _yearMonth.Value.Month, 1);
             int totalDiasLaborables = 0;
@@ -2045,7 +2045,17 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
             if (Dist_Manager.Any(i => i.isSelected) && SV_Manager.Count() != 0 && Startday.Date != DateTime.Now.AddDays(-1).Date)
             {
-                await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes);
+                //if(ModeOrganization == 1)
+                //{
+                //    await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes);
+                //}
+                //else
+                //{
+                //    await SOSDataServices.SetSuggestionJobObservation_OptionsJob(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes, ModeOrganization);
+                //}
+
+                await SOSDataServices.SetSuggestion(_sos_plan, Dist_Manager, SV_Manager, Startday);
+
                 await PrepareSuggestDataTable();
 
                 await DialogService.ShowMessageBox("Info!", "Suggestion created!", yesText: "OK!");
@@ -2118,8 +2128,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             DateTime StartdayUTC = Startday.ToUniversalTime(); // Para asegurarte de que siempre sea UTC
 
 
-            await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, StartdayUTC, JobsPorDia, OptionRandom, DistribucionesPorMes);
+            //if(ModeOrganization == 1)
+            //{
+            //    await SOSDataServices.SetSuggestionJobObservation(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes);
+            //}
+            //else
+            //{
+            //    await SOSDataServices.SetSuggestionJobObservation_OptionsJob(_sos_plan, Dist_Manager, SV_Manager, diasSeparate, Startday, JobsPorDia, OptionRandom, DistribucionesPorMes, ModeOrganization);
+            //}
 
+            await SOSDataServices.SetSuggestion(_sos_plan, Dist_Manager, SV_Manager, Startday);
 
             await DialogService.ShowMessageBox("Info!", "New suggestion created!", yesText: "OK!");
 
@@ -2153,6 +2171,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private void OpenDialogSuggestSV()
         {
+            SelectUnselect();
             if (SV_Manager.Count == 0)
                 ViewDialogFirstSuggestion = true;
 
@@ -2347,7 +2366,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         }
 
         SOSRegUserOperationRelationship RegSelect = new();
-        private void OpenSVPanelDialog(int panelid, SOSRegUserOperationRelationship itemselect, int op)
+        public void OpenSVPanelDialog(int panelid, SOSRegUserOperationRelationship itemselect, int op)
         {
             if (panelid != 2)
                 selectedSVPanel = panelid;
@@ -2364,7 +2383,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         void CloseSVPanelDialog() => visibleSVDialog = false;
 
-        private void OpenSuggestSVPanelDialog(int panelid, SOSRegUserOperationRelationship itemselect, int op)
+        public void OpenSuggestSVPanelDialog(int panelid, SOSRegUserOperationRelationship itemselect, int op)
         {
             if (panelid != 2)
                 selectedSVPanel = panelid;
@@ -2383,7 +2402,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         private bool hover = false;
         private bool ronly = false;
 
-        private void OpenToReprogramSuggestion(JobObservationNulls context)
+        public void OpenToReprogramSuggestion(JobObservationNulls context)
         {
             _Selected_Suggested_SOSJobobservatio_Null = context;
 

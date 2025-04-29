@@ -1,0 +1,676 @@
+﻿@using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details
+@using System.Text.RegularExpressions;
+@using System.Globalization
+
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+
+<div class="table-container">
+    <div class="scrollable-columns">
+        <MudSimpleTable Class="mb-5 calendar-table rounded" Dense FixedHeader="true" Style="overflow-x: auto; height: 82vh">
+            <thead class="thead">
+                <tr>
+                    <th rowspan="2" class="fixed-column dynamic-left" style="width: 150px; max-width: 180px;">
+                        @Localizer["HOEName"]
+                    </th>
+                    <th rowspan="2" class="fixed-column dynamic-left">
+                        @Localizer["whoReviews"]
+                    </th>
+                    <th rowspan="2">
+                        @Localizer["directories"]
+                    </th>
+                    <th rowspan="2" class="vertical-text fixed-column dynamic-left">
+                        <span style="font-size: 10px">
+                            @Localizer["scheduling"]
+                        </span>
+                    </th>
+                    @for (var i = 1; i <= 12; i++)
+                    {
+                        <th style="text-align: center" rowspan="2">
+                            @textInfo.ToTitleCase(CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(i))
+                        </th>
+                    }
+                    <th colspan="3" rowspan="2">
+                        @Localizer["notes"]
+                    </th>
+                </tr>
+            </thead>
+            <tbody style="width: 100%;">
+                <Virtualize Items="_distributions" Context="Distribution_Item">
+
+
+                    @if (Distribution_Item.ShowDetails)
+                    {
+                        var rowTotal = Distribution_Item.Operations.Count() != 0 ? Distribution_Item.Operations.Count() * 2 + 1 : 2;
+                        var _ = OperationsInDistributionCount.TryGetValue(Distribution_Item.DistributionId, out SosJobCount opInDist);
+
+                        <MudTr Class="fixed-row">
+                            <MudTd colspan="20" DataLabel="Distribution" @onclick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                @if (opInDist != null)
+                                {
+                                    <MudButton Style=" display: -webkit-box; max-width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small" OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                        <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" StartIcon="@Icons.Material.Filled.AccountTree" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+
+                                            @Distribution_Item.Description
+                                        </MudButton>
+                                        @if (opInDist != null)
+                                        {
+                                            @if (@opInDist.sosfinished == @opInDist.TotalJobs)
+                                            {
+                                                <MudChip Color="Color.Success" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                            }
+                                            else
+                                            {
+                                                <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                            }
+                                        }
+                                        <MudButton Style=" display: -webkit-box;" Class="fixed-column dynamic-left" FullWidth="true" Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" EndIcon="@Icons.Material.Filled.BarChart" OnClick="@(() =>  OpenGraphicDonnut.InvokeAsync(@opInDist))" OnTouch="@(() =>  OpenGraphicDonnut.InvokeAsync(@opInDist))">
+                                        </MudButton>
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Style=" display: -webkit-box; width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small" OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                        <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" StartIcon="@Icons.Material.Filled.AccountTree" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                            @Distribution_Item.Description
+                                        </MudButton>
+                                    </MudButton>
+                                }
+                            </MudTd>
+                        </MudTr>
+                    }
+                    else
+                    {
+                        var rowTotal = Distribution_Item.Operations.Count() != 0 ? Distribution_Item.Operations.Count() * 2 + 1 : 2;
+                        var _ = OperationsInDistributionCount.TryGetValue(Distribution_Item.DistributionId, out SosJobCount opInDist);
+
+                        <MudTr>
+                            <MudTd colspan="20" DataLabel="Distribution" @onclick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                @if (opInDist != null)
+                                {
+                                    <MudButton Style=" display: -webkit-box; max-width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small" OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                        <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                            @Distribution_Item.Description
+                                        </MudButton>
+                                        @if (opInDist != null)
+                                        {
+                                            @if (@opInDist.sosfinished == @opInDist.TotalJobs)
+                                            {
+                                                <MudChip Color="Color.Success" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                            }
+                                            else
+                                            {
+                                                <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small">@opInDist.sosfinished of @opInDist.TotalJobs</MudChip>
+                                            }
+                                        }
+                                        <MudButton Style=" display: -webkit-box;" Class="fixed-column dynamic-left" FullWidth="true" Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" EndIcon="@Icons.Material.Filled.BarChart" OnClick="@(() =>  OpenGraphicDonnut.InvokeAsync(@opInDist))" OnTouch="@(() =>  OpenGraphicDonnut.InvokeAsync(@opInDist))">
+                                        </MudButton>
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Style=" display: -webkit-box; width: 650px" Variant="Variant.Text" Class="fixed-column dynamic-left" Size="Size.Small" OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                        <MudButton Size="Size.Small" Style="width: 500px;" Class="fixed-column dynamic-left" EndIcon="@(Distribution_Item.ShowDetails ? @Icons.Material.Filled.KeyboardArrowUp : @Icons.Material.Filled.KeyboardArrowDown)" OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">
+                                            @Distribution_Item.Description
+                                        </MudButton>
+                                    </MudButton>
+                                }
+                            </MudTd>
+                        </MudTr>
+                    }
+
+                    @if (Distribution_Item.ShowDetails)
+                    {
+
+                        @if (Distribution_Item.Operations.Count > 0)
+                        {
+                            @foreach (Operation op in Distribution_Item.Operations)
+                            {
+
+                                <tr>
+                                    <td rowspan="2" class="fixed-column dynamic-left" style="width: 150px; max-width: 180px;">
+                                        <MudItem Class="d-flex" Style="flex-wrap: wrap; flex-direction: column;">
+                                            @if (op.Description.Length > 15)
+                                            {
+                                                <div class="marquee-container">
+                                                    <span id="marqueeText" class="marquee">@op.Description</span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <MudText Class="ml-2">@op.Description</MudText>
+                                            }
+                                            <MudText Class="ml-2"><b>@op.Code</b></MudText>
+                                        </MudItem>
+                                    </td>
+                                    <td rowspan="2" class="fixed-column dynamic-left">
+                                        @if (SOS_Registers_UserOperationRelationship.TryGetValue(op.OperationId, out var context))
+                                        {
+                                            <MudMenu>
+                                                <ActivatorContent>
+                                                    <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Filled.Person" EndIcon="@(context.Exist ? @Icons.Material.Filled.Edit : @Icons.Material.Filled.Add)" Variant="Variant.Outlined"></MudButton>
+                                                </ActivatorContent>
+                                                <ChildContent>
+                                                    @if (context.Exist)
+                                                    {
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.PersonPin" OnClick="@(() =>  OpenSVPanelDialog.InvokeAsync((0, context,op.OperationId)))" OnTouch="@(() =>  OpenSVPanelDialog.InvokeAsync((0, context,op.OperationId)))">Info SV</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.SwitchAccount" OnClick="@(() =>  OpenSVPanelDialog.InvokeAsync((1, context ,op.OperationId)))" OnTouch="@(() =>  OpenSVPanelDialog.InvokeAsync((1, context ,op.OperationId)))">Change SV</MudMenuItem>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.PersonSearch" OnClick="@(() =>  OpenSVPanelDialog.InvokeAsync((2, context ,op.OperationId)))" OnTouch="@(() =>  OpenSVPanelDialog.InvokeAsync((2, context ,op.OperationId)))">Assign SV</MudMenuItem>
+                                                    }
+                                                </ChildContent>
+                                            </MudMenu>
+                                        }
+                                    </td>
+                                    <MudTd rowspan="2">
+                                        @if (_assyCharts.Any(r => r.DistributionId == Distribution_Item.DistributionId))
+                                        {
+                                            var _assychart = _assyCharts?.Where(r => r.DistributionId == Distribution_Item.DistributionId).FirstOrDefault();
+
+                                            <MudItem Style="text-align: start">
+                                                @if (_assychart != null)
+                                                {
+                                                    <MudItem Class="d-flex flex-row align-start justify-center">
+
+                                                        @if (_assychart.RoutesProductsAssyChart?.Count > 0 && _assychart.RoutesProductsAssyChart.Any(r => r.Code.ToLower().Contains(op.Code.ToLower(), StringComparison.InvariantCultureIgnoreCase)))
+                                                        {
+                                                            var RoutesCode = _assychart.RoutesProductsAssyChart.Where(r => r.Code.ToLower().Contains(op.Code.ToLower(), StringComparison.InvariantCultureIgnoreCase)).ToList();
+                                                            <MudMenu Dense=true AnchorOrigin="Origin.BottomCenter" Style="display: flex" TransformOrigin="Origin.TopCenter">
+                                                                <ActivatorContent>
+                                                                    <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Folder" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                                </ActivatorContent>
+                                                                <ChildContent>
+                                                                    <MudExpansionPanels Elevation="0">
+                                                                        @foreach (SOSCodePath item in RoutesCode)
+                                                                        {
+
+                                                                            <MudExpansionPanel Style="width: auto;">
+                                                                                <TitleContent>
+                                                                                    <div Style="align-items: center; display: flex;">
+                                                                                        <MudText>@item.Code</MudText>
+                                                                                        <MudChip Icon="@Icons.Material.Filled.DirectionsCar" IconColor="Color.Info" Variant="Variant.Text" Color="Color.Success">@item.Product?.Code - @item.Product?.Description</MudChip>
+                                                                                    </div>
+                                                                                </TitleContent>
+                                                                                <ChildContent>
+                                                                                    <MudItem class="d-flex flex-column justify-center ma-1">
+                                                                                        <MudItem class="d-flex d-flex-column justify-center">
+
+                                                                                            <MudItem Style="flex-direction: column;">
+                                                                                                @if (item.HOE != "")
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+                                                                                                        <MudButton OnClick="(() =>  OpenDialogCodePath.InvokeAsync((item, 1)))" OnTouch="(() =>  OpenDialogCodePath.InvokeAsync((item, 1)))" Style="padding: 0px;" Color="Color.Error">
+                                                                                                            <MudTooltip Text=@Localizer["openHOEFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                                                <MudTooltip Text="@Regex.Replace(item.HOE, @"/(.*?)§", "/").Replace('§', ' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.HOE.Split('§').Last()</MudChip>
+                                                                                                                </MudTooltip>
+                                                                                                            </MudTooltip>
+                                                                                                        </MudButton>
+                                                                                                    </MudPaper>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+                                                                                                        <MudAlert Severity="Severity.Info">@Localizer["noHOEPath"]</MudAlert>
+                                                                                                    </MudPaper>
+                                                                                                }
+
+                                                                                                @if (item.CommonDirectionHOE != "")
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+                                                                                                        <MudButton OnClick="(() =>  OpenDialogCodePath.InvokeAsync((item, 4)))" OnTouch="(() =>  OpenDialogCodePath.InvokeAsync((item, 4)))" Style="padding: 0px;" Color="Color.Error">
+                                                                                                            <MudTooltip Text=@Localizer["openHOEFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                                                <MudTooltip Text="@Regex.Replace(item.CommonDirectionHOE, @"/(.*?)§", "/").Replace('§', ' ')" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionHOE.Split('§').Last()</MudChip>
+                                                                                                                </MudTooltip>
+                                                                                                            </MudTooltip>
+                                                                                                        </MudButton>
+                                                                                                    </MudPaper>
+                                                                                                }
+
+                                                                                            </MudItem>
+
+                                                                                            <MudItem Style="flex-direction: column;">
+                                                                                                @if (@item.CCP != "")
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+                                                                                                        <MudButton OnClick="(() =>  OpenDialogCodePath.InvokeAsync((item, 2)))" OnTouch="(() =>  OpenDialogCodePath.InvokeAsync((item, 2)))" Style="padding: 0px;" Color="Color.Error">
+                                                                                                            <MudTooltip Text=@Localizer["openCCPFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                                                <MudTooltip Text="@item.CCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CCP.Split('/').Last()</MudChip>
+                                                                                                                </MudTooltip>
+                                                                                                            </MudTooltip>
+                                                                                                        </MudButton>
+                                                                                                    </MudPaper>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+                                                                                                        <MudAlert Severity="Severity.Info">@Localizer["noCCPPath"]</MudAlert>
+                                                                                                    </MudPaper>
+                                                                                                }
+                                                                                                @if (@item.CommonDirectionCCP != "")
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+                                                                                                        <MudButton OnClick="(() =>  OpenDialogCodePath.InvokeAsync((item, 5)))" OnTouch="(() =>  OpenDialogCodePath.InvokeAsync((item, 5)))" Style="padding: 0px;" Color="Color.Error">
+                                                                                                            <MudTooltip Text=@Localizer["openCCPFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                                                <MudTooltip Text="@item.CommonDirectionCCP" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionCCP.Split('/').Last()</MudChip>
+                                                                                                                </MudTooltip>
+                                                                                                            </MudTooltip>
+                                                                                                        </MudButton>
+                                                                                                    </MudPaper>
+                                                                                                }
+                                                                                            </MudItem>
+
+                                                                                            <MudItem Style="flex-direction: column;">
+                                                                                                @if (item.GOS != "")
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+                                                                                                        <MudButton OnClick="(() =>  OpenDialogCodePath.InvokeAsync((item, 3)))" OnTouch="(() =>  OpenDialogCodePath.InvokeAsync((item, 3)))" Style="padding: 0px;" Color="Color.Error">
+                                                                                                            <MudTooltip Text=@Localizer["openGOSFolder"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                                                <MudTooltip Text="@item.GOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.GOS.Split('/').Last()</MudChip>
+                                                                                                                </MudTooltip>
+                                                                                                            </MudTooltip>
+                                                                                                        </MudButton>
+
+                                                                                                    </MudPaper>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+
+                                                                                                        <MudAlert Severity="Severity.Info">@Localizer["noGOSPath"]</MudAlert>
+                                                                                                    </MudPaper>
+                                                                                                }
+                                                                                                @if (item.CommonDirectionGOS != "")
+                                                                                                {
+                                                                                                    <MudPaper Elevation="0">
+                                                                                                        <MudButton OnClick="(() =>  OpenDialogCodePath.InvokeAsync((item, 6)))" OnTouch="(() =>  OpenDialogCodePath.InvokeAsync((item, 6)))" Style="padding: 0px;" Color="Color.Error">
+                                                                                                            <MudTooltip Text=@Localizer["openGOSFolderCD"] Color="Color.Primary" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                                                                                <MudTooltip Text="@item.CommonDirectionGOS" Color="Color.Primary" Placement="Placement.Top" Arrow="true" ShowOnFocus="false">
+                                                                                                                    <MudChip Icon="@Icons.Material.Filled.SnippetFolder" Variant="Variant.Text" Color="Color.Primary" Style="font-size: 10px">@item.CommonDirectionGOS.Split('/').Last()</MudChip>
+                                                                                                                </MudTooltip>
+                                                                                                            </MudTooltip>
+                                                                                                        </MudButton>
+
+                                                                                                    </MudPaper>
+                                                                                                }
+                                                                                            </MudItem>
+
+
+
+
+
+
+                                                                                        </MudItem>
+                                                                                    </MudItem>
+
+                                                                                </ChildContent>
+                                                                            </MudExpansionPanel>
+                                                                        }
+                                                                    </MudExpansionPanels>
+                                                                </ChildContent>
+                                                            </MudMenu>
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudAlert Severity="Severity.Info">
+                                                                @Localizer["notFound"]
+                                                            </MudAlert>
+                                                        }
+                                                    </MudItem>
+                                                }
+                                                else
+                                                {
+                                                    if (_assychart is null)
+                                                    {
+                                                        <MudItem class="d-flex flex-column justify-center align-self-start">
+                                                            <MudPaper Elevation="0">
+                                                                <MudAlert Severity="Severity.Info">
+                                                                    No Job Allocation Found
+                                                                </MudAlert>
+                                                            </MudPaper>
+                                                        </MudItem>
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+                                                    }
+
+
+                                                }
+
+                                            </MudItem>
+                                        }
+                                        else
+                                        {
+                                            <MudAlert Severity="Severity.Info">
+                                                @Localizer["notFound"]
+                                            </MudAlert>
+                                        }
+                                    </MudTd>
+
+
+                                    <MudTd class="fixed-column dynamic-left program">@Localizer["P"]</MudTd>
+
+                                    @for (int i = 1; i < 13; i++)
+                                    {
+                                        int currentIndex = i;
+                                        <MudTd style="text-align: center; width:160px; max-height:160px ">
+
+                                            @if (SOS_Registers_Matrix.TryGetValue((op.OperationId, currentIndex), out var context))
+                                            {
+                                                var jobobs = context.FirstOrDefault();
+
+                                                @if (context.Any(j => j.JobObservation.Status == 7 && j.JobObservation?.Operations?.FirstOrDefault()?.OperationId == op.OperationId && currentIndex >= j.JobObservation?.PlannedStartDate?.Month))
+                                                {
+                                                    DateTime fechaReprogramar = new DateTime((int)_sos_plan.AplicationYear, currentIndex, currentIndex);
+                                                    <MudMenu>
+                                                        <ActivatorContent>
+                                                            <MudButton EndIcon="@Icons.Material.Filled.KeyboardArrowDown" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Warning"></MudButton>
+                                                        </ActivatorContent>
+                                                        <ChildContent>
+                                                            <MudMenuItem Icon="@Icons.Material.Filled.PlaylistAdd" @onclick="(() =>  OpenDialog3.InvokeAsync(((int)jobobs.JobObservation.JobObservationId, fechaReprogramar)))" OnTouch="(() =>  OpenDialog3.InvokeAsync(((int)jobobs.JobObservation.JobObservationId, fechaReprogramar)))">@Localizer["programmedJobObservation"]</MudMenuItem>
+                                                        </ChildContent>
+                                                    </MudMenu>
+                                                }
+                                                else if (_All_SOSJobobservation.Any(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId && j.Status == 7 && currentIndex >= DateTime.Now.Month))
+                                                {
+                                                    var job = _All_SOSJobobservation.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId && j.Status == 7 && currentIndex >= j.PlannedStartDate?.Month);
+                                                    DateTime fechaReprogramar = new DateTime((int)_sos_plan.AplicationYear, currentIndex, currentIndex);
+                                                    <MudMenu>
+                                                        <ActivatorContent>
+                                                            <MudButton EndIcon="@Icons.Material.Filled.KeyboardArrowDown" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Info"></MudButton>
+                                                        </ActivatorContent>
+                                                        <ChildContent>
+                                                            <MudMenuItem Icon="@Icons.Material.Filled.PlaylistAdd" @onclick="(() =>  OpenDialog3.InvokeAsync(((int)job.JobObservationId, fechaReprogramar)))" OnTouch="(() =>  OpenDialog3.InvokeAsync(((int)job.JobObservationId, fechaReprogramar)))">@Localizer["programmedJobObservation"]</MudMenuItem>
+                                                        </ChildContent>
+                                                    </MudMenu>
+                                                }
+                                                else if (!_All_SOSJobobservation.Any(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId) && currentIndex >= DateTime.Now.Month)
+                                                {
+
+                                                    <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Disabled="@disableBtnCreateSos" OnClick="@( () =>  CreateJobObservation.InvokeAsync((currentIndex, Distribution_Item.DistributionId, op.OperationId)))" OnTouch="@( () =>  CreateJobObservation.InvokeAsync((currentIndex, Distribution_Item.DistributionId, op.OperationId)))"></MudButton>
+                                                }
+                                                else if (context.Any(j => j.OperationId == op.OperationId && j.JobObservation.PlannedStartDate?.Day == date.Value.Day && j.JobObservation.PlannedStartDate?.Month == _yearMonth?.Month && j.JobObservation.PlannedStartDate?.Year == _yearMonth?.Year))
+                                                {
+                                                    <MudTooltip Text="@Localizer["programmed"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Outlined" Label="true" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px">@jobobs.JobObservation.PlannedStartDate?.ToString("dd")</MudChip>
+                                                    </MudTooltip>
+
+                                                }
+                                                else if (context.Any(j => j.OperationId == op.OperationId && j.JobObservation?.Status != 7))
+                                                {
+
+                                                    <MudTooltip Text="@Localizer["programmed"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Outlined" Label="true" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px">@jobobs.JobObservation.PlannedStartDate?.ToString("dd")</MudChip>
+                                                    </MudTooltip>
+                                                }
+                                            }
+                                        </MudTd>
+
+                                    }
+                                    <MudTd rowspan="2">@op.RestrictionOrComment</MudTd>
+                                </tr>
+                                <MudTr>
+                                    <MudTd class="fixed-column dynamic-left real">@Localizer["R"]</MudTd>
+                                    @for (var i = 1; i < 13; i++)
+                                    {
+                                        int currentIndex = i;
+                                        var date = new DateTime(_yearMonth.Value.Year, currentIndex, 1);
+                                        var dayName = date.ToString("dddd");
+                                        var compare = new DateTime(_yearMonth.Value.Year, currentIndex, 1);
+
+                                        <MudTd style="text-align: center; width:160px; ">
+
+                                            @if (SOS_Registers_Matrix.TryGetValue((op.OperationId, currentIndex), out var context))
+                                            {
+                                                <div style=" overflow-y: scroll; scroll-behavior: smooth; scrollbar-width: none" class="scroll scroll1">
+                                                    @if (_All_SOSJobobservation.Any(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId && j.Status != 7 && j.StartDate?.Month == currentIndex))
+                                                    {
+                                                        var job = _All_SOSJobobservation.Find(j => j.Operations?.FirstOrDefault()?.OperationId == op.OperationId && j.StartDate?.Month == currentIndex);
+                                                        @if (SOS_Registers_Matrix.TryGetValue((op.OperationId, (int)job.PlannedStartDate?.Month), out var item))
+                                                            context = item;
+                                                    }
+
+                                                    @foreach (var jobobs in context)
+                                                    {
+
+                                                        if (jobobs.JobObservation.StartDate?.Month == currentIndex)
+                                                        {
+                                                            //Ends the same day
+                                                            if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.JobObservation.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.JobObservation.EndDate?.ToShortDateString()).Date)
+                                                            {
+                                                                //Status filter
+                                                                if (jobobs.JobObservation?.Status == 1)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["planned"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.PlayCircle" />
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["planned"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+                                                                //In Progress
+                                                                else if (jobobs.JobObservation?.Status == 2)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["inProgress"]" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["inProgress"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+
+                                                                //Late job observations
+                                                                else if (jobobs.JobObservation?.Status == 3)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["late"]" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["late"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+
+                                                                //Under Review job observations
+                                                                else if (jobobs.JobObservation?.Status == 4)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["underReview"]" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["underReview"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+
+                                                                //Rejected job observations
+                                                                else if (jobobs.JobObservation?.Status == 5)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["rejected"]" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Cancel" />
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["rejected"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+                                                                //Finalized
+                                                                else if (jobobs.JobObservation?.Status == 6)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["finished"]" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                        <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Success" />
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["finished"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+                                                            }
+                                                            //lasts more than one day
+                                                            else
+                                                            {
+                                                                if (jobobs.JobObservation?.Status == 1)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["planned"]" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudButton Color="Color.Warning" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                            <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                            <MudIcon Icon="@Icons.Material.Filled.PlayCircle" />
+                                                                        </MudButton>
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["planned"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+                                                                //In Progress
+                                                                else if (jobobs.JobObservation?.Status == 2)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["inProgress"]" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudButton Color="Color.Info" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                            <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                            <MudIcon Icon="@Icons.Material.Filled.StopCircle" />
+                                                                        </MudButton>
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["inProgress"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+
+                                                                //Late job observations
+                                                                else if (jobobs.JobObservation?.Status == 3)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["late"]" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudButton Color="Color.Error" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                            <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                            <MudIcon Icon="@Icons.Material.Filled.RemoveCircle" />
+                                                                        </MudButton>
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["late"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+
+                                                                //Under Review job observations
+                                                                else if (jobobs.JobObservation?.Status == 4)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["underReview"]" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudButton Color="Color.Info" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                            <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Info" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                            <MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" />
+                                                                        </MudButton>
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["underReview"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+
+                                                                //Rejected job observations
+                                                                else if (jobobs.JobObservation?.Status == 5)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["rejected"]" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudButton Color="Color.Error" Style="padding: 0px;" Variant="Variant.Outlined">
+                                                                            <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Error" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Cancel" />
+                                                                        </MudButton>
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["rejected"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+                                                                //Finalized
+                                                                else if (jobobs.JobObservation?.Status == 6)
+                                                                {
+                                                                    <MudTooltip Text="@Localizer["finished"]" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">
+                                                                        <MudButton Color="Color.Success" Style="padding: 0px;" Variant="Variant.Outlined">
+
+                                                                            <MudChip Icon="@Icons.Material.Filled.AccessTime" Variant="Variant.Text" Color="Color.Success" Size="Size.Small" Style="font-size: 10px" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservation.JobObservationId))">@jobobs.JobObservation.StartDate?.ToString("dd")</MudChip>
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Success" />
+                                                                        </MudButton>
+                                                                        <span style="font-size: 11px; cursor:pointer"><span style="font-weight: bold; font-size: 13px">@Localizer["finished"]</span>.</span>
+                                                                    </MudTooltip>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                        </MudTd>
+                                    }
+                                </MudTr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td rowspan="3"><MudButton Style="height: 100%" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.KeyboardArrowUp" FullWidth=true OnClick="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))" OnTouch="@(() =>  ShowBtnPress.InvokeAsync(Distribution_Item.DistributionId))">@((Distribution_Item.ShowDetails == true) ? "Hide" : "Show")  @Distribution_Item.Description </MudButton></td>
+                            </tr>
+                            <tr>
+                                <td rowspan="2" class="fixed-column dynamic-left"></td>
+                                <td rowspan="2"></td>
+                                <td rowspan="2" Style="min-width: 350px" class="fixed-column dynamic-left"></td>
+                                <MudTd rowspan="2"></MudTd>
+                                <MudTd>@Localizer["programmed"]</MudTd>
+                                @for (int i = 1; i < 13; i++)
+                                {
+                                    <MudTd style="text-align: center; width:160px; max-height:160px "></MudTd>
+                                }
+                                <MudTd rowspan="2">@Localizer["notes"]</MudTd>
+                            </tr>
+                            <MudTr>
+                                <MudTd>Real</MudTd>
+                                @for (var i = 1; i < 13; i++)
+                                {
+                                    <MudTd style="text-align: center; width:160px; max-height:160px "></MudTd>
+                                }
+                            </MudTr>
+                        }
+                    }
+                </Virtualize>
+            </tbody>
+        </MudSimpleTable>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public SOSReviewProgram _sos_plan { get; set; } = new();
+    [Parameter]
+    public List<JobObservationNulls> _All_SOSJobobservation { get; set; } = new(); 
+    [Parameter]
+    public Dictionary<int, SOSRegUserOperationRelationship?> SOS_Registers_UserOperationRelationship { get; set; } = new Dictionary<int, SOSRegUserOperationRelationship?>();
+
+    [Parameter]
+    public Dictionary<(int, int), List<SOSRegisterJobObservation>?> SOS_Registers_Matrix { get; set; } = new Dictionary<(int, int), List<SOSRegisterJobObservation>?>();
+
+    [Parameter]
+    public List<AssyChart> _assyCharts { get; set; } = new();
+    [Parameter]
+    public List<Distribution> _distributions { get; set; } = new();
+    [Parameter]
+    public List<DistSelect> Dist_Manager { get; set; } = new List<DistSelect>();
+
+    [Parameter]
+    public Dictionary<int, SosJobCount> OperationsInDistributionCount { get; set; } = new Dictionary<int, SosJobCount>();
+
+
+    [Parameter]
+    public bool disableBtnCreateSos { get; set; } = false;
+    [Parameter]
+    public int daysInMonth { get; set; }
+    [Parameter]
+    public DateTime? _yearMonth { get; set; }
+
+    [Parameter]
+    public DateTime? date { get; set; }
+
+
+
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+
+    [Parameter]
+    public EventCallback<int> ShowBtnPress{ get; set; }   
+    
+    [Parameter]
+    public EventCallback<SosJobCount> OpenGraphicDonnut { get; set; } 
+    
+    [Parameter]
+    public EventCallback<(int, SOSRegUserOperationRelationship, int)> OpenSVPanelDialog { get; set; } 
+   
+    [Parameter]
+    public EventCallback<(int, int, int)> CreateJobObservation { get; set; }
+
+    [Parameter]
+    public EventCallback<(SOSCodePath, int)> OpenDialogCodePath { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OpenDialog2{ get; set; }  
+
+    [Parameter]
+    public EventCallback<(int, DateTime)> OpenDialog3 { get; set; }
+}
