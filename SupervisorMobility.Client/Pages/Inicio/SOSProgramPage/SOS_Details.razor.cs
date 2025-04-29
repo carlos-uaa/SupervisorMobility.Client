@@ -2171,6 +2171,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
         private void OpenDialogSuggestSV()
         {
+            SelectUnselect();
             if (SV_Manager.Count == 0)
                 ViewDialogFirstSuggestion = true;
 

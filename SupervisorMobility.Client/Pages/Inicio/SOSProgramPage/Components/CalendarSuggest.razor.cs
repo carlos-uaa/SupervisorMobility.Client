@@ -227,5 +227,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
             public string Distribution { get; set; }
             public string OperationText { get; set; }
         }
+
+        private class DistributionState
+        {
+            public Distribution Distribution { get; set; }
+            public int CurrentOperationIndex { get; set; } = 0;
+            public bool ObservedThisMonth { get; set; } = false;
+        }
+
     }
 }
