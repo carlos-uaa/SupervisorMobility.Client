@@ -1981,6 +1981,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _specifications = new();
         }
 
+        private async Task UpdateOperator()
+        {
+            var operatorUser = operatorUsers.FirstOrDefault(p => p.UserId == _jobObservation.OperatorId);
+            if (operatorUser != null)
+            {
+                _jobObservation.Operator = operatorUser;
+            }
+        }
+
         private async Task DisableNeedOfSSV()
         {
             _jobObservation.WillNotRequireSSVApproval = true;

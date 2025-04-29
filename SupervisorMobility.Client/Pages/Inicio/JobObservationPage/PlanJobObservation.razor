@@ -719,41 +719,203 @@
                                 </div>
 
                             </td>
-                            <td>
-            @*                    <div class="d-flex">
-                                    <MudTextField T="string" @bind-Value="_jobObservation.Supervisor.Name" Label="Observador" Class="mr-4"/>
-*@  
+                            <td class="d-block mt-3">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="width: 75%;">
+                                        @*Mud select for Operator *@
+                                        @if (_jobObservation.SupervisorId != 0)
+                                        {
+                                            @if (operatorUsers.Count > 0)
+                                            {
+                                                @*Mud select for Operator *@
+                                                <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)" SelectedValuesChanged="()=>UpdateOperator()">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnOperator"]</MudSelectItem>
+                                                    @foreach (var type in operatorUsers)
+                                                    {
+                                                        <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+
+                                            }
+                                            else
+                                            {
+                                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                    @Localizer["thisSupervisorDoesNotHaveOperators"]
+                                                </MudAlert>
+                                            }
+
+                                        }
+                                        else
+                                        {
+                                            <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectASupervisor"]</MudSelectItem>
+                                            </MudSelect>
+                                        }
+                                    </div>
+                                    <div>
+                                        @if (_jobObservation.OperatorId != 0 && _jobObservation.Operator != null)
+                                        {
+                                            @if (_jobObservation.Operator.ILURegisers != null && _jobObservation.Operator.ILURegisers?.Count > 0 && _jobObservation.DistributionId != 0)
+                                            {
+                                                var latestContext = _jobObservation.Operator.ILURegisers.Where(r => r.DistributionId == _jobObservation.DistributionId).OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                @if (latestContext != null)
+                                                {
+                                                    string imageSrc = "";
+                                                    @if (_jobObservation.Type == 4 && _jobObservation.Status != 6)
+                                                    {
+                                                        string imageUpgradeSrc = latestContext.ILULevelId switch
+                                                        {
+
+                                                            1 => "Images/I.png",
+                                                            2 => "Images/LTrainee.png",
+                                                            3 => "Images/LTraineeLeader.png",
+                                                            4 => "Images/L.png",
+                                                            5 => "Images/LLeader.png",
+                                                            6 => "Images/UTrainee.png",
+                                                            7 => "Images/ULeaderTrainee.png",
+                                                            8 => "Images/U.png",
+                                                            9 => "Images/ULeader.png",
+
+                                                            _ => ""
+                                                        };
+                                                        switch (latestContext.ILULevelId)
+                                                        {
+                                                            case 1:
+                                                                imageSrc = "Images/ITrainee.png";
+                                                                break;
+                                                            case 2:
+                                                                imageSrc = "Images/I.png";
+                                                                break;
+                                                            case 3:
+                                                                imageSrc = "Images/ILeader.png";
+                                                                break;
+                                                            case 4:
+                                                                imageSrc = "Images/LTrainee.png";
+                                                                break;
+                                                            case 5:
+                                                                imageSrc = "Images/LTraineeLeader.png";
+                                                                break;
+                                                            case 6:
+                                                                imageSrc = "Images/L.png";
+                                                                break;
+                                                            case 7:
+                                                                imageSrc = "Images/LLeader.png";
+                                                                break;
+                                                            case 8:
+                                                                imageSrc = "Images/UTrainee.png";
+                                                                break;
+                                                            case 9:
+                                                                imageSrc = "Images/ULeaderTrainee.png";
+                                                                break;
+                                                            case 10:
+                                                                imageSrc = "Images/ULeader.png";
+                                                                break;
+                                                            case 11:
+                                                                imageSrc = "Images/U.png";
+                                                                break;
+                                                            default:
+                                                                imageSrc = "Images/default.png";
+                                                                break;
+                                                        }
+
+                                                        <MudSelect T="int" Label="ILU" Value="1" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" ReadOnly="true">
+                                                            <MudSelectItem Value="1">
+                                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                                    <MudImage Src="@imageSrc" Alt="ILU Image" Height="30" Class="rounded-lg" Style="margin-top: -5px" />
+                                                                    @if (imageUpgradeSrc != "")
+                                                                    {
+                                                                        <MudIcon Icon="@Icons.Material.Filled.DoubleArrow" />
+                                                                        <MudImage Src="@imageUpgradeSrc" Alt="ILU Image" Height="30" Class="rounded-lg" Style="margin-top: -5px" />
+                                                                    }
+                                                                </div>
+                                                            </MudSelectItem>
+                                                        </MudSelect>
+
+                                                    }
+                                                    else
+                                                    {
+                                                        switch (latestContext.ILULevelId)
+                                                        {
+                                                            case 1:
+                                                                imageSrc = "Images/ITrainee.png";
+                                                                break;
+                                                            case 2:
+                                                                imageSrc = "Images/I.png";
+                                                                break;
+                                                            case 3:
+                                                                imageSrc = "Images/ILeader.png";
+                                                                break;
+                                                            case 4:
+                                                                imageSrc = "Images/LTrainee.png";
+                                                                break;
+                                                            case 5:
+                                                                imageSrc = "Images/LTraineeLeader.png";
+                                                                break;
+                                                            case 6:
+                                                                imageSrc = "Images/L.png";
+                                                                break;
+                                                            case 7:
+                                                                imageSrc = "Images/LLeader.png";
+                                                                break;
+                                                            case 8:
+                                                                imageSrc = "Images/UTrainee.png";
+                                                                break;
+                                                            case 9:
+                                                                imageSrc = "Images/ULeaderTrainee.png";
+                                                                break;
+                                                            case 10:
+                                                                imageSrc = "Images/ULeader.png";
+                                                                break;
+                                                            case 11:
+                                                                imageSrc = "Images/U.png";
+                                                                break;
+                                                            default:
+                                                                imageSrc = "Images/default.png";
+                                                                break;
+                                                        }
+                                                        <MudImage Src="@imageSrc" Alt="ILU Image" Height="45" Class="rounded-lg" Style="margin-top: -5px" />
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="No ILU Level found" Label="ILU Level" ReadOnly />
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="No ILU Level found" Label="ILU Level" ReadOnly />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <MudTextField Class="ml-4" T="string" Style="max-width:70px" Text="No operator selected" Label="ILU Level" ReadOnly />
+                                        }
+                                    </div>
+                                </div>
+                        
                                 @if (_jobObservation.SupervisorId != 0)
                                 {
-                                    @if (operatorUsers.Count > 0)
-                                    {
-                                        @*Mud select for Operator *@
-                                        <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
-                                            <MudSelectItem Disabled="true" Value="0"> @Localizer["selectAnOperator"]</MudSelectItem>
-                                                @foreach (var type in operatorUsers)
-                                                {
-                                                    <MudSelectItem Value="type.UserId">@($"{type.Name}")</MudSelectItem>
-                                                }
-                                        </MudSelect>
+                                    <MudCard Class="mt-3">
+                                        <MudCardContent style="display: flex; justify-content: space-between;">
+                                            <div style="width: 70%" class="ml-2">
+                                                <MudText Typo="Typo.caption">@Localizer["UseOfSSV"]</MudText>
+                                            </div>
 
-                                    }
-                                    else{
-                                        <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
-                                            @Localizer["thisSupervisorDoesNotHaveOperators"]
-                                        </MudAlert>
-                                    }
-
+                                            @if (_jobObservation.WillNotRequireSSVApproval)
+                                            {
+                                                <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="@EnableNeedOfSSV" StartIcon="@Icons.Material.Filled.AddModerator">
+                                                    @Localizer["Enable"]
+                                                </MudButton>
+                                            }
+                                            else
+                                            {
+                                                <MudButton Color="Color.Warning" Variant="Variant.Filled" OnClick="@DisableNeedOfSSV" StartIcon="@Icons.Material.Filled.RemoveModerator">
+                                                    @Localizer["Disable"]
+                                                </MudButton>
+                                            }
+                                        </MudCardContent>
+                                    </MudCard>
                                 }
-                                else
-                                {
-                                    @*Mud select for Operator *@
-                                    <MudSelect T="int" Label=@Localizer["operator"] Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.OperatorId" For="@(() => _jobObservation.OperatorId)">
-                                        <MudSelectItem Disabled="true" Value="0"> @Localizer["firstSelectASupervisor"]</MudSelectItem>
-                                    </MudSelect>
-                                }
-   @*                                 <MudTextField T="string" @bind-Value="_jobObservation.Operator" Label="Operador" />
-                                    <MudText Color="Color.Error" Style="font-size:12px"><ValidationMessage For="@(() => _jobObservation.Operator)" /></MudText>*@
-                                @*</div>*@
                             </td>
                         </tr>
                        @*  <tr>

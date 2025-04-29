@@ -209,7 +209,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             }
 
+            var _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories();
 
+            _jobObservation.SectionIds = string.Join("|", _checklistCategoriesAndQuestions
+                .Select(c => c.JobCategoryStructureId));
 
 
             //_products = await ProductService.GetProducts();
@@ -660,5 +663,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
 
+        private async Task DisableNeedOfSSV()
+        {
+            _jobObservation.WillNotRequireSSVApproval = true;
+            Snackbar.Add(Localizer["SSVReqFalse"], Severity.Warning);
+            StateHasChanged();
+        }
+        private async Task EnableNeedOfSSV()
+        {
+            _jobObservation.WillNotRequireSSVApproval = false;
+            Snackbar.Add(Localizer["SSVReqTrue"], Severity.Success);
+        }
+        private async Task UpdateOperator()
+        {
+            var operatorUser = operatorUsers.FirstOrDefault(p => p.UserId == _jobObservation.OperatorId);
+            if (operatorUser != null)
+            {
+                _jobObservation.Operator = operatorUser;
+            }
+        }
     }
 }
