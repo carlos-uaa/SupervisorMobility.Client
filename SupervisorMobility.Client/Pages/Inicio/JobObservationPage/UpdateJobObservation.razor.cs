@@ -205,6 +205,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         private bool isWaitingTimeActive = false;
 
+        DateTime? _yearMonth = DateTime.Today;
+        public List<JobObservation> currentMonthAllJOb { get; set; } = new();
+        public List<JobObservation> previousMonthAllJO { get; set; } = new();
+        public Dictionary<int, int> DistributionCritical { get; set; } = new();
+
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -238,6 +243,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
             await GetUserAsync();
+
+            currentMonthAllJOb = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+            previousMonthAllJO = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month - 1, year: _yearMonth.Value.Year);
+
             logged = await HasPropertyAsync();
             if (!logged)
             {
@@ -468,7 +477,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         }
                     }
 
-
+                    await ReorderDistributions();
 
                     var groupedOperations = _operations
                         .SelectMany(op => op.ProductName.Split('§').Select(product => new { Product = product, Operation = op }))
@@ -1883,6 +1892,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
+
+            await ReorderDistributions();
 
             StateHasChanged();
         }
@@ -3609,6 +3620,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             StateHasChanged();
 
+        }
+
+        public async Task ReorderDistributions()
+        {
+            DistributionCritical = new();
+
+            foreach (var distribution in _distributions)
+            {
+                bool crrMonth = currentMonthAllJOb.Any(p => p.DistributionId == distribution.DistributionId);
+                bool lstMonth = previousMonthAllJO.Any(p => p.DistributionId == distribution.DistributionId);
+
+                int priority = (!crrMonth && !lstMonth) ? 0 : (lstMonth && !crrMonth) ? 1 : 2;
+                DistributionCritical[distribution.DistributionId] = priority;
+            }
+            _distributions = _distributions
+            .OrderBy(dist => DistributionCritical[dist.DistributionId])
+            .ToList();
         }
 
         private string searchTerm = "";

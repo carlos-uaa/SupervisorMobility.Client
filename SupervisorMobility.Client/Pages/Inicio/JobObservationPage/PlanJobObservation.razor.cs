@@ -83,6 +83,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public bool flag = false;
 
+        DateTime? _yearMonth = DateTime.Today;
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
@@ -95,6 +96,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         //Operator user
         public List<User> _operators = new();
         public List<User> operatorUsers = new();
+
+        public List<JobObservation> currentMonthAllJOb { get; set; } = new();
+        public List<JobObservation> previousMonthAllJO { get; set; } = new();
+
+        //Distribution Id, Critical type
+        public Dictionary<int, int> DistributionCritical = new();
 
         public int kpiID = 0;
 
@@ -118,6 +125,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.StartDate = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
             _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", CultureInfo.InvariantCulture);
             _jobObservation.Option = 1;
+
+
+            currentMonthAllJOb = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+            previousMonthAllJO = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month - 1, year: _yearMonth.Value.Year);
 
             StateHasChanged();
             if (user != null)
@@ -164,8 +175,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.Supervisor = await UsersService.GetUser(user.UserId);
 
                     _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
-                    _distributions = _distributions.OrderBy(d => d.Description).ToList();   
+                    _distributions = _distributions.OrderBy(d => d.Description).ToList();
 
+                    foreach (var distribution in _distributions) 
+                    {
+                        bool crrMonth = currentMonthAllJOb.Any(p => p.DistributionId == distribution.DistributionId);
+                        bool lstMonth = previousMonthAllJO.Any(p => p.DistributionId == distribution.DistributionId);
+
+                        int priority = (!crrMonth && !lstMonth) ? 0 : (lstMonth && !crrMonth) ? 1 : 2;
+                        DistributionCritical[distribution.DistributionId] = priority;
+                    }
+
+                    _distributions = _distributions
+                        .OrderBy(dist => DistributionCritical[dist.DistributionId])
+                        .ToList();
                     //operator User
                     _operators = await UsersService.GetUsersByType(4, true, false);
                     _operators = _operators.OrderBy(o => o.Name).ToList();
@@ -284,6 +307,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _jobObservation.Operations = new List<Operation>();
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
+            DistributionCritical = new();
+            foreach (var distribution in _distributions)
+            {
+                bool crrMonth = currentMonthAllJOb.Any(p => p.DistributionId == distribution.DistributionId);
+                bool lstMonth = previousMonthAllJO.Any(p => p.DistributionId == distribution.DistributionId);
+
+                int priority = (!crrMonth && !lstMonth) ? 0 : (lstMonth && !crrMonth) ? 1 : 2;
+                DistributionCritical[distribution.DistributionId] = priority;
+            }
+            _distributions = _distributions
+                .OrderBy(dist => DistributionCritical[dist.DistributionId])
+                .ToList();
             StateHasChanged();
         }
 

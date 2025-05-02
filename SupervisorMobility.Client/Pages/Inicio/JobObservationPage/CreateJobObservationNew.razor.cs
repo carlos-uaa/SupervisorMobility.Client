@@ -167,6 +167,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
 
+        DateTime? _yearMonth = DateTime.Today;
+        public List<JobObservation> currentMonthAllJOb { get; set; } = new();
+        public List<JobObservation> previousMonthAllJO { get; set; } = new();
+        public Dictionary<int, int> DistributionCritical { get; set; } = new();
+
         protected async override Task OnInitializedAsync()
         {
 
@@ -205,8 +210,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             _plants = _plants.OrderBy(p => p.Description).ToList();
             _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
 
-
             await GetUserAsync();
+            currentMonthAllJOb = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month, year: _yearMonth.Value.Year);
+            previousMonthAllJO = await JobObservationService.GetAllJobObservations(true, idUser: user.UserId, month: _yearMonth.Value.Month - 1, year: _yearMonth.Value.Year);
 
             bool confirm = false;
             if (checkForStoragedValues())
@@ -570,6 +576,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                             }
                         }
                     }
+                    if (_jobObservation.PlantId != 0 && _jobObservation.AreaId != 0)
+                    {
+                        await ReorderDistributions();
+                    }
                 }
             }
         }
@@ -659,6 +669,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
             _distributions = _distributions.OrderBy(d => d.Description).ToList();
+
+            await ReorderDistributions();
 
             StateHasChanged();
         }
@@ -3018,6 +3030,23 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             qst.Disable = value;
         }
 
+        public async Task ReorderDistributions()
+        {
+            DistributionCritical = new();
+
+            foreach (var distribution in _distributions)
+            {
+                bool crrMonth = currentMonthAllJOb.Any(p => p.DistributionId == distribution.DistributionId);
+                bool lstMonth = previousMonthAllJO.Any(p => p.DistributionId == distribution.DistributionId);
+
+                int priority = (!crrMonth && !lstMonth) ? 0 : (lstMonth && !crrMonth) ? 1 : 2;
+                DistributionCritical[distribution.DistributionId] = priority;
+            }
+            _distributions = _distributions
+            .OrderBy(dist => DistributionCritical[dist.DistributionId])
+            .ToList();
+        }
+
         //private void SetAsCurrentJobObservation()
         //{
         //    if (!session)
@@ -3081,6 +3110,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 _distributions = await DistributionService.GetDistributionsWithCollections(_jobObservation.PlantId, _jobObservation.AreaId);
                 _distributions = _distributions.OrderBy(d => d.Description).ToList();
+
+                await ReorderDistributions();
             }
 
             if (_jobObservation.DistributionId != 0 && _jobObservation.Operations?.FirstOrDefault()?.OperationId != 0)
