@@ -938,11 +938,10 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
           job.SectionIds = jobCategoryStructureIds;
           job.IsActive = true;
 
-          //Se valida si el dia en que estaba registrada esta disponible, 
-          operationDate = await FindNextAvailableDate((DateTime)job.StartDate, true, supervisorId);
+          
+                job.StartDate = existingJob.StartDate;
+                job.PlannedStartDate = existingJob.PlannedStartDate;
 
-          job.StartDate = operationDate;
-          job.PlannedStartDate = operationDate;
 
           UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: true);
           availableJobs.Remove(existingJob);
