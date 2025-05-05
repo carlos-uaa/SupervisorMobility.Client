@@ -529,7 +529,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                     int supervisorIndex = selectedDistributions.IndexOf(distState.Distribution) % SV_Manager.Count;
                     int supervisorId = SV_Manager[supervisorIndex].UserId;
 
-                    await ProcessSingleOperation(_sos_plan, operation, supervisorId, distId, SV_Manager, currentDate);
+                    await ProcessSingleOperation(_sos_plan, operation, supervisorId, distId, SV_Manager, currentDate, availableJobs);
 
                     distState.CurrentOperationIndex++;
                     lastDistributionAssigned = distState.Distribution.Description;
@@ -902,36 +902,107 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         //    }
         //}
    
-        private async Task ProcessSingleOperation(SOSReviewProgram _sos_plan, Operation op, int supervisorId, int distId, List<User> SV_Manager, DateTime operationDate)
-        {
+         private async Task ProcessSingleOperation(SOSReviewProgram _sos_plan, Operation op, int supervisorId, int distId, List<User> SV_Manager, DateTime operationDate, List<JobObservation> availableJobs)
+  {
+      var dist = _distributions.Find(d => d.DistributionId == distId);
 
-            var dist = _distributions.Find(d => d.DistributionId == distId);
+      JobObservation? existingJob = availableJobs?
+          .Where(j => j.DistributionId == dist.DistributionId)
+          .FirstOrDefault(j => j.Operations.Any(o => o.OperationId == op.OperationId));
 
-            var job = new JobObservationNulls
-            {
-                SupervisorId = supervisorId,
-                Supervisor = SV_Manager.Find(u => u.UserId == supervisorId),
-                PlantId = (int)_sos_plan.PlantId,
-                AreaId = (int)_sos_plan.AreaId,
-                Plant = _sos_plan.Plant,
-                Area = _sos_plan.Area,
-                DistributionId = distId,
-                Distribution = dist,
-                Option = 2,
-                Type = 3,
-                Status = 7,
-                SectionIds = jobCategoryStructureIds,
-                IsActive = true,
-                Operations = new List<Operation> { op },
-            };
+      if (existingJob != null)
+      {
+          var job = _mapper.Map<JobObservationNulls>(existingJob);
 
-            job.StartDate = operationDate;
-            job.PlannedStartDate = operationDate;
+          job.SupervisorId = supervisorId;
+          job.Supervisor = SV_Manager.Find(u => u.UserId == supervisorId);
 
-            UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: false);
-            _All_Suggested_SOSJobobservation.Add(job);
+          //se asignan/actualizan los valores/objetos para evitar errores en la visualizacion previa
+          job.Plant = _sos_plan.Plant;
+          job.Area = _sos_plan.Area;
+          job.Distribution = dist;
+          job.DistributionId = distId;
 
-        }
+          //Operaciones de la job
+          var operationsList = job.Operations?.ToList() ?? new List<Operation>();
+          if (!operationsList.Any(o => o.OperationId == op.OperationId))
+          {
+              operationsList.Add(_All_Operations.First(o => o.OperationId == op.OperationId));
+          }
+          job.Operations = operationsList;
+
+          //actualizacion del status de la job, se cambia a planeada, se asigna al sos y se actualizan las categorias disponibles
+          job.Option = 2;
+          job.Type = 3;
+          job.Status = 7;
+          job.SectionIds = jobCategoryStructureIds;
+          job.IsActive = true;
+
+          //Se valida si el dia en que estaba registrada esta disponible, 
+          operationDate = await FindNextAvailableDate((DateTime)job.StartDate, true, supervisorId);
+
+          job.StartDate = operationDate;
+          job.PlannedStartDate = operationDate;
+
+          UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: true);
+          availableJobs.Remove(existingJob);
+          _All_Suggested_SOSJobobservation.Add(job);
+      }
+      else
+      {
+          var job = new JobObservationNulls
+          {
+              SupervisorId = supervisorId,
+              Supervisor = SV_Manager.Find(u => u.UserId == supervisorId),
+              PlantId = (int)_sos_plan.PlantId,
+              AreaId = (int)_sos_plan.AreaId,
+              Plant = _sos_plan.Plant,
+              Area = _sos_plan.Area,
+              DistributionId = distId,
+              Distribution = dist,
+              Option = 2,
+              Type = 3,
+              Status = 7,
+              SectionIds = jobCategoryStructureIds,
+              IsActive = true,
+              Operations = new List<Operation> { op },
+          };
+
+          operationDate = await FindNextAvailableDate(operationDate, true, supervisorId);
+
+          job.StartDate = operationDate;
+          job.PlannedStartDate = operationDate;
+
+          UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: false);
+          _All_Suggested_SOSJobobservation.Add(job);
+      }
+
+      // var job = new JobObservationNulls
+      // {
+      //     SupervisorId = supervisorId,
+      //     Supervisor = SV_Manager.Find(u => u.UserId == supervisorId),
+      //     PlantId = (int)_sos_plan.PlantId,
+      //     AreaId = (int)_sos_plan.AreaId,
+      //     Plant = _sos_plan.Plant,
+      //     Area = _sos_plan.Area,
+      //     DistributionId = distId,
+      //     Distribution = dist,
+      //     Option = 2,
+      //     Type = 3,
+      //     Status = 7,
+      //     SectionIds = jobCategoryStructureIds,
+      //     IsActive = true,
+      //     Operations = new List<Operation> { op },
+      // };
+
+      // job.StartDate = operationDate;
+      // job.PlannedStartDate = operationDate;
+
+      // UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: false);
+      // _All_Suggested_SOSJobobservation.Add(job);
+
+  }
+
 
         //private async Task ProcessSingleOperation(SOSReviewProgram _sos_plan, List<Operation> operations, int supervisorId, int distId, List<User> SV_Manager, DateTime operationDate)
         //{
