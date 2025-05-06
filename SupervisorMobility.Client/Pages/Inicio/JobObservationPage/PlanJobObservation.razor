@@ -59,6 +59,29 @@
         border: 1px solid var(--mud-palette-error);
         border-radius: 6px;
     }
+
+    .red-circle, .yellow-circle, .default-circle {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+
+    .red-circle {
+        background-color: var(--mud-palette-error-hover);
+        border: 1px solid var(--mud-palette-warning);
+    }
+
+    .yellow-circle {
+        background-color: var(--mud-palette-warning-hover);
+        border: 1px solid var(--mud-palette-warning);
+    }
+
+    .default-circle {
+        border: 1px solid black;
+    }
 </style>
 
 
@@ -541,7 +564,7 @@
                                 @*Mud select for Distribution *@
                                 @if (_jobObservation.AreaId != 0)
                                 {
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
                                         <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
                                             <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
                                             @foreach (var type in _distributions)
@@ -557,15 +580,18 @@
                                              )</MudSelectItem>
                                             }
                                         </MudSelect>
-                                        <MudBadge Icon="@Icons.Material.Filled.Info" Color="Color.Info" Class="cursor-pointer">
-                                            <MudPopover  CloseAction="CloseAction.MouseLeave">
-                                                <MudPaper Class="pa-2" Elevation="2">
-                                                    <MudText><span class="red-circle"></span> = Critical (Red)</MudText>
-                                                    <MudText><span class="yellow-circle"></span> = Warning (Yellow)</MudText>
-                                                    <MudText><span class="default-circle"></span> = Normal</MudText>
+
+                                        <MudTooltip Class="mt-2 pa-0" Color="Color.Info">
+                                            <ChildContent>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Info"/>
+                                            </ChildContent>
+                                            <TooltipContent>
+                                                <MudPaper Class="pa-2" Elevation="1">
+                                                    <MudText><span class="red-circle"></span>@Localizer["Critical"]</MudText>
+                                                    <MudText><span class="yellow-circle"></span>@Localizer["Warning"]</MudText>
                                                 </MudPaper>
-                                            </MudPopover>
-                                        </MudBadge>
+                                            </TooltipContent>
+                                        </MudTooltip>
                                     </MudStack>
                                 }
                                 else

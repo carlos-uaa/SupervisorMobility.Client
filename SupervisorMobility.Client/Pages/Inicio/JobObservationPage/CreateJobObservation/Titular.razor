@@ -20,6 +20,24 @@
         flex-basis: calc(25% - 10px);
         margin: 5px;
     }
+
+    .red-circle, .yellow-circle, .default-circle {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+    .red-circle {
+        background-color: var(--mud-palette-error-hover);
+        border: 1px solid var(--mud-palette-warning);
+    }
+
+    .yellow-circle {
+        background-color: var(--mud-palette-warning-hover);
+        border: 1px solid var(--mud-palette-warning);
+    }
 </style>
 
 
@@ -124,33 +142,46 @@
                         @*Mud select for Distribution *@
                         @if (_jobObservation.AreaId != 0)
                         {
-                            <MudSelect T="int" Style="display: flex; align-items: center; justify-content: space-evenly;" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="()=>ShowOperations.InvokeAsync()">
-                                <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
-                                @foreach (var type in _distributions)
-                                {
-                                    string cssClass = DistributionCritical[type.DistributionId] switch
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                                <MudSelect T="int" Style="display: flex; align-items: center; justify-content: space-evenly;" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="()=>ShowOperations.InvokeAsync()">
+                                    <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
+                                    @foreach (var type in _distributions)
                                     {
-                                        0 => "red",
-                                        1 => "yellow",
-                                        _ => ""
-                                    };
-                                    <MudSelectItem Class="@cssClass" Value="type.DistributionId" Style="display: flex; align-items: center; justify-content: space-evenly;">
-                                            @($"{type.Description}   ")
-                                            @switch (type.CriticalType)
-                                            {
-                                                case 1:
-                                                        <img src="Images/A.png" Height="25" Width="25" />
-                                                    break;
-                                                case 2:
-                                                        <img src="Images/B.png" Height="25" Width="25" />
-                                                    break;
-                                                case 3:
-                                                        <img src="Images/C.png" Height="25" Width="25" />
-                                                    break;
-                                            }
-                                    </MudSelectItem>
-                                }
-                            </MudSelect>
+                                        string cssClass = DistributionCritical[type.DistributionId] switch
+                                        {
+                                            0 => "red",
+                                            1 => "yellow",
+                                            _ => ""
+                                        };
+                                        <MudSelectItem Class="@cssClass" Value="type.DistributionId" Style="display: flex; align-items: center; justify-content: space-evenly;">
+                                                @($"{type.Description}   ")
+                                                @switch (type.CriticalType)
+                                                {
+                                                    case 1:
+                                                            <img src="Images/A.png" Height="25" Width="25" />
+                                                        break;
+                                                    case 2:
+                                                            <img src="Images/B.png" Height="25" Width="25" />
+                                                        break;
+                                                    case 3:
+                                                            <img src="Images/C.png" Height="25" Width="25" />
+                                                        break;
+                                                }
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudTooltip Class="mt-2 pa-0" Color="Color.Info">
+                                    <ChildContent>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Info" />
+                                    </ChildContent>
+                                    <TooltipContent>
+                                        <MudPaper Class="pa-2" Elevation="1">
+                                            <MudText><span class="red-circle"></span>@Localizer["Critical"]</MudText>
+                                            <MudText><span class="yellow-circle"></span>@Localizer["Warning"]</MudText>
+                                        </MudPaper>
+                                    </TooltipContent>
+                                </MudTooltip>
+                            </MudStack>
                         }
                         else
                         {
