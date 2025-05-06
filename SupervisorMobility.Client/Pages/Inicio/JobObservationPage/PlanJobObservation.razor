@@ -541,21 +541,32 @@
                                 @*Mud select for Distribution *@
                                 @if (_jobObservation.AreaId != 0)
                                 {
-                                    <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
-                                        <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
-                                        @foreach (var type in _distributions)
-                                        {
-                                            string cssClass = DistributionCritical[type.DistributionId] switch
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@_jobObservation.DistributionId" For="@(() => _jobObservation.DistributionId)" SelectedValuesChanged="ShowOperations">
+                                            <MudSelectItem Disabled="true" Value="0"> @Localizer["selectADistribution"]</MudSelectItem>
+                                            @foreach (var type in _distributions)
                                             {
-                                                0 => "red",
-                                                1 => "yellow",
-                                                _ => ""
-                                            };
-                                            <MudSelectItem Class="@cssClass" Value="type.DistributionId">@(
-                                         $"{type.Code} - {type.Description}"
-                                         )</MudSelectItem>
-                                        }
-                                    </MudSelect>
+                                                string cssClass = DistributionCritical[type.DistributionId] switch
+                                                {
+                                                    0 => "red",
+                                                    1 => "yellow",
+                                                    _ => ""
+                                                };
+                                                <MudSelectItem Class="@cssClass" Value="type.DistributionId">@(
+                                             $"{type.Code} - {type.Description}"
+                                             )</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                        <MudBadge Icon="@Icons.Material.Filled.Info" Color="Color.Info" Class="cursor-pointer">
+                                            <MudPopover  CloseAction="CloseAction.MouseLeave">
+                                                <MudPaper Class="pa-2" Elevation="2">
+                                                    <MudText><span class="red-circle"></span> = Critical (Red)</MudText>
+                                                    <MudText><span class="yellow-circle"></span> = Warning (Yellow)</MudText>
+                                                    <MudText><span class="default-circle"></span> = Normal</MudText>
+                                                </MudPaper>
+                                            </MudPopover>
+                                        </MudBadge>
+                                    </MudStack>
                                 }
                                 else
                                 {
