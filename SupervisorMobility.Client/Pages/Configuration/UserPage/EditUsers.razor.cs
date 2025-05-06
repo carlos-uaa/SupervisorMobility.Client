@@ -20,10 +20,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         private User _user = new User();
         private User _usercopy = new User();
         private User? _AssignAuxSuperior = null;
-        private User selectedSeniorSupervisorOfList = null;
-        private User selectedSupervisorOfList = null;
-        private User selectedOperatorOfList = null;
-        private Area selectedAreaOfList = new Area();
+        private User? selectedSeniorSupervisorOfList = null;
+        private User? selectedSupervisorOfList = null;
+        private User? selectedOperatorOfList = null;
+        private Area? selectedAreaOfList = new Area();
         private Area Reassign = new Area();
 
         private List<User> Managers = new List<User>();
@@ -843,7 +843,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                 _areasManager.Remove(selection);
                 //reset value from selector
-                selectedAreaOfList = new();
+                selectedAreaOfList = null;
                 ActiveAddArea = true;
             }
 
