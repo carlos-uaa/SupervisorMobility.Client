@@ -1,0 +1,105 @@
+﻿@inject ICalendarProductiveService CalendarProductiveServices
+
+
+<MudPaper Class="pa-4 mb-4">
+    <MudDatePicker Label="Seleccionar fecha"
+                   @bind-Date="ManualHolidayDateValue"
+                   PickerVariant="PickerVariant.Static"
+                   Color="Color.Secondary"
+                   Rounded="true" />
+
+    <MudTextField Label="Descripción" @bind-Value="ManualHolidayDescription" />
+
+    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="AddManualHoliday">
+        Agregar
+    </MudButton>
+</MudPaper>
+
+@if (ImportedHolidays.Count == 0)
+{
+    <MudText>No se ha cargado ningún día feriado.</MudText>
+}
+else
+{
+    <MudTable Items="ImportedHolidays" Dense="true">
+        <HeaderContent>
+            <MudTh>Fecha</MudTh>
+            <MudTh>Descripción</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Date.ToString("yyyy-MM-dd")</MudTd>
+            <MudTd>@context.Description</MudTd>
+            <MudTd>
+                <MudIconButton Icon="mdi-delete" Color="Color.Error" OnClick="@(() => RemoveHoliday(context))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyHolidaysToCalendar">
+    Añadir días
+</MudButton>
+@code {
+    private string ManualHolidayDate { get; set; }
+    private DateTime? ManualHolidayDateValue { get; set; } = DateTime.Today.AddDays(1);
+    private string ManualHolidayDescription { get; set; } = string.Empty;
+
+    private List<Holiday> ImportedHolidays = new List<Holiday>();
+
+    private void AddManualHoliday()
+    {
+        // Validar que la fecha y la descripción no estén vacías
+        if (ManualHolidayDateValue == null || string.IsNullOrWhiteSpace(ManualHolidayDescription))
+        {
+            // Opcional: Mostrar un mensaje de error o manejar la validación
+            Console.WriteLine("La fecha y la descripción son obligatorias.");
+            return;
+        }
+
+        var parsedDate = ManualHolidayDateValue.Value;
+
+        // Verificar si el día feriado ya existe
+        if (!ImportedHolidays.Any(h => h.Date.Date == parsedDate))
+        {
+            ImportedHolidays.Add(new Holiday
+                {
+                    Date = parsedDate,
+                    Description = ManualHolidayDescription
+                });
+
+            // Limpiar la descripción después de agregar
+            ManualHolidayDescription = string.Empty;
+        }
+        else
+        {
+            // Opcional: Mostrar un mensaje indicando que el día ya existe
+            Console.WriteLine("El día feriado ya existe.");
+        }
+    }
+
+    private void RemoveHoliday(Holiday holiday)
+    {
+        ImportedHolidays.Remove(holiday);
+    }
+    
+
+    
+    private void ApplyHolidaysToCalendar()
+    {
+        var holidayDates = CalendarProductiveServices.GetHolidaysInService();
+
+        // agregar no existan en la lista de feriados
+        foreach (var holiday in ImportedHolidays)
+        {
+            if (!holidayDates.Select(holiday => holiday.Date).Contains(holiday.Date))
+            {
+                CalendarProductiveServices.AddHolidayToService(holiday);
+            }
+        }
+        // Opcional: Limpiar la lista de días importados después de aplicarlos
+        ImportedHolidays.Clear();
+    }
+
+}

@@ -1,0 +1,120 @@
+﻿@inject ICalendarProductiveService CalendarProductiveServices
+
+<MudPaper Class="pa-4 mb-4">
+    <MudText Typo="Typo.h6">Carga de Días Festivos</MudText>
+
+    <div class="d-flex flex-column gap-2 mt-2">
+        <label>Importar desde JSON:</label>
+        <InputFile OnChange="LoadFromJson" accept=".json" />
+
+        <label>Importar desde CSV:</label>
+        <InputFile OnChange="LoadFromCsv" accept=".csv" />
+
+    </div>
+</MudPaper>
+
+@if (ImportedHolidays.Count == 0)
+{
+    <MudText>No se ha cargado ningún día feriado.</MudText>
+}
+else
+{
+    <MudTable Items="ImportedHolidays" Dense="true">
+        <HeaderContent>
+            <MudTh>Fecha</MudTh>
+            <MudTh>Descripción</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Date.ToString("yyyy-MM-dd")</MudTd>
+            <MudTd>@context.Description</MudTd>
+            <MudTd>
+                <MudIconButton Icon="mdi-delete" Color="Color.Error" OnClick="@(() => RemoveHoliday(context))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyHolidaysToCalendar">
+    Añadir días
+</MudButton>
+
+@code {
+    private List<Holiday> ImportedHolidays = new List<Holiday>();
+
+
+    private async Task LoadFromJson(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+            try
+            {
+                ImportedHolidays = JsonSerializer.Deserialize<List<Holiday>>(content,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            }
+            catch
+            {
+                // Manejar error
+            }
+        }
+    }
+
+    private async Task LoadFromCsv(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            ImportedHolidays.Clear();
+
+            string line;
+            bool skipHeader = true;
+
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                if (skipHeader)
+                {
+                    skipHeader = false;
+                    continue;
+                }
+
+                var parts = line.Split(',');
+
+                if (parts.Length >= 2 && DateTime.TryParse(parts[0], out var date))
+                {
+                    ImportedHolidays.Add(new Holiday
+                        {
+                            Date = date,
+                            Description = parts[1]
+                        });
+                }
+            }
+        }
+    }
+
+
+    private void RemoveHoliday(Holiday holiday)
+    {
+        ImportedHolidays.Remove(holiday);
+    }
+
+     private void ApplyHolidaysToCalendar()
+    {
+        var holidayDates = CalendarProductiveServices.GetHolidaysInService();
+
+        // agregar no existan en la lista de feriados
+        foreach (var holiday in ImportedHolidays)
+        {
+            if (!holidayDates.Select(holiday => holiday.Date).Contains(holiday.Date))
+            {
+                CalendarProductiveServices.AddHolidayToService(holiday);
+            }
+        }
+        // Opcional: Limpiar la lista de días importados después de aplicarlos
+        ImportedHolidays.Clear();
+    }
+}
