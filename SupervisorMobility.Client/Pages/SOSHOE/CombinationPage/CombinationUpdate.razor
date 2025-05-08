@@ -71,16 +71,18 @@
     font-weight: bold;
     }
 
-    .zig-zag-line {
-    --a: 60deg; /* control the angle */
-    --s: 20px; /* size of the zig-zag */
-    --b: 5px; /* control the thickness */
+   
 
-    background: black;
-    height: calc(var(--b) + var(--s)/(2*tan(var(--a)/2)) + 5px);
-    width: 120%;
-    --_g: var(--s) repeat-x conic-gradient(from calc(var(--a)/-2) at bottom, #0000,#000 1deg calc(var(--a) - 1deg),#0000 var(--a));
-    mask: 50% calc(-1*var(--b))/var(--_g) exclude,50%/var(--_g);
+    .zig-zag-line {
+        --a: 60deg; /* control the angle */
+        --s: 20px; /* size of the zig-zag */
+        --b: 5px; /* control the thickness */
+
+        background: black;
+        height: calc(var(--b) + var(--s)/(2*tan(var(--a)/2)) + 5px);
+        width: 120%;
+        --_g: var(--s) repeat-x conic-gradient(from calc(var(--a)/-2) at bottom, #0000,#000 1deg calc(var(--a) - 1deg),#0000 var(--a));
+        mask: 50% calc(-1*var(--b))/var(--_g) exclude,50%/var(--_g);
     }
 
     .last-zig-zag-line {
@@ -396,11 +398,11 @@ else
             {
 
                 @code {
-                double cumulativeManualTime = 0.0;
-                string[] decimalSeparators = { ".", "," };
-                double RoundToThreeDecimals(double value) => Math.Round(value, 3);
-                int top = 0;
-                }
+        double cumulativeManualTime = 0.0;
+        string[] decimalSeparators = { ".", "," };
+        double RoundToThreeDecimals(double value) => Math.Round(value, 3);
+        int top = 0;
+        }
                 GetLastValidOperationIndex();
                 @foreach (var (operationSequence, indexOperationSequence) in _sosCombination.SOSCombinationOperationSequence.Select((operationSequence, indexSection) => (operationSequence, indexSection)))
                 {
@@ -450,7 +452,7 @@ else
                         if (StepPrevious == previousSteps)
                         {
                             StepPrevious = 0;
-                        } 
+                        }
                     }
 
 
@@ -462,13 +464,13 @@ else
 
                     <tr style="height: 65px;">
                         <td>
-                             <div class="d-flex flex-column" style="align-items: center;">
-                                <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Disabled="@(indexOperationSequence == 0)"
-                                               OnClick="() => MoveStepsProcess(indexOperationSequence, -1)" />
+                            <div class="d-flex flex-column" style="align-items: center;">
+                                @*  <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward" Disabled="@(indexOperationSequence == 0)"
+                                               OnClick="() => MoveStepsProcess(indexOperationSequence, -1)" /> *@
                                 <span>@(indexOperationSequence + 1)</span>
-                                <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Disabled="@(indexOperationSequence == _sosCombination.SOSCombinationOperationSequence.Count - 1)"
-                                               OnClick="() => MoveStepsProcess(indexOperationSequence, 1)" />
-                            </div> 
+                                @*  <MudIconButton Icon="@Icons.Material.Filled.ArrowDownward" Disabled="@(indexOperationSequence == _sosCombination.SOSCombinationOperationSequence.Count - 1)"
+                                               OnClick="() => MoveStepsProcess(indexOperationSequence, 1)" /> *@
+                            </div>
                         </td>
                         <td>@operationSequence.ProcessName</td>
                         <td style="min-width: 95px;">
@@ -498,19 +500,12 @@ else
 
 
                             double cumulativeTime = cumulativeManualTime;
+
+
+                            bool usedHalf = (int)(cumulativeManualTime * 100) % 2 != 0;
                             bool isHalfStartCell = (int)(cumulativeManualTime * 100) % 2 != 0;
 
-                            if (manualOperationTime > 0 && manualWithMachineTime <= 0)
-                            {
-                                top = 20;
-                            }
-                            else if (manualOperationTime > 0 && manualWithMachineTime > 0)
-                            {
-                                top = 40;
-                            }
-
-
-                            for (int i = 0; i < _Celdas + 1; i++)
+                               for (int i = 0; i < _Celdas + 1; i++)
                             {
                                 double cellStart = RoundToThreeDecimals(i * _CellSize);
                                 double cellEnd = RoundToThreeDecimals(cellStart + _CellSize);
@@ -984,11 +979,8 @@ else
                                                 }
                                                 else
                                                 {
-                                                    double sizeStep = CalculateSizeStep(steps, 35);
-                                                    double angle = CalculateRotateAngle(35, sizeStep);
-                                                    int topv = StepCurrentFragment <= _HalfCellSize ? 30 : top;
-
-                                                    <div style="position: absolute; top: @($"{topv}px"); rotate: @($"{angle}deg"); left: 0px; min-width: @($"{(sizeStep)}px"); ">
+                                                    var (topX, angle, left, width) = (top > 10 && top <= 35) ?  CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                    <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)+18}px"); min-width: @($"{(width)}px"); ">
                                                         <div class="zig-zag-line"></div>
                                                     </div>
                                                     renderStep = false;
@@ -1038,11 +1030,8 @@ else
                                                 }
                                                 else
                                                 {
-                                                    double sizeStep = CalculateSizeStep(steps, 35);
-                                                    double angle = CalculateRotateAngle(35, sizeStep);
-                                                    int topv = steps <= _CellSize ? 30 : top;
-
-                                                    <div style="position: absolute; top: @($"{topv}px"); rotate: @($"{angle}deg"); left: 0px; min-width: @($"{(sizeStep)}px"); ">
+                                                    var (topX, angle, left, width) = (top > 10 && top <= 35) ?  CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                    <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)+18}px"); min-width: @($"{(width)}px"); ">
                                                         <div class="zig-zag-line"></div>
                                                     </div>
                                                     renderStep = false;
@@ -1222,10 +1211,8 @@ else
                                             }
                                             else
                                             {
-                                                double sizeStep = CalculateSizeStep(steps, 35);
-                                                double angle = CalculateRotateAngle(35, sizeStep);
-
-                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: 10px; min-width: @($"{(sizeStep)}px"); ">
+                                                var (topX, angle, left, width) = (top > 10 && top <= 35) ? CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)+18}px"); min-width: @($"{(width)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
                                                 renderStep = false;
@@ -1289,10 +1276,8 @@ else
                                             }
                                             else
                                             {
-                                                double sizeStep = CalculateSizeStep(steps, 35);
-                                                double angle = CalculateRotateAngle(35, sizeStep);
-
-                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: 10px; min-width: @($"{(sizeStep)}px"); ">
+                                                var (topX, angle, left, width) = (top > 10 && top <= 35) ? CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)+18}px"); min-width: @($"{(width)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
                                                 renderStep = false;
@@ -1353,10 +1338,8 @@ else
 
                                             @if (renderStep)
                                             {
-                                                double sizeStep = CalculateSizeStep(steps, top);
-                                                double angle = CalculateRotateAngle(top, sizeStep);
-
-                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: -10px; min-width: @($"{(sizeStep)+12}px"); ">
+                                                var (topX, angle, left, width) = (top > 10 && top <= 35) ? CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)}px"); min-width: @($"{(width)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
                                                 renderStep = false;
@@ -1385,10 +1368,8 @@ else
 
                                             @if (renderStep)
                                             {
-                                                double sizeStep = CalculateSizeStep(steps, 35);
-                                                double angle = CalculateRotateAngle(35, sizeStep);
-
-                                                <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: 10px; min-width: @($"{(sizeStep)}px"); ">
+                                                var (topX, angle, left, width) = (top > 10 && top <= 35) ? CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)+18}px"); min-width: @($"{(width)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
                                                 renderStep = false;
@@ -1417,12 +1398,8 @@ else
 
                                             @if (renderStep)
                                             {
-                                                double sizeStep = CalculateSizeStep(steps, top);
-                                                double angle = CalculateRotateAngle(top, sizeStep);
-                                                int leftv = steps <= _HalfCellSize ? -20 : -10;
-                                                int topv = StepCurrentFragment <= _HalfCellSize ? 30 : top;
-
-                                                <div style="position: absolute; top: @($"{topv}px"); rotate: @($"{angle}deg"); left: @($"{(leftv)}px"); min-width: @($"{(sizeStep)}px"); ">
+                                                var (topX, angle, left, width) = (top > 10 && top <= 35) ? CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)}px"); min-width: @($"{(width)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
                                                 renderStep = false;
@@ -1522,11 +1499,9 @@ else
                                             {
                                                 @if (renderStep)
                                                 {
-                                                    
-                                                    double sizeStep = CalculateSizeStep(steps, 35);
-                                                    double angle = CalculateRotateAngle(35, sizeStep);
 
-                                                    <div style="position: absolute; top: @($"{top}px"); rotate: @($"{angle}deg"); left: 10px; min-width: @($"{(sizeStep)}px"); ">
+                                                    var (topX, angle, left, width) = (top > 10 && top <= 35) ? CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                    <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)}px"); min-width: @($"{(width)}px"); ">
                                                         <div class="zig-zag-line"></div>
                                                     </div>
                                                     renderStep = false;
@@ -1577,12 +1552,8 @@ else
                                         <td class="tacktime-cell" style="position: relative; overflow: visible;">
                                             @if (renderStep)
                                             {
-                                                double sizeStep = CalculateSizeStep(steps, top);
-                                                double angle = CalculateRotateAngle(top, sizeStep);
-                                                int leftv = StepCurrentFragment <= _HalfCellSize ? -20 : -10;
-                                                // int topv = StepCurrentFragment <= _HalfCellSize ? 30 : top;
-
-                                                <div style="position: absolute; top: @($"{top}px");; rotate: @($"{angle}deg");; left: @($"{leftv}px"); min-width: @($"{(sizeStep)+12}px"); ">
+                                                var (topX, angle, left, width) = (top > 10 && top <= 35) ? CalculateTopParameters(steps) : CalculateMiddleParameters(steps);
+                                                <div style="position: absolute; top: @($"{topX}px"); rotate: @($"{angle}deg"); left: @($"{(left)}px"); min-width: @($"{(width)}px"); ">
                                                     <div class="zig-zag-line"></div>
                                                 </div>
                                                 renderStep = false;
@@ -1624,6 +1595,585 @@ else
                                     <td class="tacktime-cell" style=""></td>
                                 }
                             }
+
+
+                            // for (int i = 0; i < _Celdas + 1; i++)
+                            // {
+                            //     double cellStart = RoundToThreeDecimals(i * _CellSize);
+                            //     double cellEnd = RoundToThreeDecimals(cellStart + _CellSize);
+
+                            //     bool isHalfStartCell = false;
+                            //     bool IsTimeOperationManual = false;
+                            //     bool IsTimeOperationAndMachine = false;
+                            //     bool IsTimeMachine = false;
+                            //     bool IsStep = false;
+                            //     bool IsHalfStep = false;
+                            //     bool IsHalfTimeOperationManual = false;
+                            //     bool IsHalfTimeOperationAndMachine = false;
+                            //     bool IsHalfTimeMachine = false;
+
+                            //     if (usedHalf)
+                            //     {
+                            //         // // Case 0: ExcessMachineTime
+                            //         // if (ExcessMachineTime > 0)
+                            //         // {
+                            //         //    _ = ExcessMachineTime >= _CellSize ? IsTimeMachine = true : IsHalfTimeMachine = true;
+                            //         //     ExcessMachineTime = ExcessMachineTime >= _CellSize
+                            //         //     ? RoundToThreeDecimals(ExcessMachineTime - _CellSize)
+                            //         //     : ExcessMachineTime > _HalfCellSize
+                            //         //     ? 0
+                            //         //     : RoundToThreeDecimals(ExcessMachineTime - _HalfCellSize);
+                            //         //     IsHalfTimeMachine = true;
+
+                            //         //     usedHalf = true;
+                            //         // }
+                            //         // Case 1: Step Previous
+                            //         if (StepPrevious > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //         {
+                            //             StepPrevious = RoundToThreeDecimals(StepPrevious - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             usedHalf = true;
+
+                            //         }
+                            //         // Case 2: ManualOperationTime
+                            //         else if (manualOperationTime > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //         {
+                            //             manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             usedHalf = true;
+
+                            //             IsHalfTimeOperationManual = true;
+                            //         }
+                            //         // Case 3: ManualOperationTimeWithMachineInAutomatic and AutomaticMachineOperationTime
+                            //         else if (manualWithMachineTime > 0 && automaticMachineTime > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             usedHalf = true;
+
+                            //             IsHalfTimeOperationAndMachine = true;
+                            //         }
+                            //         // Case 4: Remaining AutomaticMachineOperationTime
+                            //         else if (automaticMachineTime > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //         {
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //             usedHalf = true;
+
+                            //             IsHalfTimeMachine = true;
+                            //         }
+                            //         // Case 5: Remaining manualWithMachineTime
+                            //         else if (manualWithMachineTime > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             usedHalf = true;
+
+                            //             IsHalfTimeOperationAndMachine = true;
+                            //         }
+
+                            //         if(usedHalf){
+                            //             usedHalf = false;
+                            //             <CellCombination cellEnd="cellEnd"  cellStart="cellStart" TackTime="_sosCombination.TackTime" _tackTimePosition="_tackTimePosition" IsHalfStep="IsHalfStep"
+                            //             isHalfStartCell="isHalfStartCell" IsTimeOperationManual="IsTimeOperationManual" IsTimeOperationAndMachine="IsTimeOperationAndMachine" IsTimeMachine="IsTimeMachine" IsStep="IsStep"
+                            //             IsHalfTimeOperationManual="IsHalfTimeOperationManual" IsHalfTimeOperationAndMachine="IsHalfTimeOperationAndMachine" IsHalfTimeMachine="IsHalfTimeMachine"></CellCombination>
+                            //             continue;
+                            //         }
+
+                            //     }
+
+
+                            //     //case 0
+                            //     if (ExcessMachineTime > 0)
+                            //     {
+                            //         if (ExcessMachineTime >= _CellSize)
+                            //         {
+                            //             ExcessMachineTime = RoundToThreeDecimals(ExcessMachineTime - _CellSize);
+                            //             IsTimeMachine = true;
+                            //         }
+                            //         else if (ExcessMachineTime > _HalfCellSize && ExcessMachineTime <= _CellSize)
+                            //         {
+                            //             ExcessMachineTime = 0;
+                            //             IsTimeMachine = true;
+                            //         }
+                            //         else if (ExcessMachineTime <= _HalfCellSize)
+                            //         {
+                            //             ExcessMachineTime = RoundToThreeDecimals(ExcessMachineTime - _HalfCellSize);
+                            //             IsHalfTimeMachine = true;
+                            //         }
+                            //     }
+                            //     //case 1: StepPrevious
+                            //     else if (StepPrevious > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //     {
+                            //         if (StepPrevious <= _HalfCellSize) // Media línea
+                            //         {
+                            //             //StepPrevious media linea sola
+                            //             if (StepPrevious > 0 && manualOperationTime == 0 && manualWithMachineTime == 0 && automaticMachineTime > 0)
+                            //             {
+                            //                 if (StepPrevious < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepPrevious);
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - StepPrevious);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+                            //             }
+                            //             //StepPrevious seguido de manualOperationTime
+                            //             else if (StepPrevious > 0 && manualOperationTime > 0)
+                            //             {
+                            //                 if (StepPrevious < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepPrevious);
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - StepPrevious);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+                            //                 if (manualOperationTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - manualOperationTime);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+                            //                 isHalfStartCell = true;
+                            //                 IsHalfTimeOperationManual = true;
+                            //             }
+                            //             //StepPrevious seguido de ManualWithMachine + Automatic
+                            //             else if (StepPrevious > 0 && manualOperationTime == 0 && manualWithMachineTime > 0 && automaticMachineTime > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //             {
+                            //                 if (StepPrevious < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepPrevious);
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - StepPrevious);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+
+                            //                 if (manualWithMachineTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualWithMachineTime);
+                            //                     manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - manualWithMachineTime);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+
+                            //                 if (automaticMachineTime < _HalfCellSize)
+                            //                 {
+                            //                     automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - automaticMachineTime);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //                 }
+                            //                 isHalfStartCell = true;
+                            //                 IsHalfTimeOperationAndMachine = true;
+                            //             }
+                            //             // StepPrevious seguido de ManualWithMachine
+                            //             else if (StepPrevious > 0 && manualOperationTime == 0 && manualWithMachineTime > 0 && automaticMachineTime == 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //             {
+                            //                 if (StepPrevious < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepPrevious);
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - StepPrevious);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+
+                            //                 if (manualWithMachineTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualWithMachineTime);
+                            //                     manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - manualWithMachineTime);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+                            //                 isHalfStartCell = true;
+                            //                 IsHalfTimeOperationAndMachine = true;
+                            //             }
+                            //             // StepPrevious seguido de AutomaticMachineOperationTime
+                            //             else if (StepPrevious > 0 && manualOperationTime == 0 && manualWithMachineTime == 0 && automaticMachineTime > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //             {
+                            //                 if (StepPrevious < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepPrevious);
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - StepPrevious);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     StepPrevious = RoundToThreeDecimals(StepPrevious - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+                            //                 automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //                 isHalfStartCell = true;
+                            //                 IsHalfTimeMachine = true;
+                            //             }
+                            //         }
+                            //         else // Línea completa
+                            //         {
+                            //             StepPrevious = RoundToThreeDecimals(StepPrevious - _CellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+
+                            //         }
+                            //     }
+                            //     // Case 2: manualOperationTime
+                            //     else if (manualOperationTime > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //     {
+                            //         Console.WriteLine($" index {indexOperationSequence} Manual time remain {manualOperationTime} ");
+                            //         if (manualOperationTime <= _HalfCellSize) // Media línea
+                            //         {
+                            //             // manualOperationTime seguido de AutomaticMachineOperationTime && StepCurrent
+                            //             if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime > 0 && StepCurrentFragment > 0)
+                            //             {
+                            //                 if (manualOperationTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
+                            //                     manualOperationTime = 0;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //                 }
+
+                            //                 if (automaticMachineTime < _HalfCellSize)
+                            //                 {
+                            //                     automaticMachineTime = 0;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     automaticMachineTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //                 }
+
+                            //                 if (StepCurrentFragment < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepCurrentFragment);
+                            //                     StepCurrentFragment = 0;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+                            //                 IsHalfTimeOperationManual = true;
+                            //                 IsHalfTimeMachine = true;
+                            //                 IsHalfStep = true;
+                            //             }
+                            //             // manualOperationTime seguido de current step
+                            //             else if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime <= 0 && StepCurrentFragment > 0)
+                            //             {
+                            //                 if (manualOperationTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
+                            //                     manualOperationTime = 0;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //                 }
+
+                            //                 if (StepCurrentFragment < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepCurrentFragment);
+                            //                     StepCurrentFragment = 0;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                 }
+                            //                 IsHalfTimeOperationManual = true;
+                            //                 IsStep = renderStep;
+                            //                 renderStep = false;
+                            //             }
+                            //             // Case 1.2: manualOperationTime seguido de ManualWithMachine + Automatic
+                            //             else if (manualOperationTime > 0 && manualWithMachineTime > 0 && automaticMachineTime > 0)
+                            //             {
+                            //                 if (manualOperationTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - manualOperationTime);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //                 }
+
+                            //                 if (manualWithMachineTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualWithMachineTime);
+                            //                     manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - manualWithMachineTime);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                     manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //                 }
+
+                            //                 automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //                 IsHalfTimeOperationManual = true;
+                            //                 IsHalfTimeOperationAndMachine = true;
+                            //             }
+                            //             // manualOperationTime seguido de ManualWithMachine
+                            //             else if (manualOperationTime > 0 && manualWithMachineTime > 0 && automaticMachineTime <= 0)
+                            //             {
+                            //                 if (manualOperationTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
+                            //                     manualOperationTime = 0;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //                 }
+
+                            //                 if (manualWithMachineTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualWithMachineTime);
+                            //                     manualWithMachineTime = 0;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                     manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //                 }
+                            //                 IsHalfTimeOperationManual = true;
+                            //                 IsHalfTimeOperationAndMachine = true;
+                            //             }
+                            //             // manualOperationTime seguido de AutomaticMachineOperationTime
+                            //             else if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime > 0)
+                            //             {
+                            //                 if (manualOperationTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
+                            //                     manualOperationTime = 0;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //                 }
+
+                            //                 automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //                 IsHalfTimeOperationManual = true;
+                            //                 IsHalfTimeMachine = true;
+                            //             }
+                            //             // manualOperationTime
+                            //             else if (manualOperationTime > 0 && manualWithMachineTime <= 0 && automaticMachineTime <= 0)
+                            //             {
+                            //                 if (manualOperationTime < _HalfCellSize)
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualOperationTime);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - manualOperationTime);
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //                     manualOperationTime = RoundToThreeDecimals(manualOperationTime - _HalfCellSize);
+                            //                 }
+                            //                 IsHalfTimeOperationManual = true;
+                            //             }
+                            //         }
+                            //         else // Línea completa
+                            //         {
+                            //             manualOperationTime = RoundToThreeDecimals(manualOperationTime - _CellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+                            //             IsTimeOperationManual = true;
+                            //         }
+                            //     }
+                            //     // Case 3: ManualOperationTimeWithMachineInAutomatic and AutomaticMachineOperationTime
+                            //     else if (manualWithMachineTime > 0 && automaticMachineTime > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //     {
+                            //         //OperadorMaquina MaquinaAutomatica y desplazamiento Linea media
+                            //         if (manualWithMachineTime <= _HalfCellSize && automaticMachineTime <= _HalfCellSize && StepCurrentFragment > 0)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //             StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+                            //             IsHalfTimeOperationAndMachine = true;
+                            //             IsHalfTimeMachine = true;
+                            //             IsStep = renderStep;
+                            //             renderStep = false;
+                            //         }
+                            //         else if (manualWithMachineTime <= _HalfCellSize && automaticMachineTime <= _HalfCellSize && manualWithMachineTime > 0 && automaticMachineTime > 0)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             IsHalfTimeOperationAndMachine = true;
+                            //             IsHalfTimeMachine = true;
+                            //         }
+                            //         else if (manualWithMachineTime > _HalfCellSize && automaticMachineTime <= _HalfCellSize && automaticMachineTime > 0)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _CellSize);
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+                            //             IsTimeOperationAndMachine = true;
+                            //             IsHalfTimeMachine = true;
+                            //         }
+                            //         else if (manualWithMachineTime <= _HalfCellSize && automaticMachineTime > _HalfCellSize && StepCurrentFragment > 0 && manualWithMachineTime > 0)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //             StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _CellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+                            //             IsHalfTimeOperationAndMachine = true;
+                            //             IsTimeMachine = true;
+                            //             IsStep = renderStep;
+                            //             renderStep = false;
+                            //         }
+                            //         else if (manualWithMachineTime <= _HalfCellSize && automaticMachineTime > _HalfCellSize && manualWithMachineTime > 0)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _CellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+
+                            //             IsTimeMachine = true;
+                            //             IsHalfTimeOperationAndMachine = true;
+                            //         }
+                            //         else if (manualWithMachineTime > _HalfCellSize && automaticMachineTime > _HalfCellSize)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _CellSize);
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _CellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+                            //             IsTimeOperationAndMachine = true;
+                            //             IsTimeMachine = true;
+                            //         }
+                            //     }
+                            //     // Case 4: Remaining AutomaticMachineOperationTime
+                            //     else if (manualOperationTime <= 0 && manualWithMachineTime <= 0 && automaticMachineTime > 0)
+                            //     {
+                            //         if (automaticMachineTime >= _CellSize && StepCurrentFragment > _HalfCellSize)
+                            //         {
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _CellSize);
+                            //             StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _CellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+                            //             IsTimeMachine = true;
+                            //             IsStep = renderStep;
+                            //             renderStep = false;
+                            //         }
+                            //         else if (automaticMachineTime <= _HalfCellSize && StepCurrentFragment <= _HalfCellSize && StepCurrentFragment > 0)
+                            //         {
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _HalfCellSize);
+                            //             StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             IsHalfTimeMachine = true;
+                            //             IsStep = renderStep;
+                            //             renderStep = false;
+                            //         }
+                            //         else if (automaticMachineTime >= _CellSize && StepCurrentFragment <= _HalfCellSize && StepCurrentFragment > 0)
+                            //         {
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _CellSize);
+                            //             StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             IsTimeMachine = true;
+                            //             IsStep = renderStep;
+                            //             renderStep = false;
+                            //         }
+                            //         else if (automaticMachineTime >= _CellSize && StepCurrentFragment <= 0)
+                            //         {
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _CellSize);
+                            //             IsTimeMachine = true;
+                            //         }
+                            //         else if (automaticMachineTime <= _HalfCellSize && StepCurrentFragment <= 0)
+                            //         {
+                            //             automaticMachineTime = RoundToThreeDecimals(automaticMachineTime - _CellSize);
+                            //             IsHalfTimeMachine = true;
+                            //         }
+                            //     }
+                            //     //case 5: Remaining manualWithMachineTime
+                            //     else if (manualOperationTime <= 0 && manualWithMachineTime > 0 && automaticMachineTime <= 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //     {
+                            //         if (manualWithMachineTime >= _CellSize || manualWithMachineTime > _HalfCellSize)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _CellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+                            //             IsTimeOperationAndMachine = true;
+                            //         }
+                            //         else if (manualWithMachineTime <= _HalfCellSize && manualWithMachineTime > 0 && StepCurrentFragment > 0)
+                            //         {
+                            //             if (manualWithMachineTime < _HalfCellSize)
+                            //             {
+                            //                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + manualWithMachineTime);
+                            //                 manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - manualWithMachineTime);
+                            //             }
+                            //             else
+                            //             {
+                            //                 manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             }
+
+                            //             if (StepCurrentFragment < _HalfCellSize)
+                            //             {
+                            //                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + StepCurrentFragment);
+                            //                 StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - StepCurrentFragment);
+                            //             }
+                            //             else
+                            //             {
+                            //                 StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                            //                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             }
+                            //             IsHalfTimeOperationAndMachine = true;
+                            //             IsStep = renderStep;
+                            //             renderStep = false;
+                            //         }
+                            //         else if ((manualWithMachineTime <= _CellSize) && manualWithMachineTime > 0)
+                            //         {
+                            //             manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime - _HalfCellSize);
+                            //             cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                            //             IsHalfTimeOperationAndMachine = true;
+                            //         }
+                            //     }
+                            //     //Case 6: Zig Zag Steps
+                            //     else if (manualOperationTime <= 0 && manualWithMachineTime <= 0 && automaticMachineTime <= 0 && StepCurrentFragment > 0 && cumulativeTime >= cellStart && cumulativeTime < cellEnd)
+                            //     {
+                                  
+                            //             if (StepCurrentFragment >= _CellSize)
+                            //             {
+                            //                 StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _CellSize);
+                            //                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + _CellSize);
+                                         
+                            //             }
+                            //             else
+                            //             {
+                            //                 StepCurrentFragment = RoundToThreeDecimals(StepCurrentFragment - _HalfCellSize);
+                            //                 cumulativeTime = RoundToThreeDecimals(cumulativeTime + _HalfCellSize);
+                                            
+                            //             }
+                                    
+                            //         IsStep = renderStep;
+                            //         renderStep = false;
+                            //     }
+
+
+                            //     <CellCombination cellEnd="cellEnd" steps="steps" isLastValidOperation="isLastValidOperation" lastValidOperationIndex="lastValidOperationIndex" cellStart="cellStart" TackTime="_sosCombination.TackTime" _tackTimePosition="_tackTimePosition" IsHalfStep="IsHalfStep"
+                            //                      isHalfStartCell="isHalfStartCell" IsTimeOperationManual="IsTimeOperationManual" IsTimeOperationAndMachine="IsTimeOperationAndMachine" IsTimeMachine="IsTimeMachine" IsStep="IsStep"
+                            //                      IsHalfTimeOperationManual="IsHalfTimeOperationManual" IsHalfTimeOperationAndMachine="IsHalfTimeOperationAndMachine" IsHalfTimeMachine="IsHalfTimeMachine"></CellCombination>
+                            // }
 
                             cumulativeManualTime = RoundToThreeDecimals(cumulativeTime);
                         }
