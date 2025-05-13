@@ -1,35 +1,128 @@
-﻿@inject ICalendarProductiveService CalendarProductiveServices
+﻿@using System.Globalization
+@inject ICalendarProductiveService CalendarProductiveServices
+@inject ISnackbar Snackbar
 
-@if (ImportedHolidays.Count == 0)
-{
-    <MudText>No se ha cargado ningún día feriado.</MudText>
-}
-else
-{
-    <MudTable Items="ImportedHolidays" Dense="true">
-        <HeaderContent>
-            <MudTh>Fecha</MudTh>
-            <MudTh>Descripción</MudTh>
-            <MudTh></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Date.ToString("yyyy-MM-dd")</MudTd>
-            <MudTd>@context.Description</MudTd>
-            <MudTd>
-                <MudIconButton Icon="mdi-delete" Color="Color.Error" OnClick="@(() => RemoveHoliday(context))" />
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
-}
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@using MudBlazor
+
+<div id="body">
+    @if (ImportedHolidays.Count == 0)
+    {
+        <MudText>No se ha cargado ningún día feriado.</MudText>
+    }
+    else
+    {
+        <MudTable Items="ImportedHolidays" Dense="true" @bind-SelectedItem="SelectedHoliday"
+        FixedHeader Style="max-height: 65vh" Height="55dvh" Class="px-4 py-4"
+        CommitEditTooltip="Commit Edit" EditTrigger="@editTrigger"
+        OnCommitEditClick="CommitedHoliday" Filter="new Func<Holiday,bool>(FilterFunc1)"
+        RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Calendario @ScheduleYear</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <ColGroup>
+                <col />
+                <col />
+                <col />
+                @if (editTrigger == TableEditTrigger.EditButton)
+                {
+                    <col style="width:50px;" />
+                }
+            </ColGroup>
+            <HeaderContent>
+                <MudTh>Fecha</MudTh>
+                <MudTh>Descripción</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Date.ToString("yyyy-MM-dd")</MudTd>
+                <MudTd>@context.Description</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" OnClick="@(() => RemoveHoliday(context))" />
+                </MudTd>
+            </RowTemplate>
+            <RowEditingTemplate>
+                <MudTd DataLabel="Date">
+                    <MudDatePicker Label="New Date" Mask="@(new DateMask("yyyy/MM/dd"))" DateFormat="yyyy/MM/dd" TextChanged="(dt) => DatePickerChanged(dt, context)" Date="context.Date" />
+                </MudTd>
+                <MudTd DataLabel="Description">
+                    <MudTextField @bind-Value="context.Description" Required />
+                </MudTd>
+                <MudTd DataLabel="Remove">
+                </MudTd>
+            </RowEditingTemplate>
+
+        </MudTable>
+    }
+    <div>
+        @if (CommitedItems > 0 || RemmovedItems > 0)
+        {
+            <MudButton Variant="Variant.Filled" Class="pa-4" Disabled="ShowLoading" FullWidth Color="Color.Primary" OnClick="ApplyHolidaysToCalendar">
+                Guardar Nuevo Calendario
+            </MudButton>
+        }
+    </div>
+
+</div>
+
+<MudDialog IsVisible="ShowLoading" Options="dialogOptions">
+    <DialogContent>
+        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+            <ItemTemplate>
+                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                    </MudItem>
+                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                </div>
+            </ItemTemplate>
+        </MudCarousel>
+    </DialogContent>
+</MudDialog>
 
 @code {
+    [Parameter]
+    public int? ScheduleYear { get; set; } = DateTime.Now.Year;
     private List<Holiday> ImportedHolidays = new List<Holiday>();
 
-    protected override async void OnInitialized()
-    {
-        ImportedHolidays = CalendarProductiveServices.GetHolidaysInService();
+    private Holiday SelectedHoliday = new();
+    private Holiday elementBeforeEdit;
 
-     
+    private int CommitedItems = 0;
+    private int RemmovedItems = 0;
+
+    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+
+    private string searchString = "";
+
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
+    public bool ShowLoading = true;
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true};
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+        ImportedHolidays = await CalendarProductiveServices.GetHolidaysInService((int)ScheduleYear);
+
+        ShowLoading = false;
     }
 
     private void OnRowEditCommit(Holiday item)
@@ -39,6 +132,161 @@ else
 
     private void RemoveHoliday(Holiday holiday)
     {
+        RemmovedItems++;
         ImportedHolidays.Remove(holiday);
+    }
+
+    private void BackupItem(object element)
+    {
+        elementBeforeEdit = new()
+            {
+                HolidayId = ((Holiday)element).HolidayId,
+                Date = ((Holiday)element).Date,
+                Description = ((Holiday)element).Description,
+                IsNationalHoliday = ((Holiday)element).IsNationalHoliday
+            };
+        //LOG aqui lo cambio por alguna alerta
+        // AddEditionEvent($"RowEditPreview event: made a backup of Element {((Element)element).Name}");
+    }
+
+    private void ResetItemToOriginalValues(object element)
+    {
+        ((Holiday)element).HolidayId = elementBeforeEdit.HolidayId;
+        ((Holiday)element).Date = elementBeforeEdit.Date;
+        ((Holiday)element).Description = elementBeforeEdit.Description;
+        ((Holiday)element).IsNationalHoliday = elementBeforeEdit.IsNationalHoliday;
+        //LOG aqui lo cambio por alguna alerta
+
+        // AddEditionEvent($"RowEditCancel event: Editing of Element {((Element)element).Name} canceled");
+    }
+
+    private void CommitedHoliday()
+    {
+        Snackbar.Clear();
+        Snackbar.Add("Save Edited Item", Severity.Success);
+        CommitedItems++;
+    }
+
+    private void DatePickerChanged(string newDate, Holiday context)
+    {
+        if (newDate == null)
+        {
+            Snackbar.Clear();
+            Snackbar.Add("La fecha no puede estar vacía.", Severity.Warning);
+
+            // Restaurar la anterior fecha para que el DatePicker la muestre de nuevo
+            context.Date = elementBeforeEdit.Date;
+            StateHasChanged();
+            return;
+        }
+
+        DateTime? _date = null;
+        string[] formats = { "ddMMyy", "dd.MM.yyyy", "dd.M.yyyy", "d.MM.yyyy", "d.M.yyyy", "dd.MM.yy", "dd.M.yy", "d.MM.yy", "d.M.yy" };
+
+        if (DateTime.TryParseExact(newDate, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime validDate))
+        {
+            _date = validDate;
+        }
+
+        var normalizedDate = _date?.Date;
+
+        if (ImportedHolidays.Any(h => h.Date.Date == normalizedDate && h.HolidayId != context.HolidayId))
+        {
+            Snackbar.Clear();
+            Snackbar.Add("La fecha seleccionada ya está en uso.", Severity.Error);
+
+            // Restaurar la fecha anterior
+            context.Date = elementBeforeEdit.Date;
+            StateHasChanged(); // Importante para forzar el refresco visual
+            return;
+        }
+
+        if (normalizedDate == elementBeforeEdit.Date)
+            return;
+
+        // Si no hay conflicto, se permite el cambio
+        context.Date = normalizedDate.Value;
+
+        Snackbar.Clear();
+        Snackbar.Add("Fecha actualizada correctamente.", Severity.Success);
+    }
+
+    private bool FilterFunc1(Holiday element) => FilterFunc(element, searchString);
+
+    private bool FilterFunc(Holiday element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        // Normalizar la búsqueda para evitar problemas de mayúsculas/minúsculas
+        searchString = searchString.Trim().ToLower();
+
+        // Buscar por fecha exacta en diferentes formatos
+        if (DateTime.TryParseExact(searchString, new[] { "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy/MM/dd", "dd.MM.yyyy", "MM.dd.yyyy" },
+            CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+        {
+            if (element.Date.Date == parsedDate.Date)
+                return true;
+        }
+
+        // Buscar por año
+        if (int.TryParse(searchString, out int year))
+        {
+            if (element.Date.Year == year)
+                return true;
+        }
+
+        // Buscar por mes (nombre o número)
+        DateTime parsedMonth = DateTime.MinValue;
+        int month = 0;
+
+        if (DateTime.TryParseExact(searchString, "MMMM", new CultureInfo("en-US"), DateTimeStyles.None, out parsedMonth) ||
+        DateTime.TryParseExact(searchString, "MMM", new CultureInfo("en-US"), DateTimeStyles.None, out parsedMonth) ||
+        DateTime.TryParseExact(searchString, "MMMM", new CultureInfo("es-ES"), DateTimeStyles.None, out parsedMonth) ||
+        DateTime.TryParseExact(searchString, "MMM", new CultureInfo("es-ES"), DateTimeStyles.None, out parsedMonth) ||
+        (int.TryParse(searchString, out month) && month >= 1 && month <= 12))
+        {
+            if (element.Date.Month == (parsedMonth != DateTime.MinValue ? parsedMonth.Month : month))
+                return true;
+        }
+
+        // Buscar por rango de fechas (formato: "yyyy-MM-dd to yyyy-MM-dd")
+        if (searchString.Contains("to"))
+        {
+            var parts = searchString.Split("to", StringSplitOptions.TrimEntries);
+            if (parts.Length == 2 &&
+                DateTime.TryParseExact(parts[0], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime startDate) &&
+                DateTime.TryParseExact(parts[1], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime endDate))
+            {
+                if (element.Date.Date >= startDate.Date && element.Date.Date <= endDate.Date)
+                    return true;
+            }
+        }
+
+        // Buscar por descripción
+        if (element.Description.ToLower().Contains(searchString))
+            return true;
+
+        return false;
+    }
+
+
+
+    private async void ApplyHolidaysToCalendar()
+    {
+        ShowLoading = true;
+        Snackbar.Clear();
+        Snackbar.Add("Guardando Cambios", Severity.Info);
+
+        await CalendarProductiveServices.UpdateHolidaysInYear((int)ScheduleYear, ImportedHolidays);
+        await Task.Delay(1000);
+        Snackbar.Clear();
+        Snackbar.Add("Calendario Actualizado", Severity.Success);
+
+        ShowLoading = false;
+        CommitedItems = 0;
+        RemmovedItems = 0;
+
+        StateHasChanged();
     }
 }
