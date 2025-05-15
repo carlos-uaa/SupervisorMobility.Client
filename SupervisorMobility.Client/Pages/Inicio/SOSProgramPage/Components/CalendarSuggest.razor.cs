@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
@@ -32,9 +34,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
         private Dictionary<string, string> DistributionColors = new Dictionary<string, string>();
         // Modelo para el calendario
         private List<MonthModel> CalendarMonths = new List<MonthModel>();
+        public List<Holiday> holidays { get; set; }
         bool Dev_env { get; set; }
         protected override async void OnInitialized()
         {
+            holidays = CalendarServices.GetHolidaysInService();
             Dev_env = Environment.IsDevelopment();
             DistributionsInput = string.Join(",", Dist_Manager.Where(d => d.isSelected == true).Select(d => d.distribution.Description).ToList());
             Distributions = Dist_Manager.Where(d => d.isSelected).Select(d => d.distribution.Description).ToList();
@@ -120,7 +124,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
                     if (distState.CurrentOperationIndex >= distState.Distribution.Operations.Count)
                         continue;
 
-                    if (await IsWeekend(currentDate))
+                    if (await IsWeekend(currentDate) || await IsHoliday(currentDate))
                     {
                         currentDate = currentDate.AddDays(1);
                         continue;
@@ -179,7 +183,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
             for (int day = 1; day <= lastDay.Day; day++)
             {
                 var date = new DateTime(monthStart.Year, monthStart.Month, day);
-                bool isWeekend = date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday;
+                bool isWeekend = date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday || holidays.Any(p => p.Date.Date == date.Date);
 
                 monthModel.Days.Add(new DayModel
                 {
@@ -200,7 +204,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
             while (added < workDays)
             {
                 result = result.AddDays(1);
-                if (!await IsWeekend(result))
+                if (!await IsWeekend(result) && !await IsHoliday(result))
                     added++;
             }
 
@@ -209,6 +213,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
         private async Task<bool> IsWeekend(DateTime date)
         {
             return await Task.FromResult(date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
+        }
+
+        private async Task<bool> IsHoliday(DateTime date)
+        {
+            var flag = await Task.FromResult(holidays.Any(p => p.Date.Day == date.Day && p.Date.Month == date.Month));
+            return flag;
         }
         // Modelos para el calendario
         private class MonthModel

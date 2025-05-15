@@ -15,6 +15,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         private readonly IMapper _mapper;
         private readonly ISOSReviewService SOSServices;
         private readonly IJobObservationService JobObsServices;
+        private readonly ICalendarProductiveService CalendarServices;
         //Data
         //Control de jobs Observations
         public List<JobObservationNulls> _All_SOSJobobservation { get; set; } = new();
@@ -46,6 +47,12 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         public List<Distribution> _distributions { get; set; } = new();
         public List<Operation> _All_Operations { get; set; } = new();
 
+        //Holiday JobObs
+        public List<JobObservation> JobObsInHolidays { get; set; } = new();
+        public List<Holiday> holidays { get; set; }
+
+        private JobObservation? currentExistingJob = null;
+ 
 
         public DateTime Startday { get; set; } = DateTime.Now;
         public int diasSeparate { get; set; } = 1;
@@ -54,7 +61,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         public int YearLoop { get; set; } = 0;
         public string jobCategoryStructureIds { get; set; } = "";
 
-        public SOSDataService(HttpClient http, ISOSReviewService SosInject, IMapper MapInjec, ISOSReviewService sosInject, IJobObservationService jobObsServices)
+        public SOSDataService(HttpClient http, ISOSReviewService SosInject, IMapper MapInjec, ISOSReviewService sosInject, IJobObservationService jobObsServices, ICalendarProductiveService calendarServices)
         {
             SOSServices = sosInject;
             _mapper = MapInjec;
@@ -68,6 +75,8 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             };
             _options.Converters.Add(new IntToStringConverter());
             JobObsServices = jobObsServices;
+            CalendarServices = calendarServices;
+            holidays = CalendarServices.GetHolidaysInService();
         }
 
         public async Task<AsyncVoidMethodBuilder> SetSosJobObservation(int sos, List<Distribution> _distributions, string jobCategoryStructureIds)
@@ -462,6 +471,8 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
+            JobObsInHolidays.Clear();
+            currentExistingJob = null;
 
             var selectedDistributions = Dist_Manager.Where(d => d.isSelected).Select(d => d.distribution).ToList();
 
@@ -508,6 +519,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             {
                 foreach (var distState in distributionStates)
                 {
+                    Console.WriteLine(distributionStates.First().CurrentOperationIndex);
                     // Saltar distribuciones sin operaciones pendientes
                     if (distState.CurrentOperationIndex >= distState.Distribution.Operations.Count)
                         continue;
@@ -548,7 +560,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             while (added < workDays)
             {
                 result = result.AddDays(1);
-                if (!await IsWeekend(result))
+                if (!await IsWeekend(result) && !await IsHoliday(result))
                     added++;
             }
 
@@ -558,7 +570,22 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
         private async Task<bool> IsWeekend(DateTime date)
         {
-            return await Task.FromResult(date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
+            var flag = await Task.FromResult(date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
+            if(currentExistingJob != null && flag)
+            {
+                AddToJobsInHolidayList();
+            }
+            return flag;
+        }
+
+        private async Task<bool> IsHoliday(DateTime date)
+        {
+            var flag = await Task.FromResult(holidays.Any(p => p.Date.Day == date.Day && p.Date.Month == date.Month));
+            if (currentExistingJob != null && flag)
+            {
+                AddToJobsInHolidayList();
+            }
+            return flag;
         }
 
         //   private async Task ProcessMultipleJobsDistributionOption(SOSReviewProgram _sos_plan, List<Distribution> selectedDistributions,
@@ -827,6 +854,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
         private async Task ProcessSingleOperation(SOSReviewProgram _sos_plan, Operation op, int supervisorId, int distId, List<User> SV_Manager, DateTime operationDate, List<JobObservation> availableJobs)
         {
+            currentExistingJob = null;
             var dist = _distributions.Find(d => d.DistributionId == distId);
 
             JobObservation? existingJob = availableJobs?
@@ -861,9 +889,27 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                 job.SectionIds = jobCategoryStructureIds;
                 job.IsActive = true;
 
-             
                 job.StartDate = existingJob.StartDate;
                 job.PlannedStartDate = existingJob.PlannedStartDate;
+
+                currentExistingJob = _mapper.Map<JobObservation>(job);
+
+                DateTime startDate = existingJob.StartDate.Value;
+
+                var changedDatesFlag = false;
+
+                if(await IsWeekend(startDate) || await IsHoliday(startDate)) {
+                    startDate = await FindNextAvailableDate(startDate, true, supervisorId);
+                    changedDatesFlag = true;
+                }
+
+                if (changedDatesFlag)
+                {
+                    //JobObsInHolidays.Add(clonejob);
+                    job.StartDate = startDate;
+                    job.PlannedStartDate = startDate;
+                }
+
 
                 UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: true);
                 availableJobs.Remove(existingJob);
@@ -979,7 +1025,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         }
         public async Task<DateTime> FindNextAvailableDate(DateTime startDate, bool isSuggest, int supervisorId = 0)
         {
-            int year = this.Year;
+            int year = this.Year + YearLoop;
             DateTime today = DateTime.Today;
 
             if (year < today.Year)
@@ -989,7 +1035,8 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             DateTime baseDate = (year == today.Year && startDate < today) ? today : new DateTime(year, 1, 1);
 
             // Desplazar baseDate por días hábiles (YearLoop veces)
-            DateTime searchDate = await AddWorkingDays(baseDate, YearLoop);
+            DateTime searchDate = await AddWorkingDays(baseDate, 1);
+
 
             int searchAttempts = 0;
             const int maxSearchDays = 366;
@@ -1010,7 +1057,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
                 }
 
                 // Validar si es hábil y disponible
-                if (!await IsWeekend(searchDate))
+                if (!await IsWeekend(searchDate) && !await IsHoliday(searchDate))
                 {
 
                     if (year == today.Year && searchDate < today)
@@ -1025,6 +1072,10 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                     if (!isUsed && searchDate >= DateTime.Today && searchDate >= this.Startday)
                         return searchDate;
+                }
+                else if(currentExistingJob != null)
+                {
+                    AddToJobsInHolidayList();
                 }
 
                 // Avanzar X días hábiles
@@ -1233,7 +1284,18 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             _mapper.Map(UpdatedItem, itemInService);
         }
 
+        private void ClearJobsInHolidaysList()
+        {
+            JobObsInHolidays.Clear();
+        }
 
+        private void AddToJobsInHolidayList()
+        {
+            if (!JobObsInHolidays.Contains(currentExistingJob))
+            {
+                JobObsInHolidays.Add(currentExistingJob);
+            }
+        }
     }
 
 
