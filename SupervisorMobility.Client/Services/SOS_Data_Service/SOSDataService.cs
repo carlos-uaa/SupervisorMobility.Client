@@ -4,6 +4,7 @@ using AutoMapper;
 using static SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.SOS_Details;
 using System.Diagnostics;
 using System.Collections.Generic;
+using SupervisorMobility.Client.Data.Entities;
 
 namespace SupervisorMobility.Client.Services.SOS_Data_Service
 {
@@ -76,7 +77,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             _options.Converters.Add(new IntToStringConverter());
             JobObsServices = jobObsServices;
             CalendarServices = calendarServices;
-            holidays = CalendarServices.GetHolidaysInService();
+            //holidays = CalendarServices.GetHolidaysInService();
         }
 
         public async Task<AsyncVoidMethodBuilder> SetSosJobObservation(int sos, List<Distribution> _distributions, string jobCategoryStructureIds)
@@ -466,11 +467,13 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             this.JobsPorDia = JobsPorDia;
             this.Year = Startday.Year;
             this.YearLoop = 0;
+            this.holidays = await CalendarServices.GetHolidaysInService(Year);
 
 
 
             _All_Suggested_SOSJobobservation?.Clear();
             Suggested_SOS_Registers_UserOperationRelationship?.Clear();
+
             JobObsInHolidays.Clear();
             currentExistingJob = null;
 

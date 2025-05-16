@@ -18,6 +18,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private PAT? _pat { get; set; } = new();
         private List<Distribution> _distributions { get; set; } = new();
+        private List<JobObservation> _JobsInMonth { get; set; } = new();
         private List<User> _UserOfArea { get; set; } = new();
         private List<ILULevel> _LevelsILU { get; set; } = new();
         private Dictionary<(int, int), List<ILURegister>?> ILU_Matrix { get; set; } = new Dictionary<(int, int), List<ILURegister>?>();

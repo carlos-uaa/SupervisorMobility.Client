@@ -7,6 +7,7 @@ using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 using System.Collections.Generic;
 using Microsoft.Extensions.Options;
+using DocumentFormat.OpenXml.Bibliography;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -2465,7 +2466,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
         {
             if (SOSDataServices.JobObsInHolidays.Any())
             {
-                var dialog = DialogService.Show<HolidayDialog>(null, JOOptions);
+                var parameters = new DialogParameters { { "Year", Startday.Year } };
+                var dialog = DialogService.Show<HolidayDialog>(null,parameters, JOOptions);
                 var result = await dialog.Result;
             }
         }
