@@ -14,6 +14,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             int SOSAnualId = 0, int idUser = 0);
 
         Task<List<JobObservation>> GetAllNextYearJobsObservations(int plantId, int areaId, int year);
+        Task<List<JobObservation>> GetAllTrainingJobsObservations(int plantId, int areaId, int month);
         Task<(int Total, List<JobObservation>JobObservations, JOCountPaginationDto Count)> GetAllJobObservationsByFilters(DateTime startDate, DateTime endDate, int JobObsId, int plantId,
             int areaId, int distributionId, int operationId, int supervisorId, int status, int userId, int typeId,
             string searchString, int page, int entries, int? sortO, string? sortL);

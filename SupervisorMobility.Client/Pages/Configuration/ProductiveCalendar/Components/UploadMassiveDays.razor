@@ -6,19 +6,19 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 
-    <style>
-        .highlight-row {
+<style>
+    .highlight-row {
     background-color: #e0f7fa; /* Color de fondo para resaltar */
     color: #00796b; /* Color del texto */
     font-weight: bold; /* Opcional: texto en negrita */
-}
-    </style>
+    }
+</style>
 
 <MudPaper Class="pa-4 pb-4 mx-5" Style="max-height: 75vh; width:40%">
     <MudText Typo="Typo.h6">Carga de Días Festivos</MudText>
 
     <div class="d-flex flex-column gap-2 mt-2 my-3">
-  
+
         <MudFileUpload Accept=".json, .csv" T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
         @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
             <ButtonTemplate Context="DragAndDrop">
@@ -34,7 +34,7 @@
                                 case "json":
                                     <img src="Images/json.png" Height="70" Width="70" />
                                     break; 
-                                    case "csv":
+                                case "csv":
                                     <img src="Images/csv.png" Height="70" Width="70" />
                                     break;
                                 default:
@@ -50,7 +50,7 @@
         </MudFileUpload>
 
         <div>
-            @if(ImportedHolidays.Count > 0){
+            @if(ImportedHolidays.Count > 0 && !DuplicatesHolidays){
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyHolidaysToCalendar">
                     Añadir días al calendario
                 </MudButton>
@@ -65,30 +65,7 @@
 }
 else
 {
-    <MudTable Items="ImportedHolidays" Dense="true" FixedHeader Style="max-height: 75vh" Height="70dvh" RowClassFunc="GetRowClass">
-        <HeaderContent>
-            <MudTh>Estado</MudTh>
-            <MudTh>Fecha</MudTh>
-            <MudTh>Descripción</MudTh>
-            <MudTh></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>
-                @if (Holidays.Any(h => h.Date.Date == context.Date.Date))
-                {
-                    <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Info" Text="Ya existe" />
-                }
-            </MudTd>
-                <MudTd>
-                    @context.Date.ToString("yyyy-MM-dd")</MudTd>
-                <MudTd>
-                    @context.Description
-                </MudTd>
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" OnClick="@(() => RemoveHoliday(context))" />
-                </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <TableHolidays DuplicateItem="DuplicateItem" ImportedHolidays="ImportedHolidays" ScheduleYear="ScheduleYear" Upload="true"></TableHolidays>
 }
 
 
@@ -119,6 +96,15 @@ else
     private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
     public bool ShowLoading = true;
 
+
+    public bool DuplicatesHolidays = false;
+
+
+    void DuplicateItem(bool value)
+    {
+        DuplicatesHolidays = value;
+    }
+
     private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true };
 
     protected override async Task OnInitializedAsync()
@@ -145,34 +131,7 @@ else
     }
 
 
-      private string GetRowClass(Holiday context, int row)
-    {
-        // Verifica si el elemento está en la lista Holidays
-        return Holidays.Any(h => h.Date.Date == context.Date.Date) ? "highlight-row" : string.Empty;
-    }
-
-    private async Task LoadFromJson(InputFileChangeEventArgs e)
-    {
-        var file = e.File;
-        if (file != null)
-        {
-            using var stream = file.OpenReadStream();
-            using var reader = new StreamReader(stream);
-            var content = await reader.ReadToEndAsync();
-            try
-            {
-                ImportedHolidays = JsonSerializer.Deserialize<List<Holiday>>(content,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
-
-                ImportedHolidays.ForEach(h => h.HolidayId = ((ImportedHolidays.IndexOf(h) + 1) * -1));
-            }
-            catch
-            {
-                // Manejar error
-            }
-        }
-    }
-
+   
     private string FileName;
     private string ErrorMessageToDisplay;
     private string FileErrorMesage;
@@ -242,6 +201,45 @@ else
     {
         DragClass = DefaultDragClass;
     }
+    private string GetRowClass(Holiday context, int row)
+    {
+        // Verifica si el elemento está en la lista Holidays
+        return Holidays.Any(h => h.Date.Date == context.Date.Date) ? "highlight-row" : string.Empty;
+    }
+
+    private async Task LoadFromJson(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+            try
+            {
+                ImportedHolidays = JsonSerializer.Deserialize<List<Holiday>>(content,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+
+                ImportedHolidays.ForEach(h => h.HolidayId = ((ImportedHolidays.IndexOf(h) + 1) * -1));
+                //verifica que no exista ningun dia repetido en Holidays y hacer true la bander duplicateholidays
+                DuplicatesHolidays = ImportedHolidays.Any(h => Holidays.Any(h2 => h.Date.Date == h2.Date.Date));
+
+                Snackbar.Clear();
+                Snackbar.Add("Archivo JSON cargado correctamente", Severity.Success);
+
+                if (DuplicatesHolidays)
+                {
+                    Snackbar.Add("Los días marcados ya existen en el calendario, eliminelos o editelos.", Severity.Warning);
+                }
+
+
+            }
+            catch
+            {
+                // Manejar error
+            }
+        }
+    }
 
     private async Task LoadFromCsv(InputFileChangeEventArgs e)
     {
@@ -275,6 +273,15 @@ else
                         });
                 }
             }
+
+            DuplicatesHolidays = ImportedHolidays.Any(h => Holidays.Any(h2 => h.Date.Date == h2.Date.Date));
+            Snackbar.Clear();
+            Snackbar.Add("Archivo CSV cargado correctamente", Severity.Success);
+
+            if (DuplicatesHolidays)
+            {
+                Snackbar.Add("Los días marcados ya existen en el calendario, eliminelos o editelos.", Severity.Warning);
+            }
         }
     }
 
@@ -282,6 +289,10 @@ else
     private void RemoveHoliday(Holiday holiday)
     {
         ImportedHolidays.Remove(holiday);
+        Snackbar.Clear();
+        Snackbar.Add("Dia eliminado correctamente", Severity.Info);
+        DuplicatesHolidays = ImportedHolidays.Any(h => Holidays.Any(h2 => h.Date.Date == h2.Date.Date));
+
     }
 
     private async void ApplyHolidaysToCalendar()
