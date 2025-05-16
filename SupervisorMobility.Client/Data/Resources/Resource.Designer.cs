@@ -4480,6 +4480,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Drag and drop files here or click.
+        /// </summary>
+        public static string UploadHolidaysDrag {
+            get {
+                return ResourceManager.GetString("UploadHolidaysDrag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Will the SSV&apos;s approval be needed to finish the Job Observation?.
         /// </summary>
         public static string UseOfSSV {

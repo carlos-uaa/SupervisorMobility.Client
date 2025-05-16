@@ -1,15 +1,61 @@
-﻿@inject ICalendarProductiveService CalendarProductiveServices
+﻿@using MudBlazor
+@using System.Text.RegularExpressions
 
-<MudPaper Class="pa-4 mb-4">
+@inject ICalendarProductiveService CalendarProductiveServices
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+<style>
+    .highlight-row {
+    background-color: #e0f7fa; /* Color de fondo para resaltar */
+    color: #00796b; /* Color del texto */
+    font-weight: bold; /* Opcional: texto en negrita */
+    }
+</style>
+
+<MudPaper Class="pa-4 pb-4 mx-5" Style="max-height: 75vh; width:40%">
     <MudText Typo="Typo.h6">Carga de Días Festivos</MudText>
 
-    <div class="d-flex flex-column gap-2 mt-2">
-        <label>Importar desde JSON:</label>
-        <InputFile OnChange="LoadFromJson" accept=".json" />
+    <div class="d-flex flex-column gap-2 mt-2 my-3">
 
-        <label>Importar desde CSV:</label>
-        <InputFile OnChange="LoadFromCsv" accept=".csv" />
+        <MudFileUpload Accept=".json, .csv" T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChanged" Hidden="false" Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+        @ondragenter="@SetDragClass" @ondragleave="@ClearDragClass" @ondragend="@ClearDragClass">
+            <ButtonTemplate Context="DragAndDrop">
+                <MudPaper Height="250px" Outlined="true" Class="@DragClass">
+                    <MudText Typo="Typo.h6">@Localizer["UploadHolidaysDrag"]</MudText>
+                    @foreach (var file in fileNames)
+                    {
+                        <MudItem style="text-align:center" Class="d-flex justify-center flex-column align-content-center align-center">
+                            <MudText Typo="Typo.h6">@file.message</MudText>
 
+                            @switch (file.ftype)
+                            {
+                                case "json":
+                                    <img src="Images/json.png" Height="70" Width="70" />
+                                    break; 
+                                case "csv":
+                                    <img src="Images/csv.png" Height="70" Width="70" />
+                                    break;
+                                default:
+                                    <img src="Images/error.png" Height="70" Width="70" />
+                                    break;
+                            }
+
+                            <MudChip Color="Color.Dark" Text="@file.name" />
+                        </MudItem>
+                    }
+                </MudPaper>
+            </ButtonTemplate>
+        </MudFileUpload>
+
+        <div>
+            @if(ImportedHolidays.Count > 0 && !DuplicatesHolidays){
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyHolidaysToCalendar">
+                    Añadir días al calendario
+                </MudButton>
+            }
+        </div>
     </div>
 </MudPaper>
 
@@ -19,28 +65,147 @@
 }
 else
 {
-    <MudTable Items="ImportedHolidays" Dense="true">
-        <HeaderContent>
-            <MudTh>Fecha</MudTh>
-            <MudTh>Descripción</MudTh>
-            <MudTh></MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Date.ToString("yyyy-MM-dd")</MudTd>
-            <MudTd>@context.Description</MudTd>
-            <MudTd>
-                <MudIconButton Icon="mdi-delete" Color="Color.Error" OnClick="@(() => RemoveHoliday(context))" />
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+    <TableHolidays DuplicateItem="DuplicateItem" ImportedHolidays="ImportedHolidays" ScheduleYear="ScheduleYear" Upload="true"></TableHolidays>
 }
-<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyHolidaysToCalendar">
-    Añadir días
-</MudButton>
+
+
+<MudDialog IsVisible="ShowLoading" Options="dialogOptions">
+    <DialogContent>
+        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+            <ItemTemplate>
+                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                    </MudItem>
+                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                </div>
+            </ItemTemplate>
+        </MudCarousel>
+    </DialogContent>
+</MudDialog>
 
 @code {
-    private List<Holiday> ImportedHolidays = new List<Holiday>();
+    [Parameter]
+    public int? ScheduleYear { get; set; } 
 
+    private List<Holiday> ImportedHolidays = new List<Holiday>();
+    private List<Holiday> Holidays = new List<Holiday>();
+
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
+    public bool ShowLoading = true;
+
+
+    public bool DuplicatesHolidays = false;
+
+
+    void DuplicateItem(bool value)
+    {
+        DuplicatesHolidays = value;
+    }
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+        if (ScheduleYear == null)
+        {
+            ScheduleYear = DateTime.Now.Year;
+        }
+        Holidays = await CalendarProductiveServices.GetHolidaysInService((int)ScheduleYear);
+        ShowLoading = false;
+
+    }
+
+
+   
+    private string FileName;
+    private string ErrorMessageToDisplay;
+    private string FileErrorMesage;
+    private IBrowserFile? FileSource;
+    private bool ToCreate = false;
+
+    private static string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
+    private string DragClass = DefaultDragClass;
+    private List<FileToDisplay> fileNames = new List<FileToDisplay>();
+
+    private class FileToDisplay
+    {
+        public string name { get; set; }
+        public string ftype { get; set; }
+        public string message { get; set; }
+    }
+
+    private async void OnInputFileChanged(InputFileChangeEventArgs e)
+    {
+        await Clear();
+        FileName = e.File.Name;
+
+
+        if (FileName.Contains("json"))
+        {
+            FileErrorMesage = string.Empty;
+            FileSource = e.File;
+            fileNames.Add(new FileToDisplay() { name = FileName, ftype = "json" });
+            ToCreate = true;
+            await LoadFromJson(e);
+        }
+        else if (FileName.Contains("csv"))
+        {
+            FileErrorMesage = string.Empty;
+            FileSource = e.File;
+            fileNames.Add(new FileToDisplay() { name = FileName, ftype = "csv" });
+            ToCreate = true;
+            await LoadFromCsv(e);
+        }
+        else
+        {
+            fileNames.Add(new FileToDisplay() { name = FileName, ftype = "otro", message = "This not a PDF file " });
+            FileErrorMesage = "This not a PDF File";
+            FileName = string.Empty;
+            FileSource = null;
+            ToCreate = false;
+        }
+
+
+        StateHasChanged();
+    }
+
+    private async Task Clear()
+    {
+        fileNames.Clear();
+        ClearDragClass();
+        await Task.Delay(100);
+    }
+
+
+        private void SetDragClass()
+    {
+        DragClass = $"{DefaultDragClass} mud-border-primary";
+    }
+
+    private void ClearDragClass()
+    {
+        DragClass = DefaultDragClass;
+    }
+    private string GetRowClass(Holiday context, int row)
+    {
+        // Verifica si el elemento está en la lista Holidays
+        return Holidays.Any(h => h.Date.Date == context.Date.Date) ? "highlight-row" : string.Empty;
+    }
 
     private async Task LoadFromJson(InputFileChangeEventArgs e)
     {
@@ -54,6 +219,20 @@ else
             {
                 ImportedHolidays = JsonSerializer.Deserialize<List<Holiday>>(content,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+
+                ImportedHolidays.ForEach(h => h.HolidayId = ((ImportedHolidays.IndexOf(h) + 1) * -1));
+                //verifica que no exista ningun dia repetido en Holidays y hacer true la bander duplicateholidays
+                DuplicatesHolidays = ImportedHolidays.Any(h => Holidays.Any(h2 => h.Date.Date == h2.Date.Date));
+
+                Snackbar.Clear();
+                Snackbar.Add("Archivo JSON cargado correctamente", Severity.Success);
+
+                if (DuplicatesHolidays)
+                {
+                    Snackbar.Add("Los días marcados ya existen en el calendario, eliminelos o editelos.", Severity.Warning);
+                }
+
+
             }
             catch
             {
@@ -73,7 +252,7 @@ else
 
             string line;
             bool skipHeader = true;
-
+            int idx = -1;
             while ((line = await reader.ReadLineAsync()) != null)
             {
                 if (skipHeader)
@@ -88,10 +267,20 @@ else
                 {
                     ImportedHolidays.Add(new Holiday
                         {
+                            HolidayId = --idx,
                             Date = date,
                             Description = parts[1]
                         });
                 }
+            }
+
+            DuplicatesHolidays = ImportedHolidays.Any(h => Holidays.Any(h2 => h.Date.Date == h2.Date.Date));
+            Snackbar.Clear();
+            Snackbar.Add("Archivo CSV cargado correctamente", Severity.Success);
+
+            if (DuplicatesHolidays)
+            {
+                Snackbar.Add("Los días marcados ya existen en el calendario, eliminelos o editelos.", Severity.Warning);
             }
         }
     }
@@ -100,11 +289,19 @@ else
     private void RemoveHoliday(Holiday holiday)
     {
         ImportedHolidays.Remove(holiday);
+        Snackbar.Clear();
+        Snackbar.Add("Dia eliminado correctamente", Severity.Info);
+        DuplicatesHolidays = ImportedHolidays.Any(h => Holidays.Any(h2 => h.Date.Date == h2.Date.Date));
+
     }
 
-     private void ApplyHolidaysToCalendar()
+    private async void ApplyHolidaysToCalendar()
     {
-        var holidayDates = CalendarProductiveServices.GetHolidaysInService();
+        ShowLoading = true;
+        Snackbar.Clear();
+        Snackbar.Add("Guardando Cambios", Severity.Info);
+
+        var holidayDates = await CalendarProductiveServices.GetHolidaysInService((int)ScheduleYear);
 
         // agregar no existan en la lista de feriados
         foreach (var holiday in ImportedHolidays)
@@ -114,7 +311,25 @@ else
                 CalendarProductiveServices.AddHolidayToService(holiday);
             }
         }
+
+        CalendarProductiveServices.UpdateHolidaysInYear((int)ScheduleYear);
+
         // Opcional: Limpiar la lista de días importados después de aplicarlos
+        Clear();
+
         ImportedHolidays.Clear();
+        Snackbar.Clear();
+        Snackbar.Add("Calendario Actualizado", Severity.Success);
+
+        ShowLoading = false;
+        StateHasChanged();
     }
+
+    private string GetRowClass(Holiday context)
+{
+    // Verifica si el elemento ya existe en el servicio (duplicado)
+    return Holidays.Any(h => h.Date.Date == context.Date.Date)
+        ? "highlight-row" // esta clase se define en tu CSS
+        : string.Empty;
+}
 }

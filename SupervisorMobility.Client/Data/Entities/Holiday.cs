@@ -5,9 +5,10 @@ namespace SupervisorMobility.Client.Data.Entities
 {
     public class Holiday
     {
-        public int Id { get; set; }
-            public DateTime Date { get; set; }
-            public string Description { get; set; }
-            public bool IsNationalHoliday { get; set; } // opcional, por si luego necesitas distinguir
+        public int HolidayId { get; set; }
+        public DateTime Date { get; set; }
+        public string Description { get; set; }
+        public bool IsNationalHoliday { get; set; } // opcional, por si luego necesitas distinguir
+        public bool IsActive { get; set; }
     }
 }

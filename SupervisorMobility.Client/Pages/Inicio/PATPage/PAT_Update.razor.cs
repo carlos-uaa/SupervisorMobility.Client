@@ -134,7 +134,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 await GetUserAsync();
 
                 _pat = await PATsServices.getPat(patID);
-                FilterUserYear();
+                await Task.Run( () => { FilterUserYear(); });
 
                 await PrepareDataTable();
                 StateHasChanged();
