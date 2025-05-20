@@ -7,6 +7,9 @@ using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 using System.Security.AccessControl;
 using SupervisorMobility.Client.Pages.Configuration.PlantPage;
+using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
+using SupervisorMobility.Client.Pages.Inicio.JobObservationPage;
+using DocumentFormat.OpenXml.Vml.Spreadsheet;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -16,6 +19,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         [Parameter]
         public int patID { get; set; }
 
+        [Inject] private IDialogService DialogService { get; set; }
         private PAT? _pat { get; set; } = new();
         private List<Distribution> _distributions { get; set; } = new();
         private List<JobObservation> _JobsInMonth { get; set; } = new();
@@ -897,6 +901,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
 
 
+            //_JobsInMonth = await JobServices.GetAllTrainingJobsObservations(_pat.PlantId, _pat.AreaId, monthIndex);
             FilterUserMonth();
            
             StateHasChanged();
@@ -950,6 +955,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         }
         #endregion
 
+        IDialogReference JobDetailsDialog;
+        //private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        int JobObservationId { get; set; } = 0;
+        bool visibleJobDetails { get; set; } = false;
+        private async void OpenJobDetailsDialog(int? jobId = 0)
+        {
+            JobObservationId = (int)jobId;
+            if (jobId != 0)
+            {
+                visibleJobDetails = true;
+                //var parameters = new DialogParameters { { "jobobservationId", jobobservationId } };
+                //JobDetailsDialog = await DialogService.ShowAsync<JobObservationDetails>("", parameters, dialogOptions);
+                //await JobDetailsDialog.Result;
+            }
+        }
+
+        void Close() => visibleJobDetails = false;
     }//end class pat details
 
 

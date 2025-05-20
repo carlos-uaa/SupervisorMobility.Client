@@ -42,7 +42,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
             holidays = await CalendarServices.GetHolidaysInService(Year);
             Dev_env = Environment.IsDevelopment();
             DistributionsInput = string.Join(",", Dist_Manager.Where(d => d.isSelected == true).Select(d => d.distribution.Description).ToList());
-            Distributions = Dist_Manager.Where(d => d.isSelected).Select(d => d.distribution.Description).ToList();
+            Distributions = Dist_Manager.Where(d => d.isSelected == true).Select(d => d.distribution.Description).ToList();
             GenerateRandomColors();
             await GenerateCalendar();
         }
