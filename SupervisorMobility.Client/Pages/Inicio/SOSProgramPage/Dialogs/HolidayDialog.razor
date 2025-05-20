@@ -5,69 +5,75 @@
 
 <MudDialog Class="no-padding-dialog">
     <DialogContent>
-        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4 justify-space-between px-6">
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                <MudIcon Icon="@Icons.Material.Outlined.EventNote" Color="Color.Primary" />
-                <MudText Typo="Typo.h6">@Localizer["ReassignedTitle"]</MudText>
-            </MudStack>
-            <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="() => MudDialog.Cancel()" />
-        </MudStack>
-        <MudPaper Class="px-6 py-2 mb-4" Elevation="1" Style="background-color: #fff3cd;" Square="true">
-            <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="1">
-                <MudIcon Icon="@Icons.Material.Outlined.Warning" Color="Color.Warning" />
-                <MudStack Spacing="1">
-                    <MudText Style="color: #b8860b; font-weight:bold" Typo="Typo.subtitle1">
-                        @Localizer["ScheduledSubtitle1"]
-                    </MudText>
-                    <MudText Style="color: #c99800;" Typo="Typo.body2">
-                        @Localizer["ScheduledSubtitle2"]
-                    </MudText>
+        @if (isLoading)
+        {
+            <MudProgressCircular Indeterminate="true"/>
+        }
+        else
+        {
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4 justify-space-between px-6">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Outlined.EventNote" Color="Color.Primary" />
+                    <MudText Typo="Typo.h6">@Localizer["ReassignedTitle"]</MudText>
                 </MudStack>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="() => MudDialog.Cancel()" />
             </MudStack>
-        </MudPaper>
-        <div class="d-block px-6 py-3 ">
-            <MudText Class="mb-2" Style="font-weight:bold;" Typo="Typo.subtitle2">@Localizer["DetectedJobs"] (@OcupiedDates.Count)</MudText>
-            <MudPaper Class="pa-0" Elevation="0" Style="max-height: 300px; overflow-y:auto;">
-                @foreach (var group in groupedByDayMonth)
-                {
-                    Holiday? holiday = holidays.FirstOrDefault(p => group.Key.Day == p.Date.Day && group.Key.Month == p.Date.Month);
-                    <MudStack Spacing="0">
-                        <MudStack Row="true" Class="justify-space-between pa-2 " Style="@($"background:{Colors.Indigo.Lighten5};")" AlignItems="AlignItems.Center">
-                            <MudText Typo="Typo.caption" Style="font-weight:bold;">
-                                @if (holiday != null)
-                                {
-                                    <span>@holiday?.Date.ToString("dd - MMMM")</span>
-                                }
-                                else
-                                {
-                                    <span>@group.First().StartDate.Value.ToString("dd - MMMM")</span>
-                                }
-                            </MudText>
-                            <MudChip Color="Color.Warning" Variant="Variant.Outlined">
-                                @if (holiday != null)
-                                {
-                                    <span>@holiday.Description</span>
-                                }
-                                else
-                                {
-                                    <span>Weekend</span>
-                                }
-                            </MudChip>
-                        </MudStack>
-                        @foreach (var (job,index) in group.Select((value, i)=>(value,i)))
-                        {
-                            <MudCard Class="pa-2">
-                                <MudStack Row="true" AlignItems="AlignItems.Center">
-                                    <MudAvatar Style="@($"background:{Colors.Indigo.Lighten3};")">@(index+1)</MudAvatar>
-                                    @job.Distribution.Description
-                                </MudStack>
-                            </MudCard>
-                        }
+            <MudPaper Class="px-6 py-2 mb-4" Elevation="1" Style="background-color: #fff3cd;" Square="true">
+                <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="1">
+                    <MudIcon Icon="@Icons.Material.Outlined.Warning" Color="Color.Warning" />
+                    <MudStack Spacing="1">
+                        <MudText Style="color: #b8860b; font-weight:bold" Typo="Typo.subtitle1">
+                            @Localizer["ScheduledSubtitle1"]
+                        </MudText>
+                        <MudText Style="color: #c99800;" Typo="Typo.body2">
+                            @Localizer["ScheduledSubtitle2"]
+                        </MudText>
                     </MudStack>
-                }
+                </MudStack>
             </MudPaper>
-        </div>
-        
+            <div class="d-block px-6 py-3 ">
+                <MudText Class="mb-2" Style="font-weight:bold;" Typo="Typo.subtitle2">@Localizer["DetectedJobs"] (@OcupiedDates.Count)</MudText>
+                <MudPaper Class="pa-0" Elevation="0" Style="max-height: 300px; overflow-y:auto;">
+                    @foreach (var group in groupedByDayMonth)
+                    {
+                        Holiday? holiday = holidays.FirstOrDefault(p => group.Key.Day == p.Date.Day && group.Key.Month == p.Date.Month);
+                        <MudStack Spacing="0">
+                            <MudStack Row="true" Class="justify-space-between pa-2 " Style="@($"background:{Colors.Indigo.Lighten5};")" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.caption" Style="font-weight:bold;">
+                                    @if (holiday != null)
+                                    {
+                                        <span>@holiday?.Date.ToString("dd - MMMM")</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@group.First().StartDate.Value.ToString("dd - MMMM")</span>
+                                    }
+                                </MudText>
+                                <MudChip Color="Color.Warning" Variant="Variant.Outlined">
+                                    @if (holiday != null)
+                                    {
+                                        <span>@holiday.Description</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Weekend</span>
+                                    }
+                                </MudChip>
+                            </MudStack>
+                            @foreach (var (job, index) in group.Select((value, i) => (value, i)))
+                            {
+                                <MudCard Class="pa-2">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                                        <MudAvatar Style="@($"background:{Colors.Indigo.Lighten3};")">@(index + 1)</MudAvatar>
+                                        @job.Distribution.Description
+                                    </MudStack>
+                                </MudCard>
+                            }
+                        </MudStack>
+                    }
+                </MudPaper>
+            </div>
+        }
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Primary" OnClick="()=>MudDialog.Close()">@Localizer["Continue"]</MudButton>
@@ -86,6 +92,8 @@
 
     private List<IGrouping<(int Month, int Day), JobObservation>> groupedByDayMonth;
 
+    bool isLoading = true;
+
     protected async override Task OnInitializedAsync()
     {
         OcupiedDates = DataService.JobObsInHolidays;
@@ -98,6 +106,8 @@
             .ThenBy(g => g.Key.Day)
             .ToList();
         holidays = await CalendarServices.GetHolidaysInService(Year);
+
+        isLoading = false;
     }
 
 }
