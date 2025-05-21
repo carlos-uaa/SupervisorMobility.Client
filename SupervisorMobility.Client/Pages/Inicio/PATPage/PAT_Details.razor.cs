@@ -719,7 +719,18 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         #endregion
 
 
+        int JobObservationId { get; set; } = 0;
+        bool visibleJobDetails { get; set; } = false;
+        private async void OpenJobDetailsDialog(int? jobId = 0)
+        {
+            if (jobId.HasValue && jobId.Value != 0)
+            {
+                JobObservationId = jobId.Value;
+                visibleJobDetails = true;
+            }
+        }
 
+        void Close() => visibleJobDetails = false;
 
     }//end class pat details
 

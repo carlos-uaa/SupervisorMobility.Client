@@ -12,7 +12,7 @@
 @inject IPATService PATsServices
 @inject IHCIService HCIServices
 @inject IJSRuntime JSRuntime
-@inject IILUService ILUServices
+@inject IILUService ILUServices 
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
@@ -338,8 +338,8 @@
                                 @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
                                 <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
                                 <Virtualize Items="_UserOfArea">
+                                    <th>MES</th>
                                     <th>Nivel</th>
-                                    <th>Fecha</th>
                                 </Virtualize>
                                 <th style="min-width: 8vw;">
                                     <MudInput T="int" Class="ml-2" @bind-Value="countUserO" ReadOnly Style="max-width: 3vw;" /> Ops.
@@ -479,6 +479,9 @@
                                                         @if (latestContext != null)
                                                         {
                                                             <tr style="border: none; display: flex; justify-content: space-between;">
+                                                                <td style="border: none">
+                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper().Replace(".", "")
+                                                                </td>
                                                                 @if (ILULevelNumber != "§")
                                                                 {
                                                                     string imageSrc = "";
@@ -527,17 +530,14 @@
                                                                         </div>
                                                                     </td>
                                                                 }
-                                                                <td style="border: none">
-                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper().Replace(".", "")
-                                                                </td>
                                                             </tr>
                                                         }
                                                         else
                                                         {
                                                             <tr style="border: none; display: flex; justify-content: space-between;">
-                                                                <td colspan="2">
-                                                                </td>
                                                                 <td style="border: none">
+                                                                </td>
+                                                                <td colspan="2">
                                                                 </td>
                                                             </tr>
                                                         }
@@ -881,8 +881,8 @@
                                     @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
                                     <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
                             <Virtualize Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                        <th>Periodo</th>
                                         <th>Nivel</th>
-                                        <th>Fecha</th>
                                     </Virtualize>
                                     <th style="min-width: 8vw;">
                                         <MudInput T="int" Class="ml-2" @bind-Value="countUserO" ReadOnly Style="max-width: 3vw;" /> Ops.
@@ -1042,6 +1042,18 @@
                                                             @if (latestContext != null)
                                                             {
                                                                 <tr style="border: none; display: flex; justify-content: space-between;">
+                                                                    <td style="border: none">
+                                                                        @if (latestContext != null && latestContext.AcquisitionDate.Value.Month == _yearMonth.Value.Month)
+                                                                        {
+                                                                            <MudTooltip Text="@Localizer["jobObservationDetails"]" @onclick="() => OpenJobDetailsDialog(latestContext.JobObservationId)" @ontouchend="() => OpenJobDetailsDialog(latestContext.JobObservationId)">
+                                                                                <div>
+                                                                                    @latestContext.AcquisitionDate?.ToString("dd").ToUpper().Replace(".", "")
+                                                                                    <MudDivider></MudDivider>
+                                                                                    @latestContext.EndDate?.ToString("dd").ToUpper().Replace(".", "")
+                                                                                </div>
+                                                                            </MudTooltip>
+                                                                        }
+                                                                    </td>
                                                                     @if (ILULevelNumber != "§")
                                                                     {
                                                                         string imageSrc = "";
@@ -1090,9 +1102,6 @@
                                                                             </div>
                                                                         </td>
                                                                     }
-                                                                    <td style="border: none">
-                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper().Replace(".", "")
-                                                                    </td>
                                                                 </tr>
                                                             }
                                                             else 
@@ -1620,6 +1629,50 @@ else
         <MudButton Color="Color.Info" OnClick="CloseHistory_OperationILU">@Localizer["close"]</MudButton>
     </DialogActions>
 </MudDialog>
+
+  <MudDialog DisableSidePadding="false" @bind-IsVisible="visibleJobDetails" Options="dialogOptions">
+        <DialogContent>
+            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+            <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationDetails JobObservationId="JobObservationId"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationDetails>
+            </MudContainer>
+        </DialogContent>
+        <DialogActions>
+           @*  @if (_jobObservation != null)
+            {
+
+                @if ((_jobObservation.Status == 1 ) && user.UserType != 4)
+                {
+                  <MudButton OnClick="()=> OpenChangeOperations()" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.Assignment" Color="Color.Secondary" Disabled="@(_jobObservation.Status == 6)"> 
+                        @if (_jobObservation.Operations.Count() > 0)
+                                        {
+                                            <MudText>
+                                                Edit Operation
+                                            </MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText>
+                                                Select Operation
+                                            </MudText>
+                                        }
+                                    </MudButton>
+                }
+                @if ((_jobObservation.Status == 1 || _jobObservation.Status == 3) && user.UserType != 4)
+                {
+                    <MudButton StartIcon="@Icons.Material.Filled.DateRange" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => OpenCommentDialog())">@Localizer["changeDate"]</MudButton>
+                }
+                @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
+                {
+                    <MudButton @onclick="(() => EditJobObservation(jobId))" Color="Color.Info" EndIcon="@Icons.Material.Filled.Edit">@Localizer["edit"]</MudButton>
+                }
+            }
+            else
+            {
+                <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Class="my-7" />
+            } *@
+            <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+        </DialogActions>
+    </MudDialog>
 
 
 <script>
