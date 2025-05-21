@@ -55,13 +55,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             {
                 if(userId != 0)
                 {
-                    _hci.User = await UsrsService.GetUser(userId);
+                    _hci.User = await UsrsService.GetUserAndCollection(userId);
                     _hci.UserId = userId;
                     _hci.Transactions = new List<HCITransaction>();
                     _hci.Categories = new List<HCICategory>();
                     _hci.Commentaries = new List<Commentary>();
                     _hci.CareerPaths = new List<UserCareerPath>();
-                    _hci.ILUs = new List<ILURegister>();
+                    if (_hci.User.ILURegisers.Any())
+                    {
+                        expertise = _hci.ILUs = _hci.User.ILURegisers.ToList();
+                    }
+                    else
+                    {
+                        _hci.ILUs = new List<ILURegister>();
+                    }
                 }
                 else
                 {
@@ -96,6 +103,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
 
             if (HCIID == null)
             {
+                _hci.ILUs = new();
                 if (await HCIService.CreateHCI(_hci))
                 {
                     Snackbar.Add("Created succesfully", Severity.Success);
