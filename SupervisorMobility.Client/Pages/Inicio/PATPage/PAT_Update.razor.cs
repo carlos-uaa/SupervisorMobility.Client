@@ -210,7 +210,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             _LevelsILU = await ILUServices.GetLevelsILU();
             _distributions = await DistributionsServices.GetDistributions(_pat.PlantId, _pat.AreaId);
-            foreach(User sv in _pat.Supervisors)
+            foreach (User sv in _pat.Supervisors)
             {
                 _UserOfArea.AddRange(await UsersServices.GetSubordinates(sv.UserId));
                 _UserOfArea.Insert(0, sv);
@@ -235,8 +235,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
 
             foreach (var patSubordinate in _pat.PatSubordinates)
-            { 
-               
+            {
+
 
                 // Si el usuario no está en _UserOfArea y no tiene fecha final, asignarla
                 if (!_UserOfArea.Any(user => user.UserId == patSubordinate.UserId) && patSubordinate.EndDate == null)
@@ -258,31 +258,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
             StateHasChanged();
 
-
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(_pat.HistoricalAbility))
-                {
-                    var parsedData = JsonSerializer.Deserialize<List<Dictionary<string, Dictionary<string, double>>>>(_pat.HistoricalAbility);
-
-                    if (parsedData == null || parsedData.Count != 12)
-                        throw new InvalidOperationException("El JSON debe contener datos para exactamente 12 meses.");
-
-                    for (int i = 0; i < parsedData.Count; i++)
-                    {
-                        var monthKey = parsedData[i].Keys.First();
-                        var monthData = parsedData[i][monthKey];
-
-                        monthsDistributionPercentage[i] = monthData.ContainsKey("OR_O") && monthData["OR_O"] != 0.0 ? monthData["OR_O"] : (CalculateDistributionPercentageMonth(i+1) ?? null);
-                        monthsUsersPercentage[i] = monthData.ContainsKey("OR_P") && monthData["OR_P"] != 0.0 ? monthData["OR_P"] : (CalculateUserPercentageMonth(i+1) ?? null);
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error preparando los datos: {ex.Message}");
-            }
+            LoadHistoricalAbility();
 
             foreach (var op in _distributions)
             {
@@ -305,7 +281,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 }
             }
 
-            if(_pat.PatDistributionComments is null)
+            if (_pat.PatDistributionComments is null)
             {
                 _pat.PatDistributionComments = new List<PatDistributionComment>();
             }
@@ -366,12 +342,40 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 }
             }
 
-           
+
 
             ShowTable = true;
             StateHasChanged();
             await JSRuntime.InvokeVoidAsync("blazorUtils.setDynamicLeft");
 
+            
+        }
+        void LoadHistoricalAbility()
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(_pat.HistoricalAbility))
+                {
+                    var parsedData = JsonSerializer.Deserialize<List<Dictionary<string, Dictionary<string, double>>>>(_pat.HistoricalAbility);
+
+                    if (parsedData == null || parsedData.Count != 12)
+                        throw new InvalidOperationException("El JSON debe contener datos para exactamente 12 meses.");
+
+                    for (int i = 0; i < parsedData.Count; i++)
+                    {
+                        var monthKey = parsedData[i].Keys.First();
+                        var monthData = parsedData[i][monthKey];
+
+                        monthsDistributionPercentage[i] = monthData.ContainsKey("OR_O") && monthData["OR_O"] != 0.0 ? monthData["OR_O"] : (CalculateDistributionPercentageMonth(i + 1) ?? null);
+                        monthsUsersPercentage[i] = monthData.ContainsKey("OR_P") && monthData["OR_P"] != 0.0 ? monthData["OR_P"] : (CalculateUserPercentageMonth(i + 1) ?? null);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error preparando los datos: {ex.Message}");
+            }
         }
 
         private void updateILULevel()
@@ -779,8 +783,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
         private double? CalculateDistributionPercentageMonth(int MonthIndex)
         {
-            Console.WriteLine($"MonthIndex: {MonthIndex}");
-
             if (_pat.KnowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
                 return null;
 
@@ -891,6 +893,117 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             return (countUserO + countUserX) > 0 ? (double)countUserO / (countUserO + countUserX) * 100 : null;
         }
 
+        private double? CalculateDistributionPercentageMonthAcumulted(int MonthIndex)
+        {
+            if (_pat.KnowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any() || (MonthIndex > DateTime.Today.Month && _pat.AplicationYear == DateTime.Today.Year))
+                return null;
+
+
+            countDistO = 0;
+            countDistX = 0;
+
+            int index = 0;
+
+            foreach (var usr in _UserOfArea)
+            {
+                var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
+                var isSaveLeaderS = _pat.SaveLeader == "S";
+                var isSaveLeaderC = _pat.SaveLeader == "C";
+                var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                if (!((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC)))
+                {
+                    index++;
+                    continue;
+                }
+
+                // Filtrar solo los registros del mes correspondiente
+                int sum = 0;
+                bool hasLowLevel = false;
+
+                foreach (var op in _distributions)
+                {
+                    if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context != null)
+                    {
+                        // Tomar el registro más reciente del mes correspondiente
+                        var record = context
+                            .Where(r => r.AcquisitionDate.HasValue && r.AcquisitionDate.Value.Month <= MonthIndex)
+                            .OrderByDescending(r => r.AcquisitionDate)
+                            .FirstOrDefault();
+
+                        if (record != null)
+                        {
+                            if (record.ILULevelId != 0 && record.ILULevelId > 5)
+                                sum++;
+                            if (record.ILULevelId != 0 && record.ILULevelId < 5)
+                                hasLowLevel = true;
+                        }
+                    }
+                }
+
+                var meetsKnowledge = sum >= _pat.KnowledgePercentage;
+
+                if (meetsKnowledge)
+                {
+                    countDistO++;
+                }
+                else if ((hasLowLevel && !meetsKnowledge) || (!hasLowLevel && !meetsKnowledge && sum > 0) || !meetsKnowledge)
+                {
+                    countDistX++;
+                }
+                index++;
+            }
+
+            return (countDistO + countDistX) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
+        }
+
+        private double? CalculateUserPercentageMonthAcumulted(int MonthIndex)
+        {
+            if (_pat.KnowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any() || (MonthIndex > DateTime.Today.Month && _pat.AplicationYear == DateTime.Today.Year))
+                return null;
+
+            countUserO = 0;
+            countUserX = 0;
+
+            foreach (var op in _distributions)
+            {
+                int sum = 0;
+                bool hasLowLevel = false;
+
+                foreach (var usr in _UserOfArea)
+                {
+                    if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context != null)
+                    {
+                        // Tomar el registro más reciente del mes correspondiente
+                        var record = context
+                            .Where(r => r.AcquisitionDate.HasValue && r.AcquisitionDate.Value.Month <= MonthIndex)
+                            .OrderByDescending(r => r.AcquisitionDate)
+                            .FirstOrDefault();
+
+                        if (record != null)
+                        {
+                            if (record.ILULevelId != 0 && record.ILULevelId > 5)
+                                sum++;
+                            if (record.ILULevelId != 0 && record.ILULevelId < 5)
+                                hasLowLevel = true;
+                        }
+                    }
+                }
+
+                var meetsKnowledge = sum >= _pat.KnowledgePercentage;
+
+                if (meetsKnowledge)
+                {
+                    countUserO++;
+                }
+                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                {
+                    countUserX++;
+                }
+            }
+
+            return (countUserO + countUserX) > 0 ? (double)countUserO / (countUserO + countUserX) * 100 : null;
+        }
 
         //In progress
         private async Task SaveProgressPat()
@@ -925,24 +1038,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                 for (int i = 0; i < monthsNames.Count; i++)
                 {
 
-                    double or_o = monthsDistributionPercentage[i] ?? (CalculateDistributionPercentageMonth(i + 1) ?? 0.0);
-                    double or_p = monthsUsersPercentage[i] ?? (CalculateUserPercentageMonth(i + 1) ?? 0.0);
-
-
-                    //double or_o = monthsDistributionPercentage[i];
-
+                    double or_o = CalculateDistributionPercentageMonth(i + 1) ?? 0.0;
+                    double or_p = CalculateUserPercentageMonth(i + 1) ?? 0.0;
+                                 
                     // Si es null o 0, intenta calcularlo
                     if (or_o == null || or_o == 0.0)
                     {
-                        var calc = CalculateDistributionPercentageMonth(i + 1);
-                        or_o = calc ?? 0.0;
+                        or_o = monthsDistributionPercentage[i] ?? (CalculateDistributionPercentageMonth(i + 1) ?? 0.0);
                     }
 
-                    //double or_p = monthsUsersPercentage[i];
+                    
                     if (or_p == null || or_p == 0.0)
                     {
-                        var calcP = CalculateUserPercentageMonth(i + 1);
-                        or_p = calcP ?? 0.0;
+                        or_p = monthsUsersPercentage[i] ?? (CalculateUserPercentageMonth(i + 1) ?? 0.0);
                     }
 
                     var monthData = new Dictionary<string, double>
@@ -955,6 +1063,52 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                     {
                         { monthsNames[i], monthData }
                     });
+                    Console.WriteLine($"Month {i}: {monthsNames[i]}, OR_O: {or_o}, OR_P: {or_p}");
+                }
+
+                _pat.HistoricalAbility = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generando el JSON: {ex.Message}");
+            }
+        }
+
+        public void SetHistoricalAbilityAcumulated()
+        {
+            try
+            {
+                var result = new List<Dictionary<string, Dictionary<string, double>>>();
+
+                for (int i = 0; i < monthsNames.Count; i++)
+                {
+
+                    double or_o = CalculateDistributionPercentageMonthAcumulted(i + 1) ?? 0.0;
+                    double or_p = CalculateUserPercentageMonthAcumulted(i + 1) ?? 0.0;
+
+                    // Si es null o 0, intenta calcularlo
+                    if (or_o == null || or_o == 0.0)
+                    {
+                        or_o = monthsDistributionPercentage[i] ?? (CalculateDistributionPercentageMonthAcumulted(i + 1) ?? 0.0);
+                    }
+
+
+                    if (or_p == null || or_p == 0.0)
+                    {
+                        or_p = monthsUsersPercentage[i] ?? (CalculateUserPercentageMonthAcumulted(i + 1) ?? 0.0);
+                    }
+
+                    var monthData = new Dictionary<string, double>
+                    {
+                        { "OR_O", or_o },
+                        { "OR_P", or_p }
+                    };
+
+                    result.Add(new Dictionary<string, Dictionary<string, double>>
+                    {
+                        { monthsNames[i], monthData }
+                    });
+                    Console.WriteLine($"Month {i}: {monthsNames[i]}, OR_O: {or_o}, OR_P: {or_p}");
                 }
 
                 _pat.HistoricalAbility = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
