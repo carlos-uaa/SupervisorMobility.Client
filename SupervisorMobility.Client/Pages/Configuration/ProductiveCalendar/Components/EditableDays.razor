@@ -1,0 +1,110 @@
+﻿@using System.Globalization
+@inject ICalendarProductiveService CalendarProductiveServices
+@inject ISnackbar Snackbar
+
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@using MudBlazor
+
+<div id="body">
+    @if (ImportedHolidays.Count == 0)
+    {
+        <MudText>No se ha cargado ningún día feriado.</MudText>
+    }
+    else
+    {
+        <TableHolidays ScheduleYear="ScheduleYear" CommitedItems="CommitItem" RemmovedItems="RemmoveItem" ImportedHolidays="ImportedHolidays"></TableHolidays>
+    }
+    <div>
+        @if (CommitedItems > 0 || RemmovedItems > 0)
+        {
+            <MudButton Variant="Variant.Filled" Class="pa-4" Disabled="ShowLoading" FullWidth Color="Color.Primary" OnClick="ApplyHolidaysToCalendar">
+                Guardar Nuevo Calendario
+            </MudButton>
+        }
+    </div>
+
+</div>
+
+<MudDialog IsVisible="ShowLoading" Options="dialogOptions">
+    <DialogContent>
+        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+            <ItemTemplate>
+                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                    </MudItem>
+                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                </div>
+            </ItemTemplate>
+        </MudCarousel>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public int? ScheduleYear { get; set; } 
+    private List<Holiday> ImportedHolidays = new List<Holiday>();
+
+    private int CommitedItems = 0;
+
+    void CommitItem(int n)
+    {
+        CommitedItems += n;
+    }
+    private int RemmovedItems = 0;
+
+    void RemmoveItem(int n)
+    {
+        RemmovedItems += n;
+    }
+
+
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
+    public bool ShowLoading = true;
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true};
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+        ImportedHolidays = await CalendarProductiveServices.GetHolidaysInService((int)ScheduleYear);
+
+        ShowLoading = false;
+    }
+
+   
+
+
+    private async void ApplyHolidaysToCalendar()
+    {
+        ShowLoading = true;
+        Snackbar.Clear();
+        Snackbar.Add("Guardando Cambios", Severity.Info);
+
+        await CalendarProductiveServices.UpdateHolidaysInYear((int)ScheduleYear, ImportedHolidays);
+        await Task.Delay(1000);
+        Snackbar.Clear();
+        Snackbar.Add("Calendario Actualizado", Severity.Success);
+
+        ShowLoading = false;
+        CommitedItems = 0;
+        RemmovedItems = 0;
+
+        StateHasChanged();
+    }
+}

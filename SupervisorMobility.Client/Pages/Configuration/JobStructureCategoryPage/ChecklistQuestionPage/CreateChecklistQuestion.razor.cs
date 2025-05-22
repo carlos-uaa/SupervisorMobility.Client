@@ -282,6 +282,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             _actions.RemoveAt(index);
             selectedData.Remove(SelectedDataIds[index]);
+            SelectedDataInnerIds.RemoveAt(index);
             SelectedDataIds.RemoveAt(index);
             StateHasChanged();
         }

@@ -1,0 +1,252 @@
+﻿@using System.Globalization
+
+@inject ICalendarProductiveService CalendarProductiveServices
+@inject ISnackbar Snackbar
+
+<MudTable Items="ImportedHolidays" Dense="true" @bind-SelectedItem="SelectedHoliday"
+FixedHeader Style="max-height: 65vh" Height="55dvh" Class="px-4 py-4"
+CommitEditTooltip="Commit Edit" EditTrigger="@editTrigger"
+OnCommitEditClick="CommitedHoliday" Filter="new Func<Holiday,bool>(FilterFunc1)"
+RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Calendario @ScheduleYear</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <ColGroup>
+        @if ((bool)Upload)
+        {
+            <col />
+        }
+        <col />
+        <col />
+        @if (editTrigger == TableEditTrigger.EditButton)
+        {
+            <col style="width:50px;" />
+        }
+    </ColGroup>
+    <HeaderContent>
+        @if ((bool)Upload) {
+            <MudTh>Estado</MudTh>
+        }
+
+        <MudTh>Fecha</MudTh>
+        <MudTh>Descripción</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        @if ((bool)Upload)
+        {
+            <MudTd>
+                @if (Holidays.Any(h => h.Date.Date == context.Date.Date))
+                {
+                    <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Info" Text="Ya existe" />
+                }
+            </MudTd>
+        }
+        <MudTd>@context.Date.ToString("yyyy-MM-dd")</MudTd>
+        <MudTd>@context.Description</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" OnClick="@(() => RemoveHoliday(context))" />
+        </MudTd>
+    </RowTemplate>
+    <RowEditingTemplate>
+        <MudTd DataLabel="Date">
+            <MudDatePicker Label="New Date" Mask="@(new DateMask("yyyy/MM/dd"))" DateFormat="yyyy/MM/dd" TextChanged="(dt) => DatePickerChanged(dt, context)" Date="context.Date" />
+        </MudTd>
+        <MudTd DataLabel="Description">
+            <MudTextField @bind-Value="context.Description" Required />
+        </MudTd>
+        <MudTd DataLabel="Remove">
+        </MudTd>
+    </RowEditingTemplate>
+
+</MudTable>
+
+@code {
+
+    [Parameter]
+    public EventCallback<int> CommitedItems { get; set; }
+    [Parameter]
+    public EventCallback<int> RemmovedItems { get; set; } 
+    [Parameter]
+    public EventCallback<bool> DuplicateItem { get; set; }
+    [Parameter]
+    public bool? Upload { get; set; } = false;
+
+    [Parameter]
+    public List<Holiday> ImportedHolidays { get; set; } = new List<Holiday>();
+
+    [Parameter]
+    public int? ScheduleYear { get; set; } 
+
+    private List<Holiday> Holidays = new List<Holiday>();
+
+    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+    private Holiday SelectedHoliday = new();
+    private Holiday elementBeforeEdit;
+
+    private string searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+   
+        if (ScheduleYear == null)
+        {
+            ScheduleYear = DateTime.Now.Year;
+        }
+        Holidays = await CalendarProductiveServices.GetHolidaysInService((int)ScheduleYear);
+       
+
+    }
+
+    private void OnRowEditCommit(Holiday item)
+    {
+        StateHasChanged();
+    }
+
+    private void RemoveHoliday(Holiday holiday)
+    {
+        DuplicateItem.InvokeAsync(ImportedHolidays.Any(h => Holidays.Any(h2 => h.Date.Date == h2.Date.Date)));
+
+        RemmovedItems.InvokeAsync(1);
+        ImportedHolidays.Remove(holiday);
+    }
+
+    private void BackupItem(object element)
+    {
+        elementBeforeEdit = new()
+            {
+                HolidayId = ((Holiday)element).HolidayId,
+                Date = ((Holiday)element).Date,
+                Description = ((Holiday)element).Description,
+                IsNationalHoliday = ((Holiday)element).IsNationalHoliday
+            };
+        //LOG aqui lo cambio por alguna alerta
+        // AddEditionEvent($"RowEditPreview event: made a backup of Element {((Element)element).Name}");
+    }
+
+    private void ResetItemToOriginalValues(object element)
+    {
+        ((Holiday)element).HolidayId = elementBeforeEdit.HolidayId;
+        ((Holiday)element).Date = elementBeforeEdit.Date;
+        ((Holiday)element).Description = elementBeforeEdit.Description;
+        ((Holiday)element).IsNationalHoliday = elementBeforeEdit.IsNationalHoliday;
+        //LOG aqui lo cambio por alguna alerta
+
+        // AddEditionEvent($"RowEditCancel event: Editing of Element {((Element)element).Name} canceled");
+    }
+
+    private void CommitedHoliday()
+    {
+        DuplicateItem.InvokeAsync(ImportedHolidays.Any(h => Holidays.Any(h2 => h.Date.Date == h2.Date.Date)));
+
+        Snackbar.Clear();
+        Snackbar.Add("Save Edited Item", Severity.Success);
+        CommitedItems.InvokeAsync(1); ;
+    }
+
+    private void DatePickerChanged(string newDate, Holiday context)
+    {
+        if (newDate == null)
+        {
+            Snackbar.Clear();
+            Snackbar.Add("La fecha no puede estar vacía.", Severity.Warning);
+
+            // Restaurar la anterior fecha para que el DatePicker la muestre de nuevo
+            context.Date = elementBeforeEdit.Date;
+            StateHasChanged();
+            return;
+        }
+
+        DateTime? _date = null;
+        string[] formats = { "ddMMyy", "dd.MM.yyyy", "dd.M.yyyy", "d.MM.yyyy", "d.M.yyyy", "dd.MM.yy", "dd.M.yy", "d.MM.yy", "d.M.yy" };
+
+        if (DateTime.TryParseExact(newDate, "yyyy/MM/dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime validDate))
+        {
+            _date = validDate;
+        }
+
+        var normalizedDate = _date?.Date;
+
+        if (Holidays.Any(h => h.Date.Date == normalizedDate && h.HolidayId != context.HolidayId))
+        {
+            Snackbar.Clear();
+            Snackbar.Add("La fecha seleccionada ya está en uso.", Severity.Error);
+
+            // Restaurar la fecha anterior
+            context.Date = elementBeforeEdit.Date;
+            StateHasChanged(); // Importante para forzar el refresco visual
+            return;
+        }
+
+        if (normalizedDate == elementBeforeEdit.Date)
+            return;
+
+        // Si no hay conflicto, se permite el cambio
+        context.Date = normalizedDate.Value;
+
+        Snackbar.Clear();
+        Snackbar.Add("Fecha actualizada correctamente.", Severity.Success);
+    }
+
+    private bool FilterFunc1(Holiday element) => FilterFunc(element, searchString);
+
+    private bool FilterFunc(Holiday element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        // Normalizar la búsqueda para evitar problemas de mayúsculas/minúsculas
+        searchString = searchString.Trim().ToLower();
+
+        // Buscar por fecha exacta en diferentes formatos
+        if (DateTime.TryParseExact(searchString, new[] { "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy/MM/dd", "dd.MM.yyyy", "MM.dd.yyyy" },
+            CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+        {
+            if (element.Date.Date == parsedDate.Date)
+                return true;
+        }
+
+        // Buscar por año
+        if (int.TryParse(searchString, out int year))
+        {
+            if (element.Date.Year == year)
+                return true;
+        }
+
+        // Buscar por mes (nombre o número)
+        DateTime parsedMonth = DateTime.MinValue;
+        int month = 0;
+
+        if (DateTime.TryParseExact(searchString, "MMMM", new CultureInfo("en-US"), DateTimeStyles.None, out parsedMonth) ||
+        DateTime.TryParseExact(searchString, "MMM", new CultureInfo("en-US"), DateTimeStyles.None, out parsedMonth) ||
+        DateTime.TryParseExact(searchString, "MMMM", new CultureInfo("es-ES"), DateTimeStyles.None, out parsedMonth) ||
+        DateTime.TryParseExact(searchString, "MMM", new CultureInfo("es-ES"), DateTimeStyles.None, out parsedMonth) ||
+        (int.TryParse(searchString, out month) && month >= 1 && month <= 12))
+        {
+            if (element.Date.Month == (parsedMonth != DateTime.MinValue ? parsedMonth.Month : month))
+                return true;
+        }
+
+        // Buscar por rango de fechas (formato: "yyyy-MM-dd to yyyy-MM-dd")
+        if (searchString.Contains("to"))
+        {
+            var parts = searchString.Split("to", StringSplitOptions.TrimEntries);
+            if (parts.Length == 2 &&
+                DateTime.TryParseExact(parts[0], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime startDate) &&
+                DateTime.TryParseExact(parts[1], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime endDate))
+            {
+                if (element.Date.Date >= startDate.Date && element.Date.Date <= endDate.Date)
+                    return true;
+            }
+        }
+
+        // Buscar por descripción
+        if (element.Description.ToLower().Contains(searchString))
+            return true;
+
+        return false;
+    }
+
+}

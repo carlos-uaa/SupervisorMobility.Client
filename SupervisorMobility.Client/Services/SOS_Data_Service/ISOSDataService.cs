@@ -29,6 +29,9 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
         List<SOSRegUserOperation> _SosRegistersrUserOperation { get; set; }
         List<Distribution> _distributions { get; set; } 
         List<Operation> _All_Operations { get; set; }
+        //Holiday JobObs
+        List<JobObservation> JobObsInHolidays { get; set; }
+        List<Holiday> holidays { get; set; }
 
 
         DateTime Startday { get; set; }

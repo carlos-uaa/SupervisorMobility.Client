@@ -6,6 +6,8 @@ using System.Runtime.CompilerServices;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
 using System.Collections.Generic;
+using Microsoft.Extensions.Options;
+using DocumentFormat.OpenXml.Bibliography;
 
 namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 {
@@ -2056,6 +2058,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                 await SOSDataServices.SetSuggestion(_sos_plan, Dist_Manager, SV_Manager, Startday);
 
+                await OpenMovedJODueToOffDay();
+
                 await PrepareSuggestDataTable();
 
                 await DialogService.ShowMessageBox("Info!", "Suggestion created!", yesText: "OK!");
@@ -2451,6 +2455,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             ShowLoading = false;
             ProgrammSuggestion = false;
             StateHasChanged();
+        }
+
+
+        private DialogOptions JOOptions = new() { 
+            CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true,
+            DisableBackdropClick = false, NoHeader = true
+        };
+        private async Task OpenMovedJODueToOffDay()
+        {
+            if (SOSDataServices.JobObsInHolidays.Any())
+            {
+                var parameters = new DialogParameters { { "Year", Startday.Year } };
+                var dialog = DialogService.Show<HolidayDialog>(null,parameters, JOOptions);
+                var result = await dialog.Result;
+            }
         }
 
         private void OnStartDateChanged(DateTime dt)

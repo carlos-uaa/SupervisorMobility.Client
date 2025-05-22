@@ -131,6 +131,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
 
             _question.TypeId = questionType.QuestionTypeId;
 
+            _question.Actions = new();
+
             if (!_dependendcy)
             {
                 _question.Actions = null;
@@ -322,6 +324,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.JobStructureCategoryPage
         {
             _actions.RemoveAt(index);
             selectedData.Remove(SelectedDataIds[index]);
+            SelectedDataInnerIds.RemoveAt(index);
             SelectedDataIds.RemoveAt(index);
         }
 

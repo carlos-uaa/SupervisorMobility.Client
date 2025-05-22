@@ -59,6 +59,7 @@ global using SupervisorMobility.Client.Services.SOS_Services.MaterialServices;
 global using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 global using SupervisorMobility.Client.Services.SOS_Services.EquipmentServices;
 global using SupervisorMobility.Client.Services.ExportationService;
+global using SupervisorMobility.Client.Services.CalendarProductiveService;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -117,6 +118,7 @@ builder.Services.AddScoped<IAppearanceService, AppearanceService>();
 builder.Services.AddScoped<ILogbookAppearanceService, LogbookAppearanceService>();
 builder.Services.AddScoped<IPartServices, PartServices>();
 builder.Services.AddScoped<IExportationService, ExportationService>();
+builder.Services.AddScoped<ICalendarProductiveService, CalendarProductiveService>();
 
 //For testing video uploads
 builder.Services.AddScoped<ITestService, TestService>();

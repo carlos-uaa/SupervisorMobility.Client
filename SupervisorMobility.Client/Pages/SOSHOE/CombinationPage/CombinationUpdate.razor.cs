@@ -616,136 +616,118 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             }
         }
 
-        private double CalculateSizeStep(double steps, double top)
+        private (int top, double angle, int left, double width) CalculateTopParameters(double step)
         {
-            double fullCells = Math.Round(Math.Floor(steps / _CellSize), 3);
-            double remainingSteps = steps - (fullCells * _CellSize);
-            double result = 33;
-
-
-            if (top == 40)
+            // Valores exactos ordenados por step
+            var stepPresets = new (double step, int top, double angle, int left, double width)[]
             {
-                if (steps <= _HalfCellSize)
-                {
-                    result = 28;
-                }
-                else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
-                {
-                    result = (fullCells * 30) + (30 * remainingSteps);
-                }
-                else if (remainingSteps > _HalfCellSize)
-                {
-                    result = (fullCells * 30) + (30 * remainingSteps);
-                }
-                else
-                {
-                    result = fullCells * 27;
-                }
+        (0.02, 28, 65, -10, 60),
+        (0.03, 25, 55, -5, 70),
+        (0.04, 29, 45, -5, 75),
+        (0.05, 35, 40, -10, 85),
+        (0.06, 20, 33, -5, 100),
+        (0.07, 30, 30, -5, 110),
+        (0.08, 30, 45, -6, 123),
+        (0.09, 20, 25, -5, 137),
+        (0.10, 35, 20, -5, 150),
+        (0.11, 26, 20, -5, 160),
+        (0.12, 30, 17, -5, 177)
+            };
 
-            } else if (top == 35) {
-                if (steps <= _HalfCellSize)
-                {
-                    result = 50;
-                }
-                else if (steps <= _CellSize)
-                {
-                    result = (fullCells * 50) + 10;
-                }
-                else if (remainingSteps > _HalfCellSize)
-                {
-                    result = (fullCells * 50) + (45 * remainingSteps);
-                }
-                else
-                {
-                    result = fullCells * 30;
-                }
+            // Función de interpolación
+            static double Interpolate(double x, double x0, double y0, double x1, double y1) =>
+                y0 + (x - x0) * (y1 - y0) / (x1 - x0);
 
-            }
-            else if (top == 20)
+            // Manejo de bordes
+            if (step <= stepPresets[0].step) return (stepPresets[0].top, stepPresets[0].angle, stepPresets[0].left, stepPresets[0].width);
+            if (step >= stepPresets[^1].step) return (stepPresets[^1].top, stepPresets[^1].angle, stepPresets[^1].left, stepPresets[^1].width);
+
+            // Encontrar el intervalo adecuado
+            for (int i = 0; i < stepPresets.Length - 1; i++)
             {
-                if (steps <= _HalfCellSize)
+                if (step >= stepPresets[i].step && step < stepPresets[i + 1].step)
                 {
-                    result = 50;
-                }
-                else if (remainingSteps > 0 && remainingSteps <= _HalfCellSize)
-                {
-                    result = (fullCells * 30) + (30 * remainingSteps);
-                }
-                else if (remainingSteps > _HalfCellSize)
-                {
-                    result = (fullCells * 60) + (30 * remainingSteps);
-                }
-                else
-                {
-                    result = fullCells * 33;
+                    double t = (step - stepPresets[i].step) / (stepPresets[i + 1].step - stepPresets[i].step);
+
+                    // Para top y left, seleccionamos el más común entre los dos puntos
+                    int top = stepPresets[i].top == stepPresets[i + 1].top ?
+                        stepPresets[i].top :
+                        (t > 0.5 ? stepPresets[i + 1].top : stepPresets[i].top);
+
+                    int left = stepPresets[i].left == stepPresets[i + 1].left ?
+                        stepPresets[i].left :
+                        (t > 0.5 ? stepPresets[i + 1].left : stepPresets[i].left);
+
+                    // Interpolación para angle y width
+                    double angle = Interpolate(step, stepPresets[i].step, stepPresets[i].angle,
+                                             stepPresets[i + 1].step, stepPresets[i + 1].angle);
+
+                    double width = Interpolate(step, stepPresets[i].step, stepPresets[i].width,
+                                             stepPresets[i + 1].step, stepPresets[i + 1].width);
+
+                    return (top, angle, left, width);
                 }
             }
 
-            return result;
+            return (stepPresets[0].top, stepPresets[0].angle, stepPresets[0].left, stepPresets[0].width);
         }
 
-        private double CalculateRotateAngle(double top, double sizeStep)
+        private (int top, double angle, int left, double width) CalculateMiddleParameters(double step)
         {
-            if (top == 40)
+            // Valores exactos ordenados por step
+            var stepPresets = new (double step, int top, double angle, int left, double width)[]
             {
-                if (sizeStep < 33)
-                {
-                    return 55;
-                }
-                else if (sizeStep >= 33 && sizeStep < 66)
-                {
-                    return 40;
-                }
-                else if (sizeStep >= 66 && sizeStep < 99)
-                {
-                    return 30;
-                }
-                else if (sizeStep >= 99 && sizeStep < 110)
-                {
-                    return 20;
-                }
+        (0.02, 40, 55, -10, 45),
+        (0.03, 40, 40, -5, 55),
+        (0.04, 35, 33, -5, 60),
+        (0.05, 40, 30, -5, 80),
+        (0.06, 40, 25, -5, 92),
+        (0.07, 35, 20, 0, 100),
+        (0.08, 45, 20, -5, 120),
+        (0.09, 35, 15, -5, 130),
+        (0.10, 35, 15, -5, 140),
+        (0.11, 40, 15, -5, 160),
+        (0.12, 35, 12, 0, 170)
+            };
 
-            }
-            else if (top == 35)
-            {
-                if (sizeStep < 66)
-                {
-                    return 60;
-                }
-                else if (sizeStep >= 66 && sizeStep < 99)
-                {
-                    return 25;
-                }
-                else if (sizeStep >= 99 && sizeStep < 120)
-                {
-                    return 20;
-                }
-                else if (sizeStep >= 120 && sizeStep < 150)
-                {
-                    return 15;
-                }
+            // Función de interpolación
+            static double Interpolate(double x, double x0, double y0, double x1, double y1) =>
+                y0 + (x - x0) * (y1 - y0) / (x1 - x0);
 
-            }
-            else if (top == 20)
+            // Manejo de bordes
+            if (step <= stepPresets[0].step) return (stepPresets[0].top, stepPresets[0].angle, stepPresets[0].left, stepPresets[0].width);
+            if (step >= stepPresets[^1].step) return (stepPresets[^1].top, stepPresets[^1].angle, stepPresets[^1].left, stepPresets[^1].width);
+
+            // Encontrar el intervalo adecuado
+            for (int i = 0; i < stepPresets.Length - 1; i++)
             {
-                if (sizeStep < 33)
+                if (step >= stepPresets[i].step && step < stepPresets[i + 1].step)
                 {
-                    return 80;
-                }
-                else if (sizeStep >= 33 && sizeStep < 66)
-                {
-                    return 70;
-                }
-                else if (sizeStep >= 66 && sizeStep < 99)
-                {
-                    return 50;
-                }
-                else if (sizeStep >= 99 && sizeStep < 110)
-                {
-                    return 40;
+                    double t = (step - stepPresets[i].step) / (stepPresets[i + 1].step - stepPresets[i].step);
+
+                    // Para top y left, seleccionamos el más común entre los dos puntos
+                    int top = stepPresets[i].top == stepPresets[i + 1].top ?
+                        stepPresets[i].top :
+                        (t > 0.5 ? stepPresets[i + 1].top : stepPresets[i].top);
+
+                    int left = stepPresets[i].left == stepPresets[i + 1].left ?
+                        stepPresets[i].left :
+                        (t > 0.5 ? stepPresets[i + 1].left : stepPresets[i].left);
+
+                    // Interpolación para angle y width
+                    double angle = Interpolate(step, stepPresets[i].step, stepPresets[i].angle,
+                                             stepPresets[i + 1].step, stepPresets[i + 1].angle);
+
+                    double width = Interpolate(step, stepPresets[i].step, stepPresets[i].width,
+                                             stepPresets[i + 1].step, stepPresets[i + 1].width);
+
+                    return (top, angle, left, width);
                 }
             }
-            return 50; // Valor por defecto
+
+            return (stepPresets[0].top, stepPresets[0].angle, stepPresets[0].left, stepPresets[0].width);
         }
+
+
     }
 }

@@ -1,0 +1,179 @@
+﻿@inject ICalendarProductiveService CalendarProductiveServices
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+<div id="body">
+
+<div id="element1" style="display: flex">
+
+        <MudPaper Class="pa-4 mx-5" Style="max-height: 75vh;">
+        <MudDatePicker Label="Seleccionar fecha" FixYear="ScheduleYear"
+                       @bind-Date="ManualHolidayDateValue"
+                       PickerVariant="PickerVariant.Static"
+                       Color="Color.Primary"
+                       Rounded="true" />
+
+        <MudTextField Label="Descripción" @bind-Value="ManualHolidayDescription" Class="my-3 mx-3" />
+
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="AddManualHoliday">
+            Agregar a listado
+        </MudButton>
+    </MudPaper>
+
+    @if (ImportedHolidays.Count == 0)
+    {
+        <MudText>No se ha cargado ningún día feriado.</MudText>
+    }
+    else
+    {
+            <TableHolidays ScheduleYear="ScheduleYear" ImportedHolidays="ImportedHolidays"></TableHolidays>
+
+        }
+</div>
+
+<div id="btn" class="mx-5 my-5">
+    @if (ImportedHolidays.Count() > 0)
+    {
+        <MudButton FullWidth Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyHolidaysToCalendar">
+            Añadir @(ImportedHolidays.Count() == 0 ? " Dia " : " Dias ") al calendario
+        </MudButton>
+    }
+</div>
+
+</div>
+
+
+<MudDialog IsVisible="ShowLoading" Options="dialogOptions">
+    <DialogContent>
+        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+            <ItemTemplate>
+                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                    </MudItem>
+                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                </div>
+            </ItemTemplate>
+        </MudCarousel>
+    </DialogContent>
+</MudDialog>
+@code {
+    [Parameter]
+    public int? ScheduleYear { get; set; }
+
+    private string ManualHolidayDate { get; set; }
+    private DateTime? ManualHolidayDateValue { get; set; }
+    private string ManualHolidayDescription { get; set; } = string.Empty;
+
+    private List<Holiday> ImportedHolidays = new List<Holiday>();
+    private List<Holiday> Holidays = new List<Holiday>();
+  
+    
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
+    public bool ShowLoading = true;
+
+    private DialogOptions dialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+        if (ScheduleYear == null)
+        {
+            ScheduleYear = DateTime.Now.Year;
+            ManualHolidayDateValue = DateTime.Today.AddDays(1);
+        }else{
+            ManualHolidayDateValue = new DateTime(year: (int)ScheduleYear, month: DateTime.Today.Month, day: DateTime.Today.Day).AddDays(1);
+        }
+
+
+        Holidays = await CalendarProductiveServices.GetHolidaysInService((int)ScheduleYear);
+        ShowLoading = false;
+
+    }
+
+    private void AddManualHoliday()
+    {
+        // Validar que la fecha y la descripción no estén vacías
+        if (ManualHolidayDateValue == null || string.IsNullOrWhiteSpace(ManualHolidayDescription))
+        {
+            // Opcional: Mostrar un mensaje de error o manejar la validación
+            Snackbar.Clear();
+            Snackbar.Add("La fecha y la descripción son obligatorias.", Severity.Error);
+            return;
+        }
+
+        var parsedDate = ManualHolidayDateValue.Value;
+
+        // Verificar si el día feriado ya existe
+        if (!Holidays.Any(h => h.Date.Date == parsedDate))
+        {
+
+            Snackbar.Clear();
+            Snackbar.Add("Dia feriado añadido a la lista.", Severity.Success);
+            ImportedHolidays.Add(new Holiday
+                {
+                    Date = parsedDate,
+                    Description = ManualHolidayDescription
+                });
+
+            // Limpiar la descripción después de agregar
+            ManualHolidayDescription = string.Empty;
+        }
+        else
+        {
+            Snackbar.Clear();
+            Snackbar.Add("El día feriado ya existe en el calendario.", Severity.Warning);
+        }
+    }
+
+    private void RemoveHoliday(Holiday holiday)
+    {
+        ImportedHolidays.Remove(holiday);
+    }
+
+
+
+    private async void ApplyHolidaysToCalendar()
+    {
+        ShowLoading = true;
+        Snackbar.Clear();
+        Snackbar.Add("Guardando Cambios", Severity.Info);
+
+        var holidayDates = await CalendarProductiveServices.GetHolidaysInService((int)ScheduleYear);
+
+        // agregar no existan en la lista de feriados
+        foreach (var holiday in ImportedHolidays)
+        {
+            if (!holidayDates.Select(holiday => holiday.Date).Contains(holiday.Date))
+            {
+                CalendarProductiveServices.AddHolidayToService(holiday);
+            }
+        }
+        
+        CalendarProductiveServices.UpdateHolidaysInYear((int)ScheduleYear);
+
+        Snackbar.Clear();
+        Snackbar.Add("Calendario Actualizado", Severity.Success);
+
+        ShowLoading = false;
+        // Opcional: Limpiar la lista de días importados después de aplicarlos
+        ImportedHolidays.Clear();
+        StateHasChanged();
+
+    }
+
+}

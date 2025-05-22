@@ -1,0 +1,166 @@
+﻿@page "/configuration/ProductionCalendar/{ScheduleYear:int}"
+@page "/configuration/ProductionCalendar"
+@using System.Globalization
+
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject ISnackbar Snackbar
+
+
+<MudText Typo="Typo.h6">@ScheduleYear</MudText>
+
+<MudSelect T="int" Label="Seleccionar año" Value="(int)ScheduleYear" ValueChanged="OnYearChanged" Dense="true" Class="my-2" Style="width: 200px;">
+    @foreach (var year in AvailableYears)
+    {
+        <MudSelectItem T="int" Value="@year">@year</MudSelectItem>
+    }
+</MudSelect>
+
+
+<MudContainer>
+    <MudTabs>
+        <MudTabPanel Text="Calendario">
+            @if (ShowLoading)
+            {
+                <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                    <ItemTemplate>
+                        <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                            <MudItem class="d-flex flex-column justify-center align-self-center">
+                                <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                            </MudItem>
+                            @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                            <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                        </div>
+                    </ItemTemplate>
+                </MudCarousel>
+            }
+            else
+            {
+                <SupervisorMobility.Client.Pages.Components.ScheduleWorkDays ScheduleYear="ScheduleYear"></SupervisorMobility.Client.Pages.Components.ScheduleWorkDays>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="Configuración">
+            <MudTabs Outlined="true" Position="Position.Left" Rounded="true" Border="true" Style="max-height:80vh"
+                     ApplyEffectsToContainer="true" Class="mt-8" PanelClass="pa-6">
+                <MudTabPanel Text="Carga Masiva">
+                    @if (ShowLoading)
+                    {
+                        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                            <ItemTemplate>
+                                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                                    </MudItem>
+                                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
+                    }
+                    else
+                    {
+                        <SupervisorMobility.Client.Pages.Configuration.ProductiveCalendar.Components.UploadMassiveDays ScheduleYear="ScheduleYear"></SupervisorMobility.Client.Pages.Configuration.ProductiveCalendar.Components.UploadMassiveDays>
+                    }
+                </MudTabPanel>
+                <MudTabPanel Text="Carga Manual">
+                    @if (ShowLoading)
+                    {
+                        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                            <ItemTemplate>
+                                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                                    </MudItem>
+                                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
+                    }
+                    else
+                    {
+                        <SupervisorMobility.Client.Pages.Configuration.ProductiveCalendar.Components.UploadManualDays ScheduleYear="ScheduleYear"></SupervisorMobility.Client.Pages.Configuration.ProductiveCalendar.Components.UploadManualDays>
+                    }
+                </MudTabPanel>
+                <MudTabPanel Text="Edicion Manual">
+                    @if (ShowLoading)
+                    {
+                        <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                            <ItemTemplate>
+                                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                    <MudItem class="d-flex flex-column justify-center align-self-center">
+                                        <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                                    </MudItem>
+                                    @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                    <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
+                    }
+                    else
+                    {
+                        <SupervisorMobility.Client.Pages.Configuration.ProductiveCalendar.Components.EditableDays ScheduleYear="ScheduleYear"></SupervisorMobility.Client.Pages.Configuration.ProductiveCalendar.Components.EditableDays>
+                    }
+                </MudTabPanel>
+            </MudTabs>
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
+
+
+@code {
+    [Parameter]
+    public int? ScheduleYear { get; set; }
+
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
+    public bool ShowLoading = true;
+
+
+    private List<int> AvailableYears { get; set; } = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var currentYear = DateTime.Today.Year;
+
+        // Mostrar años desde 5 años atrás hasta 5 años adelante
+        AvailableYears = Enumerable.Range(currentYear - 5, 11).ToList();
+
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+        if (ScheduleYear == null)
+        {
+            ScheduleYear = DateTime.Now.Year;
+        }
+
+        await Task.Delay(1000);
+
+        ShowLoading = false;
+        StateHasChanged();
+    }
+
+
+    private Task OnYearChanged(int value)
+    {
+        ShowLoading = true;
+        ScheduleYear = value;
+        Task.Delay(1000).ContinueWith(_ =>
+        {
+            ShowLoading = false;
+            StateHasChanged();
+        });
+
+        return Task.CompletedTask;
+    }
+
+}
