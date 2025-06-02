@@ -36,6 +36,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
         private List<MonthModel> CalendarMonths = new List<MonthModel>();
         public List<Holiday> holidays { get; set; }
         bool Dev_env { get; set; }
+
+        private bool loading = true;
         protected override async void OnInitialized()
         {
             Year = StartDay.Year;
@@ -45,6 +47,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Components
             Distributions = Dist_Manager.Where(d => d.isSelected == true).Select(d => d.distribution.Description).ToList();
             GenerateRandomColors();
             await GenerateCalendar();
+
+            loading = false;
+            StateHasChanged();
         }
 
 

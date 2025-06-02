@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using DocumentFormat.OpenXml.Vml.Spreadsheet;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
@@ -69,7 +70,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
 
-
+        int[] StatusToIgnore = { 5, 6 };
+        List<Holiday> holidays = new();
         public class DisplayNameLabelClass
         {
             public DateTime? Date { get; set; }
@@ -119,6 +121,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             }
             else
             {
+                holidays = await CalendarService.GetHolidaysInService(DateTime.Now.Year);
 
                 await GetUserAsync();
                 //await LateDates();
@@ -920,10 +923,37 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         IDialogReference dialogDate;
         private async void OpenCommentDialog()
         {
+            ChangeOriginalDateValues();
+            var tempSDate = _jobObservation.StartDate;
+            var tempEDate = _jobObservation.EndDate;
+
             var parameters = new DialogParameters { { "_jobObservation", _jobObservation }, { "ChangeDate", EventCallback.Factory.Create(this, ChangeDate) } };
             dialogDate = await DialogService.ShowAsync<ChangeDate_Dialog>("", parameters, dialogCommentOptions);
-            await dialogDate.Result;
+            var res = await dialogDate.Result;
+
+            if (res.Canceled)
+            {
+                ChangeOriginalDateValues(); // this is 'true' as returned
+            }
+            if(tempSDate == _jobObservation.StartDate && tempEDate == _jobObservation.EndDate )
+            {
+                ChangeOriginalDateValues();
+            }
         }
+
+        private void ChangeOriginalDateValues()
+        {
+            if (!_jobObservation.IsReallocated)
+            {
+                if (_jobObservation.OriginalPlannedDate == null)
+                {
+                    _jobObservation.OriginalPlannedDate = _jobObservation.StartDate;
+                    return;
+                }
+                _jobObservation.OriginalPlannedDate = null;
+            }
+        }
+
         private DialogOptions dialogCommentOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         public string hour1 { get; set; }
         public string hour2 { get; set; }
@@ -942,6 +972,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
+                _jobObservation.IsReallocated = true;
                 var formatedStartDate = _jobObservation.StartDate;
                 var formatedEndDate = _jobObservation.EndDate;
 
@@ -1021,6 +1052,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             }
             else
             {
+                _jobObservation.IsReallocated = true;
                 hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
                 hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour}";
 
@@ -1240,61 +1272,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
         void CloseScheduleFilter() => visibleScheduleFiltersModal = false;
 
         private DialogOptions scheduleFiltersDialogOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true };
-
-
-
-
-        private Color GetColor(int? status)
-        {
-            return status switch
-            {
-                1 => Color.Warning,  // Planned
-                2 => Color.Info,     // In Progress
-                3 => Color.Error,    // Late
-                4 => Color.Info,     // Under Review
-                5 => Color.Error,    // Rejected
-                6 => Color.Success,  // Finalized
-                7 => Color.Warning,  // Programmed
-                _ => Color.Default
-            };
-        }
-
-        private string GetIcon(int? status)
-        {
-            return status switch
-            {
-                1 => Icons.Material.Filled.PlayCircle,    // Planned
-                2 => Icons.Material.Filled.StopCircle,    // In Progress
-                3 => Icons.Material.Filled.RemoveCircle,  // Late
-                4 => Icons.Material.Filled.IncompleteCircle, // Under Review
-                5 => Icons.Material.Filled.Cancel,        // Rejected
-                6 => Icons.Material.Filled.Circle,        // Finalized
-                7 => Icons.Material.Filled.Info,        // Programmed
-                _ => Icons.Material.Filled.Help // Default icon
-            };
-        }
-
-
-        private bool ShouldRenderChip(JobObservation jobobs, int selectedStatus)
-        {
-            if (selectedStatus >= 21)
-            {
-                selectedStatus -= 20;
-                return jobobs.Status == selectedStatus && jobobs.Type == 4;
-            }
-            else if (selectedStatus >= 11)
-            {
-                selectedStatus -= 10;
-                return jobobs.Status == selectedStatus && jobobs.Type == 2;
-            }
-            else
-            {
-                return (jobobs.Status == selectedStatus && jobobs.Type != 2) || selectedStatus == 0;
-            }
-        }
-
-
-
 
     }
 }
