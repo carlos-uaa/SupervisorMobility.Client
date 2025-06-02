@@ -73,5 +73,7 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public FileUpload? SignatureImage { get; set; } = new();
         public bool WillNotRequireSSVApproval { get; set; } = false;
+        public bool IsReallocated { get; set; } = false;
+        public DateTime? OriginalPlannedDate { get; set; }
     }
 }

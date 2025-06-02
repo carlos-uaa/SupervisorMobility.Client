@@ -1,0 +1,142 @@
+﻿@if (jobobs.Operations.Count() > 0)
+{
+    @foreach (Operation op in jobobs.Operations)
+    {
+        int opId = op.OperationId;
+        var operationDescription = op.Description;
+        var opDescription = operationDescription.Length < 18 ? operationDescription : operationDescription.Substring(0, 15) + "...";
+
+        @if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.PlannedStartDate?.ToShortDateString()).Date)
+        {
+            //Ends the same day
+
+            //Status filter
+            @switch (optionStatus)
+            {
+                case 0:
+                case 7:
+                    if (jobobs.Status == 7 && jobobs.Type == 3 || jobobs.Type == 4)
+                    {
+                        if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= DateTime.Now.Date)
+                        {
+
+                            <MudTooltip Text="Open to Plan" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))">
+                                <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                                    <MudIconButton OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                    @if (user.UserType == 1)
+                                    {
+                                        <span class="calendar-item">@opId - @opDescription</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="calendar-item">@opDescription</span>
+                                    }
+
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudTooltip Text="Open to Plan" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))">
+                                <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                                    <MudIconButton OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                    @if (user.UserType == 1)
+                                    {
+                                        <span class="calendar-item">@opId - @opDescription</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="calendar-item">@opDescription</span>
+                                    }
+                                </MudChip>
+                            </MudTooltip>
+                        }
+
+                    }
+                    else if (jobobs.Status == 7 && jobobs.Type != 3)
+                    {
+                        <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))">
+                            <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                                <MudIconButton @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                @if (user.UserType == 1)
+                                {
+                                    <span class="calendar-item">@opId - @opDescription</span>
+                                }
+                                else
+                                {
+                                    <span class="calendar-item">@opDescription</span>
+                                }
+                            </MudChip>
+                        </MudTooltip>
+                    }
+
+                    break;
+            }
+
+        }
+    }
+}
+else
+{
+    var operationDescription = jobobs.Operations.FirstOrDefault().Description;
+    var opDescription = operationDescription.Length < 18 ? operationDescription : operationDescription.Substring(0, 15) + "...";
+
+    if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.PlannedStartDate?.ToShortDateString()).Date)
+    {
+        //Ends the same day
+
+        //Status filter
+        switch (optionStatus)
+        {
+            case 0:
+            case 7:
+                if (jobobs.Status == 7 && jobobs.Type == 3 || jobobs.Type == 4)
+                {
+                    if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= DateTime.Now.Date)
+                    {
+
+                        <MudTooltip Text="Open to Plan" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))">
+                            <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                                <MudIconButton OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                <span class="calendar-item">@opDescription</span>
+                            </MudChip>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <MudTooltip Text="Open to Plan" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))">
+                            <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                                <MudIconButton OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                <span class="calendar-item">@opDescription</span>
+                            </MudChip>
+                        </MudTooltip>
+                    }
+
+                }
+                else if (jobobs.Status == 7 && jobobs.Type != 3)
+                {
+                    <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))">
+                        <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                            <MudIconButton @onclick="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" OnTouch="(() => OpenToReprogramSuggestion.InvokeAsync(jobobs))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                            <span class="calendar-item">@opDescription</span>
+                        </MudChip>
+                    </MudTooltip>
+                }
+
+                break;
+        }
+
+    }
+}
+@code {
+    [Parameter]
+    public DateTime compare { get; set; }
+    [Parameter]
+    public JobObservationNulls jobobs { get; set; }
+    [Parameter]
+    public int optionStatus { get; set; }
+    [Parameter]
+    public User user { get; set; } = new();
+    [Parameter]
+    public EventCallback<JobObservationNulls> OpenToReprogramSuggestion { get; set; }
+}

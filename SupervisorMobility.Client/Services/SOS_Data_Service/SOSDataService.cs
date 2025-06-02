@@ -522,7 +522,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             {
                 foreach (var distState in distributionStates)
                 {
-                    Console.WriteLine(distributionStates.First().CurrentOperationIndex);
+                    //Console.WriteLine(distributionStates.First().CurrentOperationIndex);
                     // Saltar distribuciones sin operaciones pendientes
                     if (distState.CurrentOperationIndex >= distState.Distribution.Operations.Count)
                         continue;
@@ -901,18 +901,17 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
 
                 var changedDatesFlag = false;
 
-                if(await IsWeekend(startDate) || await IsHoliday(startDate)) {
-                    startDate = await FindNextAvailableDate(startDate, true, supervisorId);
-                    changedDatesFlag = true;
-                }
+                bool isHoliday = await IsHoliday(startDate);
 
-                if (changedDatesFlag)
-                {
-                    //JobObsInHolidays.Add(clonejob);
+                if (await IsWeekend(startDate) || isHoliday) {
+                    job.OriginalPlannedDate = startDate;
+                    job.IsReallocated = true;
+
+                    startDate = await FindNextAvailableDate(startDate, true, supervisorId);
+
                     job.StartDate = startDate;
                     job.PlannedStartDate = startDate;
                 }
-
 
                 UpdateRegisterRelations(_sos_plan, op, supervisorId, SV_Manager, existing: true);
                 availableJobs.Remove(existingJob);
@@ -1038,7 +1037,7 @@ namespace SupervisorMobility.Client.Services.SOS_Data_Service
             DateTime baseDate = (year == today.Year && startDate < today) ? today : new DateTime(year, 1, 1);
 
             // Desplazar baseDate por días hábiles (YearLoop veces)
-            DateTime searchDate = await AddWorkingDays(baseDate, 1);
+            DateTime searchDate = currentExistingJob != null? startDate : baseDate;
 
 
             int searchAttempts = 0;
