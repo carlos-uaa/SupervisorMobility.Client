@@ -31,7 +31,6 @@
         box-shadow: var(--mud-elevation-1);
         overflow-x: auto;
         border-radius: var(--mud-default-borderradius);
-        
     }
 
         .table-container:hover {
@@ -44,7 +43,6 @@
         min-width: 100%;
         table-layout: fixed;
         border-radius: var(--mud-default-borderradius);
-        
     }
 
     th,
@@ -67,7 +65,7 @@
         left: 0;
     }
 
-    .mud-typography.mud-typography-body1{
+    .mud-typography.mud-typography-body1 {
         overflow: hidden;
     }
 </style>
@@ -127,11 +125,27 @@
                         {
                             @if (User_Knolowed[usr.UserId])
                             {
-                                <th rowspan="4" colspan="2">@usr.Name</th>
+                                <th rowspan="4" colspan="2">
+                                    <div style="text-align: end;">
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@usr.Name" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU(usr.UserId))">
+                                                History ILU
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
+                                </th>
                             }
                             else
                             {
-                                <th rowspan="4" colspan="2" style="background-color:#fbe8ce;color:#ff9800">@usr.Name</th>
+                                <th rowspan="4" colspan="2" style="background-color:#fbe8ce;color:#ff9800">
+                                    <div style="text-align: end;">
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@usr.Name" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU(usr.UserId))">
+                                                History ILU
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
+                                </th>
                             }
                         }
                     </tr>
@@ -172,11 +186,19 @@
                     @foreach (var op in _operations)
                     {
                         <tr>
-                            
+
                             @if (Operations_Knolowed[op.OperationId])
                             {
                                 <td style="max-width:60px;width:50px" class="fixed-column">@op.OperationId</td>
-                                <td colspan="3" class="fixed-column dynamic-left">@op.Description</td>
+                                <td colspan="3" class="fixed-column dynamic-left">
+                                    <div style="text-align: end;">
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@op.Description" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU_Operation(op.OperationId))">
+                                                History ILU
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
+                                </td>
                                 <td class="fixed-column dynamic-left"></td>
                             }
                             else
@@ -185,7 +207,13 @@
                                     @op.OperationId
                                 </td>
                                 <td style="background-color: #f9dad8; color: #f44336;" colspan="3" class="fixed-column dynamic-left">
-                                    @op.Description
+                                    <div style="text-align: end;">
+                                        <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@op.Description" AnchorOrigin="Origin.BottomCenter">
+                                            <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU_Operation(op.OperationId))">
+                                                History ILU
+                                            </MudMenuItem>
+                                        </MudMenu>
+                                    </div>
                                 </td>
                                 <td class="fixed-column dynamic-left"></td>
                             }
@@ -209,7 +237,7 @@
                                         <table style="border: none">
                                             <tbody>
                                                 @{
-                                                    var latestContext = context.OrderByDescending(c => c.ILURegisterid).FirstOrDefault();
+                                                    var latestContext = context.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
                                                     char ILULevelNumber = '§';
                                                     @if (latestContext != null)
                                                     {
@@ -225,13 +253,13 @@
                                                         {
                                                             <td style="border: none">
                                                                 <MudText Typo="Typo.subtitle1"> <b>  @ILULevelNumber </b> </MudText>
-                                                                </td>
+                                                            </td>
                                                         }
                                                     </tr>
                                                 }
                                                 else
                                                 {
-                                                   
+
                                                 }
                                             </tbody>
                                         </table>
@@ -283,6 +311,108 @@ else
 </MudDialog>
 
 
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ILUHistoryDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction:column" Class="gap-4">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    ILU History
+                </MudText>
+            </MudItem>
+
+
+            <table style="border: none">
+                <tbody>
+                    @foreach (var op in _operations)
+                    {
+                        @if (ILU_Matrix.TryGetValue((op.OperationId, auxILU_UseId), out var context))
+                        {
+                        
+                                var latestContext = context.OrderByDescending(c => c.ILURegisterid);
+                     
+                            @if (context.Count > 0 && latestContext != null)
+                            {
+                                foreach (var element in latestContext)
+                                {
+                                    <tr style="border: none">
+                                        <td style="border: none">@element.AcquisitionDate?.ToString("dd/MM/yyyy")</td>
+
+                                        <td style="border: none">
+                                            <MudText Typo="Typo.subtitle1">
+                                                <b>
+                                                    @_LevelsILU.Find(u => u.ILULevelId == element.ILULevelId).ILULevelCode
+                                                </b>
+                                            </MudText>
+                                        </td>
+
+                                    </tr>
+                                }
+                                    
+                            }
+                        }
+                    }
+
+                </tbody>
+            </table>
+
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="CloseHistoryILU">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ILUHistoryOperationDialog" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; flex-direction:column" Class="gap-4">
+            <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
+                <MudText Typo="Typo.h6">
+                    ILU History
+                </MudText>
+            </MudItem>
+
+
+            <table style="border: none">
+                <tbody>
+                    @foreach (var usr in _UserOfArea)
+                    {
+                        @if (ILU_Matrix.TryGetValue((auxILU_OpId, usr.UserId), out var context))
+                        {
+                            var latestContext = context.OrderByDescending(c => c.ILURegisterid);
+
+                            @if (context.Count > 0 && latestContext != null)
+                            {
+                                foreach (var element in latestContext)
+                                {
+                                    <tr style="border: none">
+                                        <td style="border: none">@element.AcquisitionDate?.ToString("dd/MM/yyyy")</td>
+
+                                        <td style="border: none">
+                                            <MudText Typo="Typo.subtitle1">
+                                                <b>
+                                                    @_LevelsILU.Find(u => u.ILULevelId == element.ILULevelId).ILULevelCode
+                                                </b>
+                                            </MudText>
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            }
+                        }
+                    }
+
+                </tbody>
+            </table>
+
+
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Info" OnClick="CloseHistoryILU">Close</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     [Parameter]
@@ -301,9 +431,13 @@ else
 
     //dialog
     bool AddILUVisibleDialog = false;
+    bool ILUHistoryDialog = false;
+    bool ILUHistoryOperationDialog = false;
     private ILURegister _newIlu { get; set; } = new();
     private List<ILURegister> AllRegistersOfPat { get; set; } = new();
     private int auxILU_Level = 0;
+    private int auxILU_UseId = 0;
+    private int auxILU_OpId = 0;
 
 
     protected async override Task OnInitializedAsync()
@@ -330,7 +464,7 @@ else
             {
                 // Obtener los registros correspondientes a la operación y usuario actual
                 var matchingRegisters = usr.ILURegisers?
-                    .Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId)
+                    .Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
                     .OrderByDescending(r => r.AcquisitionDate)
                     .ToList();
 
@@ -387,6 +521,24 @@ else
         _newIlu.ILULevelId = auxILU_Level;
     }
 
+    private async void OpenHistoryILU(int ID_User)
+    {
+        ILUHistoryDialog = true;
+        auxILU_UseId = ID_User;
+        StateHasChanged();
+    }
+    private async void OpenHistoryILU_Operation(int Op_User)
+    {
+        ILUHistoryOperationDialog = true;
+        auxILU_OpId = Op_User;
+        StateHasChanged();
+    }
+    private async void CloseHistoryILU()
+    {
+        ILUHistoryDialog = false;
+        StateHasChanged();
+    }
+
     private async void OpenDialogAddILU(int ID_Operation, int ID_User)
     {
         AddILUVisibleDialog = true;
@@ -415,9 +567,9 @@ else
                 {
                     // Obtener los registros correspondientes a la operación y usuario actual
                     var matchingRegisters = usr.ILURegisers?
-                        .Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId)
-                        .OrderByDescending(r => r.AcquisitionDate)
-                        .ToList();
+                   .Where(r => r.OperationId == op.OperationId && r.OperatorId == usr.UserId && int.Parse(r.AcquisitionDate?.ToString("yyyy")) <= _pat.AplicationYear)
+                   .OrderByDescending(r => r.AcquisitionDate)
+                   .ToList();
 
                     ILU_Matrix.Add((op.OperationId, usr.UserId), matchingRegisters);
                     // Almacenar los registros en la
