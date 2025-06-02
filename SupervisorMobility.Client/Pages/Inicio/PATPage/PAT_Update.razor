@@ -281,7 +281,7 @@
                                 <tr class="fixed-row">
                                     <th colspan="2">@Localizer["operatorsByOperation"]</th>
                                     <th colspan="2" rowspan="3" class="fixed-column dynamic-left ">@Localizer["operatorName"]</th>
-                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    <Virtualize Context="usr" Items="_UserOfArea">
                                         @if (User_Knolowed[usr.UserId])
                                         {
                                             <th rowspan="3" colspan="2">
@@ -371,7 +371,7 @@
                                         </div>
 
                                     </th>
-                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    <Virtualize Context="usr" Items="_UserOfArea">
                                         @if (User_Knolowed[usr.UserId])
                                         {
                                             <th colspan="2" style="text-align: center;">
@@ -391,7 +391,7 @@
                                 <tr class="fixed-row">
                                     @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
                                     <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
-                                    <Virtualize Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    <Virtualize Items="_UserOfArea">
                                         <th>MES</th>
                                         <th>Nivel</th>
                                     </Virtualize>
@@ -520,7 +520,7 @@
                                         }
 
 
-                                        <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                        <Virtualize Context="usr" Items="_UserOfArea">
                                             <td style="text-align: end;" colspan="2" class="right-border">
                                                 @if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
                                                 {
@@ -671,7 +671,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    <Virtualize Context="usr" Items="_UserOfArea">
                                         @{
                                             int index = _UserOfArea.IndexOf(usr);
                                         }
@@ -723,7 +723,7 @@
                                     </td>
                                     <td colspan="2" class="fixed-column dynamic-left">
                                     </td>
-                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    <Virtualize Context="usr" Items="_UserOfArea">
                                         <td style="text-align: center;" colspan="2">
                                             @{
                                                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
@@ -750,7 +750,7 @@
                                     </td>
                                     @if (_pat?.PatUserRoles != null)
                                     {
-                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
                                             <td style="text-align: center;" colspan="2" rowspan="2">
                                                 <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
                                                 <MudSelect @bind-Value="patUserRole.Role"
@@ -885,20 +885,16 @@
                                     <th colspan="2">
                                         <div style="display:flex; align-items: center;">
                                             @{
-                                                double? percentage = CalculateDistributionPercentageMonth(_yearMonth.Value.Month);
+                                                double? percentage = CalculateDistributionPercentageMonthAcumulted(_yearMonth.Value.Month);
                                             }
 
                                             @if (percentage.HasValue)
                                             {
                                                 <span class="mr-2">@($"{percentage.Value:F2}%")</span>
                                             }
-                                            else if (_pat.KnowledgePercentage is not null)
-                                            {
-                                                <span class="mr-2">@(_pat.KnowledgePercentage ?? 0)%</span>
-                                            }
                                             else
                                             {
-                                                <MudInput T="double?" ReadOnly />
+                                                <MudInput T="double?" ReadOnly /> <span>%</span>
                                             }
 
                                             @Localizer["in"] 1 x
@@ -916,7 +912,7 @@
                                     <th colspan="2" style="align-items: center;">
                                         <div style="display:flex; align-items: center;">
                                             @{
-                                                double? percentageUsers = CalculateUserPercentageMonth(_yearMonth.Value.Month);
+                                                double? percentageUsers = CalculateUserPercentageMonthAcumulted(_yearMonth.Value.Month);
                                             }
                                             @if (percentageUsers.HasValue)
                                             {
@@ -1336,9 +1332,9 @@
                                         </td>
                                     </Virtualize>
                                     <td style="text-align: center;">
-                                       @*  <MudButton OnClick="SetHistoricalAbilityAcumulated" Color="Color.Primary">Acum</MudButton>
-                                        <MudButton OnClick="SetHistoricalAbility" Color="Color.Secondary">X Mont</MudButton>
-                                        <MudButton OnClick="LoadHistoricalAbility" Color="Color.Secondary">Load</MudButton> *@
+                                       @*   <MudButton OnClick="SetHistoricalAbilityAcumulated" Color="Color.Primary">Acum</MudButton>
+                                         <MudButton OnClick="SetHistoricalAbility" Color="Color.Secondary">X Mont</MudButton> 
+                                        <MudButton OnClick="LoadHistoricalAbility" Color="Color.Secondary">Load</MudButton>  *@
                                     </td>
                                     <td style="text-align: center;">Histórico año actual</td>
                                 </tr>
