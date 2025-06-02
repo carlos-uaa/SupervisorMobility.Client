@@ -1,0 +1,171 @@
+﻿@{
+var time1 = jobobs.StartDate?.ToString("HH:mm");
+var time2 = jobobs.EndDate?.ToString("HH:mm");
+
+var operationDescription = jobobs.Operations?.FirstOrDefault()?.Description ?? "";
+var opDescription = operationDescription.Length < 18 ? operationDescription : operationDescription.Substring(0, 15) + "...";
+
+
+var distributionDescription = jobobs.Distribution?.Description;
+var distDescription = distributionDescription.Length < 18 ? distributionDescription : distributionDescription.Substring(0, 15) + "...";
+
+}
+
+
+@if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
+{
+    //Ends the same day
+    if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
+    {
+        int selectedStatus = optionStatus;
+        @if (ShouldRenderChip(jobobs, selectedStatus))
+        {
+            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="@(jobobs.Type == 4 ? Color.Default : GetColor(jobobs.Status))" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                <MudChip Variant="Variant.Text" Color="@(jobobs.Type == 4 ? Color.Default : GetColor(jobobs.Status))" Label>
+                    <MudIconButton @onclick="(() => OpenDialog2.InvokeAsync(jobobs.JobObservationId))"
+                                    Style="padding: 0px;"
+                                    Color="@GetColor(jobobs.Status)"
+                                    Icon="@GetIcon(jobobs.Status)"
+                                    Variant="@(jobobs.Type == 2 ? Variant.Filled : jobobs.Type == 4 ? Variant.Outlined : Variant.Text)"
+                                    Size="@(jobobs.Type == 2 || jobobs.Type == 4 ? Size.Small : Size.Medium)">
+                    </MudIconButton>
+                    <span class="calendar-item">@distDescription - @operationDescription</span>
+                </MudChip>
+            </MudTooltip>
+        }
+    }
+    //lasts more than one day
+    else
+    {
+
+        int selectedStatus = optionStatus;
+        @if (ShouldRenderChip(jobobs, selectedStatus))
+        {
+            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="@(jobobs.Type == 4 ? Color.Default : GetColor(jobobs.Status))" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                <MudChip Variant="Variant.Outlined" Color="@(jobobs.Type == 4 ? Color.Default : GetColor(jobobs.Status))" Label>
+                    <MudIconButton @onclick="(() => OpenDialog2.InvokeAsync(jobobs.JobObservationId))"
+                                    Style="padding: 0px;"
+                                    Color="@GetColor(jobobs.Status)"
+                                    Icon="@GetIcon(jobobs.Status)"
+                                    Variant="@(jobobs.Type == 2 ? Variant.Filled : jobobs.Type == 4 ? Variant.Outlined : Variant.Text)"
+                                    Size="@(jobobs.Type == 2 || jobobs.Type == 4 ? Size.Small : Size.Medium)">
+                    </MudIconButton>
+                    <span class="calendar-item">@distDescription - @operationDescription</span>
+
+                </MudChip>
+            </MudTooltip>
+        }
+
+
+    }
+
+}
+
+@if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.PlannedStartDate?.ToShortDateString()).Date)
+{
+    //Ends the same day
+
+    //Status filter
+    switch (optionStatus)
+    {
+        case 0:
+        case 7:
+            if (jobobs.Status == 7 && jobobs.Type == 3 || jobobs.Type == 4)
+            {
+                if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= DateTime.Now.Date)
+                {
+
+                    <MudTooltip Text="Open to Plan" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog3.InvokeAsync(jobobs.JobObservationId))">
+                        <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                            <MudIconButton @onclick="(() => OpenDialog3.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info" Variant="@(jobobs.Type == 2 ? Variant.Filled : Variant.Text)" Size="@(jobobs.Type == 2 ? Size.Small : Size.Medium)"></MudIconButton>
+                            <span class="calendar-item">@opDescription</span>
+                        </MudChip>
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudTooltip Text="Open to Plan" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog3.InvokeAsync(jobobs.JobObservationId))">
+                        <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                            <MudIconButton @onclick="(() => OpenDialog3.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Info" Variant="@(jobobs.Type == 2 ? Variant.Filled : Variant.Text)" Size="@(jobobs.Type == 2 ? Size.Small : Size.Medium)"></MudIconButton>
+                            <span class="calendar-item">@opDescription</span>
+                        </MudChip>
+                    </MudTooltip>
+                }
+
+            }
+            else if (jobobs.Status == 7 && jobobs.Type != 3)
+            {
+                <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() => OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                    <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                        <MudIconButton @onclick="(() => OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info" Variant="@(jobobs.Type == 2 ? Variant.Filled : Variant.Text)" Size="@(jobobs.Type == 2 ? Size.Small : Size.Medium)"></MudIconButton>
+                        <span class="calendar-item">@opDescription</span>
+                    </MudChip>
+                </MudTooltip>
+            }
+
+            break;
+    }
+
+}
+@code {
+    [Parameter]
+    public DateTime compare { get; set; }
+    [Parameter]
+    public JobObservation? jobobs { get; set; }
+    [Parameter]
+    public int optionStatus { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OpenDialog2 { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OpenDialog3 { get; set; }
+
+    private bool ShouldRenderChip(JobObservation jobobs, int selectedStatus)
+    {
+        if (selectedStatus >= 21)
+        {
+            selectedStatus -= 20;
+            return jobobs.Status == selectedStatus && jobobs.Type == 4;
+        }
+        else if (selectedStatus >= 11)
+        {
+            selectedStatus -= 10;
+            return jobobs.Status == selectedStatus && jobobs.Type == 2;
+        }
+        else
+        {
+            return (jobobs.Status == selectedStatus && jobobs.Type != 2) || selectedStatus == 0;
+        }
+    }
+
+    private Color GetColor(int? status)
+    {
+        return status switch
+        {
+            1 => Color.Warning,  // Planned
+            2 => Color.Info,     // In Progress
+            3 => Color.Error,    // Late
+            4 => Color.Info,     // Under Review
+            5 => Color.Error,    // Rejected
+            6 => Color.Success,  // Finalized
+            7 => Color.Warning,  // Programmed
+            _ => Color.Default
+        };
+    }
+
+    private string GetIcon(int? status)
+    {
+        return status switch
+        {
+            1 => Icons.Material.Filled.PlayCircle,    // Planned
+            2 => Icons.Material.Filled.StopCircle,    // In Progress
+            3 => Icons.Material.Filled.RemoveCircle,  // Late
+            4 => Icons.Material.Filled.IncompleteCircle, // Under Review
+            5 => Icons.Material.Filled.Cancel,        // Rejected
+            6 => Icons.Material.Filled.Circle,        // Finalized
+            7 => Icons.Material.Filled.Info,        // Programmed
+            _ => Icons.Material.Filled.Help // Default icon
+        };
+    }
+}
