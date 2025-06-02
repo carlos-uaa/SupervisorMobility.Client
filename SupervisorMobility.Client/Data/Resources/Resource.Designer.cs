@@ -169,7 +169,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Add day to the list.
+        ///   Looks up a localized string similar to Add day to the list.
         /// </summary>
         public static string AddHolidayToList {
             get {
@@ -178,7 +178,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Add ILU Level.
         ///   Looks up a localized string similar to Add ILU Level.
         /// </summary>
         public static string addILULevel {
@@ -854,7 +853,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Continue.
         ///   Looks up a localized string similar to Continue.
         /// </summary>
         public static string Continue {
@@ -864,7 +862,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Cost.
         ///   Looks up a localized string similar to Cost.
         /// </summary>
         public static string cost {
@@ -982,7 +979,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Critical.
         ///   Looks up a localized string similar to Critical.
         /// </summary>
         public static string Critical {
@@ -992,7 +988,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Cycle 1.
         ///   Looks up a localized string similar to Cycle 1.
         /// </summary>
         public static string cycle1 {
@@ -1281,7 +1276,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Detected obserations.
         ///   Looks up a localized string similar to Detected obserations.
         /// </summary>
         public static string DetectedJobs {
@@ -1291,7 +1285,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Directories.
         ///   Looks up a localized string similar to Directories.
         /// </summary>
         public static string directories {
@@ -2183,7 +2176,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a It Exist.
+        ///   Looks up a localized string similar to It Exist.
         /// </summary>
         public static string IsExist {
             get {
@@ -2192,7 +2185,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Inspection Appearance.
         ///   Looks up a localized string similar to Inspection Appearance.
         /// </summary>
         public static string ISTitle {
@@ -2571,7 +2563,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Manual Edition.
+        ///   Looks up a localized string similar to Manual Edition.
         /// </summary>
         public static string ManualEdit {
             get {
@@ -2580,7 +2572,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Manual Loading.
+        ///   Looks up a localized string similar to Manual Loading.
         /// </summary>
         public static string ManualUpload {
             get {
@@ -2589,7 +2581,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Massive Load.
+        ///   Looks up a localized string similar to Massive Load.
         /// </summary>
         public static string MassiveUpload {
             get {
@@ -2598,7 +2590,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Unit.
         ///   Looks up a localized string similar to Unit.
         /// </summary>
         public static string model {
@@ -2644,7 +2635,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Inability day added to the list..
+        ///   Looks up a localized string similar to Inability day added to the list..
         /// </summary>
         public static string MsgHolidayAdd {
             get {
@@ -2653,7 +2644,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a The date cannot be empty..
+        ///   Looks up a localized string similar to The date cannot be empty..
         /// </summary>
         public static string MsgHolidayDateNotEmpty {
             get {
@@ -2662,7 +2653,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a The selected date is already in use..
+        ///   Looks up a localized string similar to The selected date is already in use..
         /// </summary>
         public static string MsgHolidayDateUsed {
             get {
@@ -2671,7 +2662,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a The date and description are mandatory..
+        ///   Looks up a localized string similar to The date and description are mandatory..
         /// </summary>
         public static string MsgHolidayError {
             get {
@@ -2680,7 +2671,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a The ineligible day already exists in the calendar..
+        ///   Looks up a localized string similar to The ineligible day already exists in the calendar..
         /// </summary>
         public static string MsgHolidayExistInSchdeule {
             get {
@@ -2689,7 +2680,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a The marked days already exist in the calendar, delete or edit them..
+        ///   Looks up a localized string similar to The marked days already exist in the calendar, delete or edit them..
         /// </summary>
         public static string MsgHolidayMarkExist {
             get {
@@ -2698,7 +2689,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Name.
         ///   Looks up a localized string similar to Name.
         /// </summary>
         public static string name {
@@ -2897,7 +2887,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a No ineligible days have been charged..
+        ///   Looks up a localized string similar to No ineligible days have been charged..
         /// </summary>
         public static string NoHolidays {
             get {
@@ -2906,7 +2896,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a No image data to upload.
         ///   Looks up a localized string similar to No image data to upload.
         /// </summary>
         public static string NoImgData {
@@ -3582,7 +3571,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Reassigned Observations.
         ///   Looks up a localized string similar to Reassigned.
         /// </summary>
         public static string Reallocated {
@@ -3601,7 +3589,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Reject.
         ///   Looks up a localized string similar to Reject.
         /// </summary>
         public static string reject {
@@ -3692,7 +3679,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Observations scheduled on non-business days were detected.
         ///   Looks up a localized string similar to Observations scheduled on non-business days were detected.
         /// </summary>
         public static string ScheduledSubtitle1 {
@@ -3702,7 +3688,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a The following work observations will be automatically reassigned because they are scheduled on a weekend or holiday..
         ///   Looks up a localized string similar to The following work observations will be automatically reassigned because they are scheduled on a weekend or holiday..
         /// </summary>
         public static string ScheduledSubtitle2 {
@@ -3712,7 +3697,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Schedule.
         ///   Looks up a localized string similar to Schedule.
         /// </summary>
         public static string Schedulin {
@@ -3902,7 +3886,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Select year.
+        ///   Looks up a localized string similar to Select year.
         /// </summary>
         public static string SelectYear {
             get {
@@ -3911,7 +3895,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Separation days:.
         ///   Looks up a localized string similar to Separation days:.
         /// </summary>
         public static string separationDays {
@@ -4695,7 +4678,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Unavailable days charge.
+        ///   Looks up a localized string similar to Unavailable days charge.
         /// </summary>
         public static string UploadsHolidays {
             get {
@@ -4704,7 +4687,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Will the SSV&apos;s approval be needed to finish the Job Observation?.
         ///   Looks up a localized string similar to Will the SSV&apos;s approval be needed to finish the Job Observation?.
         /// </summary>
         public static string UseOfSSV {
@@ -4777,7 +4759,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Warning.
         ///   Looks up a localized string similar to Warning.
         /// </summary>
         public static string Warning {
@@ -4787,7 +4768,6 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Who reviews.
         ///   Looks up a localized string similar to Who reviews.
         /// </summary>
         public static string whoReviews {
