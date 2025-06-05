@@ -528,6 +528,12 @@ namespace SupervisorMobility.Client.Services.TreeServices
 
             return new AsyncVoidMethodBuilder();
         }
+        public async Task<AsyncVoidMethodBuilder> addCodePath(SOSCodePath item)
+        {
+           this._CodePaths.Add(item);
+           
+            return new AsyncVoidMethodBuilder();
+        }
 
         public List<TreeItemData> FindAncestorsByPath(TreeItemData rootNode, string path)
         {
