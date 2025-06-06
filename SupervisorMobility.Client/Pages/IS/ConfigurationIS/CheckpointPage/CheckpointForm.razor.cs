@@ -681,9 +681,10 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.CheckpointPage
                         }
                         else
                         {
+                            var fileId = CheckpointImages[removeImageIndex].imgId;
 
                             CheckpointImages.RemoveAt(removeImageIndex);
-                            RemoveSketch(removeImageIndex);
+                            RemoveSketch(fileId);
                         }
                         visibleDelete = false;
                     }
@@ -696,7 +697,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.CheckpointPage
 
         private async Task RemoveSketch(int fileUploadId)
         {
-            var response = await _CheckPointServices.RemoveSketchCheckPoint(removeImageId, fileUploadId);
+            var response = await _CheckPointServices.RemoveSketchCheckPoint(CheckpointId.Value, fileUploadId);
             if (response)
             {
                 Snackbar.Clear();
