@@ -600,20 +600,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         int lastValidOperationIndex = -1;
         private void GetLastValidOperationIndex()
         {
-            lastValidOperationIndex = -1; // Inicializar a -1 para el caso en que no se encuentre ninguna operaci�n v�lida
+            lastValidOperationIndex = _sosCombination.SOSCombinationOperationSequence.Count()-1;
+            //lastValidOperationIndex = -1; // Inicializar a -1 para el caso en que no se encuentre ninguna operaci�n v�lida
 
-            foreach (var (operation, index) in _sosCombination.SOSCombinationOperationSequence.Select((operation, index) => (operation, index)))
-            {
-                if (string.IsNullOrEmpty(operation.ManualOperationTime) &&
-                    string.IsNullOrEmpty(operation.ManualOperationTimeWithMachineInAutomatic) &&
-                    string.IsNullOrEmpty(operation.AutomaticMachineOperationTime) &&
-                    string.IsNullOrEmpty(operation.StepsToNextProcess) &&
-                    string.IsNullOrEmpty(operation.PartsPerCycle))
-                {
-                    lastValidOperationIndex = index - 1;
-                    break; // Salir del bucle una vez que se encuentra la primera operación vacía
-                }
-            }
+
+            //foreach (var (operation, index) in _sosCombination.SOSCombinationOperationSequence.Select((operation, index) => (operation, index)))
+            //{
+            //    if (string.IsNullOrEmpty(operation.ManualOperationTime) &&
+            //        string.IsNullOrEmpty(operation.ManualOperationTimeWithMachineInAutomatic) &&
+            //        string.IsNullOrEmpty(operation.AutomaticMachineOperationTime) &&
+            //        string.IsNullOrEmpty(operation.StepsToNextProcess) &&
+            //        string.IsNullOrEmpty(operation.PartsPerCycle))
+            //    {
+            //        lastValidOperationIndex = index - 1;
+            //        break; // Salir del bucle una vez que se encuentra la primera operación vacía
+            //    }
+            //}
         }
 
         private (int top, double angle, int left, double width) CalculateTopParameters(double step)
@@ -621,17 +623,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             // Valores exactos ordenados por step
             var stepPresets = new (double step, int top, double angle, int left, double width)[]
             {
-        (0.02, 28, 65, -10, 60),
-        (0.03, 25, 55, -5, 70),
-        (0.04, 29, 45, -5, 75),
-        (0.05, 35, 40, -10, 85),
-        (0.06, 20, 33, -5, 100),
-        (0.07, 30, 30, -5, 110),
-        (0.08, 30, 45, -6, 123),
-        (0.09, 20, 25, -5, 137),
-        (0.10, 35, 20, -5, 150),
-        (0.11, 26, 20, -5, 160),
-        (0.12, 30, 17, -5, 177)
+                (_CellSize*1, 28, 65, -10, 60),
+                (_CellSize*1.5, 25, 55, -5, 70),
+                (_CellSize*2, 29, 45, -5, 75),
+                (_CellSize*2.5, 35, 40, -10, 85),
+                (_CellSize*3, 20, 33, -5, 100),
+                (_CellSize*3.5, 30, 30, -5, 110),
+                (_CellSize*4, 30, 45, -6, 123),
+                (_CellSize*4.5, 20, 25, -5, 137),
+                (_CellSize*5, 35, 20, -5, 150),
+                (_CellSize*5.1, 26, 20, -5, 160),
+                (_CellSize*6, 30, 17, -5, 177)
             };
 
             // Función de interpolación
@@ -677,17 +679,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             // Valores exactos ordenados por step
             var stepPresets = new (double step, int top, double angle, int left, double width)[]
             {
-        (0.02, 40, 55, -10, 45),
-        (0.03, 40, 40, -5, 55),
-        (0.04, 35, 33, -5, 60),
-        (0.05, 40, 30, -5, 80),
-        (0.06, 40, 25, -5, 92),
-        (0.07, 35, 20, 0, 100),
-        (0.08, 45, 20, -5, 120),
-        (0.09, 35, 15, -5, 130),
-        (0.10, 35, 15, -5, 140),
-        (0.11, 40, 15, -5, 160),
-        (0.12, 35, 12, 0, 170)
+                (_CellSize*1, 40, 55, -10, 45),
+                (_CellSize*1.5, 40, 40, -5, 55),
+                (_CellSize*2, 35, 33, -5, 60),
+                (_CellSize*2.5, 40, 30, -5, 80),
+                (_CellSize*3, 40, 25, -5, 92),
+                (_CellSize*3.5, 35, 20, 0, 100),
+                (_CellSize*4, 45, 20, -5, 120),
+                (_CellSize*4.5, 35, 15, -5, 130),
+                (_CellSize*5, 35, 15, -5, 140),
+                (_CellSize*5.5, 40, 15, -5, 160),
+                (_CellSize*6, 35, 12, 0, 170)
             };
 
             // Función de interpolación

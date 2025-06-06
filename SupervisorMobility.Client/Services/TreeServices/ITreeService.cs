@@ -20,6 +20,7 @@ namespace SupervisorMobility.Client.Services.TreeServices
 
         Task<SOSCodePath> getCodePath(int id);
         Task<AsyncVoidMethodBuilder> updateCodePath(SOSCodePath item);
+        Task<AsyncVoidMethodBuilder> addCodePath(SOSCodePath item);
         Task<List<SOSCodePath>?> getAllCodesPaths();
         Task<AsyncVoidMethodBuilder> setNodesByPath(SOSCodePath codePath);
         Task<AsyncVoidMethodBuilder> GetFilesInNodeCCP(TreeItemData node);

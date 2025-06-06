@@ -30,11 +30,11 @@ namespace SupervisorMobility.Client.Services.AssyChartService
             return newAssyChart;
         }
         
-        public async Task<AssyChart> CreateCodePath(SOSCodePath _newCodePath)
+        public async Task<SOSCodePath> CreateCodePath(SOSCodePath _newCodePath)
         {
             var response = await _http.PostAsJsonAsync($"assycharts/CodePath", _newCodePath);
 
-            var newAssyChart = await response.Content.ReadFromJsonAsync<AssyChart>();
+            var newAssyChart = await response.Content.ReadFromJsonAsync<SOSCodePath>();
             
             return newAssyChart;
         }
