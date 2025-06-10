@@ -1530,7 +1530,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         void CreateBakup()
         {
-            if (RawAnalisis.Count > 0 && RawAnalisis.Count > RawAnalisisBk.Count)
+            _sosHub.AnalysesBkup.Clear();
+            if (RawAnalisis.Count > 0 && RawAnalisis.Count >= RawAnalisisBk.Count)
             {
                 RawAnalisisBk = ObjectCloner.ObjectCloner.DeepClone(RawAnalisis);
                 foreach (var raw in RawAnalisisBk)
