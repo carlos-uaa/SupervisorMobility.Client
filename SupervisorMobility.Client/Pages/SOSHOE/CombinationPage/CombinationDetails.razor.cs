@@ -303,7 +303,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
         private (int top, double angle, int left, double width) CalculateTopParameters(double step)
         {
-            // Valores exactos ordenados por step
+            // Valores exactos ordenados por step, usando valores absolutos en lugar de relativos a _CellSize
             var stepPresets = new (double step, int top, double angle, int left, double width)[]
             {
                 (_CellSize*1, 28, 65, -10, 60),
@@ -316,7 +316,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 (_CellSize*4.5, 20, 25, -5, 137),
                 (_CellSize*5, 35, 20, -5, 150),
                 (_CellSize*5.1, 26, 20, -5, 160),
-                (_CellSize*6, 30, 17, -5, 177)
+                (_CellSize*6, 30, 17, -5, 177),
+                (_CellSize*6.5, 32, 15, -5, 190),
+                (_CellSize*7,   25, 13, -5, 202),
+                (_CellSize*7.5, 30, 11, -5, 215),
+                (_CellSize*8,   28, 10, -5, 228),
+                (_CellSize*8.5, 27, 9,  -5, 240),
+                (_CellSize*9,   32, 8,  -5, 253),
+                (_CellSize*9.5, 30, 7,  -5, 265),
+                (_CellSize*10,  25, 6,  -5, 278),
+                (_CellSize*10.5,28, 5.5,-5, 290),
+                (_CellSize*11,  30, 5,  -5, 303),
+                (_CellSize*11.5,32, 4.5,-5, 315),
+                (_CellSize*12,  30, 4,  -5, 328),
+                (_CellSize*13,  28, 3.5,-5, 353),
+                (_CellSize*14,  30, 3,  -5, 378),
+                (_CellSize*15,  32, 2.5,-5, 403)
             };
 
             // Función de interpolación
@@ -359,20 +374,65 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
         private (int top, double angle, int left, double width) CalculateMiddleParameters(double step)
         {
-            // Valores exactos ordenados por step
+            // Valores exactos ordenados por step, usando valores absolutos en lugar de relativos a _CellSize
             var stepPresets = new (double step, int top, double angle, int left, double width)[]
             {
-                (_CellSize*1, 40, 55, -10, 45),
-                (_CellSize*1.5, 40, 40, -5, 55),
-                (_CellSize*2, 35, 33, -5, 60),
-                (_CellSize*2.5, 40, 30, -5, 80),
-                (_CellSize*3, 40, 25, -5, 92),
-                (_CellSize*3.5, 35, 20, 0, 100),
-                (_CellSize*4, 45, 20, -5, 120),
-                (_CellSize*4.5, 35, 15, -5, 130),
-                (_CellSize*5, 35, 15, -5, 140),
-                (_CellSize*5.5, 40, 15, -5, 160),
-                (_CellSize*6, 35, 12, 0, 170)
+                (_CellSize*1,   40, 55, -10, 45),
+                (_CellSize*1.5, 40, 40, -5,  55),
+                (_CellSize*2,   35, 33, -5,  60),
+                (_CellSize*2.5, 40, 30, -5,  80),
+                (_CellSize*3,   40, 25, -5,  92),
+                (_CellSize*3.5, 35, 20, 0,   100),
+                (_CellSize*4,   45, 20, -5,  120),
+                (_CellSize*4.5, 35, 15, -5,  130),
+                (_CellSize*5,   35, 15, -5,  140),
+                (_CellSize*5.5, 40, 15, -5,  160),
+                (_CellSize*6,   35, 12, 0,   170),
+                (_CellSize*6.5, 40, 12, -5,  180),
+                (_CellSize*7,   35, 10, -5,  195),
+                (_CellSize*7.5, 40, 10, -5,  210),
+                (_CellSize*8,   35, 9,  0,   225),
+                (_CellSize*8.5, 40, 8,  -5,  240),
+                (_CellSize*9,   35, 8,  -5,  255),
+                (_CellSize*9.5, 40, 7,  -5,  270),
+                (_CellSize*10,  35, 7,  -5,  285),
+                (_CellSize*10.5,40, 6.5,-5,  300),
+                (_CellSize*11,  35, 6,  -5,  315),
+                (_CellSize*11.5,40, 6,  -5,  330),
+                (_CellSize*12,  35, 5.5,-5,  345),
+                (_CellSize*13,  40, 5,  -5,  375),
+                (_CellSize*14,  35, 4.5,-5,  405),
+                (_CellSize*15,  40, 4,  -5,  435),
+                (_CellSize*15.5, 35, 3.8, -5, 450),
+                (_CellSize*16,   40, 3.5, -5, 465),
+                (_CellSize*16.5, 35, 3.3, -5, 480),
+                (_CellSize*17,   40, 3.2, -5, 495),
+                (_CellSize*17.5, 35, 3.0, -5, 510),
+                (_CellSize*18,   40, 2.9, -5, 525),
+                (_CellSize*18.5, 35, 2.8, -5, 540),
+                (_CellSize*19,   40, 2.7, -5, 555),
+                (_CellSize*19.5, 35, 2.6, -5, 570),
+                (_CellSize*20,   40, 2.5, -5, 585),
+                (_CellSize*20.5, 35, 2.45, -5, 600),
+                (_CellSize*21,   40, 2.4, -5, 615),
+                (_CellSize*21.5, 35, 2.35, -5, 630),
+                (_CellSize*22,   40, 2.3, -5, 645),
+                (_CellSize*22.5, 35, 2.25, -5, 660),
+                (_CellSize*23,   40, 2.2, -5, 675),
+                (_CellSize*23.5, 35, 2.15, -5, 690),
+                (_CellSize*24,   40, 2.1, -5, 705),
+                (_CellSize*24.5, 35, 2.05, -5, 720),
+                (_CellSize*25,   40, 2.0, -5, 735),
+                (_CellSize*25.5, 35, 1.95, -5, 750),
+                (_CellSize*26,   40, 1.9, -5, 765),
+                (_CellSize*26.5, 35, 1.85, -5, 780),
+                (_CellSize*27,   40, 1.8, -5, 795),
+                (_CellSize*27.5, 35, 1.75, -5, 810),
+                (_CellSize*28,   40, 1.7, -5, 825),
+                (_CellSize*28.5, 35, 1.65, -5, 840),
+                (_CellSize*29,   40, 1.6, -5, 855),
+                (_CellSize*29.5, 35, 1.55, -5, 870),
+                (_CellSize*30,   40, 1.5, -5, 885)
             };
 
             // Función de interpolación
