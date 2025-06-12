@@ -77,6 +77,30 @@ namespace SupervisorMobility.Client.Services.PATService
             return null;
         }
 
+        public async Task<int?> getPatByJob(int Jobid, int areaid, int plantid)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"PAT/JOB/{Jobid}?plantid={plantid}&&areaid={areaid}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var id = int.Parse(content);
+
+                    response.Dispose();
+
+                    return id;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejo de excepciones
+                Console.WriteLine($"Error al obtener el PAT Relacionado: {ex.Message}");
+            }
+            return null;
+        }
+
         public async Task<List<PAT>> GetAllPATs()
         {
 
