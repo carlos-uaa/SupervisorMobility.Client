@@ -814,6 +814,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
         }
 
+        void EditJobObservation(int jobObservationId)
+        {
+            NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
+        }
         void Close() => visibleJobDetails = false;
 
 

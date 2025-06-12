@@ -12,7 +12,7 @@
 @inject IPATService PATsServices
 @inject IHCIService HCIServices
 @inject IJSRuntime JSRuntime
-@inject IILUService ILUServices 
+@inject IILUService ILUServices
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
@@ -81,11 +81,11 @@
         left: 0;
     }
     /*
-                table {
-                    border-collapse: collapse;
-                    min-width: 100%;
-                    border-radius: var(--mud-default-borderradius);
-                } */
+                    table {
+                        border-collapse: collapse;
+                        min-width: 100%;
+                        border-radius: var(--mud-default-borderradius);
+                    } */
 
     th,
     td {
@@ -193,7 +193,7 @@
                                     break;
                             }
 
-                           
+
                         </MudItem>
                     </MudItem>
                 </td>
@@ -225,132 +225,132 @@
             </MudItem>
         </Header>
         <ChildContent>
-        <MudTabPanel Text="Yearly" OnClick="@(() => MonthlyView = false)">
-            <div class="table-container mb-10">
-                <div class="scrollable-columns">
-                    <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="@dynamicStyle" Elevation="0">
-                        <thead>
-                            <tr class="fixed-row">
-                                <th colspan="2">@Localizer["operatorsByOperation"]</th>
-                                <th colspan="2" rowspan="3" class="fixed-column dynamic-left ">@Localizer["operatorName"]</th>
-                                <Virtualize Context="usr" Items="_UserOfArea">
-                                    @if (User_Knolowed[usr.UserId])
-                                    {
-                                        <th rowspan="3" colspan="2">
-                                            <div style="text-align: end;">
-                                                <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@usr.Name" AnchorOrigin="Origin.BottomCenter">
-                                                    <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU(usr.UserId))" OnTouch="(() => OpenHistoryILU(usr.UserId))">
-                                                        @Localizer["historyILU"]
-                                                    </MudMenuItem>
-                                                </MudMenu>
-                                            </div>
-                                        </th>
-                                    }
-                                    else
-                                    {
-                                        <th style="background-color: #f9dad8; color: #f44336;" rowspan="3" colspan="2" class="thead">
-                                            @usr.Name
-                                        </th>
-                                    }
-                                </Virtualize>
-                                <th rowspan="3">
-                                    <b class="mr-4">ROR</b> @_UserOfArea.Count
-                                </th>
-                                <th rowspan="3">
-                                </th>
-                            </tr>
-                            <tr>
-                                <th colspan="2">
-                                    <div style="display:flex; align-items: center;">
-                                        @{
-                                            double? percentage = CalculateDistributionPercentage();
-                                        }
-                                        @if (percentage.HasValue)
+            <MudTabPanel Text="Yearly" OnClick="@(() => MonthlyView = false)">
+                <div class="table-container mb-10">
+                    <div class="scrollable-columns">
+                        <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="@dynamicStyle" Elevation="0">
+                            <thead>
+                                <tr class="fixed-row">
+                                    <th colspan="2">@Localizer["operatorsByOperation"]</th>
+                                    <th colspan="2" rowspan="3" class="fixed-column dynamic-left ">@Localizer["operatorName"]</th>
+                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                        @if (User_Knolowed[usr.UserId])
                                         {
-                                            <span class="mr-2">@($"{percentage.Value:F2}%")</span>
+                                            <th rowspan="3" colspan="2">
+                                                <div style="text-align: end;">
+                                                    <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@usr.Name" AnchorOrigin="Origin.BottomCenter">
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" OnClick="(() => OpenHistoryILU(usr.UserId))" OnTouch="(() => OpenHistoryILU(usr.UserId))">
+                                                            @Localizer["historyILU"]
+                                                        </MudMenuItem>
+                                                    </MudMenu>
+                                                </div>
+                                            </th>
                                         }
                                         else
                                         {
-
-                                            <MudInput T="double?" ReadOnly /> <span>%</span>
+                                            <th style="background-color: #f9dad8; color: #f44336;" rowspan="3" colspan="2" class="thead">
+                                                @usr.Name
+                                            </th>
                                         }
-                                        @Localizer["in"] 1 x
-                                        <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly />
-                                    </div>
-                                </th>
-                            </tr>
-                            <tr>
-                                    <th colspan="2">@Localizer["operatorsKnowOperations"]</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th colspan="2" style="align-items: center;">
-                                    <div style="display:flex; align-items: center;">
-                                        @{
-                                            double? percentageUsers = CalculateUserPercentage();
-                                        }
-                                        @if (percentageUsers.HasValue)
-                                        {
-                                            <span class="mr-2">@($"{percentageUsers.Value:F2}%")</span>
-                                        }
-                                        else
-                                        {
-                                            <MudInput T="double?" ReadOnly /> <span>%</span>
-                                        }
-                                        @Localizer["in"] <MudInput T="int?" @bind-Value="_pat.KnowledgePercentage" Class="ml-2" ReadOnly /> x 1
-                                    </div>
-
-                                </th>
-                                <th colspan="2" class="fixed-column dynamic-left">
-
-                                    <div style="display:flex; align-items: center;">
-                                        <MudSelect @bind-Value="_pat.SaveLeader" ReadOnly
-                                                   Variant="Variant.Outlined"
-                                                   Margin="Margin.Dense"
-                                                   Dense
-                                                   Class="mr-2">
-                                            <MudSelectItem Value="@("S")">S</MudSelectItem>
-                                            <MudSelectItem Value="@("C")">C</MudSelectItem>
-                                        </MudSelect>
-                                        @Localizer["payroll"]
-                                    </div>
-
-                                </th>
-                                <Virtualize Context="usr" Items="_UserOfArea">
-                                    @if (User_Knolowed[usr.UserId])
-                                    {
-                                        <th colspan="2" style="text-align: center;">
-                                            @usr.Payroll
-                                        </th>
-                                    }
-                                    else
-                                    {
-                                        <th style="background-color: #f9dad8; color: #f44336; text-align: center;" colspan="2">
-                                            @usr.Payroll
-                                        </th>
-                                    }
-                                </Virtualize>
-                                <th><MudInput T="int?" @bind-Value="_pat.KnowledgePercentage" Class="ml-2" ReadOnly Style="max-width: 3vw;" /> x 1</th>
-                                <th rowspan="2"><b>NOTAS RELACIONADAS CON LAS <br />OPERACIONES / DISTRIBUCIONES</b></th>
-                            </tr>
-                            <tr class="fixed-row">
-                                @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
-                                <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
-                                <Virtualize Items="_UserOfArea">
-                                    <th>MES</th>
-                                    <th>Nivel</th>
-                                </Virtualize>
-                                <th style="min-width: 8vw;">
-                                    <MudInput T="int" Class="ml-2" @bind-Value="countUserO" ReadOnly Style="max-width: 3vw;" /> Ops.
-                                </th>
-                            </tr>
-                            @foreach (var op in _distributions)
-                            {
-
+                                    </Virtualize>
+                                    <th rowspan="3">
+                                        <b class="mr-4">ROR</b> @_UserOfArea.Count
+                                    </th>
+                                    <th rowspan="3">
+                                    </th>
+                                </tr>
                                 <tr>
-                                    @* <td style="max-width:120px;width:100px" colspan="2" class="fixed-column dynamic-left">@op.Code</td> *@
-                                   
+                                    <th colspan="2">
+                                        <div style="display:flex; align-items: center;">
+                                            @{
+                                                double? percentage = CalculateDistributionPercentage();
+                                            }
+                                            @if (percentage.HasValue)
+                                            {
+                                                <span class="mr-2">@($"{percentage.Value:F2}%")</span>
+                                            }
+                                            else
+                                            {
+
+                                                <MudInput T="double?" ReadOnly /> <span>%</span>
+                                            }
+                                            @Localizer["in"] 1 x
+                                            <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly />
+                                        </div>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th colspan="2">@Localizer["operatorsKnowOperations"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th colspan="2" style="align-items: center;">
+                                        <div style="display:flex; align-items: center;">
+                                            @{
+                                                double? percentageUsers = CalculateUserPercentage();
+                                            }
+                                            @if (percentageUsers.HasValue)
+                                            {
+                                                <span class="mr-2">@($"{percentageUsers.Value:F2}%")</span>
+                                            }
+                                            else
+                                            {
+                                                <MudInput T="double?" ReadOnly /> <span>%</span>
+                                            }
+                                            @Localizer["in"] <MudInput T="int?" @bind-Value="_pat.KnowledgePercentage" Class="ml-2" ReadOnly /> x 1
+                                        </div>
+
+                                    </th>
+                                    <th colspan="2" class="fixed-column dynamic-left">
+
+                                        <div style="display:flex; align-items: center;">
+                                            <MudSelect @bind-Value="_pat.SaveLeader" ReadOnly
+                                                       Variant="Variant.Outlined"
+                                                       Margin="Margin.Dense"
+                                                       Dense
+                                                       Class="mr-2">
+                                                <MudSelectItem Value="@("S")">S</MudSelectItem>
+                                                <MudSelectItem Value="@("C")">C</MudSelectItem>
+                                            </MudSelect>
+                                            @Localizer["payroll"]
+                                        </div>
+
+                                    </th>
+                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                        @if (User_Knolowed[usr.UserId])
+                                        {
+                                            <th colspan="2" style="text-align: center;">
+                                                @usr.Payroll
+                                            </th>
+                                        }
+                                        else
+                                        {
+                                            <th style="background-color: #f9dad8; color: #f44336; text-align: center;" colspan="2">
+                                                @usr.Payroll
+                                            </th>
+                                        }
+                                    </Virtualize>
+                                    <th><MudInput T="int?" @bind-Value="_pat.KnowledgePercentage" Class="ml-2" ReadOnly Style="max-width: 3vw;" /> x 1</th>
+                                    <th rowspan="2"><b>NOTAS RELACIONADAS CON LAS <br />OPERACIONES / DISTRIBUCIONES</b></th>
+                                </tr>
+                                <tr class="fixed-row">
+                                    @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
+                                    <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
+                                    <Virtualize Items="_UserOfArea">
+                                        <th>MES</th>
+                                        <th>Nivel</th>
+                                    </Virtualize>
+                                    <th style="min-width: 8vw;">
+                                        <MudInput T="int" Class="ml-2" @bind-Value="countUserO" ReadOnly Style="max-width: 3vw;" /> Ops.
+                                    </th>
+                                </tr>
+                                @foreach (var op in _distributions)
+                                {
+
+                                    <tr>
+                                        @* <td style="max-width:120px;width:100px" colspan="2" class="fixed-column dynamic-left">@op.Code</td> *@
+
 
                                         @if (Distributions_Knolowed[op.DistributionId])
                                         {
@@ -360,18 +360,18 @@
                                                         @op.Description &nbsp;
                                                         @if (user.UserType == 1)
                                                         {
-                                                                @switch (op.CriticalType)
-                                                                {
-                                                                    case 1:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 2:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 3:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                }
+                                                            @switch (op.CriticalType)
+                                                            {
+                                                                case 1:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 2:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 3:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                            }
                                                         }
                                                         else
                                                         {
@@ -415,21 +415,21 @@
                                                         @if (user.UserType == 1)
                                                         {
 
-                                                                @switch (op.CriticalType)
-                                                                {
-                                                                    case 1:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 2:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 3:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    default:
+                                                            @switch (op.CriticalType)
+                                                            {
+                                                                case 1:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 2:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 3:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                default:
 
-                                                                        break;
-                                                                }
+                                                                    break;
+                                                            }
 
                                                         }
                                                         else
@@ -459,130 +459,137 @@
 
 
 
-                                    <Virtualize Context="usr" Items="_UserOfArea">
-                                        <td style="text-align: end;" colspan="2" class="right-border">
+                                        <Virtualize Context="usr" Items="_UserOfArea">
+                                            <td style="text-align: end;" colspan="2" class="right-border">
 
 
-                                            @if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
-                                            {
-                                                <table style="border: none">
-                                                    <tbody>
-                                                        @{
-                                                            var latestContext = context?.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
-                                                            string ILULevelNumber = "§";
+                                                @if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
+                                                {
+                                                    <table style="border: none">
+                                                        <tbody>
+                                                            @{
+                                                                var latestContext = context?.OrderByDescending(c => c.AcquisitionDate).FirstOrDefault();
+                                                                string ILULevelNumber = "§";
+                                                                @if (latestContext != null)
+                                                                {
+                                                                    ILULevelNumber = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId).ILULevelCode;
+                                                                }
+                                                            }
+
                                                             @if (latestContext != null)
                                                             {
-                                                                ILULevelNumber = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId).ILULevelCode;
-                                                            }
-                                                        }
-
-                                                        @if (latestContext != null)
-                                                        {
-                                                            <tr style="border: none; display: flex; justify-content: space-between;">
-                                                                <td style="border: none">
-                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper().Replace(".", "")
-                                                                </td>
-                                                                @if (ILULevelNumber != "§")
-                                                                {
-                                                                    string imageSrc = "";
+                                                                <tr style="border: none; display: flex; justify-content: space-between;">
                                                                     <td style="border: none">
-                                                                        @switch (ILULevelNumber)
-                                                                        {
-                                                                            case "ITrainee":
-                                                                                imageSrc = "Images/ITrainee.png";
-                                                                                break;
-                                                                            case "I":
-                                                                                imageSrc = "Images/I.png";
-                                                                                break;
-                                                                            case "ILeader":
-                                                                                imageSrc = "Images/ILeader.png";
-                                                                                break;
-                                                                            case "LTrainee":
-                                                                                imageSrc = "Images/LTrainee.png";
-                                                                                break;
-                                                                            case "LTraineeLeader":
-                                                                                imageSrc = "Images/LTraineeLeader.png";
-                                                                                break;
-                                                                            case "L":
-                                                                                imageSrc = "Images/L.png";
-                                                                                break;
-                                                                            case "LLeader":
-                                                                                imageSrc = "Images/LLeader.png";
-                                                                                break;
-                                                                            case "UTrainee":
-                                                                                imageSrc = "Images/UTrainee.png";
-                                                                                break;
-                                                                            case "ULeaderTrainee":
-                                                                                imageSrc = "Images/ULeaderTrainee.png";
-                                                                                break;
-                                                                            case "ULeader":
-                                                                                imageSrc = "Images/ULeader.png";
-                                                                                break;
-                                                                            case "U":
-                                                                                imageSrc = "Images/U.png";
-                                                                                break;
-                                                                            default:
-                                                                                imageSrc = "Images/default.png";
-                                                                                break;
-                                                                        }
-                                                                        <div class="d-flex align-items-center">
-                                                                            <MudImage Src="@imageSrc" Alt="ILU Image" Height="45" Class="rounded-lg" />
-                                                                        </div>
+                                                                        @latestContext.AcquisitionDate?.ToString("MMM").ToUpper().Replace(".", "")
                                                                     </td>
-                                                                }
-                                                            </tr>
-                                                        }
-                                                        else
-                                                        {
-                                                            <tr style="border: none; display: flex; justify-content: space-between;">
-                                                                <td style="border: none">
-                                                                </td>
-                                                                <td colspan="2">
-                                                                </td>
-                                                            </tr>
-                                                        }
-                                                    </tbody>
-                                                </table>
+                                                                    @if (ILULevelNumber != "§")
+                                                                    {
+                                                                        string imageSrc = "";
+                                                                        <td style="border: none">
+                                                                            <div class="d-flex align-items-center">
+                                                                            @switch (ILULevelNumber)
+                                                                            {
+                                                                                case "ITrainee":
+                                                                                    imageSrc = "Images/ITrainee.png";
+                                                                                    break;
+                                                                                case "I":
+                                                                                    imageSrc = "Images/I.png";
+                                                                                    break;
+                                                                                case "ILeader":
+                                                                                    imageSrc = "Images/ILeader.png";
+                                                                                    break;
+                                                                                case "LTrainee":
+                                                                                    imageSrc = "Images/LTrainee.png";
+                                                                                    break;
+                                                                                case "LTraineeLeader":
+                                                                                    imageSrc = "Images/LTraineeLeader.png";
+                                                                                    break;
+                                                                                case "L":
+                                                                                    imageSrc = "Images/L.png";
+                                                                                    break;
+                                                                                case "LLeader":
+                                                                                    imageSrc = "Images/LLeader.png";
+                                                                                    break;
+                                                                                case "UTrainee":
+                                                                                    imageSrc = "Images/UTrainee.png";
+                                                                                    break;
+                                                                                case "ULeaderTrainee":
+                                                                                    imageSrc = "Images/ULeaderTrainee.png";
+                                                                                    break;
+                                                                                case "ULeader":
+                                                                                    imageSrc = "Images/ULeader.png";
+                                                                                    break;
+                                                                                case "U":
+                                                                                    imageSrc = "Images/U.png";
+                                                                                    break;
+                                                                                default:
+                                                                                    imageSrc = "Images/default.png";
+                                                                                    break;
+                                                                            }
+                                                                                <MudImage Src="@imageSrc" Alt="ILU Image" Height="45" Class="rounded-lg" />
+                                                                            @if (latestContext.JobObservationId != null)
+                                                                            {
+                                                                                <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                                                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenJobDetailsDialog(latestContext.JobObservationId))" OnTouch="(() =>  OpenJobDetailsDialog(latestContext.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                                                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation((int)latestContext.JobObservationId))" OnTouch="(()=>EditJobObservation((int)latestContext.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                                                                </MudMenu>
+                                                                            }
+                                                                            </div>
+                                                                        </td>
+                                                                    }
+                                                                </tr>
+                                                            }
+                                                            else
+                                                            {
+                                                                <tr style="border: none; display: flex; justify-content: space-between;">
+                                                                    <td style="border: none">
+                                                                    </td>
+                                                                    <td colspan="2">
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                }
+
+                                            </td>
+                                        </Virtualize>
+                                        <td>
+                                            @{
+                                                var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                                                var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                                                var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
                                             }
 
+                                            @if (_pat.KnowledgePercentage != null)
+                                            {
+                                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                                {
+                                                    <span style="color:red"><b>X</b></span>
+                                                }
+                                                else if (meetsKnowledge)
+                                                {
+                                                    <span><b>O</b></span>
+                                                }
+                                            }
                                         </td>
-                                    </Virtualize>
-                                    <td>
-                                        @{
-                                            var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                                            var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                                            var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
-                                        }
-
-                                        @if (_pat.KnowledgePercentage != null)
-                                        {
-                                            @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                        <td>
+                                            @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
                                             {
-                                                <span style="color:red"><b>X</b></span>
+                                                var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
+                                                <MudTextField @bind-Value="currentComment.Comment"
+                                                              ReadOnly
+                                                              Variant="Variant.Outlined"
+                                                              Margin="Margin.Dense"
+                                                              Lines="2"
+                                                              Class="mr-2">
+                                                </MudTextField>
                                             }
-                                            else if (meetsKnowledge)
-                                            {
-                                                <span><b>O</b></span>
-                                            }
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
-                                        {
-                                            var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
-                                            <MudTextField @bind-Value="currentComment.Comment"
-                                                          ReadOnly
-                                                          Variant="Variant.Outlined"
-                                                          Margin="Margin.Dense"
-                                                          Lines="2"
-                                                          Class="mr-2">
-                                            </MudTextField>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                            <tr>
-                                 <td colspan="4" style="max-width:60px;width:50px;" class="fixed-column">
+                                        </td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="4" style="max-width:60px;width:50px;" class="fixed-column">
                                         <div style="display:flex;">
                                             <div style="display:flex; align-items: center" class="mr-2">
                                                 <b> RTO </b>  &nbsp;&nbsp; @_distributions.Count
@@ -596,117 +603,117 @@
                                         </div>
                                     </td>
 
-                                <Virtualize Context="usr" Items="_UserOfArea">
-                                    @{
-                                        int index = _UserOfArea.IndexOf(usr);
-                                    }
-                                    <td style="text-align: center;" colspan="2">
-
+                                    <Virtualize Context="usr" Items="_UserOfArea">
                                         @{
-                                            var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
-                                            var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
-                                            var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
+                                            int index = _UserOfArea.IndexOf(usr);
                                         }
+                                        <td style="text-align: center;" colspan="2">
 
-
-                                        @if (_pat.KnowledgePercentage != null)
-                                        {
-
-                                            @if (!(_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is not null) && _pat.SaveLeader == "S" ||
-                                       (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
-                                       && _pat.SaveLeader == "C")
-                                            {
-                                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
-                                                {
-                                                    <span style="color:red"><b>X</b></span>
-                                                }
-                                                else if (meetsKnowledge)
-                                                {
-                                                    <span><b>O</b></span>
-                                                }
-
+                                            @{
+                                                var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
+                                                var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
+                                                var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
                                             }
-                                        }
-                                    </td>
-                                    @{
-                                        index++;
-                                    }
-                                </Virtualize>
-                                <td style="text-align: center;"></td>
-                                <td style="text-align: center;">Nivel de habilidad Tecnica</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
-                                    <b>
-                                        Ops a Nivel L & U por Operador
-                                    </b>
-                                </td>
-                                <td colspan="2" class="fixed-column dynamic-left">
-                                </td>
-                                <Virtualize Context="usr" Items="_UserOfArea">
-                                    <td style="text-align: center;" colspan="2">
-                                        @{
-                                            var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
-                                            @sum
-                                        }
-                                    </td>
-                                </Virtualize>
-                                <td style="text-align: center;"></td>
-                                <td style="text-align: center;">Histórico año actual</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" rowspan="4" style="max-width:60px;width:50px;" class="fixed-column">
-                                    <p style="text-align: center; font-size: 11px">
-                                        <b>NOTAS<br>RELACIONADAS CON LOS<br> OPERADORES</b><br>
-                                        (REPROGRAMACIÓN / VACACIONES<br> / BAJAS /PLAN DE SUCESIÓN /<br> LIBERACIONES)
-                                    </p>
-                                </td>
 
-                                <td colspan="2" class="fixed-column dynamic-left">
-                                </td>
-                                @if (_pat?.PatUserRoles != null)
-                                {
-                                    <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
-                                        <td style="text-align: center;" colspan="2" rowspan="2">
-                                            <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2" ReadOnly></MudTextField>
-                                            <MudSelect @bind-Value="patUserRole.Role"
-                                                       ReadOnly
-                                                       Variant="Variant.Outlined"
-                                                       Margin="Margin.Dense"
-                                                       Dense
-                                                       Class="mr-2"
-                                                       Placeholder="Select Role">
 
-                                                @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
+                                            @if (_pat.KnowledgePercentage != null)
+                                            {
+
+                                                @if (!(_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is not null) && _pat.SaveLeader == "S" ||
+                                           (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
+                                           && _pat.SaveLeader == "C")
                                                 {
-                                                    <MudSelectItem Value="role">
-                                                        @if (role is not null)
+                                                    @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                                                     {
-                                                        @role
+                                                        <span style="color:red"><b>X</b></span>
                                                     }
-                                                    else
+                                                    else if (meetsKnowledge)
                                                     {
-                                                        <span>Clear</span>
+                                                        <span><b>O</b></span>
                                                     }
-                                                </MudSelectItem>
+
                                                 }
-                                            </MudSelect>
+                                            }
+                                        </td>
+                                        @{
+                                            index++;
+                                        }
+                                    </Virtualize>
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: center;">Nivel de habilidad Tecnica</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                                        <b>
+                                            Ops a Nivel L & U por Operador
+                                        </b>
+                                    </td>
+                                    <td colspan="2" class="fixed-column dynamic-left">
+                                    </td>
+                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                        <td style="text-align: center;" colspan="2">
+                                            @{
+                                                var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
+                                                @sum
+                                            }
                                         </td>
                                     </Virtualize>
-                                    <td style="text-align: center;" rowspan="2"></td>
-                                    <td style="text-align: center;" rowspan="2">
-                                        <MudSimpleTable>
-                                            <thead>
-                                                <tr>
-                                                    <th>MES</th>
-                                                    @for (int i = 0; i < 6; i++)
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: center;">Histórico año actual</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" rowspan="4" style="max-width:60px;width:50px;" class="fixed-column">
+                                        <p style="text-align: center; font-size: 11px">
+                                            <b>NOTAS<br>RELACIONADAS CON LOS<br> OPERADORES</b><br>
+                                            (REPROGRAMACIÓN / VACACIONES<br> / BAJAS /PLAN DE SUCESIÓN /<br> LIBERACIONES)
+                                        </p>
+                                    </td>
+
+                                    <td colspan="2" class="fixed-column dynamic-left">
+                                    </td>
+                                    @if (_pat?.PatUserRoles != null)
+                                    {
+                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
+                                            <td style="text-align: center;" colspan="2" rowspan="2">
+                                                <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2" ReadOnly></MudTextField>
+                                                <MudSelect @bind-Value="patUserRole.Role"
+                                                           ReadOnly
+                                                           Variant="Variant.Outlined"
+                                                           Margin="Margin.Dense"
+                                                           Dense
+                                                           Class="mr-2"
+                                                           Placeholder="Select Role">
+
+                                                    @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
                                                     {
-                                                        <th>@monthsNames[i]</th>
+                                                        <MudSelectItem Value="role">
+                                                            @if (role is not null)
+                                                        {
+                                                            @role
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>Clear</span>
+                                                        }
+                                                    </MudSelectItem>
                                                     }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr class="gray-color">
+                                                </MudSelect>
+                                            </td>
+                                        </Virtualize>
+                                        <td style="text-align: center;" rowspan="2"></td>
+                                        <td style="text-align: center;" rowspan="2">
+                                            <MudSimpleTable>
+                                                <thead>
+                                                    <tr>
+                                                        <th>MES</th>
+                                                        @for (int i = 0; i < 6; i++)
+                                                        {
+                                                            <th>@monthsNames[i]</th>
+                                                        }
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="gray-color">
                                                         <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
                                                         <td><span class="mr-2">@($"{monthsDistributionPercentage[0]:F2}%")</span></td>
                                                         <td><span class="mr-2">@($"{monthsDistributionPercentage[1]:F2}%")</span></td>
@@ -724,17 +731,17 @@
                                                         <td><span class="mr-2">@($"{monthsUsersPercentage[4]:F2}%")</span></td>
                                                         <td><span class="mr-2">@($"{monthsUsersPercentage[5]:F2}%")</span></td>
                                                     </tr>
-                                            </tbody>
-                                            <thead>
-                                                <tr>
-                                                    <th>MES</th>
-                                                    @for (int i = 6; i < 12; i++)
-                                                    {
-                                                        <th>@monthsNames[i]</th>
-                                                    }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
+                                                </tbody>
+                                                <thead>
+                                                    <tr>
+                                                        <th>MES</th>
+                                                        @for (int i = 6; i < 12; i++)
+                                                        {
+                                                            <th>@monthsNames[i]</th>
+                                                        }
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
                                                     <tr class="gray-color">
                                                         <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
                                                         <td><span class="mr-2">@($"{monthsDistributionPercentage[6]:F2}%")</span></td>
@@ -753,18 +760,18 @@
                                                         <td><span class="mr-2">@($"{monthsUsersPercentage[10]:F2}%")</span></td>
                                                         <td><span class="mr-2">@($"{monthsUsersPercentage[11]:F2}%")</span></td>
                                                     </tr>
-                                            </tbody>
-                                        </MudSimpleTable>
+                                                </tbody>
+                                            </MudSimpleTable>
 
-                                    </td>
-                                }
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
+                                        </td>
+                                    }
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </div>
                 </div>
-            </div>
-        </MudTabPanel>
-        <MudTabPanel Text="Monthly" OnClick="@( () => MontlyTab())" OnTouch="@( () => MontlyTab())">
+            </MudTabPanel>
+            <MudTabPanel Text="Monthly" OnClick="@( () => MontlyTab())" OnTouch="@( () => MontlyTab())">
                 <div class="table-container mb-10">
                     <div class="scrollable-columns">
                         <MudSimpleTable Class="mb-5 rounded" Dense FixedHeader="true" Style="@dynamicStyle" Elevation="0">
@@ -856,7 +863,7 @@
                                         </div>
 
                                     </th>
-                            <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                         @if (User_Knolowed[usr.UserId])
                                         {
                                             <th colspan="2" style="text-align: center;">
@@ -876,7 +883,7 @@
                                 <tr class="fixed-row">
                                     @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
                                     <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
-                            <Virtualize Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    <Virtualize Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                         <th>Periodo</th>
                                         <th>Nivel</th>
                                     </Virtualize>
@@ -897,18 +904,18 @@
                                                         @op.Description &nbsp;
                                                         @if (user.UserType == 1)
                                                         {
-                                                                @switch (op.CriticalType)
-                                                                {
-                                                                    case 1:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 2:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 3:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                }
+                                                            @switch (op.CriticalType)
+                                                            {
+                                                                case 1:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 2:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 3:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                            }
                                                         }
                                                         else
                                                         {
@@ -952,21 +959,21 @@
                                                         @if (user.UserType == 1)
                                                         {
 
-                                                                @switch (op.CriticalType)
-                                                                {
-                                                                    case 1:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 2:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    case 3:
-                                                                        <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
-                                                                        break;
-                                                                    default:
+                                                            @switch (op.CriticalType)
+                                                            {
+                                                                case 1:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag A.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 2:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag B.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                case 3:
+                                                                    <MudImage Src="Images/HOE Symbols/Air Bag C.png" Alt="ILU Image" Height="30" Class="rounded-lg" />
+                                                                    break;
+                                                                default:
 
-                                                                        break;
-                                                                }
+                                                                    break;
+                                                            }
 
                                                         }
                                                         else
@@ -1004,36 +1011,36 @@
                                                 {
                                                     <table style="border: none">
                                                         <tbody>
-                                                              @{
-                                                                    var latestContexts = context?
-                                                                    .Where(d => d.AcquisitionDate.HasValue && d.AcquisitionDate.Value.Year == _yearMonth.Value.Year && d.AcquisitionDate.Value.Month <= _yearMonth.Value.Month)
-                                                                    .OrderByDescending(c => c.AcquisitionDate)
-                                                                    .ToList();
+                                                            @{
+                                                                var latestContexts = context?
+                                                                .Where(d => d.AcquisitionDate.HasValue && d.AcquisitionDate.Value.Year == _yearMonth.Value.Year && d.AcquisitionDate.Value.Month <= _yearMonth.Value.Month)
+                                                                .OrderByDescending(c => c.AcquisitionDate)
+                                                                .ToList();
 
-                                                                    var latestContext = latestContexts?.FirstOrDefault(); 
+                                                                var latestContext = latestContexts?.FirstOrDefault();
 
-                                                                    if (latestContext != null)
-                                                                    {
-                                                                        var previousContext = latestContexts?.Skip(1).FirstOrDefault();
+                                                                if (latestContext != null)
+                                                                {
+                                                                    var previousContext = latestContexts?.Skip(1).FirstOrDefault();
 
-                                                                        string latestLevel = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId)?.ILULevelCode ?? "§";
-                                                                        string previousLevel = previousContext != null
-                                                                        ? _LevelsILU.Find(u => u.ILULevelId == previousContext.ILULevelId)?.ILULevelCode ?? "§"
-                                                                        : "§";
-
-                                                                        if ((latestLevel == "I" && previousLevel == "ITrainee") ||
-                                                                        (latestLevel == "L" && previousLevel == "LTrainee") ||
-                                                                        (latestLevel == "U" && previousLevel == "UTrainee"))
-                                                                        {
-                                                                            latestContext = previousContext; 
-                                                                        }
-                                                                    }
-
-                                                                    string ILULevelNumber = latestContext != null
-                                                                    ? _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId)?.ILULevelCode ?? "§"
+                                                                    string latestLevel = _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId)?.ILULevelCode ?? "§";
+                                                                    string previousLevel = previousContext != null
+                                                                    ? _LevelsILU.Find(u => u.ILULevelId == previousContext.ILULevelId)?.ILULevelCode ?? "§"
                                                                     : "§";
 
+                                                                    if ((latestLevel == "I" && previousLevel == "ITrainee") ||
+                                                                    (latestLevel == "L" && previousLevel == "LTrainee") ||
+                                                                    (latestLevel == "U" && previousLevel == "UTrainee"))
+                                                                    {
+                                                                        latestContext = previousContext;
+                                                                    }
                                                                 }
+
+                                                                string ILULevelNumber = latestContext != null
+                                                                ? _LevelsILU.Find(u => u.ILULevelId == latestContext.ILULevelId)?.ILULevelCode ?? "§"
+                                                                : "§";
+
+                                                            }
 
                                                             @if (latestContext != null)
                                                             {
@@ -1048,59 +1055,70 @@
                                                                                     @latestContext.EndDate?.ToString("dd").ToUpper().Replace(".", "")
                                                                                 </div>
                                                                             </MudTooltip>
+
                                                                         }
                                                                     </td>
-                                                                    @if (ILULevelNumber != "§")
-                                                                    {
-                                                                        string imageSrc = "";
-                                                                        <td style="border: none">
-                                                                            @switch (ILULevelNumber)
+                                                                    <td style="border: none">
+                                                                        <div class="d-flex align-items-center">
+                                                                            @if (ILULevelNumber != "§")
                                                                             {
-                                                                                case "ITrainee":
-                                                                                    imageSrc = "Images/ITrainee.png";
-                                                                                    break;
-                                                                                case "I":
-                                                                                    imageSrc = "Images/I.png";
-                                                                                    break;
-                                                                                case "ILeader":
-                                                                                    imageSrc = "Images/ILeader.png";
-                                                                                    break;
-                                                                                case "LTrainee":
-                                                                                    imageSrc = "Images/LTrainee.png";
-                                                                                    break;
-                                                                                case "LTraineeLeader":
-                                                                                    imageSrc = "Images/LTraineeLeader.png";
-                                                                                    break;
-                                                                                case "L":
-                                                                                    imageSrc = "Images/L.png";
-                                                                                    break;
-                                                                                case "LLeader":
-                                                                                    imageSrc = "Images/LLeader.png";
-                                                                                    break;
-                                                                                case "UTrainee":
-                                                                                    imageSrc = "Images/UTrainee.png";
-                                                                                    break;
-                                                                                case "ULeaderTrainee":
-                                                                                    imageSrc = "Images/ULeaderTrainee.png";
-                                                                                    break;
-                                                                                case "ULeader":
-                                                                                    imageSrc = "Images/ULeader.png";
-                                                                                    break;
-                                                                                case "U":
-                                                                                    imageSrc = "Images/U.png";
-                                                                                    break;
-                                                                                default:
-                                                                                    imageSrc = "Images/default.png";
-                                                                                    break;
-                                                                            }
-                                                                            <div class="d-flex align-items-center">
+                                                                                string imageSrc = "";
+                                                                                @switch (ILULevelNumber)
+                                                                                {
+                                                                                    case "ITrainee":
+                                                                                        imageSrc = "Images/ITrainee.png";
+                                                                                        break;
+                                                                                    case "I":
+                                                                                        imageSrc = "Images/I.png";
+                                                                                        break;
+                                                                                    case "ILeader":
+                                                                                        imageSrc = "Images/ILeader.png";
+                                                                                        break;
+                                                                                    case "LTrainee":
+                                                                                        imageSrc = "Images/LTrainee.png";
+                                                                                        break;
+                                                                                    case "LTraineeLeader":
+                                                                                        imageSrc = "Images/LTraineeLeader.png";
+                                                                                        break;
+                                                                                    case "L":
+                                                                                        imageSrc = "Images/L.png";
+                                                                                        break;
+                                                                                    case "LLeader":
+                                                                                        imageSrc = "Images/LLeader.png";
+                                                                                        break;
+                                                                                    case "UTrainee":
+                                                                                        imageSrc = "Images/UTrainee.png";
+                                                                                        break;
+                                                                                    case "ULeaderTrainee":
+                                                                                        imageSrc = "Images/ULeaderTrainee.png";
+                                                                                        break;
+                                                                                    case "ULeader":
+                                                                                        imageSrc = "Images/ULeader.png";
+                                                                                        break;
+                                                                                    case "U":
+                                                                                        imageSrc = "Images/U.png";
+                                                                                        break;
+                                                                                    default:
+                                                                                        imageSrc = "Images/default.png";
+                                                                                        break;
+                                                                                }
+
                                                                                 <MudImage Src="@imageSrc" Alt="ILU Image" Height="45" Class="rounded-lg" />
-                                                                            </div>
-                                                                        </td>
-                                                                    }
+
+                                                                            }
+                                                                            @if (latestContext.JobObservationId != null)
+                                                                            {
+                                                                                <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
+                                                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenJobDetailsDialog(latestContext.JobObservationId))" OnTouch="(() =>  OpenJobDetailsDialog(latestContext.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation((int)latestContext.JobObservationId))" OnTouch="(()=>EditJobObservation((int)latestContext.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                                                                    
+                                                                                </MudMenu>
+                                                                            }
+                                                                        </div>
+                                                                    </td>
                                                                 </tr>
                                                             }
-                                                            else 
+                                                            else
                                                             {
                                                                 <tr style="border: none; display: flex; justify-content: space-between;">
                                                                     <td colspan="2">
@@ -1109,47 +1127,47 @@
                                                                     </td>
                                                                 </tr>
                                                             }
-                                    </tbody>
-                                    </table>
+                                                        </tbody>
+                                                    </table>
                                                 }
 
-                                </td>
-                                </Virtualize>
-                                <td>
-                                    @{
-                                        var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                                        var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
-                                        var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
-                                    }
+                                            </td>
+                                        </Virtualize>
+                                        <td>
+                                            @{
+                                                var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                                                var sum = CountHighLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
+                                                var meetsKnowledge = sum >= (_pat.KnowledgePercentage ?? 0);
+                                            }
 
-                                    @if (_pat.KnowledgePercentage != null)
-                                    {
-                                        @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
-                                        {
-                                    <span style="color:red"><b>X</b></span>
-                                        }
-                                        else if (meetsKnowledge)
-                                        {
-                                    <span><b>O</b></span>
-                                        }
-                                    }
-                                </td>
-                                <td>
-                                    @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
-                                    {
-                                        var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
-                                        <MudTextField @bind-Value="currentComment.Comment"
-                                                        ReadOnly
-                                                        Variant="Variant.Outlined"
-                                                        Margin="Margin.Dense"
-                                                        Lines="2"
-                                                        Class="mr-2">
-                                        </MudTextField>
-                                    }
-                                </td>
-                                </tr>
+                                            @if (_pat.KnowledgePercentage != null)
+                                            {
+                                                @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
+                                                {
+                                                    <span style="color:red"><b>X</b></span>
+                                                }
+                                                else if (meetsKnowledge)
+                                                {
+                                                    <span><b>O</b></span>
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (_pat.PatDistributionComments.Any(c => c.DistributionId == op.DistributionId))
+                                            {
+                                                var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
+                                                <MudTextField @bind-Value="currentComment.Comment"
+                                                              ReadOnly
+                                                              Variant="Variant.Outlined"
+                                                              Margin="Margin.Dense"
+                                                              Lines="2"
+                                                              Class="mr-2">
+                                                </MudTextField>
+                                            }
+                                        </td>
+                                    </tr>
                                 }
-                            <tr>
+                                <tr>
                                     <td colspan="4" style="max-width:60px;width:50px;" class="fixed-column">
                                         <div style="display:flex;">
                                             <div style="display:flex; align-items: center" class="mr-2">
@@ -1164,12 +1182,12 @@
                                         </div>
                                     </td>
 
-                            <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
                                         @{
                                             int index = _UserOfArea.IndexOf(usr);
                                         }
 
-                                    <td colspan="2" style="text-align: center;">
+                                        <td colspan="2" style="text-align: center;">
 
                                             @{
                                                 var hasLowLevel = HasLowLevel(ILU_Matrix, _distributions, usr.UserId);
@@ -1190,121 +1208,121 @@
                                                 {
                                                     @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                                                     {
-                                                    <span style="color:red; text-align: center;"><b>X</b></span>
+                                                        <span style="color:red; text-align: center;"><b>X</b></span>
                                                     }
                                                     else if (meetsKnowledge)
                                                     {
-                                                    <span style="text-align: center;"><b>O</b></span>
+                                                        <span style="text-align: center;"><b>O</b></span>
                                                     }
 
                                                 }
                                             }
-                                    </td>
-                                </Virtualize>
+                                        </td>
+                                    </Virtualize>
 
-                                <td style="text-align: center;"></td>
-                                <td style="text-align: center;">Nivel de habilidad Tecnica</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
-                                    <b>
-                                        Ops a Nivel L & U por Operador
-                                    </b>
-                                </td>
-                                <td colspan="2" class="fixed-column dynamic-left">
-                                </td>
-                                <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
-                                    <td style="text-align: center;" colspan="2">
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: center;">Nivel de habilidad Tecnica</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
+                                        <b>
+                                            Ops a Nivel L & U por Operador
+                                        </b>
+                                    </td>
+                                    <td colspan="2" class="fixed-column dynamic-left">
+                                    </td>
+                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                        <td style="text-align: center;" colspan="2">
                                             @{
                                                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
                                                 @sum
                                             }
+                                        </td>
+                                    </Virtualize>
+                                    <td style="text-align: center;"></td>
+                                    <td style="text-align: center;">Histórico año actual</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" rowspan="4" style="max-width:60px;width:50px;" class="fixed-column">
+                                        <p style="text-align: center; font-size: 11px">
+                                            <b>NOTAS<br>RELACIONADAS CON LOS<br> OPERADORES</b><br>
+                                            (REPROGRAMACIÓN / VACACIONES<br> / BAJAS /PLAN DE SUCESIÓN /<br> LIBERACIONES)
+                                        </p>
                                     </td>
-                                </Virtualize>
-                                <td style="text-align: center;"></td>
-                                <td style="text-align: center;">Histórico año actual</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" rowspan="4" style="max-width:60px;width:50px;" class="fixed-column">
-                                    <p style="text-align: center; font-size: 11px">
-                                        <b>NOTAS<br>RELACIONADAS CON LOS<br> OPERADORES</b><br>
-                                        (REPROGRAMACIÓN / VACACIONES<br> / BAJAS /PLAN DE SUCESIÓN /<br> LIBERACIONES)
-                                    </p>
-                                </td>
 
-                                <td colspan="2" class="fixed-column dynamic-left">
-                                </td>
+                                    <td colspan="2" class="fixed-column dynamic-left">
+                                    </td>
                                     @if (_pat?.PatUserRoles != null)
                                     {
-                                <Virtualize Context="patUserRole" Items="_pat.PatUserRoles.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
-                                        <td style="text-align: center;" colspan="2" rowspan="2">
-                                            <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2" ReadOnly></MudTextField>
-                                            <MudSelect @bind-Value="patUserRole.Role"
-                                                       ReadOnly
-                                                       Variant="Variant.Outlined"
-                                                       Margin="Margin.Dense"
-                                                       Dense
-                                                       Class="mr-2"
-                                                       Placeholder="Select Role">
+                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                            <td style="text-align: center;" colspan="2" rowspan="2">
+                                                <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2" ReadOnly></MudTextField>
+                                                <MudSelect @bind-Value="patUserRole.Role"
+                                                           ReadOnly
+                                                           Variant="Variant.Outlined"
+                                                           Margin="Margin.Dense"
+                                                           Dense
+                                                           Class="mr-2"
+                                                           Placeholder="Select Role">
 
                                                     @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
                                                     {
-                                                    <MudSelectItem Value="role">
+                                                        <MudSelectItem Value="role">
                                                             @if (role is not null)
                                                         {
                                                             @role
                                                         }
                                                         else
                                                         {
-                                                        <span>Clear</span>
+                                                            <span>Clear</span>
                                                         }
-                                                </MudSelectItem>
+                                                    </MudSelectItem>
                                                     }
-                                            </MudSelect>
-                                        </td>
-                                    </Virtualize>
-                                    <td style="text-align: center;" rowspan="2"></td>
-                                    <td style="text-align: center;" rowspan="2">
-                                        <MudSimpleTable>
-                                            <thead>
-                                                <tr>
-                                                    <th>MES</th>
+                                                </MudSelect>
+                                            </td>
+                                        </Virtualize>
+                                        <td style="text-align: center;" rowspan="2"></td>
+                                        <td style="text-align: center;" rowspan="2">
+                                            <MudSimpleTable>
+                                                <thead>
+                                                    <tr>
+                                                        <th>MES</th>
                                                         @for (int i = 0; i < 6; i++)
                                                         {
-                                                        <th>@monthsNames[i]</th>
+                                                            <th>@monthsNames[i]</th>
                                                         }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                              <tr class="gray-color">
-    <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
-    <td><span class="mr-2">@($"{monthsDistributionPercentage[0]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsDistributionPercentage[1]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsDistributionPercentage[2]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsDistributionPercentage[3]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsDistributionPercentage[4]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsDistributionPercentage[5]:F2}%")</span></td>
-</tr>
-<tr class="gray-color">
-    <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
-    <td><span class="mr-2">@($"{monthsUsersPercentage[0]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsUsersPercentage[1]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsUsersPercentage[2]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsUsersPercentage[3]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsUsersPercentage[4]:F2}%")</span></td>
-    <td><span class="mr-2">@($"{monthsUsersPercentage[5]:F2}%")</span></td>
-</tr>
-                                            </tbody>
-                                            <thead>
-                                                <tr>
-                                                    <th>MES</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="gray-color">
+                                                        <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
+                                                        <td><span class="mr-2">@($"{monthsDistributionPercentage[0]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsDistributionPercentage[1]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsDistributionPercentage[2]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsDistributionPercentage[3]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsDistributionPercentage[4]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsDistributionPercentage[5]:F2}%")</span></td>
+                                                    </tr>
+                                                    <tr class="gray-color">
+                                                        <td style="background-color: white; text-align: center;">1 X @_pat.KnowledgePercentage</td>
+                                                        <td><span class="mr-2">@($"{monthsUsersPercentage[0]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsUsersPercentage[1]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsUsersPercentage[2]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsUsersPercentage[3]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsUsersPercentage[4]:F2}%")</span></td>
+                                                        <td><span class="mr-2">@($"{monthsUsersPercentage[5]:F2}%")</span></td>
+                                                    </tr>
+                                                </tbody>
+                                                <thead>
+                                                    <tr>
+                                                        <th>MES</th>
                                                         @for (int i = 6; i < 12; i++)
                                                         {
-                                                        <th>@monthsNames[i]</th>
+                                                            <th>@monthsNames[i]</th>
                                                         }
-                                                </tr>
-                                            </thead>
-                                            <tbody>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
                                                     <tr class="gray-color">
                                                         <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
                                                         <td><span class="mr-2">@($"{monthsDistributionPercentage[6]:F2}%")</span></td>
@@ -1323,18 +1341,18 @@
                                                         <td><span class="mr-2">@($"{monthsUsersPercentage[10]:F2}%")</span></td>
                                                         <td><span class="mr-2">@($"{monthsUsersPercentage[11]:F2}%")</span></td>
                                                     </tr>
-                                            </tbody>
-                                        </MudSimpleTable>
+                                                </tbody>
+                                            </MudSimpleTable>
 
-                                    </td>
+                                        </td>
                                     }
-                            </tr>
+                                </tr>
                             </tbody>
                         </MudSimpleTable>
                     </div>
                 </div>
-            
-        </MudTabPanel>
+
+            </MudTabPanel>
         </ChildContent>
     </MudTabs>
 
@@ -1368,7 +1386,8 @@ else
             <MudItem xs="12" sm="12" lg="12" md="12" Style="text-align: center">
                 <MudTextField ReadOnly="true" Value="@_UserOfArea.Find(u => u.UserId == auxILU_UseId).Name" Label=@Localizer["name"]> </MudTextField>
                 <MudTextField ReadOnly="true" Value="@_UserOfArea.Find(u => u.UserId == auxILU_UseId).Payroll" Label=@Localizer["payroll"]> </MudTextField>
-                @if(UserHasHci){
+                @if (UserHasHci)
+                {
                     <MudButton Href=@($"/HCI/details/{userHciId}") Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Wysiwyg" EndIcon="@Icons.Material.Filled.ArrowForward">HCI</MudButton>
                 }
 
@@ -1626,14 +1645,14 @@ else
     </DialogActions>
 </MudDialog>
 
-  <MudDialog DisableSidePadding="false" @bind-IsVisible="visibleJobDetails" Options="dialogOptions">
-        <DialogContent>
-            <MudContainer Style="max-height: 75vh; overflow-y: scroll">
+<MudDialog DisableSidePadding="false" @bind-IsVisible="visibleJobDetails" Options="dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-height: 75vh; overflow-y: scroll">
             <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationDetails JobObservationId="JobObservationId"></SupervisorMobility.Client.Pages.Inicio.JobObservationPage.JobObservationDetails>
-            </MudContainer>
-        </DialogContent>
-        <DialogActions>
-           @*  @if (_jobObservation != null)
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        @*  @if (_jobObservation != null)
             {
 
                 @if ((_jobObservation.Status == 1 ) && user.UserType != 4)
@@ -1659,16 +1678,16 @@ else
                 }
                 @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
                 {
-                    <MudButton @onclick="(() => EditJobObservation(jobId))" Color="Color.Info" EndIcon="@Icons.Material.Filled.Edit">@Localizer["edit"]</MudButton>
                 }
             }
             else
             {
                 <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Class="my-7" />
             } *@
-            <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
-        </DialogActions>
-    </MudDialog>
+                    <MudButton @onclick="(() => EditJobObservation(JobObservationId))" Color="Color.Info" EndIcon="@Icons.Material.Filled.Edit">@Localizer["edit"]</MudButton>
+        <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
+    </DialogActions>
+</MudDialog>
 
 
 <script>
