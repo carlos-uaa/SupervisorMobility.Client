@@ -40,6 +40,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         [Parameter]
         public string ILULevelAux { get; set; }
 
+        [Parameter]
+        public EventCallback CloseModalCallback { get; set; }
+
         public DateTime? AuxProgrammedDate { get; set; }
 
         public JobObservation _jobObservation { get; set; } = new();
@@ -317,7 +320,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     //ClearJOStorage();
 
-                    NavigationManager.NavigateTo("/jobobservation");
+                    if(!CloseModalCallback.HasDelegate)
+                        NavigationManager.NavigateTo("/jobobservation");
+
+                    await CloseModalCallback.InvokeAsync();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert
@@ -386,7 +392,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                         Snackbar.Add($"ILU Level Added", Severity.Success);
                     }
 
-                    NavigationManager.NavigateTo("/jobobservation");
+                    if (!CloseModalCallback.HasDelegate)
+                        NavigationManager.NavigateTo("/jobobservation");
+
+                    await CloseModalCallback.InvokeAsync();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!"); // Alert

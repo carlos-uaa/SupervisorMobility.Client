@@ -15,6 +15,7 @@ using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJob
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities;
 using DocumentFormat.OpenXml.Bibliography;
+using SupervisorMobility.Client.Shared;
 
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
@@ -24,6 +25,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
         bool is_env { get; set; }
         [Parameter]
         public int JobObservationId { get; set; }
+        [Parameter, SupplyParameterFromQuery] public int? PatId { get; set; }
         [Inject]
         private IBreadcrumbService BreadcrumbService { get; set; }
         public JobObservation _jobObservation { get; set; } = new();
@@ -269,6 +271,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
                 else
                 {
+                    if(_jobObservation.Type == 4 && PatId == null)
+                    {
+                        PatId = await PATsServices.getPatByJob(_jobObservation.JobObservationId, _jobObservation.AreaId, _jobObservation.PlantId);
+                    }
 
                     _checklistCategoriesAndQuestions = await JobStructureCategoriesService.GetChecklistCategories(true);
                     foreach (var category in _checklistCategoriesAndQuestions)
@@ -903,7 +909,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -972,7 +979,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add(Localizer["DateChangeInJob"] + $" {_jobObservation.JobObservationId}", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1119,7 +1126,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Updated", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1178,7 +1185,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Updated", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1189,9 +1196,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
 
         //Cancel
-        void CancelUpdateJobObservation()
+        async void CancelUpdateJobObservation()
         {
-            NavigationManager.NavigateTo("/jobobservation");
+            await Navigation();
         }
 
 
@@ -1354,7 +1361,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Under Review", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1422,7 +1429,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Under Review", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1549,7 +1556,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Rejected", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1607,7 +1614,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Rejected", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1756,7 +1763,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1813,7 +1820,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                     Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} Finished", Severity.Info);
-                    NavigationManager.NavigateTo("/jobobservation");
+                    await Navigation();
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -1842,7 +1849,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Job Observation {_jobObservation.JobObservationId} With Released Feedback", Severity.Info);
-                NavigationManager.NavigateTo("/jobobservation");
+                await Navigation();
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
@@ -3646,6 +3653,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 (op.Code?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
 
+        private async Task Navigation()
+        {
+            if(PatId != null)
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "Do You want to check the related PAT?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var result = await dialog.Result;
+
+                if (!result.Canceled && (bool)result.Data)
+                {
+                    NavigationManager.NavigateTo($"/PAT/{PatId}");
+                    return;
+                }
+            }
+
+            NavigationManager.NavigateTo("/jobobservation");
+        }
 
     }//end class
 

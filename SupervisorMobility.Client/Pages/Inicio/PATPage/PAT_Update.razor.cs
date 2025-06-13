@@ -1300,6 +1300,26 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
         }
         void Close() => visibleJobDetails = false;
+
+        private async void CloseJobModal()
+        {
+            CreateILUJob = false;
+            ShowTable = false;
+
+            var tempPatDistComments = _pat.PatDistributionComments;
+            var tempPatUserRoles = _pat.PatUserRoles;
+
+            var tempPercent = _pat.KnowledgePercentage;
+
+            _pat = await PATsServices.getPat(patID);
+
+            _pat.PatDistributionComments = tempPatDistComments;
+            _pat.PatUserRoles = tempPatUserRoles;
+            _pat.KnowledgePercentage = tempPercent;
+
+            await PrepareDataTable();
+            StateHasChanged();
+        }
     }//end class pat details
 
 
