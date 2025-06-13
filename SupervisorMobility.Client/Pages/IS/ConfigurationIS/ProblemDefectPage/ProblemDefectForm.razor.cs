@@ -77,7 +77,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
              {
                 new BreadcrumbItem(text: Localizer["home"], href: "/"),
                 new BreadcrumbItem(text: Localizer["configurationIS"], href: "/configurationIS"),
-                new BreadcrumbItem(text: Localizer["ProblemDefects"], href: "/configurationIS/ProblemDefects")
+                new BreadcrumbItem(text: Localizer["ProblemDefects"], href: "/configurationIS/ProblemDefect")
             };
 
 
@@ -101,12 +101,12 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
                             if (ProblemDefectId != null)
                             {
                                 _ProblemDefect = await ProblemDefectsServices.GetProblemDefect((int)ProblemDefectId);
-                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/ProblemDefects/{ProblemDefectId}", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _ProblemDefect.DefectDescription, href: $"/configurationIS/ProblemDefects/{ProblemDefectId}", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/ProblemDefect/{ProblemDefectId}", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: _ProblemDefect.DefectDescription, href: $"/configurationIS/ProblemDefect/{ProblemDefectId}", disabled: true));
                             }
                             break;
                         case PageType.Create:
-                            _links.Add(new BreadcrumbItem(text: Localizer["Create"], href: $"/configurationIS/ProblemDefects/", disabled: true));
+                            _links.Add(new BreadcrumbItem(text: Localizer["Create"], href: $"/configurationIS/ProblemDefect/", disabled: true));
                             _ProblemDefect.IsActive = true;
                             break;
 
@@ -115,8 +115,8 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
                             {
                                 _ProblemDefect = await ProblemDefectsServices.GetProblemDefect((int)ProblemDefectId);
                                 //_ProblemDefect 
-                            _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/ProblemDefects/", disabled: true));
-                                _links.Add(new BreadcrumbItem(text: _ProblemDefect.DefectDescription, href: $"/configurationIS/ProblemDefects/{ProblemDefectId}", disabled: true));
+                            _links.Add(new BreadcrumbItem(text: Localizer["Update"], href: $"/configurationIS/ProblemDefect/", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: _ProblemDefect.DefectDescription, href: $"/configurationIS/ProblemDefect/{ProblemDefectId}", disabled: true));
                             }
                             break;
                     }

@@ -17,6 +17,7 @@
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IStringLocalizer<Resource> Localizer
 
+ 
 <EditForm Model="SosCode" OnValidSubmit="CreatePathAsync">
     <DataAnnotationsValidator />
     <MudGrid>
@@ -457,221 +458,221 @@
         <MudText Typo="Typo.h6">@Localizer1["Confirm"]</MudText>
         <MudText Class="mt-4 mb-4">
             <MudTextField Label="@Localizer["Code"]" Class="mt-3"
-                @bind-Value="SosCode.Code" />
+            @bind-Value="SosCode.Code" />
         </MudText>
 
         @if (ShowMoreInfo)
         {
             <MudItem Style="max-height: 70vh; min-width: 90vw; overflow-y: scroll;" Class="gap-4">
 
-               
+
                 <MudCard Elevation="3" Outlined="true">
 
 
                     <MudCardContent Style="min-width: 90vw; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4">
 
 
-                        
-                            <MudCard>
-                                <MudCardContent Style="justify-content:center">
-                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
 
-                                    @if (IndexPlant == -1)
+                        <MudCard>
+                            <MudCardContent Style="justify-content:center">
+                                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Filled.Business"></MudIcon></MudText>
+
+                                @if (IndexPlant == -1)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        @Localizer["firstSelectAPlant"]
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">@_plant.Code</MudText>
+                                }
+
+
+                                <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexPlant" For="@(() => IndexPlant)" SelectedValuesChanged="UpdatePlant">
+                                    <MudSelectItem Value="-1">@Localizer["firstSelectAPlant"]</MudSelectItem>
+
+                                    @for (var i = 0; i < _plants.Count; i++)
                                     {
-                                        <MudAlert Severity="Severity.Info">
-                                            @Localizer["firstSelectAPlant"]
-                                        </MudAlert>
+                                        var type = _plants[i];
+                                        <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
                                     }
-                                    else
-                                    {
-                                        <MudText Align="Align.Center">@_plant.Code</MudText>
-                                    }
+                                </MudSelect>
+
+                                @if (_plant.IsActive == true && IndexPlant != -1)
+                                {
+                                    <MudText Align="Align.Center" Class="pt-2">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                    </MudText>
+                                }
+                                else if (IndexPlant != -1)
+                                {
+                                    <MudText Align="Align.Center" Class="pa-4">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                    </MudText>
+                                }
+                            </MudCardContent>
+                        </MudCard>
 
 
-                                    <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexPlant" For="@(() => IndexPlant)" SelectedValuesChanged="UpdatePlant">
-                                        <MudSelectItem Value="-1">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                        <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
+                            <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
+                        </MudText>
 
-                                        @for (var i = 0; i < _plants.Count; i++)
+
+
+
+                        <MudCard>
+                            <MudCardContent Style="justify-content:center">
+                                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.HomeWork"></MudIcon></MudText>
+                                @if (IndexPlant == -1)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        @Localizer["firstSelectAPlant"]
+                                    </MudAlert>
+                                }
+                                else if (IndexArea == -1)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        @Localizer["firstSelectAnArea"]
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">@_area.Code</MudText>
+                                }
+
+                                @if (IndexPlant != -1)
+                                {
+                                    <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexArea" For="@(() => IndexArea)" SelectedValuesChanged="UpdateArea">
+
+                                        <MudSelectItem Value="-1">@Localizer["firstSelectAnArea"]</MudSelectItem>
+
+                                        @for (var i = 0; i < _areas.ElementAt(IndexPlant).Value.Count; i++)
                                         {
-                                            var type = _plants[i];
+                                            var type = _areas.ElementAt(IndexPlant).Value[i];
                                             <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
                                         }
                                     </MudSelect>
+                                }
 
-                                    @if (_plant.IsActive == true && IndexPlant != -1)
-                                    {
-                                        <MudText Align="Align.Center" Class="pt-2">
-                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
-                                        </MudText>
-                                    }
-                                    else if (IndexPlant != -1)
-                                    {
-                                        <MudText Align="Align.Center" Class="pa-4">
-                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
-                                        </MudText>
-                                    }
-                                </MudCardContent>
-                            </MudCard>
-
-
-                            <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
-                                <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
-                            </MudText>
-
-
-
-
-                            <MudCard>
-                                <MudCardContent Style="justify-content:center">
-                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.HomeWork"></MudIcon></MudText>
-                                    @if (IndexPlant == -1)
-                                    {
-                                        <MudAlert Severity="Severity.Info">
-                                            @Localizer["firstSelectAPlant"]
-                                        </MudAlert>
-                                    }
-                                    else if (IndexArea == -1)
-                                    {
-                                        <MudAlert Severity="Severity.Info">
-                                            @Localizer["firstSelectAnArea"]
-                                        </MudAlert>
-                                    }
-                                    else
-                                    {
-                                        <MudText Align="Align.Center">@_area.Code</MudText>
-                                    }
-
-                                    @if (IndexPlant != -1)
-                                    {
-                                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexArea" For="@(() => IndexArea)" SelectedValuesChanged="UpdateArea">
-
-                                            <MudSelectItem Value="-1">@Localizer["firstSelectAnArea"]</MudSelectItem>
-
-                                            @for (var i = 0; i < _areas.ElementAt(IndexPlant).Value.Count; i++)
-                                            {
-                                                var type = _areas.ElementAt(IndexPlant).Value[i];
-                                                <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    }
-
-                                    @if (_area.IsActive == true && IndexArea != -1)
-                                    {
-                                        <MudText Align="Align.Center" Class="pt-2">
-                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
-                                        </MudText>
-                                    }
-                                    else if (IndexArea != -1)
-                                    {
-                                        <MudText Align="Align.Center" Class="pa-4">
-                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
-                                        </MudText>
-                                    }
-                                </MudCardContent>
-                            </MudCard>
-                            <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
-                                <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
-                            </MudText>
+                                @if (_area.IsActive == true && IndexArea != -1)
+                                {
+                                    <MudText Align="Align.Center" Class="pt-2">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                    </MudText>
+                                }
+                                else if (IndexArea != -1)
+                                {
+                                    <MudText Align="Align.Center" Class="pa-4">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                    </MudText>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                        <MudText Typo="Typo.h4" Style="text-align:center; align-self: center;">
+                            <MudIcon Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight"></MudIcon>
+                        </MudText>
 
 
 
 
-                            <MudCard>
-                                <MudCardContent Style="justify-content:center">
-                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Workspaces"></MudIcon></MudText>
-                                    @if (IndexPlant == -1)
-                                    {
-                                        <MudAlert Severity="Severity.Info">
-                                            @Localizer["firstSelectAPlant"]
-                                        </MudAlert>
-                                    }
-                                    else if (IndexArea == -1)
-                                    {
-                                        <MudAlert Severity="Severity.Info">
-                                            @Localizer["firstSelectAnArea"]
-                                        </MudAlert>
-                                    }
-                                    else if (IndexDistr == -1)
-                                    {
-                                        <MudAlert Severity="Severity.Info">
-                                            @Localizer["selectADistributionFirst"]
-                                        </MudAlert>
-                                    }
-                                    else
-                                    {
-                                        <MudText Align="Align.Center">@_distribution.Code</MudText>
-                                    }
+                        <MudCard>
+                            <MudCardContent Style="justify-content:center">
+                                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.Workspaces"></MudIcon></MudText>
+                                @if (IndexPlant == -1)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        @Localizer["firstSelectAPlant"]
+                                    </MudAlert>
+                                }
+                                else if (IndexArea == -1)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        @Localizer["firstSelectAnArea"]
+                                    </MudAlert>
+                                }
+                                else if (IndexDistr == -1)
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        @Localizer["selectADistributionFirst"]
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudText Align="Align.Center">@_distribution.Code</MudText>
+                                }
 
-                                    @if (IndexPlant != -1 && IndexArea != -1)
-                                    {
-                                        <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexDistr" For="@(() => IndexDistr)" SelectedValuesChanged="UpdateDistribution">
-                                            <MudSelectItem Value="-1">@Localizer["selectADistributionFirst"]</MudSelectItem>
+                                @if (IndexPlant != -1 && IndexArea != -1)
+                                {
+                                    <MudSelect T="int" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexDistr" For="@(() => IndexDistr)" SelectedValuesChanged="UpdateDistribution">
+                                        <MudSelectItem Value="-1">@Localizer["selectADistributionFirst"]</MudSelectItem>
 
-                                            @for (var i = 0; i < _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.Count; i++)
-                                            {
-                                                var type = _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value[i];
-
-
-                                                <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    }
-
-                                    @if (_distribution.IsActive == true && IndexDistr != -1)
-                                    {
-                                        <MudText Align="Align.Center" Class="pt-2">
-                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
-                                        </MudText>
-                                    }
-                                    else if (IndexDistr != -1)
-                                    {
-                                        <MudText Align="Align.Center" Class="pa-4">
-                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
-                                        </MudText>
-                                    }
-                                </MudCardContent>
-                            </MudCard>
-                        
-
-                       
-                            <MudCard>
-                                <MudCardContent Style="justify-content:center">
-                                    <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.DirectionsCar"></MudIcon></MudText>
-                                    @if (IndexProd != -1)
-                                    {
-                                        <MudText Align="Align.Center">@_product.Code</MudText>
-                                    }
-                                    else
-                                    {
-                                        <MudAlert Severity="Severity.Info">
-                                            @Localizer["selectAProduct"]
-                                        </MudAlert>
-                                    }
-
-                                    <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexProd" For="@(() => IndexProd)" SelectedValuesChanged="UpdateProduct">
-                                        <MudSelectItem Value="-1">@Localizer["selectAProduct"]</MudSelectItem>
-
-                                        @for (var i = 0; i < _products.Count; i++)
+                                        @for (var i = 0; i < _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value.Count; i++)
                                         {
-                                            var type = _products[i];
+                                            var type = _distributions.ElementAt(IndexPlant).Value.ElementAt(IndexArea).Value[i];
+
+
                                             <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
                                         }
                                     </MudSelect>
-                                    @if (_product.IsActive == true && IndexProd != -1)
+                                }
+
+                                @if (_distribution.IsActive == true && IndexDistr != -1)
+                                {
+                                    <MudText Align="Align.Center" Class="pt-2">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                    </MudText>
+                                }
+                                else if (IndexDistr != -1)
+                                {
+                                    <MudText Align="Align.Center" Class="pa-4">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                    </MudText>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+
+
+
+                        <MudCard>
+                            <MudCardContent Style="justify-content:center">
+                                <MudText Align="Align.Center"><MudIcon Icon="@Icons.Material.Filled.DirectionsCar"></MudIcon></MudText>
+                                @if (IndexProd != -1)
+                                {
+                                    <MudText Align="Align.Center">@_product.Code</MudText>
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info">
+                                        @Localizer["selectAProduct"]
+                                    </MudAlert>
+                                }
+
+                                <MudSelect T="int" Label=@Localizer["product"] Variant="Variant.Text" Class="mt-3 mr-4 h5" AnchorOrigin="Origin.BottomCenter" @bind-Value="@IndexProd" For="@(() => IndexProd)" SelectedValuesChanged="UpdateProduct">
+                                    <MudSelectItem Value="-1">@Localizer["selectAProduct"]</MudSelectItem>
+
+                                    @for (var i = 0; i < _products.Count; i++)
                                     {
-                                        <MudText Align="Align.Center" Class="pt-2">
-                                            <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
-                                        </MudText>
+                                        var type = _products[i];
+                                        <MudSelectItem Value="i">@($"{type.Description}")</MudSelectItem>
                                     }
-                                    else if (IndexProd != -1)
-                                    {
-                                        <MudText Align="Align.Center" Class="pa-4">
-                                            <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
-                                        </MudText>
-                                    }
-                                </MudCardContent>
-                            </MudCard>
-                        
+                                </MudSelect>
+                                @if (_product.IsActive == true && IndexProd != -1)
+                                {
+                                    <MudText Align="Align.Center" Class="pt-2">
+                                        <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["active"]</MudChip>
+                                    </MudText>
+                                }
+                                else if (IndexProd != -1)
+                                {
+                                    <MudText Align="Align.Center" Class="pa-4">
+                                        <MudChip Variant="Variant.Text" Color="Color.Error">@Localizer["inactive"]</MudChip>
+                                    </MudText>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+
 
 
                     </MudCardContent>
@@ -801,6 +802,8 @@
 
 
 @code {
+    [Parameter]
+    public EventCallback ChangeToMainTab {get; set;}
 
     bool ShowLoading = true;
     bool Find_all_tree = false;
@@ -984,52 +987,98 @@
 
     private async void CreatePathAsync()
     {
-
-        SosCode.ProductId = _product.ProductId;
-        SosCode.DistributionId = _distribution.DistributionId;
-        SosCode.ProductId = _product.ProductId;
-
-        var anyAssyChart = await AssyChartServices.GetAssyChartJobObservation(_plant.PlantId, _area.AreaId, _distribution.DistributionId);
-
-        if (anyAssyChart != null)
+        
+        if (string.IsNullOrWhiteSpace(SosCode.Code))
         {
-            Console.WriteLine("Se añade al assychartr");
-            //se Invoca metodo que añade al assychart
-            SosCode.AssyChardId = anyAssyChart.AssyChardId;
-
-
-            var resultAdd = await AssyChartServices.CreateCodePath(SosCode);
-
-            if (resultAdd != null)
-                NavigationManager.NavigateTo("/PathsRoute");
-            else
-                await JS.InvokeVoidAsync("alert", "Fail to create Assy Chart, contact admin!"); // Alert
+            Snackbar.Add("Please enter a valid Code", Severity.Error);
+            return;
         }
-        else
+        
+        if (IndexPlant == -1 )
         {
-            Console.WriteLine("Se Crea el assychart");
-
-            AssyChart newAssychart = new();
-            newAssychart.CreationDate = DateTime.Now;
-            newAssychart.PlantId = _plant.PlantId;
-            newAssychart.AreaId = _area.AreaId;
-            newAssychart.DistributionId = _distribution.DistributionId;
-            newAssychart.RoutesProductsAssyChart?.Add(SosCode);
-            newAssychart.IsActive = true;
-            //crear asychasr
-            var result = await AssyChartServices.CreateAssyChart(newAssychart);
-
-            if (result != null)
-                NavigationManager.NavigateTo("/PathsRoute");
-            else
-                await JS.InvokeVoidAsync("alert", "Fail to create Assy Chart, contact admin!"); // Alert
-                                                                                                //se invoca crear assychart
+            Snackbar.Add("Please select a Plant into HOE Folder", Severity.Error);
+            return;
         }
 
+        if(IndexArea == -1)
+        {
+            Snackbar.Add("Please select an Area into HOE Folder", Severity.Error);
+            return;
+        }
 
+        if(IndexDistr == -1)
+        {
+            Snackbar.Add("Please select a Distribution into HOE Folder", Severity.Error);
+            return;
+        }
 
+        if (IndexProd == -1)
+        {
+            Snackbar.Add("Please select a Product into HOE Folder", Severity.Error);
+            return;
+        }
 
+        try 
+        {
+            SosCode.ProductId = _product.ProductId;
+            SosCode.DistributionId = _distribution.DistributionId;
 
+            var anyAssyChart = await AssyChartServices.GetAssyChartJobObservation(_plant.PlantId, _area.AreaId, _distribution.DistributionId);
+
+            if (anyAssyChart != null)
+            {
+                Console.WriteLine("Se añade al assychartr");
+                SosCode.AssyChardId = anyAssyChart.AssyChardId;
+
+                var resultAdd = await AssyChartServices.CreateCodePath(SosCode);
+
+                if (resultAdd != null)
+                {
+                    Snackbar.Clear();
+                    Snackbar.Add("Path created successfully", Severity.Success);
+                    await TreeServices.addCodePath(resultAdd);
+
+                    await Task.Delay(500); // Give time for the snackbar to show
+                                           //llamar funcion para cambiar de pestaña
+                                           // NavigationManager.NavigateTo("/PathsRoute", true); // Force reload
+                    ChangeToMainTab.InvokeAsync();
+                }
+                else
+                {
+                    Snackbar.Add("Failed to create Path", Severity.Error);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Se Crea el assychart");
+
+                AssyChart newAssychart = new();
+                newAssychart.CreationDate = DateTime.Now;
+                newAssychart.PlantId = _plant.PlantId;
+                newAssychart.AreaId = _area.AreaId;
+                newAssychart.DistributionId = _distribution.DistributionId;
+                newAssychart.RoutesProductsAssyChart?.Add(SosCode);
+                newAssychart.IsActive = true;
+
+                var result = await AssyChartServices.CreateAssyChart(newAssychart);
+
+                if (result != null)
+                {
+                    Snackbar.Add("Path created successfully", Severity.Success);
+                    await Task.Delay(500); // Give time for the snackbar to show
+                    await TreeServices.addCodePath(result.RoutesProductsAssyChart.FirstOrDefault());
+                    ChangeToMainTab.InvokeAsync();
+                }
+                else
+                {
+                    Snackbar.Add("Failed to create Path", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating path: {ex.Message}", Severity.Error);
+        }
     }
 
     public async Task<HashSet<TreeItemData>> LoadServerData(TreeItemData parentNode)

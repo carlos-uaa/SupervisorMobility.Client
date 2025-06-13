@@ -33,76 +33,88 @@
 <style>
 
     .vertical-text {
-        vertical-align: middle;
+    vertical-align: middle;
     }
 
     .vertical-content {
-        writing-mode: vertical-lr;
-        white-space: nowrap;
-        word-wrap: break-word;
-        max-width: 100%;
+    writing-mode: vertical-lr;
+    white-space: nowrap;
+    word-wrap: break-word;
+    max-width: 100%;
     }
 
 
     .mud-simple-table.mud-table-sticky-header * table thead * th {
-        background-color: var(--mud-palette-surface);
-        position: sticky;
-        z-index: 2;
-        top: 0;
+    background-color: var(--mud-palette-surface);
+    position: sticky;
+    z-index: 2;
+    top: 0;
     }
 
     .scroll1::-webkit-scrollbar {
-        width: 4px;
-        touch-action: pan-y;
+    width: 4px;
+    touch-action: pan-y;
     }
 
     .right-border {
-        border-right: 1px solid var(--mud-palette-table-lines);
+    border-right: 1px solid var(--mud-palette-table-lines);
     }
 
     .table-container {
-        box-shadow: var(--mud-elevation-1);
-        overflow-x: auto;
-        border-radius: var(--mud-default-borderradius);
+    box-shadow: var(--mud-elevation-1);
+    overflow-x: auto;
+    border-radius: var(--mud-default-borderradius);
     }
 
-        .table-container:hover {
-            box-shadow: var(--mud-elevation-2);
-        }
+    .table-container:hover {
+    box-shadow: var(--mud-elevation-2);
+    }
 
 
     .fixed-column {
-        position: sticky;
-        left: 0;
-        z-index: 2;
-        background-color: #f0f0f0;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: #f0f0f0;
     }
 
     .dynamic-left {
-        left: 0;
+    left: 0;
     }
     /*
-                                                                                table {
-                                                                                    border-collapse: collapse;
-                                                                                    min-width: 100%;
-                                                                                    border-radius: var(--mud-default-borderradius);
-                                                                                } */
+    table {
+    border-collapse: collapse;
+    min-width: 100%;
+    border-radius: var(--mud-default-borderradius);
+    } */
 
     th,
     td {
-        white-space: nowrap;
-        text-overflow: ellipsis;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     }
 
     .fixed-row {
-        position: sticky;
-        top: 0; /* Las filas fijas se ubicarán en la parte superior de la tabla */
-        z-index: 2; /* Asegura que las filas fijas estén por encima del contenido desplazable */
+    position: sticky;
+    top: 0; /* Las filas fijas se ubicarán en la parte superior de la tabla */
+    z-index: 2; /* Asegura que las filas fijas estén por encima del contenido desplazable */
+    }
+
+    .fixed-row-2 {
+    position: sticky;
+    top: 120px; /* Las filas fijas se ubicarán en la parte superior de la tabla */
+    z-index: 2; /* Asegura que las filas fijas estén por encima del contenido desplazable */
+    }
+    
+    .fixed-row-payroll {
+    position: sticky;
+    top: 60px; /* Las filas fijas se ubicarán en la parte superior de la tabla */
+    z-index: 2; /* Asegura que las filas fijas estén por encima del contenido desplazable */
     }
 
     .gray-color td {
-        background-color: #f0f0f0;
-        padding: 4px !important;
+    background-color: #f0f0f0;
+    padding: 4px !important;
     }
 </style>
 
@@ -266,7 +278,7 @@
                 </MudMenu>
 
                 <MudToggleIconButton Toggled="IsZoomed" Class="mx-5" Icon="@Icons.Material.Filled.ZoomIn" Color="@Color.Info"
-                                     ToggledIcon="@Icons.Material.Filled.ZoomOut" ToggledColor="@Color.Primary" ToggledChanged="@(async (_) => await ToggleZoom())" />
+                ToggledIcon="@Icons.Material.Filled.ZoomOut" ToggledColor="@Color.Primary" ToggledChanged="@(async (_) => await ToggleZoom())" />
             </MudItem>
 
         </Header>
@@ -281,7 +293,9 @@
                                 <tr class="fixed-row">
                                     <th colspan="2">@Localizer["operatorsByOperation"]</th>
                                     <th colspan="2" rowspan="3" class="fixed-column dynamic-left ">@Localizer["operatorName"]</th>
-                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                    @* <Virtualize Context="usr" Items="_UserOfArea"> *@
+                                    @foreach (var usr in _UserOfArea)
+                                    {
                                         @if (User_Knolowed[usr.UserId])
                                         {
                                             <th rowspan="3" colspan="2">
@@ -300,7 +314,8 @@
                                                 @usr.Name
                                             </th>
                                         }
-                                    </Virtualize>
+                                    }
+                                    @* </Virtualize> *@
                                     <th rowspan="3">
                                         <b class="mr-4">ROR</b> @_UserOfArea.Count
                                     </th>
@@ -321,7 +336,7 @@
                                             else if (_pat.KnowledgePercentage is not null)
                                             {
                                                 <span class="mr-2">@(_pat.KnowledgePercentage ?? 0)%</span>
-                                               
+
                                             }
                                             else
                                             {
@@ -334,11 +349,11 @@
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="2">@Localizer["operatorsByOperation"]</th>
+                                    <th colspan="2">@Localizer["operatorsKnowOperations"]</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr >
                                     <th colspan="2" style="align-items: center;">
                                         <div style="display:flex; align-items: center;">
                                             @{
@@ -360,10 +375,10 @@
 
                                         <div style="display:flex; align-items: center;">
                                             <MudSelect @bind-Value="leader"
-                                                       Variant="Variant.Outlined"
-                                                       Margin="Margin.Dense"
-                                                       Dense
-                                                       Class="mr-2">
+                                            Variant="Variant.Outlined"
+                                            Margin="Margin.Dense"
+                                            Dense
+                                            Class="mr-2">
                                                 <MudSelectItem Value="@("S")">S</MudSelectItem>
                                                 <MudSelectItem Value="@("C")">C</MudSelectItem>
                                             </MudSelect>
@@ -371,30 +386,36 @@
                                         </div>
 
                                     </th>
-                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                    @foreach (var usr in _UserOfArea)
+                                    {
+                                        @* <Virtualize Context="usr" Items="_UserOfArea"> *@
                                         @if (User_Knolowed[usr.UserId])
                                         {
-                                            <th colspan="2" style="text-align: center;">
+                                            <th class="fixed-row-payroll" colspan="2" style="text-align: center;">
                                                 @usr.Payroll
                                             </th>
                                         }
                                         else
                                         {
-                                            <th style="background-color: #f9dad8; color: #f44336; text-align: center;" colspan="2">
+                                            <th class="fixed-row-payroll" style="background-color: #f9dad8; color: #f44336; text-align: center;" colspan="2">
                                                 @usr.Payroll
                                             </th>
                                         }
-                                    </Virtualize>
+                                    }
+                                    @* </Virtualize> *@
                                     <th><MudInput T="int?" @bind-Value="_pat.KnowledgePercentage" Class="ml-2" ReadOnly Style="max-width: 3vw;" /> x 1</th>
                                     <th rowspan="2"><b>NOTAS RELACIONADAS CON LAS <br />OPERACIONES / DISTRIBUCIONES</b></th>
                                 </tr>
-                                <tr class="fixed-row">
+                                <tr class="fixed-row-2">
                                     @* <th colspan="2" class="fixed-column dynamic-left" style="max-width:60px;width:50px"> @Localizer1["code"]</th> *@
                                     <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
-                                    <Virtualize Items="_UserOfArea">
+                                    @* <Virtualize Items="_UserOfArea"> *@
+                                    @foreach (var usr in _UserOfArea)
+                                    {
                                         <th>MES</th>
                                         <th>Nivel</th>
-                                    </Virtualize>
+                                    }
+                                    @* </Virtualize> *@
                                     <th style="min-width: 8vw;">
                                         <MudInput T="int" Class="ml-2" @bind-Value="countUserO" ReadOnly Style="max-width: 3vw;" /> Ops.
                                     </th>
@@ -519,8 +540,9 @@
                                             </th>
                                         }
 
-
-                                        <Virtualize Context="usr" Items="_UserOfArea">
+                                        @foreach (var usr in _UserOfArea)
+                                        {
+                                            @* <Virtualize Context="usr" Items="_UserOfArea"> *@
                                             <td style="text-align: end;" colspan="2" class="right-border">
                                                 @if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
                                                 {
@@ -593,7 +615,7 @@
                                                                             }
                                                                         }
 
-                                                                        @if ((latestContext is null || (latestContext.ILULevelId != 1 && latestContext.ILULevelId != 4 && latestContext.ILULevelId != 5 && latestContext.ILULevelId < 8)) || (latestContext is null || latestContext?.ILULevelId <= 3 || latestContext?.ILULevelId == 6 || latestContext?.ILULevelId == 11))
+                                                                        @if ((latestContext is null || latestContext.JobObservationId != null || (latestContext.ILULevelId != 1 && latestContext.ILULevelId != 4 && latestContext.ILULevelId != 5 && latestContext.ILULevelId < 8)) || (latestContext is null || latestContext?.ILULevelId <= 3 || latestContext?.ILULevelId == 6 || latestContext?.ILULevelId == 11))
                                                                         {
                                                                             <MudMenu Icon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
                                                                                 @if (latestContext is null || latestContext?.ILULevelId != 1 && latestContext?.ILULevelId != 4 && latestContext?.ILULevelId != 5 && latestContext?.ILULevelId < 8)
@@ -609,6 +631,12 @@
                                                                                         <MudText Class="animationtext">@(latestContext != null ? @Localizer["Set ILU Level"] : @Localizer["newILUFor"])  @usr.Name - @op.Description </MudText>
                                                                                     </MudMenuItem>
                                                                                 }
+
+                                                                                @if (latestContext != null && latestContext.JobObservationId != null)
+                                                                                {
+                                                                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenJobDetailsDialog(latestContext.JobObservationId))" OnTouch="(() =>  OpenJobDetailsDialog(latestContext.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                                                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation((int)latestContext.JobObservationId))" OnTouch="(()=>EditJobObservation((int)latestContext.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                                                                }
                                                                             </MudMenu>
                                                                         }
                                                                     </div>
@@ -619,7 +647,8 @@
                                                     </table>
                                                 }
                                             </td>
-                                        </Virtualize>
+                                            @* </Virtualize> *@
+                                        }
                                         <td>
                                             @{
                                                 var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
@@ -648,21 +677,21 @@
                                             {
                                                 var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
                                                 <MudTextField @bind-Value="currentComment.Comment"
-                                                              Variant="Variant.Outlined"
-                                                              Margin="Margin.Dense"
-                                                              Lines="2"
-                                                              Class="mr-2">
+                                                Variant="Variant.Outlined"
+                                                Margin="Margin.Dense"
+                                                Lines="2"
+                                                Class="mr-2">
                                                 </MudTextField>
                                             }
                                         </td>
                                     </tr>
                                 }
                                 <tr>
-                                    <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
-                                        <b>RTO</b> @Distributions_Knolowed.Count
-                                    </td>
-                                    <td colspan="2" class="fixed-column">
+                                    <td colspan="4" style="max-width:60px;width:50px;" class="fixed-column">
                                         <div style="display:flex;">
+                                            <div style="display:flex; align-items: center" class="mr-2">
+                                                <b> RTO </b>  &nbsp;&nbsp; @_distributions.Count
+                                            </div>
                                             <div style="display:flex; align-items: center" class="mr-2">
                                                 1 x <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly />
                                             </div>
@@ -671,10 +700,9 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <Virtualize Context="usr" Items="_UserOfArea">
-                                        @{
-                                            int index = _UserOfArea.IndexOf(usr);
-                                        }
+                                    @* <Virtualize Context="usr" Items="_UserOfArea"> *@
+                                    @foreach (var (usr, index) in _UserOfArea.Select((v, i) => (v, i)))
+                                    {
 
                                         <td style="text-align: center;" colspan="2">
 
@@ -711,7 +739,8 @@
                                                 }
                                             }
                                         </td>
-                                    </Virtualize>
+                                    }
+                                    @* </Virtualize> *@
                                     <td style="text-align: center;"></td>
                                     <td style="text-align: center;">Nivel de habilidad Tecnica</td>
                                 </tr>
@@ -723,16 +752,19 @@
                                     </td>
                                     <td colspan="2" class="fixed-column dynamic-left">
                                     </td>
-                                    <Virtualize Context="usr" Items="_UserOfArea">
+                                    @* <Virtualize Context="usr" Items="_UserOfArea"> *@
+                                    @foreach (var usr in _UserOfArea)
+                                    {
                                         <td style="text-align: center;" colspan="2">
                                             @{
                                                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
                                                 @sum
                                             }
                                         </td>
-                                    </Virtualize>
+                                    }
+                                    @* </Virtualize> *@
                                     <td style="text-align: center;">
-                                     @*    <MudButton OnClick="SetHistoricalAbilityAcumulated" Color="Color.Primary">Acum</MudButton>
+                                        @*    <MudButton OnClick="SetHistoricalAbilityAcumulated" Color="Color.Primary">Acum</MudButton>
                                         <MudButton OnClick="SetHistoricalAbility" Color="Color.Secondary">X Mont</MudButton>
                                         <MudButton OnClick="LoadHistoricalAbility" Color="Color.Secondary">Load</MudButton> *@
                                     </td>
@@ -750,17 +782,32 @@
                                     </td>
                                     @if (_pat?.PatUserRoles != null)
                                     {
-                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles">
+                                        @* <Virtualize Context="patUserRole" Items="_pat.PatUserRoles"> *@
+                                        @foreach (var patUserRole in _pat.PatUserRoles)
+                                        {
                                             <td style="text-align: center;" colspan="2" rowspan="2">
                                                 <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
-                                                <MudSelect @bind-Value="patUserRole.Role"
-                                                           Variant="Variant.Outlined"
-                                                           Margin="Margin.Dense"
-                                                           Dense
-                                                           Class="mr-2"
-                                                           Placeholder="Select Role">
+                                                <MudSelect @bind-Value="patUserRole.Role" OnInternalInputChanged="(() => SetHistoricalAbility())"
+                                                Variant="Variant.Outlined"
+                                                Margin="Margin.Dense"
+                                                Dense
+                                                Class="mr-2"
+                                                Placeholder="Select Role">
 
-                                                    @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
+                                                    @{
+                                                        var userRole = _UserOfArea.FirstOrDefault(u => u.UserId == patUserRole.UserId);
+                                                      
+                                                        var availableRoles = new List<OperatorRole?> { null }
+                                                        .Concat(Enum.GetValues<OperatorRole>()
+                                                        .Cast<OperatorRole?>());
+                                                                                                              
+                                                        if (userRole.UserType == 4)
+                                                        {
+                                                            availableRoles = availableRoles.Where(r => r != OperatorRole.SV);
+                                                        }
+                                                    }
+
+                                                    @foreach (var role in availableRoles)
                                                     {
                                                         <MudSelectItem Value="role">
                                                             @if (role is not null)
@@ -771,7 +818,8 @@
                                                     }
                                                 </MudSelect>
                                             </td>
-                                        </Virtualize>
+                                        }
+                                        @* </Virtualize> *@
                                         <td style="text-align: center;" rowspan="2"></td>
                                         <td style="text-align: center;" rowspan="2">
                                             <MudSimpleTable>
@@ -814,7 +862,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                     <tr class="gray-color">
+                                                    <tr class="gray-color">
                                                         <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
                                                         <td><span class="mr-2">@($"{monthsDistributionPercentage[6]:F2}%")</span></td>
                                                         <td><span class="mr-2">@($"{monthsDistributionPercentage[7]:F2}%")</span></td>
@@ -855,7 +903,9 @@
                                 <tr class="fixed-row">
                                     <th colspan="2">@Localizer["operatorsByOperation"]</th>
                                     <th colspan="2" rowspan="3" class="fixed-column dynamic-left ">@Localizer["operatorName"]</th>
-                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    @foreach (var usr in _UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList())
+                                    {
+                                        @* <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()"> *@
                                         @if (User_Knolowed[usr.UserId])
                                         {
                                             <th rowspan="3" colspan="2">
@@ -874,7 +924,8 @@
                                                 @usr.Name
                                             </th>
                                         }
-                                    </Virtualize>
+                                    }
+                                    @* </Virtualize> *@
                                     <th rowspan="3">
                                         <b class="mr-4">ROR</b> @_UserOfArea.Count
                                     </th>
@@ -904,11 +955,12 @@
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="2">@Localizer["operatorsByOperation"]</th>
+                                    <th colspan="2">@Localizer["operatorsKnowOperations"]</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr class="fixed-row">
+
                                     <th colspan="2" style="align-items: center;">
                                         <div style="display:flex; align-items: center;">
                                             @{
@@ -926,14 +978,14 @@
                                         </div>
 
                                     </th>
-                                    <th colspan="2" class="fixed-column dynamic-left">
+                                    <th colspan="2" >
 
                                         <div style="display:flex; align-items: center;">
                                             <MudSelect @bind-Value="leader"
-                                                       Variant="Variant.Outlined"
-                                                       Margin="Margin.Dense"
-                                                       Dense
-                                                       Class="mr-2">
+                                            Variant="Variant.Outlined"
+                                            Margin="Margin.Dense"
+                                            Dense
+                                            Class="mr-2">
                                                 <MudSelectItem Value="@("S")">S</MudSelectItem>
                                                 <MudSelectItem Value="@("C")">C</MudSelectItem>
                                             </MudSelect>
@@ -941,29 +993,35 @@
                                         </div>
 
                                     </th>
-                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    @foreach (var usr in _UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList())
+                                    {
+                                        @* <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()"> *@
                                         @if (User_Knolowed[usr.UserId])
                                         {
-                                            <th colspan="2" style="text-align: center;">
+                                            <th colspan="2" class="fixed-row-payroll" style="text-align: center;">
                                                 @usr.Payroll
                                             </th>
                                         }
                                         else
                                         {
-                                            <th style="background-color: #f9dad8; color: #f44336; text-align: center;" colspan="2">
+                                            <th style="background-color: #f9dad8; color: #f44336; text-align: center;" class="fixed-row-payroll" colspan="2">
                                                 @usr.Payroll
                                             </th>
                                         }
-                                    </Virtualize>
+                                    }
+                                    @* </Virtualize> *@
                                     <th><MudInput T="int?" @bind-Value="_pat.KnowledgePercentage" Class="ml-2" ReadOnly Style="max-width: 3vw;" /> x 1</th>
                                     <th rowspan="2"><b>NOTAS RELACIONADAS CON LAS <br />OPERACIONES / DISTRIBUCIONES</b></th>
                                 </tr>
-                                <tr class="fixed-row">
+                                <tr class="fixed-row-2">
                                     <th colspan="4" class="fixed-column dynamic-left"> @Localizer["distributionName"]</th>
-                                    <Virtualize Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    @foreach (var usr in _UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList())
+                                    {
+                                        @* <Virtualize Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()"> *@
                                         <th>Periodo</th>
                                         <th>Nivel</th>
-                                    </Virtualize>
+                                    }
+                                    @* </Virtualize> *@
                                     <th style="min-width: 8vw;">
                                         <MudInput T="int" Class="ml-2" @bind-Value="countUserO" ReadOnly Style="max-width: 3vw;" /> Ops.
                                     </th>
@@ -1091,7 +1149,9 @@
                                             </th>
                                         }
 
-                                        <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                        @foreach (var usr in _UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList())
+                                        {
+                                            @* <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()"> *@
                                             <td style="text-align: end;" colspan="2" class="right-border">
                                                 @if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context))
                                                 {
@@ -1193,7 +1253,7 @@
                                                                             }
                                                                         }
 
-                                                                        @if ((latestContext is null || (latestContext.ILULevelId != 1 && latestContext.ILULevelId != 4 && latestContext.ILULevelId != 5 && latestContext.ILULevelId < 8)) || (latestContext is null || latestContext?.ILULevelId <= 3 || latestContext?.ILULevelId == 6 || latestContext?.ILULevelId == 11))
+                                                                        @if ((latestContext is null || latestContext.JobObservationId != null || (latestContext.ILULevelId != 1 && latestContext.ILULevelId != 4 && latestContext.ILULevelId != 5 && latestContext.ILULevelId < 8)) || (latestContext is null || latestContext?.ILULevelId <= 3 || latestContext?.ILULevelId == 6 || latestContext?.ILULevelId == 11))
                                                                         {
                                                                             <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="" Color="Color.Info" AnchorOrigin="Origin.BottomCenter">
                                                                                 @if (latestContext is null || latestContext?.ILULevelId != 1 && latestContext?.ILULevelId != 4 && latestContext?.ILULevelId != 5 && latestContext?.ILULevelId < 8)
@@ -1209,6 +1269,12 @@
                                                                                         <MudText Class="animationtext">@(latestContext != null ? @Localizer["Set ILU Level"] : @Localizer["newILUFor"])  @usr.Name - @op.Description </MudText>
                                                                                     </MudMenuItem>
                                                                                 }
+
+                                                                                @if (latestContext != null && latestContext.JobObservationId != null)
+                                                                                {
+                                                                                    <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() =>  OpenJobDetailsDialog(latestContext.JobObservationId))" OnTouch="(() =>  OpenJobDetailsDialog(latestContext.JobObservationId))">@Localizer["jobObservationDetails"]</MudMenuItem>
+                                                                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(()=>EditJobObservation((int)latestContext.JobObservationId))" OnTouch="(()=>EditJobObservation((int)latestContext.JobObservationId))">@Localizer["editJobObservations"]</MudMenuItem>
+                                                                                }
                                                                             </MudMenu>
                                                                         }
                                                                     </div>
@@ -1220,7 +1286,8 @@
                                                 }
 
                                             </td>
-                                        </Virtualize>
+                                            @* </Virtualize> *@
+                                        }
                                         <td>
                                             @{
                                                 var hasLowLevel = HasLowLevelForUsers(ILU_Matrix, _UserOfArea, op.DistributionId);
@@ -1249,21 +1316,21 @@
                                             {
                                                 var currentComment = _pat.PatDistributionComments.First(c => c.DistributionId == op.DistributionId);
                                                 <MudTextField @bind-Value="currentComment.Comment"
-                                                              Variant="Variant.Outlined"
-                                                              Margin="Margin.Dense"
-                                                              Lines="2"
-                                                              Class="mr-2">
+                                                Variant="Variant.Outlined"
+                                                Margin="Margin.Dense"
+                                                Lines="2"
+                                                Class="mr-2">
                                                 </MudTextField>
                                             }
                                         </td>
                                     </tr>
                                 }
                                 <tr>
-                                    <td colspan="2" style="max-width:60px;width:50px;" class="fixed-column">
-                                        <b>RTO</b> @Distributions_Knolowed.Count
-                                    </td>
-                                    <td colspan="2" class="fixed-column">
+                                    <td colspan="4" style="max-width:60px;width:50px;" class="fixed-column">
                                         <div style="display:flex;">
+                                            <div style="display:flex; align-items: center" class="mr-2">
+                                                <b> RTO </b>  &nbsp;&nbsp; @_distributions.Count
+                                            </div>
                                             <div style="display:flex; align-items: center" class="mr-2">
                                                 1 x <MudInput T="int?" Class="ml-2" @bind-Value="_pat.KnowledgePercentage" ReadOnly />
                                             </div>
@@ -1272,10 +1339,11 @@
                                             </div>
                                         </div>
                                     </td>
-                                    @{
-                                        int index = 0;
-                                    }
-                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+
+
+                                    @foreach (var (usr, index) in _UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList().Select((v, i) => (v, i)))
+                                    {
+                                        @* <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()"> *@
                                         <td style="text-align: center;" colspan="2">
 
                                             @{
@@ -1289,8 +1357,8 @@
                                             {
 
                                                 @if (!(_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is not null) && _pat.SaveLeader == "S" ||
-                                           (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
-                                           && _pat.SaveLeader == "C")
+                                                                         (_pat.PatUserRoles?.ElementAtOrDefault(index)?.Role is null || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.Lider || _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role == OperatorRole.CA)
+                                                                         && _pat.SaveLeader == "C")
                                                 {
                                                     @if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
                                                     {
@@ -1308,10 +1376,9 @@
                                                 }
                                             }
                                         </td>
-                                        @{
-                                            index++;
-                                        }
-                                    </Virtualize>
+
+                                        @* </Virtualize> *@
+                                    }
                                     <td style="text-align: center;"></td>
                                     <td style="text-align: center;">Nivel de habilidad Tecnica</td>
                                 </tr>
@@ -1323,16 +1390,19 @@
                                     </td>
                                     <td colspan="2" class="fixed-column dynamic-left">
                                     </td>
-                                    <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
+                                    @* <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()"> *@
+                                         @foreach (var usr in _UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList())
+ {
                                         <td style="text-align: center;" colspan="2">
                                             @{
                                                 var sum = CountHighLevel(ILU_Matrix, _distributions, usr.UserId);
                                                 @sum
                                             }
                                         </td>
-                                    </Virtualize>
+ }
+                                    @* </Virtualize> *@
                                     <td style="text-align: center;">
-                                       @*   <MudButton OnClick="SetHistoricalAbilityAcumulated" Color="Color.Primary">Acum</MudButton>
+                                        @*   <MudButton OnClick="SetHistoricalAbilityAcumulated" Color="Color.Primary">Acum</MudButton>
                                          <MudButton OnClick="SetHistoricalAbility" Color="Color.Secondary">X Mont</MudButton> 
                                         <MudButton OnClick="LoadHistoricalAbility" Color="Color.Secondary">Load</MudButton>  *@
                                     </td>
@@ -1350,8 +1420,9 @@
                                     </td>
                                     @if (_pat?.PatUserRoles != null)
                                     {
-                                        <Virtualize Context="patUserRole" Items="_pat.PatUserRoles.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()">
-
+                                        @* <Virtualize Context="patUserRole" Items="_pat.PatUserRoles.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()"> *@
+                                             @foreach (var patUserRole in _pat.PatUserRoles.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList())
+ {
                                             <td style="text-align: center;" colspan="2" rowspan="2">
                                                 <MudTextField @bind-Value="patUserRole.Comment" Variant="Variant.Outlined" Margin="Margin.Dense" Lines="3" Class="mr-2"></MudTextField>
                                                 <MudSelect @bind-Value="patUserRole.Role"
@@ -1361,7 +1432,20 @@
                                                            Class="mr-2"
                                                            Placeholder="Select Role">
 
-                                                    @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
+                                                    @{
+                                                        var userRole = _UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList().FirstOrDefault(u => u.UserId == patUserRole.UserId);
+
+                                                        var availableRoles = new List<OperatorRole?> { null }
+                                                        .Concat(Enum.GetValues<OperatorRole>()
+                                                        .Cast<OperatorRole?>());
+
+                                                        if (userRole.UserType == 4)
+                                                        {
+                                                            availableRoles = availableRoles.Where(r => r != OperatorRole.SV);
+                                                        }
+                                                    }
+
+                                                    @foreach (var role in availableRoles)
                                                     {
                                                         <MudSelectItem Value="role">
                                                             @if (role is not null)
@@ -1372,7 +1456,8 @@
                                                     }
                                                 </MudSelect>
                                             </td>
-                                        </Virtualize>
+                                            }
+                                        @* </Virtualize> *@
                                         <td style="text-align: center;" rowspan="2"></td>
                                         <td style="text-align: center;" rowspan="2">
                                             <MudSimpleTable>
@@ -1415,7 +1500,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                     <tr class="gray-color">
+                                                    <tr class="gray-color">
                                                         <td style="background-color: white; text-align: center;">@_pat.KnowledgePercentage X 1</td>
                                                         <td><span class="mr-2">@($"{monthsDistributionPercentage[6]:F2}%")</span></td>
                                                         <td><span class="mr-2">@($"{monthsDistributionPercentage[7]:F2}%")</span></td>
@@ -1942,7 +2027,7 @@ else
 
             <SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation plant_id="_pat.PlantId" area_id="_pat.AreaId" LoggedUser="user" distribution_id="distribution_id"
                                                                                          operator_id="operator_id" supervisor_id="supervisor_id" ProgrammedStartDate="ProgrammedStartDate"
-                                                                                         ILULevelAux="@ILULevelAux">
+                                                                                         ILULevelAux="@ILULevelAux" CloseModalCallback="CloseJobModal">
             </SupervisorMobility.Client.Pages.Inicio.JobObservationPage.ILUJobObservation>
         </MudContainer>
     </DialogContent>
@@ -1984,13 +2069,13 @@ else
                 }
                 @if (user.UserType == 1 || user.UserType == 2 || user.UserType == 3)
                 {
-                    <MudButton @onclick="(() => EditJobObservation(jobId))" Color="Color.Info" EndIcon="@Icons.Material.Filled.Edit">@Localizer["edit"]</MudButton>
                 }
             }
             else
             {
                 <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Class="my-7" />
             } *@
+                    <MudButton @onclick="(() => EditJobObservation(JobObservationId))" Color="Color.Info" EndIcon="@Icons.Material.Filled.Edit">@Localizer["edit"]</MudButton>
         <MudButton Color="Color.Info" OnClick="Close">@Localizer["close"]</MudButton>
     </DialogActions>
 </MudDialog>

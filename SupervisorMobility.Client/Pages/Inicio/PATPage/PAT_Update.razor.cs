@@ -10,6 +10,7 @@ using SupervisorMobility.Client.Pages.Configuration.PlantPage;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage;
 using DocumentFormat.OpenXml.Vml.Spreadsheet;
+using DocumentFormat.OpenXml.Drawing.Charts;
 
 namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 {
@@ -1151,23 +1152,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         private string year;
         private async void YearlyTab()
         {
-            
+            ShowTable = false;
           
             StateHasChanged();
 
             MonthlyView = false;
-
+            ShowTable = true;
             StateHasChanged();
         }  
         
         private async void MontlyTab()
         {
+            ShowTable =  false;
             FilterUserMonth();
           
             StateHasChanged();
 
             MonthlyView = true;
-
+            ShowTable = true;
             StateHasChanged();
         }
         private async void OnDateChanged(DateTime? value)
@@ -1293,7 +1295,31 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             }
         }
 
+        void EditJobObservation(int jobObservationId)
+        {
+            NavigationManager.NavigateTo($"jobobservation/updatejobobservation/{jobObservationId}");
+        }
         void Close() => visibleJobDetails = false;
+
+        private async void CloseJobModal()
+        {
+            CreateILUJob = false;
+            ShowTable = false;
+
+            var tempPatDistComments = _pat.PatDistributionComments;
+            var tempPatUserRoles = _pat.PatUserRoles;
+
+            var tempPercent = _pat.KnowledgePercentage;
+
+            _pat = await PATsServices.getPat(patID);
+
+            _pat.PatDistributionComments = tempPatDistComments;
+            _pat.PatUserRoles = tempPatUserRoles;
+            _pat.KnowledgePercentage = tempPercent;
+
+            await PrepareDataTable();
+            StateHasChanged();
+        }
     }//end class pat details
 
 
