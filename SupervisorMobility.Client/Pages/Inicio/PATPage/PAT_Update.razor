@@ -105,6 +105,12 @@
     top: 120px; /* Las filas fijas se ubicarán en la parte superior de la tabla */
     z-index: 2; /* Asegura que las filas fijas estén por encima del contenido desplazable */
     }
+    
+    .fixed-row-payroll {
+    position: sticky;
+    top: 60px; /* Las filas fijas se ubicarán en la parte superior de la tabla */
+    z-index: 2; /* Asegura que las filas fijas estén por encima del contenido desplazable */
+    }
 
     .gray-color td {
     background-color: #f0f0f0;
@@ -347,7 +353,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="fixed-row">
+                                <tr >
                                     <th colspan="2" style="align-items: center;">
                                         <div style="display:flex; align-items: center;">
                                             @{
@@ -385,13 +391,13 @@
                                         @* <Virtualize Context="usr" Items="_UserOfArea"> *@
                                         @if (User_Knolowed[usr.UserId])
                                         {
-                                            <th colspan="2" style="text-align: center;">
+                                            <th class="fixed-row-payroll" colspan="2" style="text-align: center;">
                                                 @usr.Payroll
                                             </th>
                                         }
                                         else
                                         {
-                                            <th style="background-color: #f9dad8; color: #f44336; text-align: center;" colspan="2">
+                                            <th class="fixed-row-payroll" style="background-color: #f9dad8; color: #f44336; text-align: center;" colspan="2">
                                                 @usr.Payroll
                                             </th>
                                         }
@@ -788,7 +794,20 @@
                                                 Class="mr-2"
                                                 Placeholder="Select Role">
 
-                                                    @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
+                                                    @{
+                                                        var userRole = _UserOfArea.FirstOrDefault(u => u.UserId == patUserRole.UserId);
+                                                      
+                                                        var availableRoles = new List<OperatorRole?> { null }
+                                                        .Concat(Enum.GetValues<OperatorRole>()
+                                                        .Cast<OperatorRole?>());
+                                                                                                              
+                                                        if (userRole.UserType == 4)
+                                                        {
+                                                            availableRoles = availableRoles.Where(r => r != OperatorRole.SV);
+                                                        }
+                                                    }
+
+                                                    @foreach (var role in availableRoles)
                                                     {
                                                         <MudSelectItem Value="role">
                                                             @if (role is not null)
@@ -959,7 +978,7 @@
                                         </div>
 
                                     </th>
-                                    <th colspan="2" class="fixed-column dynamic-left">
+                                    <th colspan="2" >
 
                                         <div style="display:flex; align-items: center;">
                                             <MudSelect @bind-Value="leader"
@@ -979,13 +998,13 @@
                                         @* <Virtualize Context="usr" Items="_UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList()"> *@
                                         @if (User_Knolowed[usr.UserId])
                                         {
-                                            <th colspan="2" style="text-align: center;">
+                                            <th colspan="2" class="fixed-row-payroll" style="text-align: center;">
                                                 @usr.Payroll
                                             </th>
                                         }
                                         else
                                         {
-                                            <th style="background-color: #f9dad8; color: #f44336; text-align: center;" colspan="2">
+                                            <th style="background-color: #f9dad8; color: #f44336; text-align: center;" class="fixed-row-payroll" colspan="2">
                                                 @usr.Payroll
                                             </th>
                                         }
@@ -1413,7 +1432,20 @@
                                                            Class="mr-2"
                                                            Placeholder="Select Role">
 
-                                                    @foreach (var role in new List<OperatorRole?> { null }.Concat(Enum.GetValues<OperatorRole>().Cast<OperatorRole?>()))
+                                                    @{
+                                                        var userRole = _UserOfArea.Where(u => _visibleSubordinateIds.Contains(u.UserId)).ToList().FirstOrDefault(u => u.UserId == patUserRole.UserId);
+
+                                                        var availableRoles = new List<OperatorRole?> { null }
+                                                        .Concat(Enum.GetValues<OperatorRole>()
+                                                        .Cast<OperatorRole?>());
+
+                                                        if (userRole.UserType == 4)
+                                                        {
+                                                            availableRoles = availableRoles.Where(r => r != OperatorRole.SV);
+                                                        }
+                                                    }
+
+                                                    @foreach (var role in availableRoles)
                                                     {
                                                         <MudSelectItem Value="role">
                                                             @if (role is not null)
