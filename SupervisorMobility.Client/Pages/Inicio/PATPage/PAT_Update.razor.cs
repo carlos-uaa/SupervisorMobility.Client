@@ -756,12 +756,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             foreach (var usr in _UserOfArea)
             {
-                var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
-                var isSaveLeaderS = _pat.SaveLeader == "S";
+                var role = _pat.PatUserRoles?.FirstOrDefault(r => r.UserId == usr.UserId)?.Role;
+               
                 var isSaveLeaderC = _pat.SaveLeader == "C";
-                var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
+                var isRoleRelevant = role == OperatorRole.Lider || role == OperatorRole.CA;
 
-                if(!((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC)))
+                if(isRoleRelevant && isSaveLeaderC)
                 {
                     index++;
                     continue;
@@ -787,118 +787,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
         }
 
 
-        private double? CalculateDistributionPercentageMonth(int MonthIndex)
-        {
-            if (_pat.KnowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
-                return null;
-
-           
-            countDistO = 0;
-            countDistX = 0;
-
-            int index = 0;
-
-            foreach (var usr in _UserOfArea)
-            {
-                var role = _pat.PatUserRoles?.ElementAtOrDefault(index)?.Role;
-                var isSaveLeaderS = _pat.SaveLeader == "S";
-                var isSaveLeaderC = _pat.SaveLeader == "C";
-                var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
-
-                if (!((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC)))
-                {
-                    index++;
-                    continue;
-                }
-
-                // Filtrar solo los registros del mes correspondiente
-                int sum = 0;
-                bool hasLowLevel = false;
-
-                foreach (var op in _distributions)
-                {
-                    if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context != null)
-                    {
-                        // Tomar el registro más reciente del mes correspondiente
-                        var record = context
-                            .Where(r => r.AcquisitionDate.HasValue && r.AcquisitionDate.Value.Month == MonthIndex)
-                            .OrderByDescending(r => r.AcquisitionDate)
-                            .FirstOrDefault();
-
-                        if (record != null)
-                        {
-                            if (record.ILULevelId != 0 && record.ILULevelId > 5)
-                                sum++;
-                            if (record.ILULevelId != 0 && record.ILULevelId < 5)
-                                hasLowLevel = true;
-                        }
-                    }
-                }
-
-                var meetsKnowledge = sum >= _pat.KnowledgePercentage;
-
-                if (meetsKnowledge)
-                {
-                    countDistO++;
-                }
-                else if ((hasLowLevel && !meetsKnowledge) || (!hasLowLevel && !meetsKnowledge && sum > 0) || !meetsKnowledge)
-                {
-                    countDistX++;
-                }
-                index++;
-            }
-
-            return (countDistO + countDistX) > 0 ? (double)countDistO / (countDistO + countDistX) * 100 : null;
-        }
-
-        private double? CalculateUserPercentageMonth(int MonthIndex)
-        {
-            if (_pat.KnowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any())
-                return null;
-
-            countUserO = 0;
-            countUserX = 0;
-
-            foreach (var op in _distributions)
-            {
-                int sum = 0;
-                bool hasLowLevel = false;
-
-                foreach (var usr in _UserOfArea)
-                {
-                    if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context != null)
-                    {
-                        // Tomar el registro más reciente del mes correspondiente
-                        var record = context
-                            .Where(r => r.AcquisitionDate.HasValue && r.AcquisitionDate.Value.Month == MonthIndex)
-                            .OrderByDescending(r => r.AcquisitionDate)
-                            .FirstOrDefault();
-
-                        if (record != null)
-                        {
-                            if (record.ILULevelId != 0 && record.ILULevelId > 5)
-                                sum++;
-                            if (record.ILULevelId != 0 && record.ILULevelId < 5)
-                                hasLowLevel = true;
-                        }
-                    }
-                }
-
-                var meetsKnowledge = sum >= _pat.KnowledgePercentage;
-
-                if (meetsKnowledge)
-                {
-                    countUserO++;
-                }
-                else if (hasLowLevel && !meetsKnowledge || !hasLowLevel && !meetsKnowledge && sum > 0 || !meetsKnowledge)
-                {
-                    countUserX++;
-                }
-            }
-
-            return (countUserO + countUserX) > 0 ? (double)countUserO / (countUserO + countUserX) * 100 : null;
-        }
-
         private double? CalculateDistributionPercentageMonthAcumulted(int MonthIndex)
         {
             if (_pat.KnowledgePercentage == null || !_distributions.Any() || !_UserOfArea.Any() || (MonthIndex > DateTime.Today.Month && _pat.AplicationYear == DateTime.Today.Year))
@@ -917,11 +805,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             foreach (var usr in activeUsers)
             {
                 var role = _pat.PatUserRoles?.FirstOrDefault(r => r.UserId == usr.UserId)?.Role;
-                var isSaveLeaderS = _pat.SaveLeader == "S";
-                var isSaveLeaderC = _pat.SaveLeader == "C";
-                var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
 
-                if (!((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC)))
+                var isSaveLeaderC = _pat.SaveLeader == "C";
+                var isRoleRelevant = role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                if (isRoleRelevant && isSaveLeaderC)
                 {
                     index++;
                     continue;
@@ -1102,8 +990,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         var monthKey = parsedData[i].Keys.First();
                         var monthData = parsedData[i][monthKey];
 
-                        monthsDistributionPercentage[i] = monthData.ContainsKey("OR_O") && monthData["OR_O"] != 0.0 ? monthData["OR_O"] : (CalculateDistributionPercentageMonth(i + 1) ?? null);
-                        monthsUsersPercentage[i] = monthData.ContainsKey("OR_P") && monthData["OR_P"] != 0.0 ? monthData["OR_P"] : (CalculateUserPercentageMonth(i + 1) ?? null);
+                        monthsDistributionPercentage[i] = monthData.ContainsKey("OR_O") && monthData["OR_O"] != 0.0 ? monthData["OR_O"] : (CalculateDistributionPercentageMonthAcumulted(i + 1) ?? null);
+                        monthsUsersPercentage[i] = monthData.ContainsKey("OR_P") && monthData["OR_P"] != 0.0 ? monthData["OR_P"] : (CalculateUserPercentageMonthAcumulted(i + 1) ?? null);
                     }
                 }
 
