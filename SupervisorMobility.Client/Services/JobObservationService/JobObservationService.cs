@@ -97,7 +97,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             int areaId, int distributionId, int operationId, int supervisorId, int status, int userId, int typeId,
             string searchString, int page, int entries, int? sortO, string? sortL)
         {
-            var response = await _http.GetFromJsonAsync<JOPaginationDto>($"jobobservations/filters?startDate={startDate}&endDate={endDate}&jobObsId={JobObsId}&plantId={plantId}&areaId={areaId}&distributionId={distributionId}&operationId={operationId}&supervisorId={supervisorId}&status={status}&userId={userId}&typeId={typeId}&searchString={searchString}&page={page}&entries={entries}&sortO={sortO}&sortL={sortL}");
+            var response = await _http.GetFromJsonAsync<JOPaginationDto>($"jobobservations/filters?startDate={startDate}&endDate={endDate}&jobObsId={JobObsId}&plantId={plantId}&areaId={areaId}&distributionId={distributionId}&operationId={operationId}&operatorId={supervisorId}&status={status}&userId={userId}&typeId={typeId}&searchString={searchString}&page={page}&entries={entries}&sortO={sortO}&sortL={sortL}");
             return (response.Total, _mapper.Map<List<JobObservation>>(response.JobObservations), response.CountPagination);
         }
 
