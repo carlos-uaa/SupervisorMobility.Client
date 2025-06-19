@@ -1810,6 +1810,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     else
                     {
                         AnalysisBkup analysisBkup = new AnalysisBkup();
+                        analysisBkup.AnalysisBkupId = raw.AnalysisBkupId;
                         analysisBkup.Text = raw.Text;
                         analysisBkup.IsActive = true;
                         _sosHub.AnalysesBkup.Add(analysisBkup);

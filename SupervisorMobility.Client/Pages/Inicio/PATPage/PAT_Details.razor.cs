@@ -1028,7 +1028,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                     if (isRoleRelevant && isSaveLeaderC)
                     {
-                        index++;
                         continue;
                     }
 

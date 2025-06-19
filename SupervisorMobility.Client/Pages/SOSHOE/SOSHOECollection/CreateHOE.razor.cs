@@ -1447,6 +1447,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         public List<string> RawAnalisisBk { get; set; } = new List<string>();
 
         private IEnumerable<string> _selectedValues = new List<string>();
+        private IEnumerable<int> _selectedValuesIds = new List<int>();
 
 
         public string stepName { get; set; } = "";
@@ -1607,16 +1608,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (!string.IsNullOrEmpty(stepName))
             {
                 Section SectiontoAdd = new Section();
-                foreach (string item in _selectedValues)
+
+                foreach (int item in _selectedValuesIds)
                 {
                     segments.Clear();
                     Analysis ToAdd = new Analysis();
-                    ToAdd.Text = item;
+                    ToAdd.Text = RawAnalisis.ElementAt(item);
 
-                    BaseText = Regex.Replace(item, @"\*", "").ToString();
+                    BaseText = Regex.Replace(RawAnalisis.ElementAt(item), @"\*", "").ToString();
 
                     //start Procesed text
-                    var segmentTexts = item.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+                    var segmentTexts = RawAnalisis.ElementAt(item).Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var segmentText in segmentTexts)
                     {
                         var segment = new Segment
@@ -1655,15 +1657,25 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     ///end Processed text
 
                     SectiontoAdd.Analyses.Add(ToAdd);
-                    RawAnalisis.Remove(item);
+                    //RawAnalisis.RemoveAt(item);
                 }
 
                 SectiontoAdd.Step = stepName;
 
                 _sosHub.Sections.Add(SectiontoAdd);
 
+                var indicesToRemove = _selectedValuesIds.OrderByDescending(i => i).ToList();
+
+                foreach (var idx in indicesToRemove)
+                {
+                    if (idx >= 0 && idx < RawAnalisis.Count)
+                    {
+                        RawAnalisis.RemoveAt(idx);
+                    }
+                }
+
                 stepName = string.Empty;
-                _selectedValues = new List<string>();
+                _selectedValuesIds = new List<int>();
                 CloseStepDialog();
             }
             else
@@ -1673,8 +1685,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     "Es necesario el texto!",
                    yesText: "Ok!");
                 var state = result == null ? "Canceled" : "Deleted!";
-                StateHasChanged();
             }
+                StateHasChanged();
 
         }
         #endregion
