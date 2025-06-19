@@ -216,7 +216,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             DateTime? dateToFilter = filterDate ?? default;
 
             response = await JobObservationService.GetAllJobObservationsByFilters(dateToFilter.Value, dateToFilter.Value, idFilter, plantId, areaId,
-                distributionId, operationId, default, statusId, user.UserId, typeId, searchString, state.Page + 1, state.PageSize, (int)state.SortDirection, state.SortLabel);
+                distributionId, operationId, operatorId, statusId, user.UserId, typeId, searchString, state.Page + 1, state.PageSize, (int)state.SortDirection, state.SortLabel);
 
             var pps = response.JobObservations.ToArray();
 
@@ -254,6 +254,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             totalProgrammed = Localizer["programmed"] + " (" + JOCounting.StatusCount[6].count + ")";
             totalTraining = Localizer["VerifyTraining"] + " (" + JOCounting.StatusCount[7].count + ")";
 
+        }
+
+        private void OnDateChange(DateTime? date)
+        {
+            filterDate = date;
+            Filters();
         }
 
 
