@@ -952,12 +952,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
             foreach (var usr in activeUsers)
             {
-                var role = _pat.PatUserRoles?.FirstOrDefault(r => r.UserId == usr.UserId)?.Role;
-                var isSaveLeaderS = _pat.SaveLeader == "S";
-                var isSaveLeaderC = _pat.SaveLeader == "C";
-                var isRoleRelevant = role == null || role == OperatorRole.Lider || role == OperatorRole.CA;
+               var role = _pat.PatUserRoles?.FirstOrDefault(r => r.UserId == usr.UserId)?.Role;
 
-                if (!((role == null && isSaveLeaderS) || (isRoleRelevant && isSaveLeaderC)))
+                var isSaveLeaderC = _pat.SaveLeader == "C";
+                var isRoleRelevant = role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                if (isRoleRelevant && isSaveLeaderC)
                 {
                     index++;
                     continue;
@@ -1021,6 +1021,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
 
                 foreach (var usr in activeUsers)
                 {
+                    var role = _pat.PatUserRoles?.FirstOrDefault(r => r.UserId == usr.UserId)?.Role;
+
+                    var isSaveLeaderC = _pat.SaveLeader == "C";
+                    var isRoleRelevant = role == OperatorRole.Lider || role == OperatorRole.CA;
+
+                    if (isRoleRelevant && isSaveLeaderC)
+                    {
+                        continue;
+                    }
+
                     if (ILU_Matrix.TryGetValue((op.DistributionId, usr.UserId), out var context) && context != null)
                     {
                         var record = context

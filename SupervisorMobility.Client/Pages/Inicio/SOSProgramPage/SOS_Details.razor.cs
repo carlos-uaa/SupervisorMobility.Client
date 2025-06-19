@@ -279,7 +279,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 LastdayYear = new DateTime((int)_sos_plan.AplicationYear, 12, 31);
                 _yearMonth = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
                 FirstdayYear = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
-                date = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
+                //date = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
             }
             else
             {
@@ -287,10 +287,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                 LastdayYear = new DateTime((int)_sos_plan.AplicationYear, 12, 31);
                 _yearMonth = new DateTime((int)_sos_plan.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
                 FirstdayYear = new DateTime((int)_sos_plan.AplicationYear, DateTime.Now.Month, DateTime.Now.Day);
-                date = new DateTime((int)_sos_plan.AplicationYear, DateTime.Now.Month, DateTime.Now.Day).AddMonths(-1);
+                //date = new DateTime((int)_sos_plan.AplicationYear, DateTime.Now.Month, DateTime.Now.Day).AddMonths(-1);
             }
 
-
+            date = new DateTime((int)_sos_plan.AplicationYear, 1, 1);
 
             daysInMonth = DateTime.DaysInMonth(_yearMonth.Value.Year, _yearMonth.Value.Month);
 
