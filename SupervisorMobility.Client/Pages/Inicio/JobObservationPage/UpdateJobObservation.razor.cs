@@ -837,6 +837,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
+                }
+            }
+
             if (CultureInfo.CurrentCulture.Name == "en-US")
             {
                 var formatedStartDate = _jobObservation.StartDate;
@@ -1043,6 +1057,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
                 {
                     await GenerateOperatorSignatureImage();
+                }
+            }
+
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
                 }
             }
 
@@ -1280,6 +1308,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await GenerateOperatorSignatureImage();
             }
 
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
+                }
+            }
+
             _jobObservation.OperationTimesJson = BuildOperationTimesJson();
 
             _jobObservation.StepsNumber = StepsNumber[0] + "|" + StepsNumber[1] + "|" + StepsNumber[2] + "|" + StepsNumber[3] + "|" + StepsNumber[4];
@@ -1479,6 +1521,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
             {
                 await GenerateOperatorSignatureImage();
+            }
+
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
+                }
             }
 
 
@@ -1684,6 +1740,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 else if (!(_jobObservation.SignatureImage != null && _jobObservation.SignatureImage.ContentType == "image/png"))
                 {
                     await GenerateOperatorSignatureImage();
+                }
+                if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+                {
+                    var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                    var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                    var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                    var confirmResult = await dialog.Result;
+
+                    if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                    {
+                        return;
+                    }
                 }
             }
 
