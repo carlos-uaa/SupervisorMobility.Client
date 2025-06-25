@@ -3,6 +3,9 @@
 @inject ICalendarProductiveService CalendarProductiveServices
 @inject ISnackbar Snackbar
 
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
 <MudTable Items="ImportedHolidays" Dense="true" @bind-SelectedItem="SelectedHoliday"
 FixedHeader Style="max-height: 65vh" Height="55dvh" Class="px-4 py-4"
 CommitEditTooltip="Commit Edit" EditTrigger="@editTrigger"
@@ -27,11 +30,11 @@ RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues">
     </ColGroup>
     <HeaderContent>
         @if ((bool)Upload) {
-            <MudTh>Estado</MudTh>
+            <MudTh>@Localizer["status"]</MudTh>
         }
 
-        <MudTh>Fecha</MudTh>
-        <MudTh>Descripción</MudTh>
+        <MudTh>@Localizer["date"]</MudTh>
+        <MudTh>@Localizer["Description"]</MudTh>
         <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -40,7 +43,7 @@ RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues">
             <MudTd>
                 @if (Holidays.Any(h => h.Date.Date == context.Date.Date))
                 {
-                    <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Info" Text="Ya existe" />
+                    <MudChip Color="Color.Warning" Icon="@Icons.Material.Filled.Info" Text="@Localizer["IsExist"]" />
                 }
             </MudTd>
         }
@@ -51,10 +54,10 @@ RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues">
         </MudTd>
     </RowTemplate>
     <RowEditingTemplate>
-        <MudTd DataLabel="Date">
-            <MudDatePicker Label="New Date" Mask="@(new DateMask("yyyy/MM/dd"))" DateFormat="yyyy/MM/dd" TextChanged="(dt) => DatePickerChanged(dt, context)" Date="context.Date" />
+        <MudTd DataLabel="@Localizer["date"]">
+            <MudDatePicker Label="@Localizer["date"]" Mask="@(new DateMask("yyyy/MM/dd"))" DateFormat="yyyy/MM/dd" TextChanged="(dt) => DatePickerChanged(dt, context)" Date="context.Date" />
         </MudTd>
-        <MudTd DataLabel="Description">
+        <MudTd DataLabel="@Localizer["Description"]">
             <MudTextField @bind-Value="context.Description" Required />
         </MudTd>
         <MudTd DataLabel="Remove">
@@ -151,7 +154,7 @@ RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues">
         if (newDate == null)
         {
             Snackbar.Clear();
-            Snackbar.Add("La fecha no puede estar vacía.", Severity.Warning);
+            Snackbar.Add(Localizer["MsgHolidayDateNotEmpty"], Severity.Warning);
 
             // Restaurar la anterior fecha para que el DatePicker la muestre de nuevo
             context.Date = elementBeforeEdit.Date;
@@ -172,7 +175,7 @@ RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues">
         if (Holidays.Any(h => h.Date.Date == normalizedDate && h.HolidayId != context.HolidayId))
         {
             Snackbar.Clear();
-            Snackbar.Add("La fecha seleccionada ya está en uso.", Severity.Error);
+            Snackbar.Add(Localizer["MsgHolidayDateUsed"], Severity.Error);
 
             // Restaurar la fecha anterior
             context.Date = elementBeforeEdit.Date;

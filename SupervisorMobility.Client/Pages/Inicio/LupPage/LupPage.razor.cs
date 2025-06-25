@@ -104,12 +104,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.LupPage
                 {
                     if(user.UserType != 3)
                     {
-                        jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true);
+                        jobObservationList = await JobObservationServices.GetAllFinishedJobObservations(true, false, true);
                     }
                     else
                     {
                         Console.WriteLine(user.UserId);
-                        jobObservationList = await JobObservationServices.GetAllJobObservations(true, false, true, idUser: user.UserId);
+                        jobObservationList = await JobObservationServices.GetAllFinishedJobObservations(true, false, true, idUser: user.UserId);
                     }
                     _departments = await DepartmentServices.GetDepartments();
 

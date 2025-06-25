@@ -63,7 +63,25 @@ namespace SupervisorMobility.Client.Services.JobObservationService
 
             return _mapper.Map<List<JobObservation>>(jobObservation);
         }
-          public async Task<List<JobObservation>> GetAllNextYearJobsObservations(int plantId, int areaId, int year)
+
+        public async Task<List<JobObservation>> GetAllFinishedJobObservations(bool includeTree = false, bool includePeople = false, bool includeLup = false,
+            bool includeHistory = false, bool includeCkAnswers = false, int idPlant = 0, int idArea = 0, bool ForSosProgram = false,
+            int year = 0, int month = 0, int SOSAnualId = 0, int idUser = 0)
+        {
+            var response = await _http.GetAsync($"jobobservations/finished?includeTree={includeTree}&includePeople={includePeople}&includeLup={includeLup}&includeHistory={includeHistory}&includeCkAnswers={includeCkAnswers}&idPlant={idPlant}&idArea={idArea}&ForSosProgram={ForSosProgram}&year={year}&month={month}&SOSAnualId={SOSAnualId}&idUser={idUser}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+
+            var jobObservation = JsonSerializer.Deserialize<List<JobObservationNulls>>(content, _options);
+
+            return _mapper.Map<List<JobObservation>>(jobObservation);
+        }
+
+        public async Task<List<JobObservation>> GetAllNextYearJobsObservations(int plantId, int areaId, int year)
         {
             var response = await _http.GetAsync($"jobobservations/NextYear?plantId={plantId}&areaId={areaId}&year={year}");
             var content = await response.Content.ReadAsStringAsync();
@@ -97,7 +115,7 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             int areaId, int distributionId, int operationId, int supervisorId, int status, int userId, int typeId,
             string searchString, int page, int entries, int? sortO, string? sortL)
         {
-            var response = await _http.GetFromJsonAsync<JOPaginationDto>($"jobobservations/filters?startDate={startDate}&endDate={endDate}&jobObsId={JobObsId}&plantId={plantId}&areaId={areaId}&distributionId={distributionId}&operationId={operationId}&supervisorId={supervisorId}&status={status}&userId={userId}&typeId={typeId}&searchString={searchString}&page={page}&entries={entries}&sortO={sortO}&sortL={sortL}");
+            var response = await _http.GetFromJsonAsync<JOPaginationDto>($"jobobservations/filters?startDate={startDate}&endDate={endDate}&jobObsId={JobObsId}&plantId={plantId}&areaId={areaId}&distributionId={distributionId}&operationId={operationId}&operatorId={supervisorId}&status={status}&userId={userId}&typeId={typeId}&searchString={searchString}&page={page}&entries={entries}&sortO={sortO}&sortL={sortL}");
             return (response.Total, _mapper.Map<List<JobObservation>>(response.JobObservations), response.CountPagination);
         }
 

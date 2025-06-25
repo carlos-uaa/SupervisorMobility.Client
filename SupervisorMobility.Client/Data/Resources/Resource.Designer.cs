@@ -169,6 +169,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Add day to the list.
+        /// </summary>
+        public static string AddHolidayToList {
+            get {
+                return ResourceManager.GetString("AddHolidayToList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Add ILU Level.
         /// </summary>
         public static string addILULevel {
@@ -844,6 +853,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Continue.
+        /// </summary>
+        public static string Continue {
+            get {
+                return ResourceManager.GetString("Continue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Cost.
         /// </summary>
         public static string cost {
@@ -957,6 +975,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string createSOS {
             get {
                 return ResourceManager.GetString("createSOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Critical.
+        /// </summary>
+        public static string Critical {
+            get {
+                return ResourceManager.GetString("Critical", resourceCulture);
             }
         }
         
@@ -1245,6 +1272,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string details {
             get {
                 return ResourceManager.GetString("details", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Detected obserations.
+        /// </summary>
+        public static string DetectedJobs {
+            get {
+                return ResourceManager.GetString("DetectedJobs", resourceCulture);
             }
         }
         
@@ -2140,6 +2176,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a It Exist.
+        /// </summary>
+        public static string IsExist {
+            get {
+                return ResourceManager.GetString("IsExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Inspection Appearance.
         /// </summary>
         public static string ISTitle {
@@ -2518,6 +2563,33 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Manual Edition.
+        /// </summary>
+        public static string ManualEdit {
+            get {
+                return ResourceManager.GetString("ManualEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Manual Loading.
+        /// </summary>
+        public static string ManualUpload {
+            get {
+                return ResourceManager.GetString("ManualUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Massive Load.
+        /// </summary>
+        public static string MassiveUpload {
+            get {
+                return ResourceManager.GetString("MassiveUpload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Unit.
         /// </summary>
         public static string model {
@@ -2559,6 +2631,60 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string mostRecentRegistrationTo {
             get {
                 return ResourceManager.GetString("mostRecentRegistrationTo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Inability day added to the list..
+        /// </summary>
+        public static string MsgHolidayAdd {
+            get {
+                return ResourceManager.GetString("MsgHolidayAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The date cannot be empty..
+        /// </summary>
+        public static string MsgHolidayDateNotEmpty {
+            get {
+                return ResourceManager.GetString("MsgHolidayDateNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The selected date is already in use..
+        /// </summary>
+        public static string MsgHolidayDateUsed {
+            get {
+                return ResourceManager.GetString("MsgHolidayDateUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The date and description are mandatory..
+        /// </summary>
+        public static string MsgHolidayError {
+            get {
+                return ResourceManager.GetString("MsgHolidayError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The ineligible day already exists in the calendar..
+        /// </summary>
+        public static string MsgHolidayExistInSchdeule {
+            get {
+                return ResourceManager.GetString("MsgHolidayExistInSchdeule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The marked days already exist in the calendar, delete or edit them..
+        /// </summary>
+        public static string MsgHolidayMarkExist {
+            get {
+                return ResourceManager.GetString("MsgHolidayMarkExist", resourceCulture);
             }
         }
         
@@ -2761,6 +2887,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No ineligible days have been charged..
+        /// </summary>
+        public static string NoHolidays {
+            get {
+                return ResourceManager.GetString("NoHolidays", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No image data to upload.
         /// </summary>
         public static string NoImgData {
@@ -2847,6 +2982,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string observer {
             get {
                 return ResourceManager.GetString("observer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Original Date.
+        /// </summary>
+        public static string OGDate {
+            get {
+                return ResourceManager.GetString("OGDate", resourceCulture);
             }
         }
         
@@ -3036,6 +3180,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string operatorsignaturenotmarch {
             get {
                 return ResourceManager.GetString("operatorsignaturenotmarch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Operators Know Same Operation.
+        /// </summary>
+        public static string operatorsKnowOperations {
+            get {
+                return ResourceManager.GetString("operatorsKnowOperations", resourceCulture);
             }
         }
         
@@ -3427,6 +3580,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Reassigned.
+        /// </summary>
+        public static string Reallocated {
+            get {
+                return ResourceManager.GetString("Reallocated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Reassigned Observations.
+        /// </summary>
+        public static string ReassignedTitle {
+            get {
+                return ResourceManager.GetString("ReassignedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Reject.
         /// </summary>
         public static string reject {
@@ -3513,6 +3684,24 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string saveProgress {
             get {
                 return ResourceManager.GetString("saveProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Observations scheduled on non-business days were detected.
+        /// </summary>
+        public static string ScheduledSubtitle1 {
+            get {
+                return ResourceManager.GetString("ScheduledSubtitle1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a The following work observations will be automatically reassigned because they are scheduled on a weekend or holiday..
+        /// </summary>
+        public static string ScheduledSubtitle2 {
+            get {
+                return ResourceManager.GetString("ScheduledSubtitle2", resourceCulture);
             }
         }
         
@@ -3702,6 +3891,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string selectASupervisor {
             get {
                 return ResourceManager.GetString("selectASupervisor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Select year.
+        /// </summary>
+        public static string SelectYear {
+            get {
+                return ResourceManager.GetString("SelectYear", resourceCulture);
             }
         }
         
@@ -4489,6 +4687,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Unavailable days charge.
+        /// </summary>
+        public static string UploadsHolidays {
+            get {
+                return ResourceManager.GetString("UploadsHolidays", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Will the SSV&apos;s approval be needed to finish the Job Observation?.
         /// </summary>
         public static string UseOfSSV {
@@ -4557,6 +4764,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string waiting {
             get {
                 return ResourceManager.GetString("waiting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Warning.
+        /// </summary>
+        public static string Warning {
+            get {
+                return ResourceManager.GetString("Warning", resourceCulture);
             }
         }
         

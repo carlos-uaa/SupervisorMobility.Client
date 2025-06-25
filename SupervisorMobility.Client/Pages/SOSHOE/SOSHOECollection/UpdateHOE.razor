@@ -111,7 +111,7 @@ else
 
                                                     @if (RawAnalisis.Count != RawAnalisisBk.Count && _sosHub.Sections.Count > 0 && RawAnalisis.Count == 0)
                                                     {
-                                                       
+
                                                         <MudItem>
                                                             <MudButton OnClick="RestoreBakup" Color="Color.Primary" Style="float: left">Restore Backup </MudButton>
                                                         </MudItem>
@@ -131,7 +131,7 @@ else
                                                             </MudSimpleTable>
                                                         </MudItem>
                                                     }
-                                                    else if (RawAnalisisBk.Count == 0 && _sosHub.Sections.Count > 0 && _sosHub.SOSDistribution.Count > 0)
+                                                    else if (RawAnalisis.Count == 0 && _sosHub.Sections.Count > 0)
                                                     {
                                                         <MudItem>
 
@@ -160,23 +160,23 @@ else
                                                             <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
                                                                 <tbody>
                                                                     @{
-                                                                        var combinedList = RawAnalisisBk.Union(RawAnalisis).ToList();
+                                                                        var combinedList = RawAnalisisBk.Concat(RawAnalisis).GroupBy(a => a.Uid).Select(g => g.First()).ToList();
                                                                     }
 
                                                                     @foreach (var (analisis, indexAnalisis) in combinedList.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
                                                                     {
                                                                         <tr>
-                                                                            @if (RawAnalisis.Contains(analisis))
+                                                                            @if (RawAnalisis.Any(a => a.Uid == analisis.Uid) && !_sosHub.Sections.SelectMany(s => s.Analyses).Any(a => a.Uid == analisis.Uid))
                                                                             {
                                                                                 <td width="90%">
-                                                                                    <MudTextField @bind-Value="@RawAnalisis[RawAnalisis.FindIndex(i => i == analisis)].Text" Label="Analisis" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                                                                    <MudTextField @bind-Value="@RawAnalisis[RawAnalisis.FindIndex(i => i.Uid == analisis.Uid)].Text" Label="Analisis" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
                                                                                 </td>
 
                                                                                 <td width="10%">
                                                                                     <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveRawItem(analisis)" Disabled="DeleteAnalisis" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
                                                                                 </td>
                                                                             }
-                                                                            else if (_sosHub.AnalysesBkup.Find(a => a == analisis)?.IsActive == true)
+                                                                            else if (_sosHub.AnalysesBkup.Find(a => a.Uid == analisis.Uid)?.IsActive == true)
                                                                             {
                                                                                 <td width="90%">
                                                                                     <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@analisis.Text</MudText>
@@ -215,9 +215,7 @@ else
                                                                         <MudToggleGroup T="AnalysisBkup" SelectionMode="SelectionMode.MultiSelection" @bind-Values="_selectedValues" Rounded="true" Color="Color.Primary" CheckMark Vertical="true" Style="text-align:start">
                                                                             @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
                                                                             {
-                                                                                <MudToggleItem Context="ToggleContext" Value="@RawAnalisis[indexAnalisis]" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
-                                                                                    <MudText Class="ellipsis">@RawAnalisis[indexAnalisis].Text</MudText>
-                                                                                </MudToggleItem>
+                                                                                <MudToggleItem Value="@RawAnalisis[indexAnalisis]" Text="@RawAnalisis[indexAnalisis].Text" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox"/>
                                                                             }
                                                                         </MudToggleGroup>
                                                                     </MudStack>
@@ -495,7 +493,7 @@ else
                                         <td>
                                             <MudButton Variant="Variant.Filled" OnClick="ShowImagesDialog">
                                                 Edit Images
-                                                <span>&nbsp;(@capturedImages.Count)</span>
+                                                <span>&nbsp;(@(PreviousImages.Count + capturedImages.Count))</span>
                                             </MudButton>
                                         </td>
                                     </tr>
@@ -506,7 +504,7 @@ else
                                         <td>
                                             <MudButton Variant="Variant.Filled" OnClick="ShowVideosDialog">
                                                 Edit Videos
-                                                <span>&nbsp;(@MediaUris.Count)</span>
+                                                <span>&nbsp;(@(PreviousVideo.Count + MediaUris.Count))</span>
                                             </MudButton>
                                         </td>
                                     </tr>

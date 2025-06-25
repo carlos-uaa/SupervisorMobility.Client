@@ -138,17 +138,17 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.CheckpointPage.Chec
                             {
                                 _CheckpointNorm = await _CheckPointServices.GetCheckpointNorm((int)Norm_Id, true);
                                 _Checkpoint = _CheckpointNorm.Checkpoint;
-                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));
+                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
                                 _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Checkpoint?.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
-                                _links.Add(new BreadcrumbItem(text: Localizer["DetailsStandar"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));
-                                _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Standard, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/DetailsStandars", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: Localizer["DetailsStandar"], href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/DetailsStandars/{Norm_Id}", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Standard, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/DetailsStandars/{Norm_Id}", disabled: true));
                             }
                             break;
                         case PageType.Create:
                             _Checkpoint = await _CheckPointServices.GetCheckpoint((int)CheckpointId);
-                            _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));
-                            _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Checkpoint?.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
-                            _links.Add(new BreadcrumbItem(text: Localizer["CreateStandar"], href: $"/configurationIS/Checkpoint/{CheckpointId}", disabled: false));
+                            _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
+                            _links.Add(new BreadcrumbItem(text: _Checkpoint.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
+                            _links.Add(new BreadcrumbItem(text: Localizer["CreateStandar"], href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/CreateStandars", disabled: true));
                             _CheckpointNorm.IsActive = true;
                             break;
 
@@ -157,14 +157,15 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.CheckpointPage.Chec
                             {
                                 _CheckpointNorm = await _CheckPointServices.GetCheckpointNorm((int)Norm_Id, true);
                                 _Checkpoint = _CheckpointNorm.Checkpoint;
-                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));
+                                _links.Add(new BreadcrumbItem(text: Localizer["Details"], href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
                                 _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Checkpoint?.CheckpointTitle, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}"));
-                                _links.Add(new BreadcrumbItem(text: Localizer["UpdateStandar"], href: $"/configurationIS/Checkpoint/{CheckpointId}"));
-                                _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Standard, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/DetailsStandars", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: Localizer["UpdateStandar"], href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/DetailsStandars/{Norm_Id}", disabled: true));
+                                _links.Add(new BreadcrumbItem(text: _CheckpointNorm.Standard, href: $"/configurationIS/Checkpoint/Details/{CheckpointId}/DetailsStandars/{Norm_Id}", disabled: true));
                             }
                             break;
                     }
 
+                    _CheckpointNorm.CheckpointId = CheckpointId;
 
                     if (pageType != PageType.Create)
                     {
@@ -354,11 +355,14 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.CheckpointPage.Chec
                 {
                     if (removeImageIndex < CheckpointImages.Count)
                     {
-                        if (removeImageId != 0)
-                            RemoveSketch(removeImageId);
+                        //if (removeImageId != 0)
+                        //    RemoveSketch(removeImageId);
+
+                        var fileId = CheckpointImages[removeImageIndex].imgId;
 
                         CheckpointImages.RemoveAt(removeImageIndex);
                         //llamar funcion para eliminar imagen
+                        RemoveSketch(fileId);
                         visibleDelete = false;
 
                     }
@@ -371,7 +375,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.CheckpointPage.Chec
 
         private async Task RemoveSketch(int fileUploadId)
         {
-            var response = await _CheckPointServices.RemoveSketchCheckPoint((int)CheckpointId, fileUploadId);
+            var response = await _CheckPointServices.RemoveSketchCheckPointNorm((int)Norm_Id, fileUploadId);
             if (response)
             {
                 Snackbar.Clear();
@@ -540,7 +544,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.CheckpointPage.Chec
 
         void CancelFunction()
         {
-            NavigationManager.NavigateTo($"/configurationIS/CheckpointNorm/Details/{CheckpointId}");
+            NavigationManager.NavigateTo($"/configurationIS/Checkpoint/Details/{CheckpointId}");
         }
 
         private async Task UploadFiles(InputFileChangeEventArgs e, int type)

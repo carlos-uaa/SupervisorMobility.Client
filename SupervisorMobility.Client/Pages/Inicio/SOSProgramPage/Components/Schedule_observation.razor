@@ -1,0 +1,423 @@
+﻿@{
+    var time1 = jobobs.StartDate?.ToString("HH:mm");
+    var time2 = jobobs.EndDate?.ToString("HH:mm");
+
+    var operationDescription = jobobs.Operations?.FirstOrDefault()?.Description ?? "";
+
+    var opDescription = operationDescription.Length < 18 ? operationDescription : operationDescription.Substring(0, 15) + "...";
+
+
+    var distributionDescription = jobobs.Distribution?.Description;
+    var distDescription = distributionDescription.Length < 18 ? distributionDescription : distributionDescription.Substring(0, 15) + "...";
+}
+@if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date <= Convert.ToDateTime(compare.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date <= Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
+{
+    @if (jobobs.Operations.Count() > 0)
+    {
+        //Mutlipeles
+        @foreach (Operation op in jobobs.Operations)
+        {
+            if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date && Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.EndDate?.ToShortDateString()).Date)
+            {
+                switch (optionStatus)
+                {
+                    case 0:
+
+                        //Planned
+                        if (jobobs.Status == 1)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.PlayCircle"></MudIconButton>
+                                    <span class="calendar-item">  @distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        //In Progress
+                        else if (jobobs.Status == 2)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Info" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.StopCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+
+                        //Late job observations
+                        else if (jobobs.Status == 3)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.RemoveCircle"></MudIconButton>
+                                    <span class="calendar-item">  @distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+
+                        //Under Review job observations
+                        else if (jobobs.Status == 4)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Info" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.IncompleteCircle"></MudIconButton>
+                                    <span class="calendar-item">  @distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+
+                        //Rejected job observations
+                        else if (jobobs.Status == 5)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Cancel"></MudIconButton>
+                                    <span class="calendar-item">  @distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        //Finalized
+                        else if (jobobs.Status == 6)
+                        {
+
+
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Success" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success" Icon="@Icons.Material.Filled.Circle"></MudIconButton>
+                                    <span class="calendar-item">  @distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+
+
+                        break;
+                    case 1:
+                        //Programmed
+                        if (jobobs.Status == 1)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.PlayCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+
+                        break;
+                    case 2:
+                        //In Progress
+                        if (jobobs.Status == 2)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Info" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.StopCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 3:
+                        //Late job observations
+                        if (jobobs.Status == 3)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.RemoveCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 4:
+                        if (jobobs.Status == 4)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Info" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.IncompleteCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 5:
+                        if (jobobs.Status == 5)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Cancel"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 6:
+                        if (jobobs.Status == 6)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Success" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success" Icon="@Icons.Material.Filled.Circle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+
+                }
+
+            }
+            //lasts more than one day
+            else
+            {
+                switch (optionStatus)
+                {
+                    case 0:
+                        //Programmed
+                        if (jobobs.Status == 1)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Warning" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.PlayCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        //In Progress
+                        else if (jobobs.Status == 2)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Info" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.StopCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        //late job observations
+                        else if (jobobs.Status == 3)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Error" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.RemoveCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        //Under Review job observations
+                        else if (jobobs.Status == 4)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Info" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.IncompleteCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        //Rejected job observations
+                        else if (jobobs.Status == 5)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Error" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Cancel"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        //Finalized
+                        else if (jobobs.Status == 6)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Success" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success" Icon="@Icons.Material.Filled.Circle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+
+                        break;
+                    case 1:
+                        if (jobobs.Status == 1)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Warning" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.PlayCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 2:
+                        if (jobobs.Status == 2)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Info" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.StopCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 3:
+                        if (jobobs.Status == 3)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Error" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.RemoveCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 4:
+                        if (jobobs.Status == 4)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Info" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Info" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Info" Icon="@Icons.Material.Filled.IncompleteCircle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 5:
+                        if (jobobs.Status == 5)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Error" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Cancel"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+                    case 6:
+                        if (jobobs.Status == 6)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Success" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Outlined" Color="Color.Success" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Success" Icon="@Icons.Material.Filled.Circle"></MudIconButton>
+                                    <span class="calendar-item">@distDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+                        break;
+
+                }
+
+            }
+            //Ends the same day
+
+            if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.PlannedStartDate?.ToShortDateString()).Date)
+            {
+                //Ends the same day
+
+                //Status filter
+                switch (optionStatus)
+                {
+                    case 0:
+                    case 7:
+                        if (jobobs.Status == 7 && jobobs.Type == 3 || jobobs.Type == 4)
+                        {
+                            if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= DateTime.Now.Date)
+                            {
+
+                                <MudTooltip Text="Open to Plan" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, (DateTime)jobobs.PlannedStartDate)))" OnTouch="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, (DateTime)jobobs.PlannedStartDate)))">
+                                    <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                                        <MudIconButton @onclick="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, (DateTime)jobobs.PlannedStartDate)))" OnTouch="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, (DateTime)jobobs.PlannedStartDate)))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                        <span class="calendar-item">@opDescription</span>
+                                    </MudChip>
+                                </MudTooltip>
+                            }
+                            else
+                            {
+                                <MudTooltip Text="Open to Plan" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, jobobs.PlannedStartDate.Value.Date)))" OnTouch="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, jobobs.PlannedStartDate.Value.Date)))">
+                                    <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                                        <MudIconButton @onclick="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, jobobs.PlannedStartDate.Value.Date)))" OnTouch="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, jobobs.PlannedStartDate.Value.Date)))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                        <span class="calendar-item">@opDescription</span>
+                                    </MudChip>
+                                </MudTooltip>
+                            }
+
+                        }
+                        else if (jobobs.Status == 7 && jobobs.Type != 3)
+                        {
+                            <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                                <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                                    <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                    <span class="calendar-item">@opDescription</span>
+                                </MudChip>
+                            </MudTooltip>
+                        }
+
+                        break;
+                }
+
+            }
+
+        }           //End foreach
+    }
+}
+else
+{
+    //Only
+
+    if (Convert.ToDateTime(compare.ToShortDateString()).Date == Convert.ToDateTime(jobobs.PlannedStartDate?.ToShortDateString()).Date)
+    {
+        //Ends the same day
+
+        //Status filter
+        switch (optionStatus)
+        {
+            case 0:
+            case 7:
+                if (jobobs.Status == 7 && jobobs.Type == 3 || jobobs.Type == 4)
+                {
+                    if (Convert.ToDateTime(jobobs.StartDate?.ToShortDateString()).Date >= DateTime.Now.Date)
+                    {
+
+                        <MudTooltip Text="Open to Plan" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, (DateTime)jobobs.PlannedStartDate)))" OnTouch="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, (DateTime)jobobs.PlannedStartDate)))">
+                            <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                                <MudIconButton @onclick="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, (DateTime)jobobs.PlannedStartDate)))" OnTouch="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, (DateTime)jobobs.PlannedStartDate)))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                <span class="calendar-item">@opDescription</span>
+                            </MudChip>
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <MudTooltip Text="Open to Plan" Color="Color.Error" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, jobobs.PlannedStartDate.Value.Date)))" OnTouch="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, jobobs.PlannedStartDate.Value.Date)))">
+                            <MudChip Variant="Variant.Text" Color="Color.Error" Label>
+                                <MudIconButton @onclick="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, jobobs.PlannedStartDate.Value.Date)))" OnTouch="(() =>  OpenDialog3.InvokeAsync((jobobs.JobObservationId, jobobs.PlannedStartDate.Value.Date)))" Style="padding: 0px;" Color="Color.Error" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                                <span class="calendar-item">@opDescription</span>
+                            </MudChip>
+                        </MudTooltip>
+                    }
+
+                }
+                else if (jobobs.Status == 7 && jobobs.Type != 3)
+                {
+                    <MudTooltip Text="@jobobs.JobObservationId.ToString()" Color="Color.Warning" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false" @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))">
+                        <MudChip Variant="Variant.Text" Color="Color.Warning" Label>
+                            <MudIconButton @onclick="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" OnTouch="(() =>  OpenDialog2.InvokeAsync(jobobs.JobObservationId))" Style="padding: 0px;" Color="Color.Warning" Icon="@Icons.Material.Filled.Info"></MudIconButton>
+                            <span class="calendar-item">@opDescription</span>
+                        </MudChip>
+                    </MudTooltip>
+                }
+
+                break;
+        }
+
+    }
+}
+
+@code {
+    [Parameter]
+    public DateTime compare { get; set; }
+    [Parameter]
+    public JobObservationNulls jobobs { get; set; }
+    [Parameter]
+    public int optionStatus { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OpenDialog2 { get; set; }
+
+    [Parameter]
+    public EventCallback<(int, DateTime)> OpenDialog3 { get; set; }
+}

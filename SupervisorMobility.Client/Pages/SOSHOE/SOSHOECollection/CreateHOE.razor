@@ -30,11 +30,11 @@
 <style>
 
     .custom-table td:first-child {
-        background-color: #f5f5f6;
+    background-color: #f5f5f6;
     }
 
     .comments-table td:first-child {
-        background-color: white;
+    background-color: white;
     }
 
 </style>
@@ -67,11 +67,11 @@
                                 <tr>
                                     <td style="padding: 0px">
                                         <MudTabs Color="Color.Tertiary" Position="Position.Left" Rounded="true" Border="true" SliderColor="Color.Dark" @bind-ActivePanelIndex="analysisTabsIndex"
-                                                 ApplyEffectsToContainer="true">
+                                        ApplyEffectsToContainer="true">
                                             <MudTabPanel Text="Capture of analysis" Style="color:#424242; width: 15vw;">
                                             </MudTabPanel>
 
-                                            @if (!string.IsNullOrEmpty(RawAnalisis.FirstOrDefault()) || _sosHub.Sections.Count > 0)
+                                            @if ((RawAnalisis.Count > 0 && !string.IsNullOrEmpty(RawAnalisis[0].Text)) || _sosHub.Sections.Count > 0)
                                             {
                                                 <MudTabPanel Text="Step capture" OnClick="CreateBakup" Style="color:#424242;  width: 15vw;">
                                                 </MudTabPanel>
@@ -91,8 +91,9 @@
                                         {
                                             <MudContainer Style="display: flex; flex-direction: column;">
 
-                                                @if (RawAnalisis.Count != RawAnalisisBk.Count && _sosHub.Sections.Count > 0)
+                                                @if (RawAnalisis.Count != RawAnalisisBk.Count && _sosHub.Sections.Count > 0 && RawAnalisis.Count == 0)
                                                 {
+
                                                     <MudItem>
                                                         <MudButton OnClick="RestoreBakup" Color="Color.Primary" Style="float: left">Restore Backup </MudButton>
                                                     </MudItem>
@@ -104,10 +105,30 @@
                                                                 {
                                                                     <tr>
                                                                         <td width="90%">
-                                                                            <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@RawAnalisisBk[indexAnalisis]</MudText>
+                                                                            <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@RawAnalisisBk[indexAnalisis].Text</MudText>
                                                                         </td>
-
                                                                     </tr>
+                                                                }
+                                                            </tbody>
+                                                        </MudSimpleTable>
+                                                    </MudItem>
+                                                }
+                                                else if (RawAnalisis.Count == 0 && _sosHub.Sections.Count > 0)
+                                                {
+                                                    <MudItem>
+
+                                                        <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
+                                                            <tbody>
+                                                                @foreach (var (section, indexSection) in _sosHub.Sections.Select((section, indexSection) => (section, indexSection)))
+                                                                {
+                                                                    @foreach (var (analisis, indexAnalisis) in section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                    {
+                                                                        <tr>
+                                                                            <td width="90%">
+                                                                                <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@_sosHub.Sections[indexSection].Analyses[indexAnalisis].Text</MudText>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
                                                                 }
                                                             </tbody>
                                                         </MudSimpleTable>
@@ -115,33 +136,46 @@
                                                 }
                                                 else
                                                 {
+
                                                     <MudItem>
 
                                                         <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
                                                             <tbody>
-                                                                @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                @{
+                                                                    var combinedList = RawAnalisisBk.Concat(RawAnalisis).GroupBy(a => a.Uid).Select(g => g.First()).ToList();
+                                                                }
+
+                                                                @foreach (var (analisis, indexAnalisis) in combinedList.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
                                                                 {
                                                                     <tr>
-                                                                        <td width="90%">
-                                                                            <MudTextField @bind-Value="@RawAnalisis[indexAnalisis]" Label="Analisis" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-                                                                        </td>
-                                                                        @if (RawAnalisis.IndexOf(analisis) > 0)
+                                                                        @if (RawAnalisis.Any(a => a.Uid == analisis.Uid) &&  !_sosHub.Sections.SelectMany(s => s.Analyses).Any(a => a.Uid == analisis.Uid) )
                                                                         {
+                                                                            <td width="90%">
+                                                                                <MudTextField @bind-Value="@RawAnalisis[RawAnalisis.FindIndex(i => i.Uid == analisis.Uid)].Text" Label="Analisis" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                                                                            </td>
+
                                                                             <td width="10%">
-                                                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveRawItem(analisis)" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="() => RemoveRawItem(analisis)" Disabled="DeleteAnalisis" StartIcon="@Icons.Material.Filled.Delete">Remove</MudButton>
+                                                                            </td>
+                                                                        }
+                                                                        else if (_sosHub.AnalysesBkup.Find(a => a.Uid == analisis.Uid)?.IsActive == true)
+                                                                        {
+                                                                            <td width="90%">
+                                                                                <MudText Typo="Typo.subtitle2" Label="Análisis" Variant="Variant.Filled" Class="mb-2">@analisis.Text</MudText>
+                                                                            </td>
+                                                                            <td width="10%">
                                                                             </td>
                                                                         }
                                                                     </tr>
                                                                 }
                                                             </tbody>
                                                         </MudSimpleTable>
-                                                        <MudButton OnClick="AddRawItem" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Add analisis</MudButton>
+                                                        <MudButton OnClick="AddRawItem" Color="Color.Primary" Disabled="AddAnalisis" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Add analisis</MudButton>
                                                     </MudItem>
                                                 }
 
 
                                             </MudContainer>
-
                                         }
                                         else if (analysisTabsIndex == 1)
                                         {
@@ -152,16 +186,23 @@
                                                 @if (RawAnalisis.Count > 0)
                                                 {
                                                     <MudItem>
-                                                        <MudStack>
-                                                            <MudStack Class="flex-wrap">
-                                                                <MudToggleGroup T="string" SelectionMode="SelectionMode.MultiSelection" @bind-Values="_selectedValues" Rounded="true" Color="Color.Primary" CheckMark Vertical="true" Style="text-align:start">
-                                                                    @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
-                                                                    {
-                                                                        <MudToggleItem Value="@RawAnalisis[indexAnalisis]" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
-                                                                    }
-                                                                </MudToggleGroup>
+                                                        @if (showAddStepDialog)
+                                                        {
+                                                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Medium" Style="margin: 0 auto;" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <MudStack>
+                                                                <MudStack Class="flex-wrap">
+                                                                    <MudToggleGroup T="AnalysisBkup" SelectionMode="SelectionMode.MultiSelection" @bind-Values="_selectedValues" Rounded="true" Color="Color.Primary" CheckMark Vertical="true" Style="text-align:start">
+                                                                        @foreach (var (analisis, indexAnalisis) in RawAnalisis.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                                                        {
+                                                                            <MudToggleItem Value="RawAnalisis[indexAnalisis]" Text="@analisis.Text" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" />
+                                                                        }
+                                                                    </MudToggleGroup>
+                                                                </MudStack>
                                                             </MudStack>
-                                                        </MudStack>
+                                                        }
 
                                                         <MudButton OnClick="AddStep" Color="Color.Primary" Disabled="@(_selectedValues.Count() == 0 ? true : false)" StartIcon="@Icons.Material.Filled.Add" Style="float: right">Generar Paso</MudButton>
                                                     </MudItem>
@@ -301,7 +342,7 @@
                                         <MudText>Process Sheet</MudText>
                                     </td>
                                     <td>
-                                        <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.ProcessSheet" Class="ml-4" />
+                                        <MudTextField Variant="Variant.Outlined" Margin="Margin.Dense" @bind-Value="_sosHub.ProcessSheet" Label="Process" Class="ml-4" />
                                         <MudText Style="font-weight:bold;" Class="mt-4 ml-4">Revisión - Modificación</MudText>
                                         <MudSimpleTable Style="overflow-x: auto;" Class="comments-table" Dense="true" Elevation="0">
                                             <tbody>
@@ -841,8 +882,8 @@
                                             </MudSelect>
                                         </MudItem>
                                         <MudItem Class="ml-4">
-                                             <MudItem Class="ml-4">
-                                                @if (_products.Count() > 0)
+                                            <MudItem Class="ml-4">
+                                                @if (_sosHub.AppliedModels.Count() > 0)
                                                 {
                                                     <MudSelect Class="ml-4" T="string" Label="Side" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" SelectedValuesChanged="GenerateFolio" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
                                                         <MudSelectItem Value="@("L")" />

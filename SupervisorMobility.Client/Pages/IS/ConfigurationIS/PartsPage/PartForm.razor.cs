@@ -474,7 +474,10 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
                 else
                 {
                     if (removeImageIndex < partImages.Count)
+                    {
                         partImages.RemoveAt(removeImageIndex);
+                        _Part.Sketches = _Part.Sketches.Where((_, i) => i != removeImageIndex).ToList();
+                    }
                 }
             }
             CloseDeleteModal();
