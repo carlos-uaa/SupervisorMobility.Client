@@ -16,6 +16,7 @@ using SupervisorMobility.Client.Data.Entities.TreeStruct;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservation;
 using SupervisorMobility.Client.Pages.Inicio.JobObservationPage.Modals;
 using SupervisorMobility.Client.Pages.Inicio.SOSProgramPage.Dialogs;
+using SupervisorMobility.Client.Shared;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http.Headers;
@@ -1173,6 +1174,21 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     return;
                 }
             }
+
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
+                }
+            }
+
             //Eventual
             _jobObservation.Type = 2;
             _jobObservation.Status = 1;
@@ -1653,6 +1669,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
             }
 
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
+                }
+            }
+
             //Eventual
             _jobObservation.Type = 2;
             _jobObservation.Status = 2;
@@ -1779,6 +1809,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
+                }
+            }
 
             //Eventual
             _jobObservation.Type = 2;
@@ -1869,6 +1912,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Operator Signature is missing", Severity.Error);
                 return;
+            }
+
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
+                }
             }
 
             //Eventual
@@ -1982,6 +2039,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 return;
             }
 
+            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            {
+                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+
+                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+                var confirmResult = await dialog.Result;
+
+                if (confirmResult.Canceled || !(bool)confirmResult.Data)
+                {
+                    return;
+                }
+            }
 
             //Eventual
             _jobObservation.Type = 2;

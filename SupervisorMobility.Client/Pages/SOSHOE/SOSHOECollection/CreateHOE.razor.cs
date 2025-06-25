@@ -23,6 +23,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
+        public bool AddAnalisis = false;
+        public bool DeleteAnalisis = false;
 
         public int userType = 0;
 
@@ -580,12 +582,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 return "First select a Distribution!";
             }
 
-            if (_sosHub.ApproverOwners?.Count == 0)
+            if (_sosHub.ApproverOwners?.Count <= 0)
             {
                 return "First add one Owner!";
             }
 
-            if (_sosHub.ReviewerEditors?.Count == 0)
+            if (_sosHub.ReviewerEditors?.Count <= 0)
             {
                 return "First add one Editor!";
             }
@@ -653,10 +655,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 foreach (var raw in RawAnalisis)
                 {
-                    AnalysisBkup analysisBkupToADD = new AnalysisBkup();
-                    analysisBkupToADD.Text = raw;
-                    analysisBkupToADD.IsActive = true;
-                    _sosHub.AnalysesBkup.Add(analysisBkupToADD);
+                    raw.IsActive = true;
+                   _sosHub.AnalysesBkup.Add(raw);
                 }
             }
 
@@ -1443,11 +1443,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         #region Analysis
         [Inject]
         private IDialogService DialogService { get; set; }
-        public List<string> RawAnalisis { get; set; } = new List<string>();
-        public List<string> RawAnalisisBk { get; set; } = new List<string>();
+        public List<AnalysisBkup> RawAnalisis { get; set; } = new List<AnalysisBkup>();
+        public List<AnalysisBkup> RawAnalisisBk { get; set; } = new List<AnalysisBkup>();
 
-        private IEnumerable<string> _selectedValues = new List<string>();
-        private IEnumerable<int> _selectedValuesIds = new List<int>();
+        private IEnumerable<AnalysisBkup> _selectedValues = new List<AnalysisBkup>();
 
 
         public string stepName { get; set; } = "";
@@ -1531,61 +1530,129 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         void CreateBakup()
         {
-            _sosHub.AnalysesBkup.Clear();
-            if (RawAnalisis.Count > 0 && RawAnalisis.Count >= RawAnalisisBk.Count)
+            // Combina todos los análisis: los de RawAnalisis y los de las secciones
+            var allAnalyses = new List<AnalysisBkup>();
+
+            // Agrega los de RawAnalisis
+            allAnalyses.AddRange(RawAnalisis);
+
+            // Agrega los de las secciones (conservando Uid y Text)
+            foreach (var section in _sosHub.Sections)
             {
-                RawAnalisisBk = ObjectCloner.ObjectCloner.DeepClone(RawAnalisis);
-                foreach (var raw in RawAnalisisBk)
+                foreach (var analysis in section.Analyses)
                 {
-                    AnalysisBkup analysisBkup = new AnalysisBkup();
-                    analysisBkup.Text = raw;
-                    analysisBkup.IsActive = true;
-                    _sosHub.AnalysesBkup.Add(analysisBkup);
+                    // Evita duplicados por Uid
+                    if (!allAnalyses.Any(a => a.Uid == analysis.Uid))
+                    {
+                        allAnalyses.Add(new AnalysisBkup
+                        {
+                            Uid = analysis.Uid,
+                            Text = analysis.Text,
+                            IsActive = true
+                        });
+                    }
                 }
             }
-        }
-        void RestoreBakup()
-        {
-            RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(RawAnalisisBk);
-            _sosHub.Sections.Clear();
+
+            // Elimina duplicados por Uid y crea el backup
+            RawAnalisisBk = allAnalyses
+                .GroupBy(a => a.Uid)
+                .Select(g => g.First())
+                .ToList();
+
             _sosHub.AnalysesBkup.Clear();
+            foreach (var raw in RawAnalisisBk)
+            {
+                raw.IsActive = true;
+                _sosHub.AnalysesBkup.Add(raw);
+            }
+        }
+        
+        async void RestoreBakup()
+        {
+           
+            bool? result = await DialogService.ShowMessageBox(
+                "Warning",
+                "Deleting can be clar a sections!",
+                yesText: "Delete!", cancelText: "Cancel");
+
+            var state = result == null ? "Canceled" : "Deleted!";
+            if (state == "Deleted!")
+            {
+                RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(_sosHub.AnalysesBkup);
+                RawAnalisisBk.Clear();
+                _sosHub.Sections.Clear();
+                _sosHub.AnalysesBkup.Clear();
+                StateHasChanged();
+            }
         }
         void AddRawItem()
         {
-            RawAnalisis.Add("");
+            StateHasChanged();
+
+            var newToadd = new AnalysisBkup();
+            newToadd.Uid = Guid.NewGuid().ToString();
+            newToadd.IsActive = true;
+            RawAnalisis.Add(newToadd);
+
+           
             StateHasChanged();
         }
 
-        void RemoveRawItem(string item)
+        void RemoveRawItem(AnalysisBkup item)
         {
-            if (RawAnalisis.Count > 1)
+            DeleteAnalisis = true;
+            StateHasChanged();
+            if (RawAnalisis.Count > 0)
             {
                 RawAnalisis.Remove(item);
+                var analisis = _sosHub.AnalysesBkup.FirstOrDefault(a => a == item);
+                if (analisis != null)
+                {
+                    analisis.IsActive = false;
+                }
+                DeleteAnalisis = false;
+                StateHasChanged();
             }
         }
         void RemoveSectionItem(Section item)
         {
-
             if (_sosHub.Sections.Count > 0)
             {
-                // Obtener los textos de los análisis de la sección que se va a eliminar
-                var textsToReinsert = item.Analyses.Select(analisis => analisis.Text).ToList();
+                // Obtener los Uid de los análisis de la sección que se va a eliminar
+                var uidsToReinsert = item.Analyses.Select(analysis => analysis.Uid).ToList();
 
-                // Para cada texto, encontrar su posición correcta en RawAnalisis según RawAnalisisBk
-                foreach (var text in textsToReinsert)
+                // Para cada Uid, encontrar su posición correcta en RawAnalisis según RawAnalisisBk
+                foreach (var uid in uidsToReinsert)
                 {
-                    int indexinsert = RawAnalisisBk.IndexOf(text);
+                    // Verificar si el Uid existe en RawAnalisisBk
+                    var analysisToInsert = RawAnalisisBk.FirstOrDefault(a => a.Uid == uid);
+                    if (analysisToInsert != null)
+                    {
+                        int indexInsert = RawAnalisisBk.FindIndex(a => a.Uid == uid);
 
-                    // Encontrar el índice donde insertar en RawAnalisis
-                    int insertPosition = RawAnalisis
-                        .Select((value, index) => new { Value = value, Index = index })
-                        .Where(x => RawAnalisisBk.IndexOf(x.Value) >= indexinsert)
-                        .Select(x => x.Index)
-                        .DefaultIfEmpty(RawAnalisis.Count)
-                        .First();
+                        // Encontrar el índice donde insertar en RawAnalisis
+                        int insertPosition = RawAnalisis
+                            .Select((value, index) => new { Value = value, Index = index })
+                            .Where(x => RawAnalisisBk.FindIndex(a => a.Uid == x.Value.Uid) >= indexInsert)
+                            .Select(x => x.Index)
+                            .DefaultIfEmpty(RawAnalisis.Count)
+                            .First();
 
-                    // Insertar el texto en la posición correcta
-                    RawAnalisis.Insert(insertPosition, text);
+                        // Insertar el AnalysisBkup en la posición correcta
+                        RawAnalisis.Insert(insertPosition, analysisToInsert);
+                    }
+                    else
+                    {
+                        AnalysisBkup newToAdd = new();
+                        newToAdd.Uid = uid;
+                        // Opcional: puedes copiar el texto si lo necesitas
+                        var original = item.Analyses.FirstOrDefault(a => a.Uid == uid);
+                        if (original != null)
+                            newToAdd.Text = original.Text;
+                        newToAdd.IsActive = true;
+                        RawAnalisis.Add(newToAdd);
+                    }
                 }
 
                 // Eliminar la sección de Sections
@@ -1604,78 +1671,23 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
         public async void confirmStep()
         {
-
             if (!string.IsNullOrEmpty(stepName))
             {
-                Section SectiontoAdd = new Section();
+                Section sectionToAdd = new Section { Step = stepName };
 
-                foreach (int item in _selectedValuesIds)
+                foreach (AnalysisBkup item in _selectedValues)
                 {
-                    segments.Clear();
-                    Analysis ToAdd = new Analysis();
-                    ToAdd.Text = RawAnalisis.ElementAt(item);
-
-                    BaseText = Regex.Replace(RawAnalisis.ElementAt(item), @"\*", "").ToString();
-
-                    //start Procesed text
-                    var segmentTexts = RawAnalisis.ElementAt(item).Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var segmentText in segmentTexts)
-                    {
-                        var segment = new Segment
-                        {
-                            Analysis = segmentText
-                        };
-
-                        var mainPointRegex = new Regex(@"#(.*?)#");
-                        var mainPointMatch = mainPointRegex.Match(segmentText);
-
-                        if (mainPointMatch.Success)
-                        {
-                            segment.MainPoint = mainPointMatch.Groups[1].Value.Trim();
-                        }
-                        else
-                        {
-                            segment.MainPoint = string.Empty;
-                        }
-
-                        var criticalPointsRegex = new Regex(@"\*(.*?)\*");
-                        var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
-
-                        foreach (Match match in criticalPointMatches)
-                        {
-                            if (match.Success)
-                            {
-                                segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
-                            }
-                        }
-
-                        segments.Add(segment);
-                    }
-
-                    ToAdd.CriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
-                    ToAdd.Reasons = Enumerable.Repeat(string.Empty, ToAdd.CriticalPoints.Count).ToList();
-                    ///end Processed text
-
-                    SectiontoAdd.Analyses.Add(ToAdd);
-                    //RawAnalisis.RemoveAt(item);
+                    Analysis analysisToAdd = ProcessText(item.Text);
+                    analysisToAdd.Uid = item.Uid;
+                    sectionToAdd.Analyses.Add(analysisToAdd);
+                    RawAnalisis.Remove(RawAnalisis.First(a => a.Uid == item.Uid));
                 }
 
-                SectiontoAdd.Step = stepName;
+                _sosHub.Sections.Add(sectionToAdd);
 
-                _sosHub.Sections.Add(SectiontoAdd);
-
-                var indicesToRemove = _selectedValuesIds.OrderByDescending(i => i).ToList();
-
-                foreach (var idx in indicesToRemove)
-                {
-                    if (idx >= 0 && idx < RawAnalisis.Count)
-                    {
-                        RawAnalisis.RemoveAt(idx);
-                    }
-                }
-
+                // Reset variables
                 stepName = string.Empty;
-                _selectedValuesIds = new List<int>();
+                _selectedValues = new List<AnalysisBkup>();
                 CloseStepDialog();
             }
             else
@@ -1685,9 +1697,49 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     "Es necesario el texto!",
                    yesText: "Ok!");
                 var state = result == null ? "Canceled" : "Deleted!";
-            }
                 StateHasChanged();
+            }
 
+        }
+        private Analysis ProcessText(string text)
+        {
+            Analysis analysis = new Analysis { Text = text };
+
+            // Remove asterisks from BaseText
+            BaseText = Regex.Replace(text, @"\*", "").ToString();
+
+            // Split text into segments
+            var segments = text.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(segmentText => CreateSegment(segmentText))
+                               .ToList();
+
+            analysis.CriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
+            analysis.Reasons = Enumerable.Repeat(string.Empty, analysis.CriticalPoints.Count).ToList();
+
+            return analysis;
+        }
+        private Segment CreateSegment(string segmentText)
+        {
+            Segment segment = new Segment { Analysis = segmentText };
+
+            // Extract MainPoint
+            var mainPointRegex = new Regex(@"#(.*?)#");
+            var mainPointMatch = mainPointRegex.Match(segmentText);
+            segment.MainPoint = mainPointMatch.Success ? mainPointMatch.Groups[1].Value.Trim() : string.Empty;
+
+            // Extract CriticalPoints
+            var criticalPointsRegex = new Regex(@"\*(.*?)\*");
+            var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
+
+            foreach (Match match in criticalPointMatches)
+            {
+                if (match.Success)
+                {
+                    segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
+                }
+            }
+
+            return segment;
         }
         #endregion
 

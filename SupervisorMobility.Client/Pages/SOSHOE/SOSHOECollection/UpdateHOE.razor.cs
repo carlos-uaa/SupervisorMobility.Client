@@ -591,18 +591,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
 
-            var combinedList = RawAnalisisBk.Union(RawAnalisis).ToList();
+            var combinedList = RawAnalisisBk.Concat(RawAnalisis).GroupBy(a => a.Uid).Select(g => g.First()).ToList();
             foreach (var raw in combinedList)
             {
-                if (!_sosHub.AnalysesBkup.Any(a => a == raw))
+                // Validar por AnalysisBkupId para evitar duplicados
+                if (!_sosHub.AnalysesBkup.Any(a => a.Uid == raw.Uid))
                 {
-                    //    _sosHub.AnalysesBkup.Find(a => a.Text == raw).IsActive = true;
-                    //}
-                    //else
-                    //{
-                    AnalysisBkup analysisBkup = new AnalysisBkup();
-                    analysisBkup.Text = raw.Text;
-                    analysisBkup.IsActive = true;
+                    AnalysisBkup analysisBkup = new AnalysisBkup
+                    {
+                        AnalysisBkupId = raw.AnalysisBkupId,
+                        Uid = raw.Uid,
+                        Text = raw.Text,
+                        IsActive = true
+                    };
                     _sosHub.AnalysesBkup.Add(analysisBkup);
                 }
             }
@@ -714,19 +715,29 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             if (_sosHub.AnalysesBkup != null && _sosHub.AnalysesBkup.Count > 0)
             {
-                var listTextSections = _sosHub.Sections.SelectMany(section => section.Analyses).Select(analysis => analysis.Text).ToList();
+                // Obtener los Uid de los análisis ya asignados a secciones
+                var sectionUids = _sosHub.Sections
+                    .SelectMany(section => section.Analyses)
+                    .Select(analysis => analysis.Uid)
+                    .ToHashSet();
 
                 foreach (var backup in _sosHub.AnalysesBkup)
                 {
-                    if (!listTextSections.Contains(backup.Text))
+                    // Si el análisis no está en ninguna sección, va a RawAnalisis
+                    if (!sectionUids.Contains(backup.Uid))
                     {
                         RawAnalisis.Add(backup);
                     }
-                    RawAnalisisBk.Add(backup);
+                    // Todos van a RawAnalisisBk (evita duplicados)
+                    if (!RawAnalisisBk.Any(a => a.Uid == backup.Uid))
+                    {
+                        RawAnalisisBk.Add(backup);
+                    }
                 }
             }
 
-            if(_sosHub.SOSDistribution.Count > 0)
+
+            if (_sosHub.SOSDistribution.Count > 0)
             {
                 _sosHub.Sections = _sosHub.Sections.OrderBy(s => s.SecuenceDist).ToList();
             }
@@ -1810,14 +1821,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     else
                     {
                         AnalysisBkup analysisBkup = new AnalysisBkup();
-                        analysisBkup.AnalysisBkupId = raw.AnalysisBkupId;
+                        // Crear un uid
+                        analysisBkup.Uid = Guid.NewGuid().ToString();
                         analysisBkup.Text = raw.Text;
                         analysisBkup.IsActive = true;
                         _sosHub.AnalysesBkup.Add(analysisBkup);
                     }
                 }
-
-
             }
         }
         async void RestoreBakup()
@@ -1844,7 +1854,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             AddAnalisis = true;
             StateHasChanged();
 
-            RawAnalisis.Add(new AnalysisBkup());
+            var newToadd = new AnalysisBkup();
+            newToadd.Uid = Guid.NewGuid().ToString();
+            RawAnalisis.Add(newToadd);
 
             AddAnalisis = false;
             StateHasChanged();
@@ -1866,26 +1878,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 StateHasChanged();
             }
         }
+
         void RemoveSectionItem(Section item)
         {
             if (_sosHub.Sections.Count > 0)
             {
-                // Obtener los textos de los análisis de la sección que se va a eliminar
-                var textsToReinsert = item.Analyses.Select(analysis => analysis.Text).ToList();
+                // Obtener los Uid de los análisis de la sección que se va a eliminar
+                var uidsToReinsert = item.Analyses.Select(analysis => analysis.Uid).ToList();
 
-                // Para cada texto, encontrar su posición correcta en RawAnalisis según RawAnalisisBk
-                foreach (var text in textsToReinsert)
+                // Para cada Uid, encontrar su posición correcta en RawAnalisis según RawAnalisisBk
+                foreach (var uid in uidsToReinsert)
                 {
-                    // Verificar si el texto existe en RawAnalisisBk
-                    var analysisToInsert = RawAnalisisBk.FirstOrDefault(a => a.Text == text);
+                    // Verificar si el Uid existe en RawAnalisisBk
+                    var analysisToInsert = RawAnalisisBk.FirstOrDefault(a => a.Uid == uid);
                     if (analysisToInsert != null)
                     {
-                        int indexInsert = RawAnalisisBk.FindIndex(a => a.Text == text);
+                        int indexInsert = RawAnalisisBk.FindIndex(a => a.Uid == uid);
 
                         // Encontrar el índice donde insertar en RawAnalisis
                         int insertPosition = RawAnalisis
                             .Select((value, index) => new { Value = value, Index = index })
-                            .Where(x => RawAnalisisBk.FindIndex(a => a.Text == x.Value.Text) >= indexInsert)
+                            .Where(x => RawAnalisisBk.FindIndex(a => a.Uid == x.Value.Uid) >= indexInsert)
                             .Select(x => x.Index)
                             .DefaultIfEmpty(RawAnalisis.Count)
                             .First();
@@ -1896,7 +1909,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     else
                     {
                         AnalysisBkup newToAdd = new();
-                        newToAdd.Text = text;
+                        newToAdd.Uid = uid;
+                        // Opcional: puedes copiar el texto si lo necesitas
+                        var original = item.Analyses.FirstOrDefault(a => a.Uid == uid);
+                        if (original != null)
+                            newToAdd.Text = original.Text;
+                        newToAdd.IsActive = true;
                         RawAnalisis.Add(newToAdd);
                     }
                 }
@@ -1925,7 +1943,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 foreach (AnalysisBkup item in _selectedValues)
                 {
                     Analysis analysisToAdd = ProcessText(item.Text);
-
+                    analysisToAdd.Uid = item.Uid;
                     sectionToAdd.Analyses.Add(analysisToAdd);
                     RawAnalisis.Remove(RawAnalisis.First(a => a.Text == item.Text));
                 }
