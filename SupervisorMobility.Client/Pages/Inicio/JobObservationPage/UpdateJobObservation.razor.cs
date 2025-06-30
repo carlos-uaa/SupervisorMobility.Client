@@ -34,9 +34,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
         public string hour1 { get; set; }
         public string hour2 { get; set; }
+        public string hour3 { get; set; }
 
         DateTime newDate1;
         DateTime newDate2;
+        DateTime newDate3;
 
         TimeSpan? endHour { get; set; }
         TimeSpan? startHour { get; set; }
@@ -1783,6 +1785,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                 hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
                 hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour?.ToString("hh\\:mm\\:ss")}";
+                hour3 = DateTime.Now.ToString("M/d/yyyy HH:mm:ss");
 
                 if (DateTime.TryParseExact(hour1, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
                 {
@@ -1816,6 +1819,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
+
+                DateTime.TryParseExact(hour3, $"M/d/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate3);
+                await updateEndDate(newDate3);
+
                 _jobObservation.SsvSignature = "Signed";
                 _jobObservation.Status = 6;
                 _jobObservation.FinishedDate = DateTime.Now;
@@ -1841,6 +1848,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 hour1 = _jobObservation.StartDate?.ToShortDateString() + $" {startHour}";
                 hour2 = _jobObservation.EndDate?.ToShortDateString() + $" {endHour?.ToString("hh\\:mm\\:ss")}";
+                hour3 = DateTime.Now.ToString("d/M/yyyy HH:mm:ss");
 
                 if (DateTime.TryParseExact(hour1, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate1))
                 {
@@ -1873,6 +1881,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     _jobObservation.Cycles = _jobObservation.Cycles.Replace(",", ".");
                 _jobObservation.StartDate = newDate1;
                 _jobObservation.EndDate = newDate2;
+
+                DateTime.TryParseExact(hour3, $"d/M/yyyy HH:mm:ss", null, DateTimeStyles.None, out newDate3);
+                await updateEndDate(newDate3);
+
                 _jobObservation.SsvSignature = "Signed";
                 _jobObservation.Status = 6;
                 _jobObservation.FinishedDate = DateTime.Now;
@@ -1893,6 +1905,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 }
                 else
                     await JSRuntime.InvokeVoidAsync("alert", "Update failed!"); // Alert
+            }
+        }
+
+        async Task updateEndDate(DateTime date)
+        {
+            foreach (var entry in _jobObservation.Lup)
+            {
+                entry.CreatedDate = date;
+                await LupService.UpdateLup(entry);
             }
         }
 
