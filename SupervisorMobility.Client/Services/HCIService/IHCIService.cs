@@ -4,7 +4,7 @@ namespace SupervisorMobility.Client.Services.HCIService
 {
     public interface IHCIService
     {
-        Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeComments = false, bool includeTransactions = false);
+        Task<List<HCI>> GetHCIs(int LoginUserId, bool includeNavigation = false, bool includePeople = false, bool includeComments = false, bool includeTransactions = false);
         Task<HCI> GetHCI(int id);
         Task<List<User>> GetUsersWithoutHCI();
         Task<bool> CreateHCI(HCI content);

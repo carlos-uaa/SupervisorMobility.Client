@@ -57,9 +57,9 @@ namespace SupervisorMobility.Client.Services.HCIService
             return null;
         }
 
-        public async Task<List<HCI>> GetHCIs(bool includeNavigation = false, bool includePeople = false, bool includeComments = false, bool includeTransactions = false)
+        public async Task<List<HCI>> GetHCIs(int LoginUserId, bool includeNavigation = false, bool includePeople = false, bool includeComments = false, bool includeTransactions = false)
         {
-            var response = await _http.GetAsync($"HCI/?includeNavigation={includeNavigation}&includePeople={includePeople}&includeTransactions={includeTransactions}&includeComments={includeComments}");
+            var response = await _http.GetAsync($"HCI/?LoginUserId={LoginUserId}&includeNavigation={includeNavigation}&includePeople={includePeople}&includeTransactions={includeTransactions}&includeComments={includeComments}");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadFromJsonAsync<List<HCI>>();

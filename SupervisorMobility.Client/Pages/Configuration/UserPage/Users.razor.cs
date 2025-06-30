@@ -94,7 +94,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 }
             }
 
-            _HCIs = await HCIsServices.GetHCIs();
+            _HCIs = await HCIsServices.GetHCIs(loggedUser.UserId);
 
 
         }
