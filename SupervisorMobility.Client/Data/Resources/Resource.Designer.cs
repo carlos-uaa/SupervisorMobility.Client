@@ -3733,6 +3733,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Search by name, payroll, mail, plant, area, group, process, management, user ID or HCI.
+        /// </summary>
+        public static string searchHCIIndex {
+            get {
+                return ResourceManager.GetString("searchHCIIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Section or process name.
         /// </summary>
         public static string SectionProcess {
