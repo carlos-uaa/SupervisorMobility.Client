@@ -14,8 +14,8 @@ using System.Timers;
 using static SupervisorMobility.Client.Pages.Inicio.JobObservationPage.CreateJobObservationNew;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SupervisorMobility.Client.Data.Entities.QuestionHelperEntities;
-using DocumentFormat.OpenXml.Bibliography;
 using SupervisorMobility.Client.Shared;
+using SupervisorMobility.Client.Data.Entities;
 
 
 namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
@@ -308,6 +308,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                 }
                                 questionAnswers[question.QuestionID] = item;
                                 if (question.Type?.Code == "MCM") { MultiQuestionAnswers.Add(question.QuestionID, item.Answer.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)); }
+                                GenerateLupItems(item, question, category.Sequence);
                             }
                         }
                     }
@@ -780,6 +781,63 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             StateHasChanged();
         }
 
+        private void GenerateLupItems(ChecklistAnswer ans, ChecklistQuestion q, int section)
+        {
+            if (q.Type.Code != "TF")
+                return;
+            if (q.Options == null || q.Options.Count < 2)
+                return;
+
+            var Op = $"{section}.{q.CategorySequence}- " + q.NotGood;
+            var OpEN = $"{section}.{q.CategorySequence}- " + q.NotGoodEN;
+
+            var lupOpportunity = new LupOpportunity
+            {
+                QuestionID = q.QuestionID,
+                Opportunity = currentLanguage == "es-ES" ? Op : OpEN
+            };
+
+            bool addedToLup = ans.Answer == q.Options[1];
+
+            if (addedToLup)
+            {
+                foreach (int pillar in q.Pillars)
+                {
+                    if (CheckIfLUPExist(pillar, Op, OpEN))
+                    {
+                        continue;
+                    }
+                    switch (pillar)
+                    {
+                        case 1: //Area list s
+                            area_ListS?.Add(lupOpportunity);
+                            break;
+                        case 2: //Area list q 
+                            area_ListQ?.Add(lupOpportunity);
+                            break;
+                        case 3: //Area list d
+                            area_ListD?.Add(lupOpportunity);
+                            break;
+                        case 4: //Area list c 
+                            area_ListC?.Add(lupOpportunity);
+                            break;
+                        case 5: //Area list other
+                            area_ListOther?.Add(lupOpportunity);
+                            break;
+                        default:
+                            continue;
+                    }
+                }
+            }
+        }
+
+        private bool CheckIfLUPExist(int pillar, string OpES, string OpEN)
+        {
+            return _jobObservation.Lup.Where(p => p.Pillar == pillar)
+                                .Any(l => l.Oportunity == OpES
+                                    || l.Oportunity == OpEN);
+        }
+
         private int?[] ConvertStringToArray(string stringValue) =>
             string.IsNullOrEmpty(stringValue)
                 ? new int?[5]
@@ -841,6 +899,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
             {
+                ShowLoading = false;
                 var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
                 var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
 
@@ -851,6 +910,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     return;
                 }
+                ShowLoading = true;
             }
 
             if (CultureInfo.CurrentCulture.Name == "en-US")
@@ -1064,6 +1124,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
             {
+                ShowLoading = false;
                 var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
                 var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
 
@@ -1074,6 +1135,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     return;
                 }
+                ShowLoading = true;
             }
 
             startHour = DateTime.Now.TimeOfDay;
@@ -1312,6 +1374,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
             if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
             {
+                ShowLoading = false;
                 var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
                 var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
 
@@ -1322,6 +1385,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 {
                     return;
                 }
+                ShowLoading = true;
             }
 
             _jobObservation.OperationTimesJson = BuildOperationTimesJson();
@@ -1525,19 +1589,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                 await GenerateOperatorSignatureImage();
             }
 
-            if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
-            {
-                var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
-                var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
+            //if (area_ListC.Any() || area_ListD.Any() || area_ListOther.Any() || area_ListQ.Any() || area_ListS.Any())
+            //{
+            //    var parameters = new DialogParameters { ["ContentText"] = "There are empty LUP items, do yo want to continue?" };
+            //    var options = new DialogOptions { CloseButton = false, MaxWidth = MaxWidth.Small };
 
-                var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
-                var confirmResult = await dialog.Result;
+            //    var dialog = DialogService.Show<YesNoDialog>("Confirmation", parameters, options);
+            //    var confirmResult = await dialog.Result;
 
-                if (confirmResult.Canceled || !(bool)confirmResult.Data)
-                {
-                    return;
-                }
-            }
+            //    if (confirmResult.Canceled || !(bool)confirmResult.Data)
+            //    {
+            //        return;
+            //    }
+            //}
 
 
             _jobObservation.OperationTimesJson = BuildOperationTimesJson();
