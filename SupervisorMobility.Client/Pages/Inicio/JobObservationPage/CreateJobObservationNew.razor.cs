@@ -277,9 +277,14 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                     DoubleManagment = await LocalStorage.GetItemAsync<int?[]>("DblManagement") ?? new int?[5]; 
                     Waiting = await LocalStorage.GetItemAsync<int?[]>("Waiting") ?? new int?[5]; 
                     currentCycle = await LocalStorage.GetItemAsync<int?>("CC") ?? 0; 
-                    hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0; 
+                    hoeStandardTime = await LocalStorage.GetItemAsync<double?>("HoeStandardTime") ?? 0.0;
 
                     //jobProductId = _jobObservation.ProductId ?? 0;
+                    date = date.Replace("-", "/");
+
+                    _jobObservation.StartDate = DateTime.ParseExact(date, "d/M/yyyy", null);
+                    _jobObservation.EndDate = DateTime.ParseExact(date, "d/M/yyyy", null);
+
                     kpiID = _jobObservation.KpiId ?? 0;
 
                     bool skipQA = !questionAnswers.Any();
