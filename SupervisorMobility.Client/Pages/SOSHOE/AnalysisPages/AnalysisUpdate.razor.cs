@@ -578,15 +578,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                     return; 
                 }
             }
-            var resultSOS = await SOSHubServices.UpdateSOSHub(_sosAnalysis.SOSHub);
 
-            if (resultSOS != null)
-            {
-                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-                Snackbar.Add($"SOS Updated!", Severity.Info);
-            }
-            else
-                await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
+          
+
+            //var resultSOS = await SOSHubServices.UpdateSOSHub(_sosAnalysis.SOSHub);
+
+            //if (resultSOS != null)
+            //{
+            //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            //    Snackbar.Add($"SOS Updated!", Severity.Info);
+            //}
+            //else
+            //    await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
 
             var result = await SOSAnalysisServices.UpdateSOSAnalysis(_sosAnalysis);
 
