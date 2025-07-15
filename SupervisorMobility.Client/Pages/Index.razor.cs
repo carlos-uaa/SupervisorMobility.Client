@@ -79,7 +79,8 @@ namespace SupervisorMobility.Client.Pages
             }
         }
 
-        private async Task<bool> HasPropertyAsync() => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+        private async Task<bool> HasPropertyAsync()
+            => await js.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
         private async Task GetUserAsync()
         {
