@@ -211,40 +211,40 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 AddItem();
             }
 
-            cycleId = _sosDistribution.SOSHub.TrainingTime != null ? GetCycleId(_sosDistribution.SOSHub.TrainingTime) : 0;
+            cycleId = _sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime != null ? GetCycleId(_sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime) : 0;
 
-            if (_sosDistribution.Times == null)
-            {
-                _sosDistribution.Times = new List<SOSTime>();
-                //crearlos artificialmente
-                foreach (Section section in _sosDistribution.SOSHub.Sections)
-                {
-                    SOSTime newitem = new SOSTime();
+            //if (_sosDistribution.Times == null)
+            //{
+            //    _sosDistribution.Times = new List<SOSTime>();
+            //    //crearlos artificialmente
+            //    foreach (Section section in _sosDistribution.SOSHub.Sections)
+            //    {
+            //        SOSTime newitem = new SOSTime();
 
-                    newitem.SectionId = section.SectionId;
-                    newitem.IsActive = true;
-                    newitem.Time = "";
+            //        newitem.SectionId = section.SectionId;
+            //        newitem.IsActive = true;
+            //        newitem.Time = "";
 
-                    _sosDistribution.Times.Add(newitem);
-                }
-            }
-            else
-            {
-                //iterar sobre ellos para añadir casos faltantes de haber
-                foreach (Section section in _sosDistribution.SOSHub.Sections)
-                {
-                    if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
-                    {
-                        SOSTime newitem = new SOSTime();
+            //        _sosDistribution.Times.Add(newitem);
+            //    }
+            //}
+            //else
+            //{
+            //    //iterar sobre ellos para añadir casos faltantes de haber
+            //    foreach (Section section in _sosDistribution.SOSHub.Sections)
+            //    {
+            //        if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
+            //        {
+            //            SOSTime newitem = new SOSTime();
 
-                        newitem.SectionId = section.SectionId;
-                        newitem.IsActive = true;
-                        newitem.Time = "0";
+            //            newitem.SectionId = section.SectionId;
+            //            newitem.IsActive = true;
+            //            newitem.Time = "0";
 
-                        _sosDistribution.Times.Add(newitem);
-                    }
-                }
-            }
+            //            _sosDistribution.Times.Add(newitem);
+            //        }
+            //    }
+            //}
 
             var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[5];
             var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[5];
@@ -284,8 +284,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 cycleTimes[i] = (cycleTime).ToString();
             }
 
-            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosDistribution.SOSHub.DistributionId, includeSOS: true);
-            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosDistribution.SOSHub.DistributionId, includeSOS: true);
+            AvailableAnalyses = _sosDistribution.SOSHubs?.Count() > 0 ? await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosDistribution.SOSHubs?.FirstOrDefault()?.DistributionId, includeSOS: true) : new List<SOSAnalysis>();
+            AvailableSequences = _sosDistribution.SOSHubs?.Count() > 0 ? await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosDistribution.SOSHubs?.FirstOrDefault()?.DistributionId, includeSOS: true) : new List<SOSSequence>();
 
             int secuenceInt = 0;
 
@@ -295,7 +295,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 foreach (Section sect in analysis.SOSHub.Sections)
                 {
                     Console.WriteLine($"{analysis.SOSAnalysisId} Sec: {sect.Step}");
-                    if (_sosDistribution.SOSHub.Sections.Any(s => s.SectionId == sect.SectionId))
+
+                    if (_sosDistribution.SOSDistributionOperationSequence != null &&
+                        _sosDistribution.SOSDistributionOperationSequence.Any(seq => seq.SectionId == sect.SectionId))
                     {
                         _combinedItems.Add(
                             new DropItem
@@ -338,7 +340,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
                 foreach (Section sect in sequence.SOSHub.Sections)
                 {
-                    if (_sosDistribution.SOSHub.Sections.Any(s => s.SectionId == sect.SectionId))
+                    if (_sosDistribution.SOSDistributionOperationSequence != null &&
+                        _sosDistribution.SOSDistributionOperationSequence.Any(seq => seq.SectionId == sect.SectionId))
                     {
                         _combinedItems.Add(
                             new DropItem
@@ -372,42 +375,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
             }
 
-            _sosDistribution.SOSHub.Sections = _sosDistribution.SOSHub.Sections.OrderBy(d => d.SecuenceDist).ToList();
-
+            //_sosDistribution.SOSHub.Sections = _sosDistribution.SOSHub.Sections.OrderBy(d => d.SecuenceDist).ToList();
+            _sosDistribution.SOSDistributionOperationSequence = _sosDistribution.SOSDistributionOperationSequence
+           .OrderBy(t => t.SequenceId)
+           .ToList();
 
             return new AsyncVoidMethodBuilder();
         }
 
-        private List<string> GetRevisionNumbers()
-        {
-            List<string> revisionNumbers = new List<string> { "", "", "" };
-
-            Console.WriteLine(totalLogbooks);
-
-            if (totalLogbooks <= 3)
-            {
-                for (int i = 0; i < totalLogbooks; i++)
-                {
-                    if (i == 0)
-                    {
-                        revisionNumbers[0] = "N";
-                    }
-                    else
-                    {
-                        revisionNumbers[i] = (i).ToString();
-                    }
-                }
-            }
-            else
-            {
-                revisionNumbers[0] = (totalLogbooks - 3).ToString();
-                revisionNumbers[1] = (totalLogbooks - 2).ToString();
-                revisionNumbers[2] = (totalLogbooks - 1).ToString();
-            }
-
-            return revisionNumbers;
-        }
-
+        
         public static string ReasonFormat(string input)
         {
             if (string.IsNullOrEmpty(input))
@@ -478,12 +454,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         {
             if (section != null && newValue != null)
             {
-                int indexTime = _sosDistribution.Times.ToList().FindIndex(t => t.SectionId == section.SectionId);
+                int indexTime = _sosDistribution.SOSDistributionOperationSequence.ToList().FindIndex(t => t.SectionId == section.SectionId);
 
                 if (indexTime != -1)
                 {
-                    var timeEntry = _sosDistribution.Times.ElementAt(indexTime);
-                    var splitTimes = timeEntry.Time?.Split("§") ?? new string[5];
+                    var timeEntry = _sosDistribution.SOSDistributionOperationSequence.ElementAt(indexTime);
+                    var splitTimes = timeEntry.Times?.Split("§") ?? new string[5];
 
                     if (splitTimes.Length < 5)
                     {
@@ -492,26 +468,26 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
                     splitTimes[index] = newValue;
 
-                    timeEntry.Time = string.Join("§", splitTimes);
+                    timeEntry.Times = string.Join("§", splitTimes);
                 }
-                else
-                {
-                    SOSTime newItem = new SOSTime
-                    {
-                        SectionId = section.SectionId,
-                        IsActive = true,
-                        Time = CreateTimeString(newValue, index)
-                    };
+                //else
+                //{
+                //    SOSTime newItem = new SOSTime
+                //    {
+                //        SectionId = section.SectionId,
+                //        IsActive = true,
+                //        Time = CreateTimeString(newValue, index)
+                //    };
 
-                    _sosDistribution.Times.Add(newItem);
-                }
+                //    _sosDistribution.Times.Add(newItem);
+                //}
 
                 cycleTimes[index] = "0";
 
-                double totalSectTimes = _sosDistribution.Times
+                double totalSectTimes = _sosDistribution.SOSDistributionOperationSequence
                     .Select(t =>
                     {
-                        var times = t.Time?.Split("§");
+                        var times = t.Times?.Split("§");
                         // Verifica que el índice esté dentro del rango
                         return (times != null && index < times.Length) ? times[index] : null;
                     })
@@ -537,10 +513,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         {
             additionalTimes[index] = newValue;
 
-            double totalSectTimes = _sosDistribution.Times
+            double totalSectTimes = _sosDistribution.SOSDistributionOperationSequence
                 .Select(t =>
                 {
-                    var times = t.Time?.Split("§");
+                    var times = t.Times?.Split("§");
                     return (times != null && index < times.Length) ? times[index] : null;
                 })
                 .Where(splitTime => !string.IsNullOrEmpty(splitTime))
@@ -875,7 +851,66 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
         private void VerifyItemsSequence()
         {
+            if (_sosDistribution.SOSDistributionOperationSequence == null)
+            {
+                _sosDistribution.SOSDistributionOperationSequence = new List<SOSDistributionOperationSequence>();
 
+                foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone"))
+                {
+                    if (item.section != null)
+                    {
+                        var operationSequence = new SOSDistributionOperationSequence
+                        {
+                            SectionId = item.section.SectionId,
+                            Section = item.section,
+                            SequenceId = item.Sequence,
+                            Times = CreateTimeString("0", 0),
+                            IsActive = true
+                        };
+                        _sosDistribution.SOSDistributionOperationSequence.Add(operationSequence);
+                    }
+                }
+            }
+            else
+            {
+                // Añadir los que faltan y actualizar secuencia
+                foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone"))
+                {
+                    if (!_sosDistribution.SOSDistributionOperationSequence.Any(t => t.SectionId == item.section.SectionId))
+                    {
+                        var operationSequence = new SOSDistributionOperationSequence
+                        {
+                            SectionId = item.section.SectionId,
+                            Section = item.section,
+                            SequenceId = item.Sequence,
+                            Times = CreateTimeString("0", 0),
+                            IsActive = true
+                        };
+
+                        _sosDistribution.SOSDistributionOperationSequence.Add(operationSequence);
+                    }
+                    else
+                    {
+                        var existingOperation = _sosDistribution.SOSDistributionOperationSequence.FirstOrDefault(t => t.SectionId == item.section.SectionId);
+                        if (existingOperation != null)
+                        {
+                            existingOperation.SequenceId = item.Sequence;
+                        }
+                    }
+                }
+
+                // Eliminar los que ya no están en _combinedItems
+                var validSectionIds = _combinedItems
+                    .Where(i => i.Zone == "CombinedZone" && i.section != null)
+                    .Select(i => i.section.SectionId)
+                    .ToHashSet();
+
+                _sosDistribution.SOSDistributionOperationSequence =
+                    _sosDistribution.SOSDistributionOperationSequence
+                        .Where(seq => validSectionIds.Contains(seq.SectionId ?? 0))
+                        .OrderBy(seq => seq.SequenceId)
+                        .ToList();
+            }
         }
 
         private void ItemUpdated(MudItemDropInfo<DropItem> dropItem)
@@ -889,42 +924,36 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             _combinedItems.UpdateOrder(dropItem, item => item.Sequence, newIndex);
             Console.WriteLine("Combined: " + JsonSerializer.Serialize(_combinedItems.Where(i => i.Zone == "CombinedZone").OrderBy(s => s.Sequence)));
 
-            _sosDistribution.SOSHub.Sections = _combinedItems.Where(i => i.Zone == "CombinedZone").OrderBy(i => i.Sequence).Select(i => i.section).ToList();
-            Console.WriteLine("Section: " + JsonSerializer.Serialize(_sosDistribution.SOSHub.Sections.Select(t => t.Step)));
-            ///
 
-            if (_sosDistribution.Times == null)
-            {
-                _sosDistribution.Times = new List<SOSTime>();
-                //crearlos artificialmente
-                foreach (Section section in _sosDistribution.SOSHub.Sections)
-                {
-                    SOSTime newitem = new SOSTime();
+            //if (_sosDistribution.SOSDistributionOperationSequence == null)
+            //    _sosDistribution.SOSDistributionOperationSequence = new List<SOSDistributionOperationSequence>();
 
-                    newitem.SectionId = section.SectionId;
-                    newitem.IsActive = true;
-                    newitem.Time = "";
+            //// Elimina los que ya no están en _combinedItems
+            //var validSectionIds = _combinedItems
+            //    .Where(i => i.Zone == "CombinedZone" && i.section != null)
+            //    .Select(i => i.section.SectionId)
+            //    .ToHashSet();
 
-                    _sosDistribution.Times.Add(newitem);
-                }
-            }
-            else
-            {
-                //iterar sobre ellos para añadir casos faltantes de haber
-                foreach (Section section in _sosDistribution.SOSHub.Sections)
-                {
-                    if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
-                    {
-                        SOSTime newitem = new SOSTime();
+            //_sosDistribution.SOSDistributionOperationSequence =
+            //    _sosDistribution.SOSDistributionOperationSequence
+            //        .Where(seq => validSectionIds.Contains(seq.SectionId ?? 0))
+            //        .ToList();
 
-                        newitem.SectionId = section.SectionId;
-                        newitem.IsActive = true;
-                        newitem.Time = "0";
-
-                        _sosDistribution.Times.Add(newitem);
-                    }
-                }
-            }
+            //// Añade los que faltan
+            //foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone" && i.section != null))
+            //{
+            //    if (!_sosDistribution.SOSDistributionOperationSequence.Any(seq => seq.SectionId == item.section.SectionId))
+            //    {
+            //        _sosDistribution.SOSDistributionOperationSequence.Add(new SOSDistributionOperationSequence
+            //        {
+            //            SectionId = item.section.SectionId,
+            //            Section = item.section,
+            //            SequenceId = item.Sequence,
+            //            Times = CreateTimeString("0", 0),
+            //            IsActive = true
+            //        });
+            //    }
+            //}
 
         }
 
@@ -1001,11 +1030,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private bool _visibleDistributionStructure = false;
         private bool _visibleAnalysesSequences = false;
 
-        private readonly DialogOptions _dialogOptions = new() { FullWidth = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, CloseButton = true };
-        private readonly DialogOptions _dialogOptionsDistribution = new() { FullWidth = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraLarge, CloseButton = true };
+        private readonly DialogOptions _dialogOptions = new() { FullWidth = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium };
+        private readonly DialogOptions _dialogOptionsDistribution = new() { FullWidth = true, CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraLarge };
 
         private void EditAnalysesSequences()
         {
+            //Abre el dialogo que muestra la estructura de las Analisis y Secuencias
+            //Para ordenarlas en distribucion
             _visibleAnalysesSequences = true;
             StateHasChanged();
         }
@@ -1013,8 +1044,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         private void CloseAnalysesSequences()
         {
 
-            _visibleAnalysesSequences = false;
-            StateHasChanged();
+            
 
             int secuenceint = 0;
 
@@ -1022,7 +1052,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             {
                 foreach (Section sect in analysis.SOSHub.Sections)
                 {
-
                     if (!_combinedItems.Any(i => i.Identifier == $"Analysis_{analysis.SOSAnalysisId}" && i.section == sect))
                     {
                         _combinedItems.Add(
@@ -1043,7 +1072,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
             foreach (var sequence in _sosDistribution.Sequences)
             {
-
                 foreach (Section sect in sequence.SOSHub.Sections)
                 {
                     if (!_combinedItems.Any(i => i.Identifier == $"Sequence_{sequence.SOSSequenceId}" && i.section == sect))
@@ -1097,45 +1125,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             foreach (var toRemove in ForRemove)
             {
                 _combinedItems.Remove(toRemove);
+
             }
 
 
-            _sosDistribution.SOSHub.Sections = _combinedItems.Where(i => i.Zone == "CombinedZone").OrderBy(i => i.Sequence).Select(i => i.section).ToList();
-            if (_sosDistribution.Times == null)
-            {
-                _sosDistribution.Times = new List<SOSTime>();
-                //crearlos artificialmente
-                foreach (Section section in _sosDistribution.SOSHub.Sections)
-                {
-                    SOSTime newitem = new SOSTime();
-
-                    newitem.SectionId = section.SectionId;
-                    newitem.IsActive = true;
-                    newitem.Time = "";
-
-                    _sosDistribution.Times.Add(newitem);
-                }
-            }
-            else
-            {
-                //iterar sobre ellos para añadir casos faltantes de haber
-                foreach (Section section in _sosDistribution.SOSHub.Sections)
-                {
-                    if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
-                    {
-                        SOSTime newitem = new SOSTime();
-
-                        newitem.SectionId = section.SectionId;
-                        newitem.IsActive = true;
-                        newitem.Time = "0";
-
-                        _sosDistribution.Times.Add(newitem);
-                    }
-                }
-            }
-
-
-
+            VerifyItemsSequence();
+            _visibleAnalysesSequences = false;
+            StateHasChanged();
 
         }
 
@@ -1147,31 +1143,34 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
         private void CloseStructure()
         {
+            VerifyItemsSequence();
             _visibleDistributionStructure = false;
             StateHasChanged();
         }
 
-        private async Task MoveSection(int index, int direction)
+        private async Task MoveStepsProcess(int index, int direction)
         {
-          
+
             int newIndex = index + direction;
 
-            if (newIndex < 0 || newIndex >= _sosDistribution.SOSHub.Sections.Count)
+            if (newIndex < 0 || newIndex >= _sosDistribution.SOSDistributionOperationSequence.Count)
             {
-                return; 
+                Console.WriteLine("Into Return move");
+
+                return;
             }
 
-            var sections = _sosDistribution.SOSHub.Sections.ToList();
-            var temp = sections[index];
-            sections[index] = sections[newIndex];
-            sections[newIndex] = temp;
+            var StepsProcess = _sosDistribution.SOSDistributionOperationSequence.ToList();
+            var temp = StepsProcess[index];
+            StepsProcess[index] = StepsProcess[newIndex];
+            StepsProcess[newIndex] = temp;
 
-            for (int i = 0; i < sections.Count; i++)
+            for (int i = 0; i < StepsProcess.Count; i++)
             {
-                sections[i].SecuenceDist = i + 1; 
+                StepsProcess[i].SequenceId = i + 1;
             }
 
-            _sosDistribution.SOSHub.Sections = sections;
+            _sosDistribution.SOSDistributionOperationSequence = StepsProcess;
 
         }
     }

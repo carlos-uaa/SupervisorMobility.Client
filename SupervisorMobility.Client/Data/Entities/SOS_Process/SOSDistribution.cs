@@ -12,7 +12,7 @@
 
         public ICollection<Turn>? Turns { get; set; }
         public string? AplicationModels { get; set; } = "§§§§";
-        public ICollection<SOSTime>? Times { get; set; } = new List<SOSTime>();
+        public ICollection<SOSDistributionOperationSequence>? SOSDistributionOperationSequence { get; set; }
 
         public string? AdditionalTime { get; set; } = "§§§§";
         public string? CycleTime { get; set; } = "§§§§";
@@ -27,9 +27,9 @@
         public SOSDistributionAdditionalTime? SOSDistributionAdditionalTime { get; set; }
 
         public bool? IsActive { get; set; }
-        public int SOSHubId { get; set; }
-        public SOSHub? SOSHub { get; set; }
+        public int? SOSHubId { get; set; }
 
+        public IEnumerable<SOSHub>? SOSHubs { get; set; } = new List<SOSHub>();
         public IEnumerable<SOSAnalysis>? Analyses { get; set; } = new List<SOSAnalysis>();
         public IEnumerable<SOSSequence>? Sequences { get; set; } = new List<SOSSequence>();
 
