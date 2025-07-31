@@ -293,6 +293,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         bool visibleExportDocument = false;
 
         SOSHub _sosHub { get; set; } = new(); 
+        private async void GoDownloadSosHub()
+        {
+            await Exportation.ExportDistributionToExcel(DistributionId.Value);
+        }
         private async void DownloadExcel()
         {
             SnackbarService.Add("Comprobando Documento", Severity.Info);
