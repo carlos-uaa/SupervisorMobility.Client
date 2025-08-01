@@ -439,7 +439,7 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Areas of opportunity detected.
+        ///   Busca una cadena traducida similar a Detected Improvement Areas.
         /// </summary>
         public static string areasOfOpportunityDetected {
             get {
@@ -1776,6 +1776,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string firstTakeTime5 {
             get {
                 return ResourceManager.GetString("firstTakeTime5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a HOE.
+        /// </summary>
+        public static string GenerateDocument {
+            get {
+                return ResourceManager.GetString("GenerateDocument", resourceCulture);
             }
         }
         

@@ -840,21 +840,21 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         _sosDistribution.Turns.ElementAt(2).OperatorId = OperatorTurn3;
                     }
 
-                    if (_sosDistribution.Times == null)
+                    if (_sosDistribution.SOSDistributionOperationSequence == null)
                     {
-                        _sosDistribution.Times = new List<SOSTime>();
+                        _sosDistribution.SOSDistributionOperationSequence = new List<SOSDistributionOperationSequence>();
                     }
 
-                    foreach (Section section in _sosHub.Sections)
-                    {
-                        SOSTime newitem = new SOSTime();
+                    //foreach (Section section in _sosHub.Sections)
+                    //{
+                    //    SOSTime newitem = new SOSTime();
 
-                        newitem.SectionId = section.SectionId;
-                        newitem.IsActive = true;
-                        newitem.Time = "";
+                    //    newitem.SectionId = section.SectionId;
+                    //    newitem.IsActive = true;
+                    //    newitem.Time = "";
 
-                        _sosDistribution.Times.Add(newitem);
-                    }
+                    //    _sosDistribution.Times.Add(newitem);
+                    //}
 
                     var Gen_sosDistribution = await SOSHubServices.GenerateDistribution(SOSHubId, _sosDistribution);
 
