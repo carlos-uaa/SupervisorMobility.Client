@@ -2,14 +2,14 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
 
-namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequirements
+namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
 {
 
 
-    public partial class SynopticRequirementsDetails
+    public partial class SynopticControlPoints
     {
         [Parameter]
-        public int? SynopticRequirementsId { get; set; }
+        public int? SynopticPoints { get; set; }
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
@@ -25,7 +25,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         public bool logged = false;
 
         //SynopticRequirements
-        SOSSynopticTableofOperatingRequirements _sosSynopticRequeriments { get; set; } = new();
+        SOSSynopticTableofControlPoints _sosSynopticControlPoints { get; set; } = new();
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -98,7 +98,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         #region SynopticRequirements
         private void UpdateSynopticRequirements(int SynopticId)
         {
-            
+
         }
 
 
@@ -107,19 +107,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
         #region SynopticRequirementsLogbook
 
-        public bool TryGetSynopticRequirementsLogbooksElementAtIndex(int index, out SOSSynopticRequirementsLogbook? item)
+        public bool TryGetSynopticPointsLogbooksElementAtIndex(int index, out SOSSynopticPointsLogbook? item)
         {
             item = null;
-            if (_sosSynopticRequeriments.SynopticRequirementsLogbooks == null || _sosSynopticRequeriments.SynopticRequirementsLogbooks.Count == 0)
+            if (_sosSynopticControlPoints.SynopticPointsLogbooks == null || _sosSynopticControlPoints.SynopticPointsLogbooks.Count == 0)
             {
                 return false;
             }
 
-            int invertedIndex = _sosSynopticRequeriments.SynopticRequirementsLogbooks.Count - 1 - index;
+            int invertedIndex = _sosSynopticControlPoints.SynopticPointsLogbooks.Count - 1 - index;
 
-            if (invertedIndex >= 0 && invertedIndex < _sosSynopticRequeriments.SynopticRequirementsLogbooks.Count)
+            if (invertedIndex >= 0 && invertedIndex < _sosSynopticControlPoints.SynopticPointsLogbooks.Count)
             {
-                item = _sosSynopticRequeriments?.SynopticRequirementsLogbooks?.ElementAt(invertedIndex);
+                item = _sosSynopticControlPoints?.SynopticPointsLogbooks?.ElementAt(invertedIndex);
                 return true;
             }
 
