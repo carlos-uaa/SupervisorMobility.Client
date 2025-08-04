@@ -1,0 +1,318 @@
+﻿@page "/soshoe/SynopticRequirements/Details/{SynopticRequirementsId:int}"
+
+@inject IBreadcrumbService BreadcrumbService
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<style>
+    .synoptic-table {
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;
+        font-size: 12px;
+    }
+
+        .synoptic-table th,
+        .synoptic-table td {
+            border: 1px solid black;
+            padding: 2px 4px;
+            text-align: center;
+            vertical-align: middle;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+
+        .synoptic-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+
+    
+</style>
+
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto; float: right" Dense>
+        <thead>
+            <tr>
+                <th rowspan="2">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+
+                    <MudItem Style="justify-content: end" Class="ml-auto">
+                        <MudItem Class="d-flex">
+                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" Icon="@Icons.Material.Filled.Info" IconColor="Color.Info" @onclick="(() => HoeDetails(_sosSynopticRequeriments.SOSHubId))" OnTouch="(() => HoeDetails(_sosSynopticRequeriments.SOSHubId))">@Localizer["GoCollection"]</MudChip>
+                        </MudItem>
+                        <MudItem Class="d-flex">
+                            @if ((user.UserType == 1 || user.UserType == 2)
+                           && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                           && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                           && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status == 1)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
+                                    @Localizer["new"]
+                                </MudChip>
+                            }
+
+                            @if ((user.UserType == 1 || user.UserType == 2)
+                           && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                           && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                           && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status != 2)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                    @Localizer["review"]!
+                                </MudChip>
+                            }
+                            else if (_sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                            && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                            && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status == 2)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                    @Localizer["approved"]!
+                                </MudChip>
+                            }
+
+
+                        </MudItem>
+                        <MudItem Class="d-flex">
+                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateSynopticRequirements((int)SynopticRequirementsId))" OnTouch="(() => UpdateSynopticRequirements((int)SynopticRequirementsId))">@Localizer["update"]</MudChip>
+                        </MudItem>
+                    </MudItem>
+                </td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+    <MudText Typo="Typo.h6"><b>Synoptic  Table of Operating Requirements</b></MudText>
+    <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable Class="synoptic-table">
+
+            <MudTr>
+                <MudTh colspan="7"><b>NOMBRE DEL PROCESO</b></MudTh>
+                <MudTd colspan="6"><b>DEPARTAMENTO</b></MudTd>
+                <MudTh colspan="4"><b>PLANTA</b></MudTh>
+                <MudTd colspan="4"><b>FECHA</b></MudTd>
+                <MudTd colspan="2" rowspan="7" ></MudTd>
+                @if (TryGetSynopticRequirementsLogbooksElementAtIndex(4, out var item))
+                {
+                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                    <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                    <MudTh colspan="4"> @item.Changes</MudTh>
+                    <MudTh colspan="2">@item.Date</MudTh>
+                    <MudTh>
+                        @if (item.NoRevision == 0)
+                        {
+                            <b>N</b>
+                        }
+                        else
+                        {
+                            @item.NoRevision
+                        }
+                    </MudTh>
+                }
+                else
+                {
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                    <MudTh colspan="4"></MudTh>
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                }
+            </MudTr>
+            <MudTr>
+                <MudTh colspan="7" rowspan="2"> @_sosSynopticRequeriments.ProcessName </MudTh>
+                <MudTd colspan="6" rowspan="2"> @_sosSynopticRequeriments.SOSHub?.Department?.Description</MudTd>
+                <MudTh colspan="4" rowspan="2"> @_sosSynopticRequeriments.SOSHub?.Plant?.Description</MudTh>
+                <MudTd colspan="4" rowspan="2"> @_sosSynopticRequeriments.CreatedAt </MudTd>
+               
+                @if (TryGetSynopticRequirementsLogbooksElementAtIndex(3, out var item))
+                {
+                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                    <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                    <MudTh colspan="4"> @item.Changes</MudTh>
+                    <MudTh colspan="2">@item.Date</MudTh>
+                    <MudTh>
+                        @if (item.NoRevision == 0)
+                        {
+                            <b>N</b>
+                        }
+                        else
+                        {
+                            @item.NoRevision
+                        }
+                    </MudTh>
+                }
+                else
+                {
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                    <MudTh colspan="4"></MudTh>
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                }
+            </MudTr>
+            <MudTr>
+                @if (TryGetSynopticRequirementsLogbooksElementAtIndex(2, out var item))
+                {
+                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                    <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                    <MudTh colspan="4"> @item.Changes</MudTh>
+                    <MudTh colspan="2">@item.Date</MudTh>
+                    <MudTh>
+                        @if (item.NoRevision == 0)
+                        {
+                            <b>N</b>
+                        }
+                        else
+                        {
+                            @item.NoRevision
+                        }
+                    </MudTh>
+                }
+                else
+                {
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                    <MudTh colspan="4"></MudTh>
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                }
+            </MudTr>
+            <MudTr>
+                <MudTh colspan="6"><b>ELABORO</b></MudTh>
+                <MudTd colspan="6"><b>REVISO</b></MudTd>
+                <MudTh colspan="6"><b>APROBO</b></MudTh>
+                <MudTd colspan="3"><b>HOJA</b></MudTd>
+               
+                @if (TryGetSynopticRequirementsLogbooksElementAtIndex(1, out var item))
+                {
+                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                    <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                    <MudTh colspan="4"> @item.Changes</MudTh>
+                    <MudTh colspan="2">@item.Date</MudTh>
+                    <MudTh>
+                        @if (item.NoRevision == 0)
+                        {
+                            <b>N</b>
+                        }
+                        else
+                        {
+                            @item.NoRevision
+                        }
+                    </MudTh>
+                }
+                else
+                {
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                    <MudTh colspan="4"></MudTh>
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                }
+            </MudTr>
+            <MudTr>
+                <MudTh colspan="6" rowspan="2">@_sosSynopticRequeriments?.Creator?.Name</MudTh>
+                <MudTh colspan="6" rowspan="2">@_sosSynopticRequeriments?.Reviewer?.Name</MudTh>
+                <MudTh colspan="6" rowspan="2">@_sosSynopticRequeriments?.Approver?.Name</MudTh>
+                <MudTd rowspan="2"></MudTd>
+                <MudTd rowspan="2"></MudTd>
+                <MudTd rowspan="2"></MudTd>
+                @if (TryGetSynopticRequirementsLogbooksElementAtIndex(0, out var item))
+                {
+                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                    <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                    <MudTh colspan="4"> @item.Changes</MudTh>
+                    <MudTh colspan="2">@item.Date</MudTh>
+                    <MudTh>
+                        @if (item.NoRevision == 0)
+                        {
+                            <b>N</b>
+                        }
+                        else
+                        {
+                            @item.NoRevision
+                        }
+                    </MudTh>
+                }
+                else
+                {
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                    <MudTh colspan="4"></MudTh>
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh></MudTh>
+                }
+            </MudTr>
+            <MudTr>
+                <MudTh colspan="2"><b>APROBO </b></MudTh>
+                <MudTh><b>NO </b></MudTh>
+                <MudTh colspan="4"><b>CAMBIO </b></MudTh>
+                <MudTh colspan="2"><b>FECHA </b></MudTh>
+                <MudTh><b>REV.</b></MudTh>
+            </MudTr>
+            <MudTr>
+                <MudTd colspan="32"></MudTd>
+            </MudTr>
+            <tbody>
+                <MudTr>
+                    <MudTh colspan="1" rowspan="2"><b>No </b></MudTh>
+                    <MudTh colspan="4" rowspan="2"><b>NOMBRE DEL PROCESO</b></MudTh>
+                    <MudTh colspan="1" rowspan="2"><b>No. DE <br /> SOS</b></MudTh>
+                    <MudTh colspan="8"><b>OPERACIONES</b></MudTh>
+                    <MudTh colspan="4" rowspan="2"><b>CONDICIONES <br /> ESTABLECIDA </b></MudTh>
+                    <MudTh colspan="4" rowspan="2"><b>CARACTERISTICAS DE <br /> ASEGURAMIENTO DE CALIDAD</b></MudTh>
+                    <MudTh colspan="3" rowspan="2"><b>GRADO DE <br /> DIFICULTAD</b></MudTh>
+                    <MudTh colspan="2" rowspan="2"><b>TIEMPO DE <br /> APRENDIZAJE </b></MudTh>
+                    <MudTh colspan="3" rowspan="2"><b>CONOCIMIENTOS</b></MudTh>
+                    <MudTh colspan="3" rowspan="2"><b> HABILIDADES </b></MudTh>
+                </MudTr>
+                <MudTr>
+                    <MudTh colspan="4"><b>POR PERSONA </b></MudTh>
+                    <MudTh colspan="4"><b>POR MAQUINA </b></MudTh>
+                </MudTr>
+
+                @for(int i = 0;  i < 20; i++){
+                    <MudTr>
+                        <MudTh colspan="1"></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh colspan="1"></MudTh>
+                        <MudTh colspan="8"></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh colspan="4"></MudTh>
+                        <MudTh colspan="3"></MudTh>
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh colspan="3"></MudTh>
+                        <MudTh colspan="3"></MudTh>
+                    </MudTr>
+                }
+            </tbody>
+        </MudSimpleTable>
+     
+    </MudPaper>
+    <br />
+}
+
+

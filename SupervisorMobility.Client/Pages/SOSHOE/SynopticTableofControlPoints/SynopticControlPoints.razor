@@ -1,0 +1,249 @@
+﻿@page "/soshoe/SynopticControlPoints/Details/{SynopticPoints:int}"
+
+@inject IBreadcrumbService BreadcrumbService
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<style>
+    .synoptic-table {
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;
+        font-size: 12px;
+    }
+
+        .synoptic-table th,
+        .synoptic-table td {
+            border: 1px solid black;
+            padding: 2px 4px;
+            text-align: center;
+            vertical-align: middle;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+
+        .synoptic-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+
+    
+</style>
+
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto; float: right" Dense>
+        <thead>
+            <tr>
+                <th rowspan="2">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+
+                    <MudItem Style="justify-content: end" Class="ml-auto">
+                        <MudItem Class="d-flex">
+                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" Icon="@Icons.Material.Filled.Info" IconColor="Color.Info" @onclick="(() => HoeDetails(_sosSynopticControlPoints.SOSHubId))" OnTouch="(() => HoeDetails(_sosSynopticControlPoints.SOSHubId))">@Localizer["GoCollection"]</MudChip>
+                        </MudItem>
+                        <MudItem Class="d-flex">
+                            @if ((user.UserType == 1 || user.UserType == 2)
+                           && _sosSynopticControlPoints?.SynopticPointsLogbooks != null
+                           && _sosSynopticControlPoints.SynopticPointsLogbooks.Any()
+                           && _sosSynopticControlPoints.SynopticPointsLogbooks.Last().Status == 1)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
+                                    @Localizer["new"]
+                                </MudChip>
+                            }
+
+                            @if ((user.UserType == 1 || user.UserType == 2)
+                           && _sosSynopticControlPoints?.SynopticPointsLogbooks != null
+                           && _sosSynopticControlPoints.SynopticPointsLogbooks.Any()
+                           && _sosSynopticControlPoints.SynopticPointsLogbooks.Last().Status != 2)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                    @Localizer["review"]!
+                                </MudChip>
+                            }
+                            else if (_sosSynopticControlPoints?.SynopticPointsLogbooks != null
+                            && _sosSynopticControlPoints.SynopticPointsLogbooks.Any()
+                            && _sosSynopticControlPoints.SynopticPointsLogbooks.Last().Status == 2)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                    @Localizer["approved"]!
+                                </MudChip>
+                            }
+
+
+                        </MudItem>
+                        <MudItem Class="d-flex">
+                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateSynopticRequirements((int)SynopticPoints))" OnTouch="(() => UpdateSynopticRequirements((int)SynopticPoints))">@Localizer["update"]</MudChip>
+                        </MudItem>
+                    </MudItem>
+                </td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+    <MudText Typo="Typo.h6"><b>Synoptic  Table of Operating Requirements</b></MudText>
+    <MudPaper Square="true" Elevation="3">
+        <MudSimpleTable Class="synoptic-table">
+
+            <MudTr>
+                <MudTh colspan="9" rowspan="2"><b>PROCESO</b> @_sosSynopticControlPoints.ProcessName </MudTh>
+                <MudTd colspan="8" rowspan="2"><b>MODELOS</b></MudTd>
+                @if (TryGetSynopticPointsLogbooksElementAtIndex(2, out var item))
+                {
+                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                    <MudTh colspan="2">@item.Date</MudTh>
+                    <MudTh colspan="4"> @item.Changes</MudTh>
+                    <MudTh>
+                        @if (item.NoRevision == 0)
+                        {
+                            <b>N</b>
+                        }
+                        else
+                        {
+                            @item.NoRevision
+                        }
+                    </MudTh>
+                }
+                else
+                {
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh colspan="4"></MudTh>
+                    <MudTh></MudTh>
+                }
+            </MudTr>
+            <MudTr>
+               
+                @if (TryGetSynopticPointsLogbooksElementAtIndex(1, out var item))
+                {
+                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                    <MudTh colspan="2">@item.Date</MudTh>
+                    <MudTh colspan="4"> @item.Changes</MudTh>
+                    <MudTh>
+                        @if (item.NoRevision == 0)
+                        {
+                            <b>N</b>
+                        }
+                        else
+                        {
+                            @item.NoRevision
+                        }
+                    </MudTh>
+                }
+                else
+                {
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh colspan="4"></MudTh>
+                    <MudTh></MudTh>
+                }
+            </MudTr>
+
+            <MudTr>
+                <MudTh colspan="9" rowspan="2"><b>MES</b> @_sosSynopticControlPoints.ProcessName </MudTh>
+                <MudTd colspan="8" rowspan="2"><b>PLANTA</b></MudTd>
+                @if (TryGetSynopticPointsLogbooksElementAtIndex(0, out var item))
+                {
+                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                    <MudTh colspan="2">@item.Date</MudTh>
+                    <MudTh colspan="4"> @item.Changes</MudTh>
+                    <MudTh>
+                        @if (item.NoRevision == 0)
+                        {
+                            <b>N</b>
+                        }
+                        else
+                        {
+                            @item.NoRevision
+                        }
+                    </MudTh>
+                }
+                else
+                {
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh colspan="2"></MudTh>
+                    <MudTh colspan="4"></MudTh>
+                    <MudTh></MudTh>
+                }
+            </MudTr>
+            <MudTr>
+                    <MudTh colspan="2">APROBO</MudTh>
+                    <MudTh colspan="2">FECHA</MudTh>
+                    <MudTh colspan="4">CAMBIO</MudTh>
+                    <MudTh>NO</MudTh>
+            </MudTr>
+            <MudTr>
+                <MudTd colspan="26"></MudTd>
+            </MudTr>
+            <MudTr>
+                <MudTd colspan="9" rowspan="1"> <b>ELABORO:</b> @_sosSynopticControlPoints?.Creator?.Name</MudTd>
+                <MudTd colspan="8" rowspan="1"> <b>REVISO:</b> @_sosSynopticControlPoints?.Reviewer?.Name</MudTd>
+                <MudTd colspan="9" rowspan="1"> <b>APROVO:</b> @_sosSynopticControlPoints?.Approver?.Name</MudTd>
+            </MudTr> 
+            <MudTr>
+                <MudTd colspan="26"></MudTd>
+            </MudTr>
+
+           
+            <tbody>
+                <MudTr>
+                    <MudTh colspan="1" rowspan="2"><b>No </b></MudTh>
+                    <MudTh colspan="8" rowspan="2"><b>PUNTOS DE CONTROL</b></MudTh>
+                    <MudTh colspan="2" rowspan="2"><b>GRADO DE <br /> IMPORTANCOA</b></MudTh>
+                    <MudTh colspan="8"><b>CONFIRMACION DE SUPERVISOR</b></MudTh>
+                    <MudTh colspan="9" rowspan="2"><b>OBSERVACIONES  </b></MudTh>
+                    
+                </MudTr>
+                <MudTr>
+                    <MudTh colspan="2"><b>OBSERVACION DE </b> <br /> <b>LA OPERACION </b>  </MudTh>
+                    <MudTh colspan="2"><b>REGISTRO DEL </b> <br /> <b> OPERADOR </b>  </MudTh>
+                    <MudTh colspan="2"><b>CHECAR </b> <br /><b>PRODUCTO Y </b> <br /> <b> CONDICION</b>  </MudTh>
+                    <MudTh colspan="2"><b>REGISTRO DEL </b> <br /> <b> SUVERVISOR </b>  </MudTh>
+                    
+                </MudTr>
+
+                @for(int i = 0;  i < 20; i++){
+                    <MudTr>
+                        <MudTh colspan="1"></MudTh>
+                        <MudTh colspan="8"></MudTh>
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh colspan="2"></MudTh>
+                        <MudTh colspan="9"></MudTh>
+                    </MudTr>
+                }
+            </tbody>
+        </MudSimpleTable>
+     
+    </MudPaper>
+    <br />
+}
+
+

@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Text;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Globalization;
+using DocumentFormat.OpenXml.Vml.Spreadsheet;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 {
@@ -105,40 +106,40 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                     capturedImages.Add(image);
                 }
             }
-            cycleId = _sosDistribution.SOSHub?.TrainingTime != null ? GetCycleId(_sosDistribution.SOSHub.TrainingTime) : 0;
+            cycleId = _sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime != null ? GetCycleId(_sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime) : 0;
 
             //creacion artificial
-            if (_sosDistribution.Times == null)
-            {
-                _sosDistribution.Times = new List<SOSTime>();
-                foreach (Section section in _sosDistribution.SOSHub.Sections)
-                {
-                    SOSTime newitem = new SOSTime();
+            //if (_sosDistribution.Times == null)
+            //{
+            //    _sosDistribution.Times = new List<SOSTime>();
+            //    foreach (Section section in _sosDistribution.SOSHub.Sections)
+            //    {
+            //        SOSTime newitem = new SOSTime();
 
-                    newitem.SectionId = section.SectionId;
-                    newitem.IsActive = true;
-                    newitem.Time = "0";
+            //        newitem.SectionId = section.SectionId;
+            //        newitem.IsActive = true;
+            //        newitem.Time = "0";
 
-                    _sosDistribution.Times.Add(newitem);
-                }
-            }
-            else
-            {
-                //iterar sobre existentes para añadir casos faltantes de haber
-                foreach (Section section in _sosDistribution.SOSHub.Sections)
-                {
-                    if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
-                    {
-                        SOSTime newitem = new SOSTime();
+            //        _sosDistribution.Times.Add(newitem);
+            //    }
+            //}
+            //else
+            //{
+            //    //iterar sobre existentes para añadir casos faltantes de haber
+            //    foreach (Section section in _sosDistribution.SOSHub.Sections)
+            //    {
+            //        if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
+            //        {
+            //            SOSTime newitem = new SOSTime();
 
-                        newitem.SectionId = section.SectionId;
-                        newitem.IsActive = true;
-                        newitem.Time = "";
+            //            newitem.SectionId = section.SectionId;
+            //            newitem.IsActive = true;
+            //            newitem.Time = "";
 
-                        _sosDistribution.Times.Add(newitem);
-                    }
-                }
-            }
+            //            _sosDistribution.Times.Add(newitem);
+            //        }
+            //    }
+            //}
             var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
 
 
@@ -170,6 +171,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) ? tempStepsTime[i] : "0";
             }
 
+            _sosDistribution.SOSDistributionOperationSequence = _sosDistribution.SOSDistributionOperationSequence
+           .OrderBy(t => t.SequenceId)
+           .ToList();
 
             ShowLoading = false;
             StateHasChanged();
@@ -276,12 +280,110 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             visibleLogbook = false;
         }
 
-        private async void DownloadExcel()
+        private void ClosevisibleExportDocumentDialog()
+        {
+            visibleExportDocument = false;
+        }
+
+        private void GoEditSosHub()
+        {
+            NavigationManager.NavigateTo($"/soshoe/Hub/Update/{(int)_sosDistribution.SOSHubId}");
+        }
+
+        bool visibleExportDocument = false;
+
+        SOSHub _sosHub { get; set; } = new(); 
+        private async void GoDownloadSosHub()
         {
             await Exportation.ExportDistributionToExcel(DistributionId.Value);
         }
+        private async void DownloadExcel()
+        {
+            SnackbarService.Add("Comprobando Documento", Severity.Info);
+            _sosHub = await SOSHubServices.GetSOSHub((int)_sosDistribution.SOSHubId, true, true, true, true, true, true, true, true, includeModel: true, includePeople: true, includeDocuments: true, includeCollections: true, includePats: true, includeInformation: true);
 
-        
+            if (HasEmptyRequiredCollections(_sosHub))
+            {
+                visibleExportDocument = true;
+
+                SnackbarService.Add("Ooops. Collector Incomplete!", Severity.Error, config =>
+                {
+                    config.Action = "Go Edit Collector";
+                    config.ActionColor = Color.Primary;
+                    config.Onclick = snackbar =>
+                    {
+                        GoEditSosHub();
+                        return Task.CompletedTask;
+                    };
+                });
+                StateHasChanged();
+                return;
+            }
+            else
+            {
+                SnackbarService.Clear();
+                SnackbarService.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                SnackbarService.Add("Generando documento", Severity.Success);
+                await Exportation.ExportDistributionToExcel(DistributionId.Value);
+            }
+
+        }
+
+        private bool HasEmptyRequiredCollections(SOSHub hub)
+        {
+            if (hub == null)
+                return true;
+
+
+            // Validar AppliedModels
+            if (hub.AppliedModels == null || !hub.AppliedModels.Any())
+                return true;
+
+            // Validar Images
+            if (hub.Images == null || !hub.Images.Any())
+                return true;
+
+            // Validar Videos
+            if (hub.Videos == null || !hub.Videos.Any())
+                return true;
+
+            // Validar SafetyEquipment
+            if (hub.SafetyEquipment == null || !hub.SafetyEquipment.Any())
+                return true;
+
+            // Validar ToolsUsed
+            if (hub.ToolsUsed == null || !hub.ToolsUsed.Any())
+                return true;
+
+            // Validar MaterialsUsed
+            if (hub.MaterialsUsed == null || !hub.MaterialsUsed.Any())
+                return true;
+
+            // Validar Plant
+            if (hub.Plant == null)
+                return true;
+
+            // Validar Area
+            if (hub.Area == null)
+                return true;
+
+            // Validar Distribution
+            if (hub.Distribution == null)
+                return true;
+            
+            if (hub.ApproverOwners == null)
+                return true;
+            
+            if (hub.ReviewerEditors == null)
+                return true;
+
+
+
+            // Si ninguna está vacía o nula, retorna false
+            return false;
+        }
+
+
 
     }
 }
