@@ -9,8 +9,8 @@
         public int? Status { get; set; }
         public bool? IsActive { get; set; }
 
-        public int SOSFlowId { get; set; }
-        public SOSFlow? SOSFlow { get; set; }
+        public int SOSSynopticRequirementsId { get; set; }
+        public SOSSynopticTableofOperatingRequirements? SOSSynopticRequirements { get; set; }
 
 
         public int? ApproverId { get; set; }

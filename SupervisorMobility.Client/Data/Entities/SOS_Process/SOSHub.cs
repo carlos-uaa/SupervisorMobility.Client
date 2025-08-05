@@ -79,6 +79,10 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public List<SOSDistribution>? SOSDistribution { get; set; } = new List<SOSDistribution>();
         public List<SOSFlow>? SOSFlow { get; set; } = new List<SOSFlow>();
         public List<SOSSequence>? SOSSequence { get; set; } = new List<SOSSequence>();
+
+        public List<SOSSynopticTableofControlPoints>? SOSSynopticControlPoints { get; set; } = new List<SOSSynopticTableofControlPoints>();
+        public List<SOSSynopticTableofOperatingRequirements>? SOSSynopticOperatingRequirements { get; set; } = new List<SOSSynopticTableofOperatingRequirements>();
+
         public List<PAT>? PATs { get; set; } = new List<PAT>();
         public bool? IsActive { get; set; }
     }
