@@ -732,6 +732,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             selectedIndexPageGenerate = indexPage;
             ShowGenerateDialog = false;
 
+            _sosHub.Plant = _plants.FirstOrDefault(p => p.PlantId == plantId);
+            _sosHub.Area = _areas.FirstOrDefault(a => a.AreaId == areaId);
+            _sosHub.Distribution = _distributions.FirstOrDefault(d => d.DistributionId == distributionId);
+            _sosHub.Department = _departments.FirstOrDefault(d => d.DepartmentId == departmentId);
+            _sosHub.Station = _stations.FirstOrDefault(s => s.StationId == stationId);
+
+
             var parameters = new DialogParameters { { "selectedIndexPageGenerate", indexPage }, { "user", user }, { "SOSHubId", SOSHubId },
                 { "_sosHub", _sosHub }, { "_supervisors", _supervisors }, { "_plants", _plants }, { "_areas", _areas }, { "_distributions", _distributions }, { "_departments", _departments },
                 { "_stations", _stations }

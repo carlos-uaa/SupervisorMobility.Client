@@ -28,6 +28,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         public SOSFlow _sosFlow { get; set; } = new SOSFlow();
         SOSSequence _sosSequence { get; set; } = new SOSSequence();
         public SOSCombination _sosCombination { get; set; } = new SOSCombination();
+        public SOSSynopticTableofOperatingRequirements _SOSSynopticRequirements { get; set; } = new SOSSynopticTableofOperatingRequirements();
 
         public int ApproverAnalysisId { get; set; }
         public int ReviewerAnalysisId { get; set; }
@@ -70,6 +71,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         int ApproverSequenceId = 0;
         int ReviewerSequenceId = 0;
+
+        int OwnerSynopticRequirementsId = 0;
+        int ApproverSynopticRequirementsId = 0;
+        int ReviewerSynopticRequirementsId = 0;
+
 
         public int supervisorOwnerId { get; set; } = 0;
         public int supervisorEditorId { get; set; } = 0;
@@ -376,6 +382,49 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         }
                     }
                     loading += 10;
+                    break;
+                case 6:
+                    if (_sosHub.SOSSynopticOperatingRequirements.Count > 0)
+                    {
+                        _SOSSynopticRequirements = _sosHub.SOSSynopticOperatingRequirements.FirstOrDefault();
+                        if (_SOSSynopticRequirements.SOSSynopticTableofOperatingRequirementsId != 0 && _SOSSynopticRequirements.SynopticRequirementsLogbooks.Count > 0)
+                        {
+                            ApproverDistributionId = (int)(_SOSSynopticRequirements.SynopticRequirementsLogbooks.Last().Status != 2 ? _SOSSynopticRequirements.SynopticRequirementsLogbooks.Last().ApproverId : 0);
+                            ReviewerDistributionId = (int)(_SOSSynopticRequirements.SynopticRequirementsLogbooks.Last().Status != 2 ? _SOSSynopticRequirements.SynopticRequirementsLogbooks.Last().ReviewerId : 0);
+                        }
+
+                        if (_SOSSynopticRequirements.SynopticRequirementsLogbooks.Count == 0)
+                        {
+                            _SOSSynopticRequirements.SynopticRequirementsLogbooks.Add(new SOSSynopticRequirementsLogbook());
+                        }
+
+                        loading += 3;
+
+                       
+
+                        loading += 2;
+
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+                        //lo redirigimos a la vista dado que ya hay datos
+                        selectedIndexPageGenerate = 66;
+
+                        loading += 5;
+                    }
+                    else
+                    {
+                        //preparamos los datos
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+
+                        _SOSSynopticRequirements.CreatedAt = DateTime.Now;
+
+                        loading += 10;
+                    }
                     break;
             }
             loaded = true;
@@ -1167,6 +1216,152 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         }
 
+        #region GenerateSynopticRequirements
+
+        SOSSynopticRequirementsLogbook logSynopticRequirements { get; set; } = new SOSSynopticRequirementsLogbook();
+        public async void GenerateSynopticRequirements()
+        {
+
+            if (_sosHub.SOSSynopticOperatingRequirements.Count > 0)
+            {
+                //REVISION
+                if (ReviewerSynopticRequirementsId == 0 || ApproverSynopticRequirementsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                       ApproverSynopticRequirementsId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                    return;
+                }
+
+                var copySequences = _SOSSynopticRequirements.Sequences;
+                var copyAnalyses = _SOSSynopticRequirements.Analyses;
+
+                _SOSSynopticRequirements = _sosHub.SOSSynopticOperatingRequirements.First();
+
+                if (_SOSSynopticRequirements.SynopticRequirementsLogbooks.First().SOSSynopticRequirementsLogbookId == 0)
+                {
+                    _SOSSynopticRequirements.SynopticRequirementsLogbooks.Clear();
+                }
+
+                logSynopticRequirements.NoRevision = _SOSSynopticRequirements.SynopticRequirementsLogbooks?.Count();
+                logSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                logSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                logSynopticRequirements.Date = System.DateTime.Now;
+                logSynopticRequirements.Status = 1;
+                logSynopticRequirements.IsActive = true;
+                if (_SOSSynopticRequirements.SynopticRequirementsLogbooks == null)
+                {
+                    _SOSSynopticRequirements.SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>();
+                }
+
+                _SOSSynopticRequirements.SynopticRequirementsLogbooks.Add(logSynopticRequirements);
+
+
+
+                var Gen_SOSSynopticRequirements = await SOSHubServices.GenerateSynopticRequirements(SOSHubId, _SOSSynopticRequirements);
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                if (Gen_SOSSynopticRequirements != 0)
+                {
+                    Snackbar.Add($"{Localizer["_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Info);
+                    NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{_SOSSynopticRequirements.SOSSynopticTableofOperatingRequirementsId}");
+                    _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements();
+                    //Pregutar si quiere ver el analisis generado
+                }
+                else
+                {
+                    Snackbar.Add($"{Localizer["Fail_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Error);
+                }
+
+                StateHasChanged();
+
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(_SOSSynopticRequirements.ProcessName) || OwnerSynopticRequirementsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                       OwnerSynopticRequirementsId == 0 ? "Es necesario el elaborador" : "Es necesario el nombre de processo!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                } 
+                else if (ApproverSynopticRequirementsId == 0 || ReviewerSynopticRequirementsId == 0 )
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                      ApproverSynopticRequirementsId == 0 ? "Es necesario el aproador" : "Es necesario seleccionar el editor!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    //reviewer = SV = Editor  //Approver = SSV = owner 
+
+                    //_SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                    //_SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+
+                    logSynopticRequirements.NoRevision = 0;
+                    logSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                    logSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                    logSynopticRequirements.Date = System.DateTime.Now;
+                    logSynopticRequirements.Status = 1;
+                    logSynopticRequirements.IsActive = true;
+                    if (_SOSSynopticRequirements.SynopticRequirementsLogbooks == null)
+                    {
+                        _SOSSynopticRequirements.SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>();
+                    }
+
+                    _SOSSynopticRequirements.SynopticRequirementsLogbooks.Add(logSynopticRequirements);
+
+
+                    if (_SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence == null)
+                    {
+                        _SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
+                    }
+
+                    //foreach (Section section in _sosHub.Sections)
+                    //{
+                    //    SOSTime newitem = new SOSTime();
+
+                    //    newitem.SectionId = section.SectionId;
+                    //    newitem.IsActive = true;
+                    //    newitem.Time = "";
+
+                    //    _SOSSynopticRequirements.Times.Add(newitem);
+                    //}
+
+                    var Gen_SOSSynopticRequirements = await SOSHubServices.GenerateSynopticRequirements(SOSHubId, _SOSSynopticRequirements);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (Gen_SOSSynopticRequirements != 0)
+                    {
+                        Snackbar.Add($"{Localizer["_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Info);
+                        NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{Gen_SOSSynopticRequirements}");
+                        _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["Fail_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
+            }
+
+
+        }
+
+        #endregion
+
         List<SOSAnalysis> AvailableAnalyses = new();
         List<SOSSequence> AvailableSequences = new();
 
@@ -1385,6 +1580,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             else if (typeof(T) == typeof(PAT))
             {
                 NavigationManager.NavigateTo($"/PAT/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofOperatingRequirements))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{id}");
             }
             // Añadir más casos según sea necesario
         }

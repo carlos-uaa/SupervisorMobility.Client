@@ -351,5 +351,15 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
 
             return SOSHubReturned;
         }
+
+        public Task<int> GenerateSynopticRequirements(int SOS_DataPool_id, SOSSynopticTableofOperatingRequirements SynopticRequirements)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> GenerateSynopticControlPoints(int SOS_DataPool_id, SOSSynopticTableofControlPoints SynopticControlPoints)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

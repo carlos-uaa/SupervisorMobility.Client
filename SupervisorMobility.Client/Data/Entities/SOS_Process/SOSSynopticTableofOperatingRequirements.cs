@@ -18,7 +18,8 @@
 
         public DateTime? CreatedAt { get; set; }
 
-    
+
+        public ICollection<SOSSynopticRequirementsOperationSequence>? SOSSynopticRequirementsOperationSequence { get; set; }
 
         public ICollection<SOSSynopticRequirementsLogbook>? SynopticRequirementsLogbooks { get; set; } = new List<SOSSynopticRequirementsLogbook>();
 
