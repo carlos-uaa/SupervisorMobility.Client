@@ -20,7 +20,8 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 
         public DateTime? CreatedAt { get; set; }
 
-    
+
+        public ICollection<SOSSynopticRequirementsOperationSequence>? SOSSynopticRequirementsOperationSequence { get; set; }
 
         public ICollection<SOSSynopticPointsLogbook>? SynopticPointsLogbooks { get; set; } = new List<SOSSynopticPointsLogbook>();
 

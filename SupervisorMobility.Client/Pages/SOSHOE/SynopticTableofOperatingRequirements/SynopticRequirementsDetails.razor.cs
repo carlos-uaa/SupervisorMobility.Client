@@ -26,6 +26,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
         //SynopticRequirements
         SOSSynopticTableofOperatingRequirements _sosSynopticRequeriments { get; set; } = new();
+        SOSHub _soshub { get; set; } = new();
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
