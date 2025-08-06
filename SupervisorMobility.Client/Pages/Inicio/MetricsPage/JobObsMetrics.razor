@@ -1,0 +1,187 @@
+﻿@page "/reports/jobobservation"
+@using SupervisorMobility.Client.Data.Entities.ChartData
+@using SupervisorMobility.Client.Data.Entities.PaginationEntities
+
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+@inject IMetricsService MetricService
+@inject IJobObservationService JobObservationService
+@inject IJSRuntime JS
+
+
+<PageTitle>Supervisor Mobility | Reports</PageTitle>
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudGrid>
+        <SupervisorMobility.Client.Pages.Inicio.MetricsPage.Components.JobFiltersForm filters="@filters" filtersChanged="applyFilters" />
+    </MudGrid>
+    <MudExpansionPanels Elevation="0" Style="width:100%; display: flex; flex-direction: column;">
+        <MudExpansionPanel IsInitiallyExpanded Text=@Localizer["JobObsStatusReport"] Style="flex: 1 1 auto; width: 100%; max-width: 100%; padding: 0 !important; box-sizing: border-box;">
+            <MudGrid>
+                <MudItem md="12">
+                    <MudPaper Class="mt-3 pa-3 d-flex align-center gap-2 justify-center" Elevation="3" Outlined>
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" />
+                        <MudText Typo="Typo.h6" Color="Color.Info" Class="font-weight-bold">
+                            Total: <span class="ml-1">@total</span>
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+                <MudItem md="6" xs="12" sm="12">
+                    <div class="d-flex flex-column align-center justify-center">
+                        <MudPaper Class="pa-4 d-flex flex-column align-center justify-center" Style="width:100%">
+                            <canvas id="myPieChart" width="400" height="400"></canvas>
+                        </MudPaper>
+                    </div>
+                </MudItem>
+                <MudItem md="6" xs="12" sm="12">
+                    <div class="d-flex flex-column align-center justify-center">
+                        <MudPaper Class="pa-4 d-flex flex-column align-center justify-center" Style="width:100%">
+                            <canvas id="myStackedBarChart" width="500" height="400" />
+                        </MudPaper>
+                    </div>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+        <MudExpansionPanel Text=@Localizer["JobObsLateReprogReport"] Style="flex: 1 1 auto; width: 100%; max-width: 100%; padding: 0 !important; box-sizing: border-box;">
+            <MudTabs @bind-ActivePanelIndex=reportType>
+                <MudTabPanel Icon="@Icons.Material.Filled.WatchLater" Text=@Localizer["late"]>
+                    <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="true" Hover="true" ReadOnly="true" Class="styled-table table-striped" FixedHeader=true Height="55vh" 
+                              HorizontalScrollbar="true" @ref="JobsTable">
+                        <HeaderContent>
+                            <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="o_field" T="JobObservation">@Localizer["operator"]</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="sd_field" T="JobObservation">@Localizer["startDate"]</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ed_field" T="JobObservation">@Localizer["endDate"]</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="st_field" T="JobObservation">@Localizer["status"]</MudTableSortLabel></MudTh>
+                        </HeaderContent>
+
+                        <RowTemplate>
+                            <MudTd DataLabel=@Localizer["distribution"]>
+                                <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["operation"]>
+                                <MudText Align="Align.Center">@context.Operations?.FirstOrDefault()?.Description</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["operator"]>
+                                <MudText Align="Align.Center">@context.Operator?.Name</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["startDate"]>
+                                <MudText Align="Align.Center">@context.StartDate?.ToShortDateString()</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["endDate"]>
+                                <MudText Align="Align.Center">@context.EndDate?.ToShortDateString()</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["status"]>
+                                <MudText Align="Align.Center">
+                                    @switch (context.Status)
+                                    {
+                                        case 1:
+                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["planned"]</MudChip>
+                                            break;
+                                        case 2:
+                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                            break;
+                                        case 3:
+                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                            break;
+                                        case 4:
+                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Size="Size.Small" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                            break;
+                                        case 7:
+                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["programmed"]</MudChip>
+                                            break;
+                                    }
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+
+                        <NoRecordsContent>
+                            <MudText>No matching records found</MudText>
+                        </NoRecordsContent>
+
+                        <LoadingContent>
+                            <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                                <ItemTemplate>
+                                    <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                        <MudItem class="d-flex flex-column justify-center align-self-center">
+                                            <MudProgressCircular Style="height:70px;width:70px;" Indeterminate="true" />
+                                        </MudItem>
+                                        @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                        <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                                    </div>
+                                </ItemTemplate>
+                            </MudCarousel>
+                        </LoadingContent>
+
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[]{10,25,50}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudTabPanel>
+                <MudTabPanel Icon="@Icons.Material.Filled.WatchLater" Text=@Localizer["reprogrammed"]>
+                    <MudTable ServerData="@(new Func<TableState, Task<TableData<JobObservation>>>(LoadJobObs))" T="JobObservation" Dense="true" Hover="true" ReadOnly="true" Class="styled-table table-striped" FixedHeader=true Height="55vh"
+                              HorizontalScrollbar="true" @ref=JobsTable>
+                        <HeaderContent>
+                            <MudTh><MudTableSortLabel SortLabel="dt_field" T="JobObservation" InitialDirection="SortDirection.Ascending">@Localizer["distribution"]</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="op_field" T="JobObservation">@Localizer["operation"]</MudTableSortLabel></MudTh>
+                            <MudTh>@Localizer["reprogrammed"]</MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="ed_field" T="JobObservation">@Localizer["originalDate"]</MudTableSortLabel></MudTh>
+                            <MudTh>@Localizer["reasonDateChange"]</MudTh>
+                        </HeaderContent>
+
+                        <RowTemplate>
+                            <MudTd DataLabel=@Localizer["distribution"]>
+                                <MudText Align="Align.Center">@context.Distribution?.Description</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["operation"]>
+                                <MudText Align="Align.Center">@context.Operations?.FirstOrDefault()?.Description</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["reprogrammed"]>
+                                <MudText Align="Align.Center">@((context.PlannedStartDate??context.StartDate)?.ToShortDateString())</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["originalDate"]>
+                                <MudText Align="Align.Center">@context.OriginalPlannedDate?.ToShortDateString()</MudText>
+                            </MudTd>
+                            <MudTd DataLabel=@Localizer["reasonDateChange"]>
+                                <MudText Align="Align.Left">
+                                    @context.Justification;
+                                </MudText>
+                            </MudTd>
+                        </RowTemplate>
+
+                        <NoRecordsContent>
+                            <MudText>No matching records found</MudText>
+                        </NoRecordsContent>
+
+                        <LoadingContent>
+                            <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+                                <ItemTemplate>
+                                    <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                        <MudItem class="d-flex flex-column justify-center align-self-center">
+                                            <MudProgressCircular Style="height:70px;width:70px;" Indeterminate="true" />
+                                        </MudItem>
+                                        @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                                        <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+                                    </div>
+                                </ItemTemplate>
+                            </MudCarousel>
+                        </LoadingContent>
+
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[]{10,25,50}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudTabPanel>
+            </MudTabs>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+}
+
+

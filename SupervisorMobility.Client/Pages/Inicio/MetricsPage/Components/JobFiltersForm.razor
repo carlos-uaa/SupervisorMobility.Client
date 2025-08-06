@@ -1,0 +1,287 @@
+﻿@inject IPlantService PlantService
+@inject IAreaService AreaService
+@inject IDistributionService DistributionService
+@inject IOperationService OperationService
+
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+<MudItem md="12" lg="12">
+    <MudPaper Class="mt-3 pa-3 d-flex align-center gap-2 justify-center" Elevation="3" Outlined>
+    <MudGrid Justify="Justify.Center">
+        @if(ShowPlantsSelect){
+        <MudItem xs="6" sm="4" md="3" lg="3">
+            <MudSelect T="int?" Label=@Localizer["plant"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@filters.plantId" For="@(() => filters.plantId)" SelectedValuesChanged="(args)=>UpdatePlant(args.First())" Style="width: 15vw;">
+                <MudSelectItem T="int?" Value="null">@Localizer["allPlants"]</MudSelectItem>
+                @foreach (var type in Plants)
+                {
+                    <MudSelectItem T="int?" Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        }
+        @if(ShowAreasSelect){
+            <MudItem xs="6" sm="4" md="3" lg="3">
+            @if (filters.plantId != null)
+            {
+                @*Mud select of Areas for Admin*@
+                <MudSelect T="int?" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@filters.areaId" For="@(() => filters.areaId)" SelectedValuesChanged="(args)=>UpdateArea(args.First())" Style="width: 15vw;">
+                    <MudSelectItem T="int?" Value="null">@Localizer["allAreas"]</MudSelectItem>
+                    @foreach (var type in Areas)
+                    {
+                            <MudSelectItem T="int?" Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else
+            {
+                @*Mud select for SSV *@
+                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" Style="width: 15vw;">
+                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                </MudSelect>
+            }
+        </MudItem>
+        }
+        @if(ShowDistributionsSelect){
+            <MudItem xs="6" sm="4" md="3" lg="3">
+            @if (filters.areaId != null)
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
+                    <MudSelect T="int?" Style="display: flex; align-items: center; justify-content: space-evenly;" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@filters.distributionId" For="@(() => filters.distributionId)" SelectedValuesChanged="(args)=>UpdateDistribution(args.First())">
+                        <MudSelectItem T="int?" Value="null"> @Localizer["allDistributions"]</MudSelectItem>
+                        @foreach (var type in Distributions)
+                        {
+                                <MudSelectItem T="int?" Value="type.DistributionId" Style="display: flex; align-items: center; justify-content: space-evenly;">
+                                @($"{type.Description}   ")
+                                @switch (type.CriticalType)
+                                {
+                                    case 1:
+                                        <img src="Images/A.png" Height="25" Width="25" />
+                                        break;
+                                    case 2:
+                                        <img src="Images/B.png" Height="25" Width="25" />
+                                        break;
+                                    case 3:
+                                        <img src="Images/C.png" Height="25" Width="25" />
+                                        break;
+                                }
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudStack>
+            }
+            else
+            {
+                <MudSelect T="int" Label=@Localizer["distribution"] Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
+                </MudSelect>
+            }
+        </MudItem>
+        }
+        @if(ShowOperationsSelect){
+            <MudItem xs="6" sm="4" md="3" lg="3">
+            @if(filters.distributionId != null)
+            {
+                <MudSelect T="int?" Label=@Localizer["operation"] Variant="Variant.Text" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@filters.operationId" SelectedValuesChanged="(args)=>UpdateOperation(args.First())">
+                    <MudSelectItem T="int?" Value="null" >@Localizer["allOperations"]</MudSelectItem>
+                    @foreach (var type in Operations)
+                    {
+
+                            <MudSelectItem T="int?" Value="type.OperationId">
+                            @($"{type.Description}")
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else
+            {
+                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" Disabled>
+                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectADistribution"]</MudSelectItem>
+                    </MudSelect>
+            }
+        </MudItem>
+        }
+        @if (ShowDatesSelect)
+        {
+            <MudItem md="12" lg="12">
+                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Position="Position.Center" @bind-ActivePanelIndex="ActiveTabIndex">
+                <MudTabPanel Text="@Localizer["monthly"]">
+                    <MudDatePicker OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnMonthChangedAsync Date="_yearMonth" AutoClose="true"/>
+                </MudTabPanel>
+                <MudTabPanel Text="@Localizer["Yearly"]">
+                    <MudDatePicker 
+                        OpenTo="OpenTo.Year" 
+                        FixDay="1" FixMonth="1" DateFormat="yyyy"
+                        PickerVariant="PickerVariant.Dialog" 
+                        Color="Color.Info" AdornmentColor="Color.Info" 
+                        DateChanged=@OnYearChangedAsync Date="_year" AutoClose="true" />
+                </MudTabPanel>
+                <MudTabPanel Text="@Localizer["customDate"]">
+                    <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="OnCustomChangedAsync">
+
+                    </MudDateRangePicker>
+                </MudTabPanel>
+            </MudTabs>
+        </MudItem>
+        }
+    </MudGrid>
+    </MudPaper>
+</MudItem>
+
+@code {
+    [Parameter]
+    public bool ShowPlantsSelect { get; set; } = true;
+    [Parameter]
+    public bool ShowAreasSelect { get; set; } = true;
+    [Parameter]
+    public bool ShowDistributionsSelect { get; set; } = true;
+    [Parameter]
+    public bool ShowOperationsSelect { get; set; } = true;
+    [Parameter]
+    public bool ShowDatesSelect { get; set; } = true;
+
+    [Parameter]
+    public MetricsFiltersDto filters { get; set; }
+    [Parameter]
+    public EventCallback<MetricsFiltersDto> filtersChanged { get; set; }
+
+    List<Plant> Plants = new();
+    List<Area> Areas = new();
+    List<Distribution> Distributions = new();
+    List<Operation> Operations = new();
+
+    private DateRange _dateRange { get; set; }
+    DateTime? _yearMonth = DateTime.Today;
+    DateTime? _year;
+    private string month;
+    private string year;
+
+    private int _activeTabIndex;
+
+    private int ActiveTabIndex
+    {
+        get => _activeTabIndex;
+        set
+        {
+            if (_activeTabIndex != value)
+            {
+                _activeTabIndex = value;
+                OnTabChanged();
+            }
+        }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        Plants = await PlantService.GetPlants();
+    }
+
+    private async Task UpdatePlant(int? e)
+    {
+        filters.plantId = e;
+        filters.areaId = filters.distributionId = filters.operationId = null;
+        Areas = await AreaService.GetAreas(filters.plantId.Value);
+        await filtersChanged.InvokeAsync(filters);
+    }
+    private async Task UpdateArea(int? e)
+    {
+        filters.areaId = e;
+        filters.distributionId = filters.operationId = null;
+        Distributions = await DistributionService.GetDistributions(filters.plantId.Value, filters.areaId.Value);
+        await filtersChanged.InvokeAsync(filters);
+    }
+    private async Task UpdateDistribution(int? e)
+    {
+        filters.distributionId = e;
+        filters.operationId = null;
+        Operations = await OperationService.GetOperations(filters.plantId.Value, filters.areaId.Value, filters.distributionId.Value);
+        await filtersChanged.InvokeAsync(filters);
+    }
+    private async Task UpdateOperation(int? e)
+    {
+        filters.operationId = e;
+        await filtersChanged.InvokeAsync(filters);
+    }
+
+    private async Task OnTabChanged()
+    {
+        switch (_activeTabIndex)
+        {
+            case 0:
+                _year = null;
+                _yearMonth = DateTime.Today;
+                _dateRange = new();
+                await OnChangeToMonth();
+                break;
+            case 1:
+                _year = DateTime.Today;
+                _yearMonth = null;
+                _dateRange = new();
+                await OnChangeToYear();
+                break;
+            case 2:
+                _year = null;
+                _yearMonth = null;
+                _dateRange = new();
+                break;
+        }
+    }
+
+    private async Task OnChangeToMonth()
+    {
+        filters.inferiorDate = new DateTime(_yearMonth.Value.Year, _yearMonth.Value.Month, 1);
+        filters.superiorDate = new DateTime(_yearMonth.Value.Year, _yearMonth.Value.Month, 1).AddMonths(1).AddDays(-1);
+
+        await filtersChanged.InvokeAsync(filters);
+    }
+
+    private async Task OnChangeToYear()
+    {
+        filters.inferiorDate = new DateTime(_year.Value.Year, 1, 1);
+        filters.superiorDate = new DateTime(_year.Value.Year, 12, 31);
+
+        await filtersChanged.InvokeAsync(filters);
+    }
+
+    private async Task OnYearChangedAsync(DateTime? year)
+    {
+        if (year == _year)
+            return;
+        if(year == null)
+        {
+            year = DateTime.Today;
+        }
+
+        _year = year;
+        int yearindex = year.Value.Year;
+
+        filters.inferiorDate = new DateTime(yearindex, 1, 1);
+        filters.superiorDate = new DateTime(yearindex, 12, 31);
+
+        await filtersChanged.InvokeAsync(filters);
+    }
+
+    private async Task OnMonthChangedAsync(DateTime? value)
+    {
+        if (_yearMonth == value)
+            return;
+        _yearMonth = value;
+        month = $"{_yearMonth?.ToString("MMMM")}";
+        year = $"{_yearMonth?.ToString("yyyy")}";
+        int monthIndex = DateTime.ParseExact(month, "MMMM", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Month;
+        int yearIndex = DateTime.ParseExact(year, "yyyy", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat).Year;
+        filters.inferiorDate = new DateTime(yearIndex, monthIndex, 1);
+        filters.superiorDate = new DateTime(yearIndex, monthIndex, 1).AddMonths(1).AddDays(-1);
+
+        await filtersChanged.InvokeAsync(filters);
+    }
+    private async Task OnCustomChangedAsync(DateRange value)
+    {
+        if (_dateRange == value)
+            return;
+        _dateRange = value;
+        filters.inferiorDate = value.Start;
+        filters.superiorDate = value.End;
+        await filtersChanged.InvokeAsync(filters);
+    }
+}

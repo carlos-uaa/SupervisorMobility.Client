@@ -1,0 +1,225 @@
+﻿@page "/reports/lup"
+@using SupervisorMobility.Client.Data.Entities.ChartData
+@using SupervisorMobility.Client.Data.Helpers
+
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+@inject IMetricsService MetricService
+@inject IJSRuntime JS
+
+<PageTitle>Supervisor Mobility | Reports</PageTitle>
+
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudGrid Justify="Justify.Center" >
+        <MudItem md="6" xs="12" sm="12">
+            <MudTabs ActivePanelIndexChanged="(arg)=>UpdateFilterForm(arg)">
+                <MudTabPanel Text="@Localizer1["ACPlants"]"/>
+                <MudTabPanel Text="@Localizer1["ACAreas"]"/>
+                <MudTabPanel Text="@Localizer1["ACDistributions"]"/>
+            </MudTabs>
+
+            <SupervisorMobility.Client.Pages.Inicio.MetricsPage.Components.JobFiltersForm filters="@filters" filtersChanged="applyTotalFilters" 
+                ShowOperationsSelect ="@false" ShowDatesSelect="@true"
+                ShowAreasSelect="@areaFlag" ShowPlantsSelect="@plantFlag" ShowDistributionsSelect="@false"
+            />
+            <div class="d-flex flex-column align-center justify-center " style="margin-top:@(plantFlag?"0px":"90px");">
+                <MudPaper Class="pa-4 d-flex flex-column align-center justify-center" Style="width:100%">
+                    <canvas id="myPieChart" width="400" height="400"></canvas>
+                </MudPaper>
+            </div>
+
+        </MudItem>
+        <MudItem md="6" xs="12" sm="12">
+            <MudText Align="Align.Center" Class="mud-tab">@Localizer["byProgressLUP"]</MudText>
+            <SupervisorMobility.Client.Pages.Inicio.MetricsPage.Components.JobFiltersForm filters="@Ofilters" filtersChanged="applyOtherFilters"
+            />
+            <div class="d-flex flex-column align-center justify-center">
+                <MudPaper Class="pa-4 d-flex flex-column align-center justify-center" Style="width:100%">
+                    <canvas id="myStackedBarChart" width="500" height="400" />
+                </MudPaper>
+            </div>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    bool isLoading;
+
+    private List<BreadcrumbItem> _links;
+    private IList<string> _sourceMsgLoading = new List<string>();
+
+    [Inject]
+    private IBreadcrumbService BreadcrumbService { get; set; }
+
+    private MetricsFiltersDto filters = new MetricsFiltersDto
+    {
+        today = DateTime.Today.Date,
+        inferiorDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+        superiorDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(1).AddDays(-1)
+    };
+    private MetricsFiltersDto Ofilters = new MetricsFiltersDto
+    {
+        today = DateTime.Today.Date,
+        inferiorDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+        superiorDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(1).AddDays(-1)
+    };
+
+    bool areaFlag = false;
+    bool plantFlag = false;
+
+    int totalAll;
+    int totalOther;
+
+    private readonly string[] LabelColors = { "#B0B0B0", "#FFA500", "#FFD700", "#4CAF50", "#1E90FF" };
+
+    protected async override Task OnInitializedAsync()
+    {
+        _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading2"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading3"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading4"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading5"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading6"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading7"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading8"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading9"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
+        _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
+
+        _links = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem(text: Localizer["home"], href: "/"),
+            new BreadcrumbItem(text: Localizer["Reports"], href: "/reports"),
+            new BreadcrumbItem(text: Localizer["jobObservation"], href: "/reports/jobobservation", disabled: true)
+        };
+
+        BreadcrumbService.UpdateBreadcrumbs(_links);
+
+        totalOther = totalAll = await MetricService.GetTotalLUPs(filters);
+        await RecountProgressChart();
+        await RecountLUPChart();
+
+        isLoading = false;
+
+        StateHasChanged();
+    }
+
+    private async Task RecountLUPChart()
+    {
+        totalAll = await MetricService.GetTotalLUPs(filters);
+        var rawData = await MetricService.GetLUPData(filters);
+
+        List<string> tempLabels = new List<string>();
+        List<int> tempValues = new List<int>();
+
+        foreach (var item in rawData)
+        {
+            tempLabels.Add(Localizer[item.Key]);
+            tempValues.Add(item.Value);
+        }
+
+        await RenderGeneralChart(tempValues, tempLabels);
+    }
+
+    private async Task RecountProgressChart()
+    {
+
+        var rawData = await MetricService.GetLUPProgressData(Ofilters);
+
+        List<string> tempLabels = new List<string>();
+
+        int i = 0;
+        var datasetsT = new StackedBarChartData[rawData.Count];
+        foreach (var item in rawData)
+        {
+            var temparray = new int[rawData.Count];
+
+            tempLabels.Add(Localizer[item.Key]);
+            temparray[i] = item.Value;
+
+            datasetsT[i] = new StackedBarChartData
+                {
+                    label = Localizer[item.Key],
+                    data = temparray,
+                    backgroundColor = LabelColors[i],
+                    stack = "default"
+                };
+
+            i++;
+        }
+
+        await RenderProgressChart(datasetsT, tempLabels);
+    }
+
+    private async Task RenderGeneralChart(List<int> data, List<string> labels)
+    {
+        var colors = ColorGenerator.GeneratePaletteFromBase("#4A90E2", labels.Count).ToArray();
+        await JS.InvokeVoidAsync("renderPieChart", "myPieChart", new
+        {
+            labels = labels,
+            datasets = new[]
+                {
+                new {
+                    data = data,
+                    backgroundColor = colors
+                }
+            },
+            total = totalAll // ?? precomputed total
+        });
+    }
+
+    private async Task RenderProgressChart(StackedBarChartData[] data, List<string> labels)
+    {
+        await JS.InvokeVoidAsync("renderStackedBarChart", "myStackedBarChart", new
+        {
+            labels = labels,
+            datasets = data,
+            total = totalOther // ?? precomputed total
+        });
+    }
+
+    async Task UpdateFilterForm(int fields)
+    {
+        var tempPlant = filters.plantId;
+        var tempArea = filters.areaId;
+        filters.plantId = filters.areaId = null;
+        plantFlag = areaFlag = false;
+        switch (fields)
+        {
+            case 2:
+                areaFlag = true;
+                goto case 1;
+            case 1:
+                filters.areaId = null;
+                plantFlag = true;
+                break;
+            case 0:
+                filters.areaId = null;
+                filters.plantId = null;
+                break;
+        }
+
+        await RecountLUPChart();
+
+        StateHasChanged();
+    }
+
+    async Task applyTotalFilters(MetricsFiltersDto newFilters)
+    {
+        filters = newFilters;
+        await RecountLUPChart();
+        StateHasChanged();
+    }
+    async Task applyOtherFilters(MetricsFiltersDto newFilters)
+    {
+        Ofilters = newFilters;
+        await RecountProgressChart();
+        StateHasChanged();
+    }
+}
