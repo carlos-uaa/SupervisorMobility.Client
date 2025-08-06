@@ -1302,6 +1302,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 }
                 else
                 {
+                    _SOSSynopticRequirements.SOSHubId = SOSHubId;
+                    
                     _SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
                     _SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
                     _SOSSynopticRequirements.CreatorId = OwnerSynopticRequirementsId;
