@@ -352,14 +352,36 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
             return SOSHubReturned;
         }
 
-        public Task<int> GenerateSynopticRequirements(int SOS_DataPool_id, SOSSynopticTableofOperatingRequirements SynopticRequirements)
+        public async Task<int> GenerateSynopticRequirements(int SOS_DataPool_id, SOSSynopticTableofOperatingRequirements SynopticRequirements)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsJsonAsync<SOSSynopticTableofOperatingRequirements>($"SOS/SynopticTableofOperatingRequirements?SOSHubCollection_Id={SOS_DataPool_id}", SynopticRequirements);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var SynopticRequirementsCreated = JsonSerializer.Deserialize<SOSSynopticTableofOperatingRequirements>(content, _options);
+
+                return SynopticRequirementsCreated.SOSSynopticTableofOperatingRequirementsId;
+            }
+
+            return 0;
         }
 
-        public Task<int> GenerateSynopticControlPoints(int SOS_DataPool_id, SOSSynopticTableofControlPoints SynopticControlPoints)
+        public  async Task<int> GenerateSynopticControlPoints(int SOS_DataPool_id, SOSSynopticTableofControlPoints SynopticControlPoints)
         {
-            throw new NotImplementedException();
+            var response = await _http.PostAsJsonAsync<SOSSynopticTableofControlPoints>($"SOS/SynopticTableofControlPoints?SOSHubCollection_Id={SOS_DataPool_id}", SynopticControlPoints);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var SynoptiControlPoints = JsonSerializer.Deserialize<SOSSynopticTableofControlPoints>(content, _options);
+
+                return SynoptiControlPoints.SOSSynopticTableofControlPointsId;
+            }
+
+            return 0;
         }
     }
 }

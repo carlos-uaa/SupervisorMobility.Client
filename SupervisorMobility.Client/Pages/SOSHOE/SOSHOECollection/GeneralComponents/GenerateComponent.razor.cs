@@ -1295,17 +1295,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 {
                     bool? result = await DialogService.ShowMessageBox(
                       "Warning",
-                      ApproverSynopticRequirementsId == 0 ? "Es necesario el aproador" : "Es necesario seleccionar el editor!",
+                      ApproverSynopticRequirementsId == 0 ? "Es necesario el aprovador" : "Es necesario seleccionar el editor!",
                       yesText: "Ok!");
                     var state = result == null ? "Canceled" : "Deleted!";
                     StateHasChanged();
                 }
                 else
                 {
-                    //reviewer = SV = Editor  //Approver = SSV = owner 
-
-                    //_SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
-                    //_SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                    _SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                    _SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                    _SOSSynopticRequirements.CreatorId = OwnerSynopticRequirementsId;
 
                     logSynopticRequirements.NoRevision = 0;
                     logSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
@@ -1326,16 +1325,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         _SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
                     }
 
-                    //foreach (Section section in _sosHub.Sections)
-                    //{
-                    //    SOSTime newitem = new SOSTime();
-
-                    //    newitem.SectionId = section.SectionId;
-                    //    newitem.IsActive = true;
-                    //    newitem.Time = "";
-
-                    //    _SOSSynopticRequirements.Times.Add(newitem);
-                    //}
+                  
 
                     var Gen_SOSSynopticRequirements = await SOSHubServices.GenerateSynopticRequirements(SOSHubId, _SOSSynopticRequirements);
 
