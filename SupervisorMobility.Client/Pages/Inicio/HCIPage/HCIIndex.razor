@@ -99,10 +99,13 @@ else
                     </MudTooltip>
                 <MudSpacer />
 
-                <MudButton @onclick="(() => OpenCreateHci())">
-                    <MudText>@Localizer["create"] @Localizer["hci"]</MudText>
-                    <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
-                </MudButton>
+                @if (TypesThatCanEdit.Contains(user.UserType))
+                {
+                    <MudButton @onclick="(() => OpenCreateHci())">
+                        <MudText>@Localizer["create"] @Localizer["hci"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                }
             </ToolBarContent>
             <HeaderContent>
                 @if (user.UserType == 1)
@@ -226,9 +229,12 @@ else
     else
     {
         <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">@Localizer["thereAreNoHCIsCreated"]</MudText>
-        <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
-            <MudButton Color="Color.Info" @onclick="(() => OpenCreateHci())">@Localizer["create"] @Localizer["hci"]</MudButton>
-        </MudText>
+        @if (TypesThatCanEdit.Contains(user.UserType))
+        {
+            <MudText Align="Align.Center" Typo="Typo.h6" Class="mt-4">
+                <MudButton Color="Color.Info" @onclick="(() => OpenCreateHci())">@Localizer["create"] @Localizer["hci"]</MudButton>
+            </MudText>
+        }
     }
 }
 
@@ -338,6 +344,8 @@ else
     private User _SelectUser;
     public bool ShowCreateHCI = false;
     private DialogOptions dialogSVOptions = new() { CloseOnEscapeKey = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, CloseButton = true };
+
+    public List<int> TypesThatCanEdit = new List<int> { 1, 8 };
 
     protected async override Task OnInitializedAsync()
     {

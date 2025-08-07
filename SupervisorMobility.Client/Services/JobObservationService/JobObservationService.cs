@@ -224,5 +224,23 @@ namespace SupervisorMobility.Client.Services.JobObservationService
             return _mapper.Map<JobObservation>(newJobObservation);
         }
 
+
+        public async Task<(int Total, List<JobObservation> JobObservations, JOCountPaginationDto Count)> GetLateJobObservationsByFilters(DateTime? today, 
+            DateTime? startDate, DateTime? endDate,
+            int? plantId, int? areaId, int? distributionId, int? operationId,
+            string? searchString, int page, int entries, int? sortO, string? sortL)
+        {
+            var response = await _http.GetFromJsonAsync<JOPaginationDto>($"jobobservations/lateJobs?today={today}&startDate={startDate}&endDate={endDate}&plantId={plantId}&areaId={areaId}&distributionId={distributionId}&operationId={operationId}&searchString={searchString}&page={page}&entries={entries}&sortO={sortO}&sortL={sortL}");
+            return (response.Total, _mapper.Map<List<JobObservation>>(response.JobObservations), response.CountPagination);
+        }
+
+        public async Task<(int Total, List<JobObservation> JobObservations, JOCountPaginationDto Count)> GetReprogrammedJobObservationsByFilters(
+            DateTime? startDate, DateTime? endDate,
+            int? plantId, int? areaId, int? distributionId, int? operationId,
+            string? searchString, int page, int entries, int? sortO, string? sortL)
+        {
+            var response = await _http.GetFromJsonAsync<JOPaginationDto>($"jobobservations/reprogrammedJobs?startDate={startDate}&endDate={endDate}&plantId={plantId}&areaId={areaId}&distributionId={distributionId}&operationId={operationId}&searchString={searchString}&page={page}&entries={entries}&sortO={sortO}&sortL={sortL}");
+            return (response.Total, _mapper.Map<List<JobObservation>>(response.JobObservations), response.CountPagination);
+        }
     }
 }

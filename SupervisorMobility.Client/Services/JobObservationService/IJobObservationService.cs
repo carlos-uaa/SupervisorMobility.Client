@@ -37,5 +37,14 @@ namespace SupervisorMobility.Client.Services.JobObservationService
         // Delete job observation
         Task DeleteJobObservation(int jobObservationId);
         Task<JobObservation> CreateOperatorSignature(MultipartFormDataContent checklistAnswer);
+
+        Task<(int Total, List<JobObservation> JobObservations, JOCountPaginationDto Count)> GetLateJobObservationsByFilters(DateTime? today,
+            DateTime? startDate, DateTime? endDate,
+            int? plantId, int? areaId, int? distributionId, int? operationId,
+            string? searchString, int page, int entries, int? sortO, string? sortL);
+        Task<(int Total, List<JobObservation> JobObservations, JOCountPaginationDto Count)> GetReprogrammedJobObservationsByFilters( 
+            DateTime? startDate, DateTime? endDate,
+            int? plantId, int? areaId, int? distributionId, int? operationId,
+            string? searchString, int page, int entries, int? sortO, string? sortL);
     }
 }

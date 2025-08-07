@@ -63,6 +63,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         private bool IsManager = false;
         private bool IsLineSupport = false;
         private bool IsHeadCount = false;
+        private bool IsRTC = false;
 
         //Var On/Off Button Add
         private bool ActiveAddArea = true;
@@ -137,6 +138,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             IsManager = (_user.UserType == 5);
             IsLineSupport = (_user.UserType == 6);
             IsHeadCount = (_user.UserType == 7);
+            IsRTC = (_user.UserType == 8);
 
             selectedSeniorSupervisorOfList = new User();
             selectedSupervisorOfList = new User();
@@ -451,8 +453,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             IsManager = userType == 5 && !IsManager;
             IsLineSupport = userType == 6 && !IsLineSupport;
             IsHeadCount = userType == 7 && !IsHeadCount;
+            IsRTC = userType == 8 && !IsRTC;
 
-            _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport && !IsHeadCount ? 0 : userType;
+            _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport && !IsHeadCount && !IsRTC ? 0 : userType;
 
 
             ShowAreasInvokeByPlantSelector();
