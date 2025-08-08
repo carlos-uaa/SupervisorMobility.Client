@@ -30,6 +30,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         public SOSCombination _sosCombination { get; set; } = new SOSCombination();
         public SOSSynopticTableofOperatingRequirements _SOSSynopticRequirements { get; set; } = new SOSSynopticTableofOperatingRequirements();
 
+        public SOSSynopticTableofControlPoints _sosControlPoints { get; set; } = new SOSSynopticTableofControlPoints();
+
         public int ApproverAnalysisId { get; set; }
         public int ReviewerAnalysisId { get; set; }
         public int cycleId { get; set; }
@@ -76,6 +78,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         int ApproverSynopticRequirementsId = 0;
         int ReviewerSynopticRequirementsId = 0;
 
+
+        int OwnerControlPointsId = 0;
+        int ApproverControlPointsId = 0;
+        int ReviewerControlPointsId = 0;
 
         public int supervisorOwnerId { get; set; } = 0;
         public int supervisorEditorId { get; set; } = 0;
@@ -422,6 +428,48 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
 
                         _SOSSynopticRequirements.CreatedAt = DateTime.Now;
+
+                        loading += 10;
+                    }
+                    break;
+                case 7:
+                    if (_sosHub.SOSSynopticControlPoints.Count > 0)
+                    {
+                        _sosControlPoints = _sosHub.SOSSynopticControlPoints.FirstOrDefault();
+                        if (_sosControlPoints.SOSSynopticTableofControlPointsId != 0 && _sosControlPoints.SynopticPointsLogbooks.Count > 0)
+                        {
+                            ApproverDistributionId = (int)(_sosControlPoints.SynopticPointsLogbooks.Last().Status != 2 ? _sosControlPoints.SynopticPointsLogbooks.Last().ApproverId : 0);
+                        }
+
+                        if (_sosControlPoints.SynopticPointsLogbooks.Count == 0)
+                        {
+                            _sosControlPoints.SynopticPointsLogbooks.Add(new SOSSynopticPointsLogbook());
+                        }
+
+                        loading += 3;
+
+
+
+                        loading += 2;
+
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+                        //lo redirigimos a la vista dado que ya hay datos
+                        selectedIndexPageGenerate = 66;
+
+                        loading += 5;
+                    }
+                    else
+                    {
+                        //preparamos los datos
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+
+                        _sosControlPoints.CreatedAt = DateTime.Now;
 
                         loading += 10;
                     }
@@ -1354,6 +1402,142 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         #endregion
 
+
+        #region GenerateSynopticControlPoints
+
+        SOSSynopticPointsLogbook logGenerateSynopticControlPoints { get; set; } = new SOSSynopticPointsLogbook();
+        public async void GenerateSynopticControlPoints()
+        {
+
+            if (_sosHub.SOSSynopticControlPoints.Count > 0)
+            {
+                //REVISION
+                if (ApproverControlPointsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                       ApproverControlPointsId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                    return;
+                }
+
+                var copySequences = _sosControlPoints.Sequences;
+                var copyAnalyses = _sosControlPoints.Analyses;
+
+                _sosControlPoints = _sosHub.SOSSynopticControlPoints.First();
+
+                if (_sosControlPoints.SynopticPointsLogbooks.First().SOSSynopticPointsLogbookId == 0)
+                {
+                    _sosControlPoints.SynopticPointsLogbooks.Clear();
+                }
+
+                logGenerateSynopticControlPoints.NoRevision = _sosControlPoints.SynopticPointsLogbooks?.Count();
+                logGenerateSynopticControlPoints.ApproverId = ApproverControlPointsId;
+                logGenerateSynopticControlPoints.Date = System.DateTime.Now;
+                logGenerateSynopticControlPoints.Status = 1;
+                logGenerateSynopticControlPoints.IsActive = true;
+                if (_sosControlPoints.SynopticPointsLogbooks == null)
+                {
+                    _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>();
+                }
+
+                _sosControlPoints.SynopticPointsLogbooks.Add(logGenerateSynopticControlPoints);
+
+
+
+                var Gen_SOSSynopticRequirements = await SOSHubServices.GenerateSynopticControlPoints(SOSHubId, _sosControlPoints);
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                if (Gen_SOSSynopticRequirements != 0)
+                {
+                    Snackbar.Add($"{Localizer["_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Info);
+                    NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{_sosControlPoints.SOSSynopticTableofControlPointsId}");
+                    _sosControlPoints = new SOSSynopticTableofControlPoints();
+                    //Pregutar si quiere ver el analisis generado
+                }
+                else
+                {
+                    Snackbar.Add($"{Localizer["Fail_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Error);
+                }
+
+                StateHasChanged();
+
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(_sosControlPoints.ProcessName) || OwnerControlPointsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                       OwnerControlPointsId == 0 ? "Es necesario el elaborador" : "Es necesario el nombre de processo!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else if (ApproverControlPointsId == 0 || ReviewerControlPointsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                      ApproverControlPointsId == 0 ? "Es necesario el aprovador" : "Es necesario seleccionar el editor!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    _sosControlPoints.SOSHubId = SOSHubId;
+                    _sosControlPoints.ReviewerId = ReviewerControlPointsId;
+                    _sosControlPoints.ApproverId = ApproverControlPointsId;
+                    _sosControlPoints.CreatorId = OwnerControlPointsId;
+
+                    logGenerateSynopticControlPoints.NoRevision = 0;
+                    logGenerateSynopticControlPoints.ApproverId = ApproverControlPointsId;
+                    logGenerateSynopticControlPoints.Date = System.DateTime.Now;
+                    logGenerateSynopticControlPoints.Status = 1;
+                    logGenerateSynopticControlPoints.IsActive = true;
+                    if (_sosControlPoints.SynopticPointsLogbooks == null)
+                    {
+                        _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>();
+                    }
+
+                    _sosControlPoints.SynopticPointsLogbooks.Add(logGenerateSynopticControlPoints);
+
+
+                    if (_sosControlPoints.SOSSynopticRequirementsOperationSequence == null)
+                    {
+                        _sosControlPoints.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
+                    }
+
+
+
+                    var Gen_sosControlPoints = await SOSHubServices.GenerateSynopticControlPoints(SOSHubId, _sosControlPoints);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (Gen_sosControlPoints != 0)
+                    {
+                        Snackbar.Add($"{Localizer["_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Info);
+                        NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{Gen_sosControlPoints}");
+                        _sosControlPoints = new SOSSynopticTableofControlPoints();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["Fail_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
+            }
+
+
+        }
+
+        #endregion
+
         List<SOSAnalysis> AvailableAnalyses = new();
         List<SOSSequence> AvailableSequences = new();
 
@@ -1577,7 +1761,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             {
                 NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{id}");
             }
-            // Añadir más casos según sea necesario
+            else if (typeof(T) == typeof(SOSSynopticTableofControlPoints))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{id}");
+            }
+
+            // Aï¿½adir mï¿½s casos segï¿½n sea necesario
         }
 
         public void ReturnToGenerateindex()
