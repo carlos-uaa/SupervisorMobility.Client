@@ -27,7 +27,24 @@ window.renderPieChart = (canvasId, chartData) => {
                     }
                 },
                 legend: {
-                    onClick: null
+                    onClick: null,
+                    labels: {
+                        generateLabels: function (chart) {
+                            const dataset = chart.data.datasets[0];
+                            const total = dataset.data.reduce((a, b) => a + b, 0);
+                            return chart.data.labels.map((label, i) => {
+                                const value = dataset.data[i];
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return {
+                                    text: `${label} (${value} - ${percentage}%)`,
+                                    fillStyle: dataset.backgroundColor[i],
+                                    strokeStyle: dataset.borderColor ? dataset.borderColor[i] : '#fff',
+                                    hidden: isNaN(value) || chart.getDatasetMeta(0).data[i].hidden,
+                                    index: i
+                                };
+                            });
+                        }
+                    }
                 },
                 datalabels: {
                     color: '#fff',
@@ -71,7 +88,21 @@ window.renderStackedBarChart = (canvasId, chartData) => {
             responsive: false,
             plugins: {
                 legend: {
-                    position: 'top'
+                    onClick: null,
+                    position: 'top',
+                    labels: {
+                        generateLabels: function (chart) {
+                            return chart.data.datasets.map((dataset, i) => {
+                                const total = dataset.data.reduce((sum, val) => sum + (Number(val) || 0), 0);
+                                return {
+                                    text: `${dataset.label} (${total})`,
+                                    fillStyle: dataset.backgroundColor,
+                                    hidden: !chart.isDatasetVisible(i),
+                                    datasetIndex: i
+                                };
+                            });
+                        }
+                    }
                 },
                 tooltip: {
                     mode: 'index',
@@ -90,6 +121,18 @@ window.renderStackedBarChart = (canvasId, chartData) => {
                             const label = context.dataset.label;
                             return label + ': ' + value;
                         }
+                    }
+                },
+                datalabels: {
+                    color: '#fff', // Text color
+                    anchor: 'center', // Where it attaches inside the bar
+                    align: 'center',  // Position inside the bar
+                    formatter: (value) => {
+                        // Only show labels if value > 0
+                        return value > 0 ? value : '';
+                    },
+                    font: {
+                        weight: 'bold'
                     }
                 }
             },
