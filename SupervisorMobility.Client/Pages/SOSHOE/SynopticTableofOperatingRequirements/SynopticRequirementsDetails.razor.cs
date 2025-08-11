@@ -27,6 +27,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         //SynopticRequirements
         SOSSynopticTableofOperatingRequirements _sosSynopticRequeriments { get; set; } = new();
         SOSHub _soshub { get; set; } = new();
+        Distribution _distribution { get; set; } = new();
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -62,8 +63,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             }
             else
             {
-
+                _sosSynopticRequeriments = await SynopticRequirementsService.GetSOSSynopticTableofOperatingRequirements((int)SynopticRequirementsId, true, true, true);
+                _soshub = await sosHubService.GetSOSHub( (int)_sosSynopticRequeriments.SOSHubId, true, true, includePeople: true, includeInformation: true, includeModel: true);
+                _distribution = await DistributionService.GetDistributionWithCollections((int)_soshub.PlantId, (int)_soshub.AreaId, (int)_soshub.DistributionId);
             }
+
+
             ShowLoading = false;
             StateHasChanged();
         }
@@ -99,7 +104,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         #region SynopticRequirements
         private void UpdateSynopticRequirements(int SynopticId)
         {
-            
+            NavigationManager.NavigateTo($"soshoe/SynopticRequirements/Update/{SynopticId}");
         }
 
 
@@ -131,7 +136,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         #region Hoe
         private void HoeDetails(int HoeId)
         {
-            NavigationManager.NavigateTo($"/soshoe/hoe/HoeDetails/{HoeId}");
+            NavigationManager.NavigateTo($"/soshoe/Hub/Details/{HoeId}");
         }
             #endregion
 

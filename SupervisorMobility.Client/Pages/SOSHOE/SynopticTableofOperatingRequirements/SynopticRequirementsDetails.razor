@@ -6,6 +6,10 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject ISynopticRequirementsService SynopticRequirementsService
+@inject IDistributionService DistributionService
+
+@inject ISOSHubService sosHubService
 
 <style>
     .synoptic-table {
@@ -30,8 +34,6 @@
             font-weight: bold;
         }
 
-
-    
 </style>
 
 
@@ -68,9 +70,9 @@ else
                         </MudItem>
                         <MudItem Class="d-flex">
                             @if ((user.UserType == 1 || user.UserType == 2)
-                           && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
-                           && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
-                           && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status == 1)
+                                                    && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status == 1)
                             {
                                 <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
                                     @Localizer["new"]
@@ -78,9 +80,9 @@ else
                             }
 
                             @if ((user.UserType == 1 || user.UserType == 2)
-                           && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
-                           && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
-                           && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status != 2)
+                                                    && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status != 2)
                             {
                                 <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
                                     @Localizer["review"]!
@@ -107,6 +109,9 @@ else
     </MudSimpleTable>
 
     <MudText Typo="Typo.h6"><b>Synoptic  Table of Operating Requirements</b></MudText>
+
+    
+
     <MudPaper Square="true" Elevation="3">
         <MudSimpleTable Class="synoptic-table">
 
@@ -115,7 +120,7 @@ else
                 <MudTd colspan="6"><b>DEPARTAMENTO</b></MudTd>
                 <MudTh colspan="4"><b>PLANTA</b></MudTh>
                 <MudTd colspan="4"><b>FECHA</b></MudTd>
-                <MudTd colspan="2" rowspan="7" ></MudTd>
+                <MudTd coslpan="2" rowspan="7"></MudTd>
                 @if (TryGetSynopticRequirementsLogbooksElementAtIndex(4, out var item))
                 {
                     <MudTh colspan="2">@item.Approver?.Name</MudTh>
@@ -147,7 +152,7 @@ else
                 <MudTd colspan="6" rowspan="2"> @_soshub?.Department?.Description</MudTd>
                 <MudTh colspan="4" rowspan="2"> @_soshub?.Plant?.Description</MudTh>
                 <MudTd colspan="4" rowspan="2"> @_sosSynopticRequeriments.CreatedAt </MudTd>
-               
+
                 @if (TryGetSynopticRequirementsLogbooksElementAtIndex(3, out var item))
                 {
                     <MudTh colspan="2">@item.Approver?.Name</MudTh>
@@ -206,7 +211,7 @@ else
                 <MudTd colspan="6"><b>REVISO</b></MudTd>
                 <MudTh colspan="6"><b>APROBO</b></MudTh>
                 <MudTd colspan="3"><b>HOJA</b></MudTd>
-               
+
                 @if (TryGetSynopticRequirementsLogbooksElementAtIndex(1, out var item))
                 {
                     <MudTh colspan="2">@item.Approver?.Name</MudTh>
@@ -294,23 +299,40 @@ else
                     <MudTh colspan="4"><b>POR MAQUINA </b></MudTh>
                 </MudTr>
 
-                @for(int i = 0;  i < 20; i++){
+                @{
+                    int rowDist = _distribution.Operations.Where(o => _soshub.AppliedModels.Any(m => m.Description == o.ProductName || m.Code == o.ProductName)).Count();
+                }
+
+                @foreach (var (ope, index) in _distribution.Operations
+                            .Where(o => _soshub.AppliedModels.Any(m => m.Description == o.ProductName || m.Code == o.ProductName))
+                            .Select((o, i) => (o, i)))
+                {
                     <MudTr>
-                        <MudTh colspan="1"></MudTh>
-                        <MudTh colspan="4"></MudTh>
-                        <MudTh colspan="1"></MudTh>
-                        <MudTh colspan="8"></MudTh>
-                        <MudTh colspan="4"></MudTh>
-                        <MudTh colspan="4"></MudTh>
-                        <MudTh colspan="3"></MudTh>
-                        <MudTh colspan="2"></MudTh>
-                        <MudTh colspan="3"></MudTh>
-                        <MudTh colspan="3"></MudTh>
+
+                        @if (index == 0)
+                        {
+                            <MudTd colspan="1" rowspan="@rowDist"></MudTd>
+                            <MudTh colspan="4" rowspan="@rowDist">@_soshub.Distribution.Description</MudTh>
+                        }
+                        <MudTd colspan="1">
+                            @ope.Description
+                        </MudTd>
+                    @if (index == 0)
+                        {
+                            <MudTd colspan="8" rowspan="@rowDist"></MudTd>
+                            <MudTd colspan="4" rowspan="@rowDist"></MudTd>
+                            <MudTd colspan="4" rowspan="@rowDist"></MudTd>
+                            <MudTd colspan="3" rowspan="@rowDist"></MudTd>
+                            <MudTd colspan="2" rowspan="@rowDist"></MudTd>
+                            <MudTd colspan="3" rowspan="@rowDist"></MudTd>
+                            <MudTd colspan="3" rowspan="@rowDist"></MudTd>
+                        }
                     </MudTr>
                 }
+
             </tbody>
         </MudSimpleTable>
-     
+
     </MudPaper>
     <br />
 }

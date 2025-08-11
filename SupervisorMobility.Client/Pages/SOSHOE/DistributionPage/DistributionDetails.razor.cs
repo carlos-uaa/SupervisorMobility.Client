@@ -220,15 +220,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 return 0;
             }
         }
-        //protected override void OnAfterRender(bool firstRender)
-        //{
-        //    IndexDistribution = 0;
-        //}
-
-        //protected override void OnParametersSet()
-        //{
-        //    IndexDistribution = 0;
-        //}
+        
 
 
         public static string ReasonFormat(string input)
