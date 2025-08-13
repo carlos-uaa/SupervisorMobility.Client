@@ -141,7 +141,7 @@ builder.Services.AddScoped<ISOSDistributionService, SOSDistributionService>();
 builder.Services.AddScoped<ISOSFlowService, SOSFlowService>();
 builder.Services.AddScoped<ISOSSequenceService, SOSSequenceService>();
 builder.Services.AddScoped<ISynopticRequirementsService, SynopticRequirementsService>();
-builder.Services.AddScoped<ISynopticControlPointsService, ISynopticControlPointsService>();
+builder.Services.AddScoped<ISynopticControlPointsService, SynopticControlPointsService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IToolService, ToolService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
