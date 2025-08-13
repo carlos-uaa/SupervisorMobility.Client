@@ -56,6 +56,7 @@ global using SupervisorMobility.Client.Services.SOS_Services.SOSDistributionServ
 global using SupervisorMobility.Client.Services.SOS_Services.SOSFlowServices;
 global using SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices;
 global using SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirementsService;
+global using SupervisorMobility.Client.Services.SOS_Services.SOSSynopticControlPointsService;
 global using SupervisorMobility.Client.Services.SOS_Services.MaterialServices;
 global using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 global using SupervisorMobility.Client.Services.SOS_Services.EquipmentServices;
@@ -140,6 +141,7 @@ builder.Services.AddScoped<ISOSDistributionService, SOSDistributionService>();
 builder.Services.AddScoped<ISOSFlowService, SOSFlowService>();
 builder.Services.AddScoped<ISOSSequenceService, SOSSequenceService>();
 builder.Services.AddScoped<ISynopticRequirementsService, SynopticRequirementsService>();
+builder.Services.AddScoped<ISynopticControlPointsService, ISynopticControlPointsService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IToolService, ToolService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
