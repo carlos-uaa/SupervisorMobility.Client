@@ -1,6 +1,8 @@
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using SupervisorMobility.Client.Services.SOS_Services.SOSHubService;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
 {
@@ -9,7 +11,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
     public partial class SynopticControlPoints
     {
         [Parameter]
-        public int? SynopticPoints { get; set; }
+        public int? SynopticControlPointsId { get; set; }
 
         // Breadcrumb links
         private List<BreadcrumbItem> _links;
@@ -26,6 +28,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
 
         //SynopticRequirements
         SOSSynopticTableofControlPoints _sosSynopticControlPoints { get; set; } = new();
+        SOSHub _soshub { get; set; } = new();
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -43,8 +46,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
             _links = new List<BreadcrumbItem>
             {
                 new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/soshoe"),
-                new BreadcrumbItem(text: Localizer["SynopticRequirements"], href: "/soshoe/SynopticRequirements"),
-                new BreadcrumbItem(text: Localizer["SynopticRequirementsDetails"], href: "/soshoe/SynopticRequirements", disabled:true)
+                new BreadcrumbItem(text: Localizer["SynopticControlPoints"], href: "/soshoe/SynopticControlPoints"),
+                new BreadcrumbItem(text: Localizer["SynopticControlPointsDetails"], href: "/soshoe/SynopticControlPoints", disabled:true)
             };
 
             BreadcrumbService.UpdateBreadcrumbs(_links);
@@ -61,7 +64,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
             }
             else
             {
-
+                _sosSynopticControlPoints = await SynopticControlPointsService.GetSOSSynopticTableofControlPoints((int)SynopticControlPointsId, true, true, true);
+                _soshub = await sosHubService.GetSOSHub((int)_sosSynopticControlPoints.SOSHubId, true, true, includePeople: true, includeInformation: true, includeModel: true);
+            
             }
             ShowLoading = false;
             StateHasChanged();

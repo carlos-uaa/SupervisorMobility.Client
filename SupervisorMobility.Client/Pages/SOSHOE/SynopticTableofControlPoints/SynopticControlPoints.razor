@@ -1,4 +1,4 @@
-﻿@page "/soshoe/SynopticControlPoints/Details/{SynopticPoints:int}"
+﻿@page "/soshoe/SynopticControlPoints/Details/{SynopticControlPointsId:int}"
 
 @inject IBreadcrumbService BreadcrumbService
 @inject IStringLocalizer<Resource> Localizer
@@ -6,6 +6,8 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject ISynopticControlPointsService SynopticControlPointsService
+@inject ISOSHubService sosHubService
 
 <style>
     .synoptic-table {
@@ -98,7 +100,7 @@ else
 
                         </MudItem>
                         <MudItem Class="d-flex">
-                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateSynopticRequirements((int)SynopticPoints))" OnTouch="(() => UpdateSynopticRequirements((int)SynopticPoints))">@Localizer["update"]</MudChip>
+                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateSynopticRequirements((int)SynopticControlPointsId))" OnTouch="(() => UpdateSynopticRequirements((int)SynopticControlPointsId))">@Localizer["update"]</MudChip>
                         </MudItem>
                     </MudItem>
                 </td>
@@ -106,13 +108,23 @@ else
         </tbody>
     </MudSimpleTable>
 
-    <MudText Typo="Typo.h6"><b>Synoptic  Table of Operating Requirements</b></MudText>
+    <MudText Typo="Typo.h6"><b>Synoptic Table Of Control Points</b></MudText>
     <MudPaper Square="true" Elevation="3">
         <MudSimpleTable Class="synoptic-table">
 
             <MudTr>
                 <MudTh colspan="9" rowspan="2"><b>PROCESO</b> @_sosSynopticControlPoints.ProcessName </MudTh>
-                <MudTd colspan="8" rowspan="2"><b>MODELOS</b></MudTd>
+                <MudTd colspan="8" rowspan="2"><b>MODELOS</b>
+                    @if (_soshub.AppliedModels?.Count > 0)
+                    {
+                        <MudItem Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
+                            @foreach (Product item in _soshub.AppliedModels)
+                            {
+                                <MudChip T="string" Icon="@Icons.Material.Filled.DirectionsCar" Color="Color.Secondary">@item.Description</MudChip>
+                            }
+                        </MudItem>
+                    }
+                </MudTd>
                 @if (TryGetSynopticPointsLogbooksElementAtIndex(2, out var item))
                 {
                     <MudTh colspan="2">@item.Approver?.Name</MudTh>
@@ -165,7 +177,7 @@ else
             </MudTr>
 
             <MudTr>
-                <MudTh colspan="9" rowspan="2"><b>MES</b> @_sosSynopticControlPoints.ProcessName </MudTh>
+                <MudTh colspan="9" rowspan="2"><b>MES</b> @_sosSynopticControlPoints.CreatedAt </MudTh>
                 <MudTd colspan="8" rowspan="2"><b>PLANTA</b></MudTd>
                 @if (TryGetSynopticPointsLogbooksElementAtIndex(0, out var item))
                 {
