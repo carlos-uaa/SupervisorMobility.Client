@@ -1,5 +1,7 @@
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using SupervisorMobility.Client.Pages.Inicio.HCIPage.Components;
+using SupervisorMobility.Client.Services.HCIService;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralComponents
 {
@@ -26,8 +28,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         public SOSAnalysis _sosAnalysis { get; set; } = new SOSAnalysis();
         public SOSDistribution _sosDistribution { get; set; } = new SOSDistribution();
         public SOSFlow _sosFlow { get; set; } = new SOSFlow();
-        SOSSequence _sosSequence { get; set; } = new SOSSequence();
+        public SOSSequence _sosSequence { get; set; } = new SOSSequence();
         public SOSCombination _sosCombination { get; set; } = new SOSCombination();
+        public HCI _hci { get; set; } = new HCI();
+        private List<User> _Users;
+        private User _SelectUser;
+
+
         public SOSSynopticTableofOperatingRequirements _SOSSynopticRequirements { get; set; } = new SOSSynopticTableofOperatingRequirements();
 
         public SOSSynopticTableofControlPoints _sosControlPoints { get; set; } = new SOSSynopticTableofControlPoints();
@@ -101,7 +108,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         protected async override Task OnInitializedAsync()
         {
-            if(_plants == null || !_plants.Any())
+            if (_plants == null || !_plants.Any())
             {
                 _plants = await PlantServices.GetPlants();
                 _plants = _plants.OrderBy(p => p.Description).ToList();
@@ -406,9 +413,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
                         loading += 3;
 
-                       
+
 
                         loading += 2;
+
+                        AvailableSoshubs = await SOSHubServices.GetAllSOSHub();
+                        AvailableSoshubs = AvailableSoshubs.Where(s => s.DistributionId == _sosHub.DistributionId).ToList();
+                        AvailableSoshubs.RemoveAll(s => s.SOSHubId == _sosHub.SOSHubId);
 
                         AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
                         Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
@@ -474,6 +485,31 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         loading += 10;
                     }
                     break;
+
+                case 9:
+                    if (_sosHub.HciId != null && _sosHub.HciId != 0)
+                    {
+                        _hci = await HCIsServices.GetHCI((int)_sosHub.HciId);
+
+                        loading += 3;
+
+
+
+                        loading += 2;
+
+
+
+                        loading += 5;
+                    }
+                    else
+                    {
+                        _Users = await HCIsServices.GetUsersWithoutHCI();
+
+
+                        loading += 10;
+                    }
+                    break;
+
             }
             loaded = true;
             StateHasChanged();
@@ -1338,8 +1374,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                       yesText: "Ok!");
                     var state = result == null ? "Canceled" : "Deleted!";
                     StateHasChanged();
-                } 
-                else if (ApproverSynopticRequirementsId == 0 || ReviewerSynopticRequirementsId == 0 )
+                }
+                else if (ApproverSynopticRequirementsId == 0 || ReviewerSynopticRequirementsId == 0)
                 {
                     bool? result = await DialogService.ShowMessageBox(
                       "Warning",
@@ -1351,7 +1387,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 else
                 {
                     _SOSSynopticRequirements.SOSHubId = SOSHubId;
-                    
+
                     _SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
                     _SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
                     _SOSSynopticRequirements.CreatorId = OwnerSynopticRequirementsId;
@@ -1375,7 +1411,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         _SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
                     }
 
-                  
+
 
                     var Gen_SOSSynopticRequirements = await SOSHubServices.GenerateSynopticRequirements(SOSHubId, _SOSSynopticRequirements);
 
@@ -1396,7 +1432,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                     StateHasChanged();
                 }
             }
-
 
         }
 
@@ -1538,6 +1573,32 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         #endregion
 
+        #region HCI
+
+        private async void GenerateHci()
+        {
+
+            _hci.User = await UsersService.GetUserAndCollection(_SelectUser.UserId);
+            _hci.UserId = _SelectUser.UserId;
+
+            _hci.SOSHubId = _sosHub.SOSHubId;
+
+
+            if (await HCIsServices.CreateHCI(_hci))
+            {
+                Snackbar.Add("Created succesfully", Severity.Success);
+                var UpdatedUser = await UsersService.GetUser(_SelectUser.UserId);
+                NavigationManager.NavigateTo($"/HCI/Details/{UpdatedUser.HciId}");
+            }
+            else
+            {
+                Snackbar.Add("Error", Severity.Error);
+            }
+        }
+
+        #endregion
+
+        List<SOSHub> AvailableSoshubs = new();
         List<SOSAnalysis> AvailableAnalyses = new();
         List<SOSSequence> AvailableSequences = new();
 
@@ -1548,6 +1609,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 (op.InternalControlNumber?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.ProcessName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.OperationName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false));
+
+        private string searchSosHub = "";
+        private IEnumerable<SOSHub> FilteredSosHubs =>
+            AvailableSoshubs.Where(op =>
+                string.IsNullOrEmpty(searchSosHub) ||
+                (op.Folio?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.ProcessSheet?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.OtherInformation?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false));
+
 
         private string searchSequence = "";
         private IEnumerable<SOSSequence> FilteredSequences =>
@@ -1765,6 +1835,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             {
                 NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{id}");
             }
+            else if (typeof(T) == typeof(HCI))
+            {
+                NavigationManager.NavigateTo($"/HCI/Details/{id}");
+            }
 
             // A�adir m�s casos seg�n sea necesario
         }
@@ -1773,5 +1847,47 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         {
             MudDialog.Close(DialogResult.Ok("Reopen"));
         }
+
+
+
+        private async Task<IEnumerable<User>> SearchSV(string value)
+        {
+
+            var reviewerIds = _sosHub.ReviewerEditors?.Select(r => r.UserId).ToHashSet() ?? new HashSet<int>();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                var orderedUsers = _Users
+                        .OrderByDescending(u => u.SuperiorId.HasValue && reviewerIds.Contains(u.SuperiorId.Value))
+                        .ToList();
+
+                return orderedUsers;
+            }
+
+            value = value.Trim().ToLowerInvariant();
+
+            await Task.Delay(150);
+
+            return _Users.OrderByDescending(u => u.SuperiorId.HasValue && reviewerIds.Contains(u.SuperiorId.Value)).Where(x =>
+                (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (x.Payroll.HasValue && x.Payroll.Value.ToString().Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(x.Management) && x.Management.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(x.Process) && x.Process.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (x.Plant != null && (
+                    (!string.IsNullOrEmpty(x.Plant.Description) && x.Plant.Description.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(x.Plant.Code) && x.Plant.Code.Contains(value, StringComparison.OrdinalIgnoreCase))
+                )) ||
+                (x.Area != null && (
+                    (!string.IsNullOrEmpty(x.Area.Description) && x.Area.Description.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(x.Area.Code) && x.Area.Code.Contains(value, StringComparison.OrdinalIgnoreCase))
+                )) ||
+                (x.Group != null && (
+                    (!string.IsNullOrEmpty(x.Group.Description) && x.Group.Description.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(x.Group.Code) && x.Group.Code.Contains(value, StringComparison.OrdinalIgnoreCase))
+                )) ||
+                x.UserId.ToString().Contains(value, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+
     }
 }

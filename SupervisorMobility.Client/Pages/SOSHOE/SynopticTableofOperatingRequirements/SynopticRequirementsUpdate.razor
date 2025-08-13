@@ -6,12 +6,14 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+
+@inject ISOSHubService SOSHubServices
 @inject ISynopticRequirementsService SynopticRequirementsService
-@inject IDistributionService DistributionService
 @inject ISOSAnalysisService SOSAnalysisServices
 @inject ISOSSequenceService SOSSequenceServices
 
-@inject ISOSHubService sosHubService
+
+@inject IDistributionService DistributionService
 
 <style>
     .synoptic-table {
@@ -35,6 +37,11 @@
             background-color: #f0f0f0;
             font-weight: bold;
         }
+
+    .verticalText {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+    }
 
 </style>
 
@@ -101,9 +108,6 @@ else
 
 
                         </MudItem>
-                        <MudItem Class="d-flex">
-                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateSynopticRequirements((int)SynopticRequirementsId))" OnTouch="(() => UpdateSynopticRequirements((int)SynopticRequirementsId))">@Localizer["update"]</MudChip>
-                        </MudItem>
                     </MudItem>
                 </td>
             </tr>
@@ -115,7 +119,7 @@ else
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Style="width: 100%;">
         <MudTabPanel Text="Select Sequences/Analyses">
 
-            <MudContainer>
+            @*     <MudContainer>
                 <MudTextField @bind-Value="searchSequence" Placeholder="Buscar sequencia..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
                 <MudToggleGroup Vertical T="SOSSequence" SelectionMode="SelectionMode.MultiSelection" @bind-values="SequencesSelected" Color="Color.Primary" CheckMark Class="toggle-group-container">
                     @foreach (SOSSequence sequence in FilteredSequences)
@@ -150,13 +154,32 @@ else
                         </div>
                     }
                 </MudToggleGroup>
+            </MudContainer> *@
+
+            <MudContainer>
+                <MudTextField @bind-Value="searchSosHub" Placeholder="Buscar colector..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+                <MudToggleGroup Vertical T="SOSHub" SelectionMode="SelectionMode.MultiSelection" @bind-values="_sosSynopticRequeriments.SOSHubs" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                    @foreach (SOSHub dtcollect in FilteredSosHubs)
+                    {
+                        <div class="toggle-column">
+                            <MudToggleItem Value="@(dtcollect)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                                <div class="mud-width-full mud-height-full">
+                                    <div class="d-flex align-center justify-space-between flex-wrap">
+                                        <MudText Class="ellipsis">@dtcollect.Folio</MudText>
+                                    </div>
+                                    <MudText Typo="Typo.subtitle2">@dtcollect.ProcessSheet</MudText>
+                                </div>
+                            </MudToggleItem>
+                        </div>
+                    }
+                </MudToggleGroup>
             </MudContainer>
 
         </MudTabPanel>
-        <MudTabPanel Text="Order Items">
+        @*    <MudTabPanel Text="Order Items">
             <MudDropContainer T="DropItem" Items="_combinedItems" ItemsSelector="@((item, dropzone) => item.Zone == dropzone)" ItemDropped="ItemUpdated" Class="drop-container">
                 <ChildContent>
-                    <MudContainer  Style="display:flex">
+                    <MudContainer Style="display:flex">
                         <MudContainer Style="width:50%">
 
                             <MudDropZone T="DropItem" Identifier="SOSAnalysis" Class="drop-item drop-scroll rounded-lg mud-alert-text-success" CanDrop="@((item) => item.Type == "SOSSequence" && item.Type == "SOSAnalysis")">
@@ -180,7 +203,7 @@ else
                                     {
                                         <MudListSubheader Class="mt-4 pb-2">@analysis.OperationName</MudListSubheader>
                                         <MudDropZone T="DropItem" AllowReorder ItemDraggingClass="mud-info-text" Identifier="@($"Analysis_{analysis.SOSAnalysisId}")" Class="rounded mud-background-gray"
-                                                     CanDrop="@((item) => item.Type == "SOSAnalysis")" Style="min-height:30px">
+                                                     CanDrop="@((item) => item.Type == "SOSAnalysis")" Style="min-height:60px">
 
                                         </MudDropZone>
                                     }
@@ -205,7 +228,7 @@ else
                                     {
                                         <MudListSubheader Class="mt-4 pb-2">@sequence.OperationName</MudListSubheader>
                                         <MudDropZone T="DropItem" AllowReorder ItemDraggingClass="mud-info-text" Identifier="@($"Sequence_{sequence.SOSSequenceId}")" Class="rounded mud-background-gray"
-                                                     CanDrop="@((item) => item.Type == "SOSSequence")" Style="min-height:30px">
+                                                     CanDrop="@((item) => item.Type == "SOSSequence")" Style="min-height:60px">
 
                                         </MudDropZone>
                                     }
@@ -214,9 +237,21 @@ else
                         </MudContainer>
 
                         <MudContainer Style="width:50%">
-                            <MudDropZone T="DropItem" Identifier="CombinedZone" AllowReorder Class="rounded mud-background-gray drop-item drop-scroll" Style="min-height:30px">
-                                <MudText Typo="Typo.h6" Class="mb-4">Structure document </MudText>
-                            </MudDropZone>
+
+
+                            <MudText Typo="Typo.h6" Class="mb-4">Structure document </MudText>
+                            @foreach (var op in _distribution.Operations.Where(o => _soshub.AppliedModels.Any(m => m.Description == o.ProductName || m.Code == o.ProductName)))
+                            {
+
+                                <MudListSubheader Class="mt-4 pb-2">(@op.Code) @op.Description</MudListSubheader>
+                                <MudDropZone T="DropItem" AllowReorder ItemDraggingClass="mud-info-text" Identifier="@($"OP_{op.OperationId}")" Class="rounded mud-background-gray"
+                                             Style="min-height:100px">
+
+                                </MudDropZone>
+
+                            }
+
+
                         </MudContainer>
                     </MudContainer>
                 </ChildContent>
@@ -294,8 +329,9 @@ else
                 </ItemRenderer>
             </MudDropContainer>
 
-        </MudTabPanel>
-        <MudTabPanel Text="Synoptic">
+        </MudTabPanel>  *@
+        <MudTabPanel Text="Synoptic" OnClick="VerifyItemsSequence">
+
             <MudPaper Square="true" Elevation="3">
                 <MudSimpleTable Class="synoptic-table">
 
@@ -483,11 +519,11 @@ else
                             <MudTh colspan="4"><b>POR MAQUINA </b></MudTh>
                         </MudTr>
 
-                        @{
+                        @*  @{
                             int rowDist = _distribution.Operations.Where(o => _soshub.AppliedModels.Any(m => m.Description == o.ProductName || m.Code == o.ProductName)).Count();
-                        }
+                        } *@
 
-                        @foreach (var (ope, index) in _distribution.Operations
+                        @*  @foreach (var (ope, index) in _distribution.Operations
                                             .Where(o => _soshub.AppliedModels.Any(m => m.Description == o.ProductName || m.Code == o.ProductName))
                                             .Select((o, i) => (o, i)))
                         {
@@ -498,18 +534,112 @@ else
                                     <MudTd colspan="1" rowspan="@rowDist"></MudTd>
                                     <MudTh colspan="4" rowspan="@rowDist">@_soshub.Distribution.Description</MudTh>
                                 }
-                                <MudTd colspan="1">
-                                    @ope.Description
+
+                                <MudTd colspan="1" class="verticalText">
+                                    @ope.Code
+                                </MudTd>
+                                <MudTd colspan="4">
+                                 @ope.Description
+                                </MudTd>
+                                <MudTd colspan="4"></MudTd>
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="4" rowspan="@rowDist"></MudTd>
+                                }
+                                <MudTd colspan="4">
+                                    @foreach (var item in _combinedItems.Where(c => c.Zone == $"OP_{ope.OperationId}"))
+                                    {
+                                        @foreach (var (analisis, indexAnalisis) in item.section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                        {
+                                            <MudItem>
+                                                @foreach (var (criticalPoint, indexPoints) in analisis.CriticalPoints.Select((criticalPoint, indexPoints) => (criticalPoint, indexPoints)))
+                                                {
+                                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                        @item.section.Analyses[indexAnalisis].CriticalPoints[indexPoints]
+                                                    </MudText>
+                                                    <MudText>
+                                                        @ReasonFormat(item.section.Analyses[indexAnalisis].Reasons[indexPoints])
+                                                    </MudText>
+                                                    @if (criticalPoint != item.section.Analyses[indexAnalisis].CriticalPoints.Last())
+                                                    {
+                                                        <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                                    }
+                                                }
+                                            </MudItem>
+                                            @if (analisis != item.section.Analyses.Last())
+                                            {
+                                                <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                            }
+                                        }
+
+                                    }
                                 </MudTd>
                                 @if (index == 0)
                                 {
-                                    <MudTd colspan="8" rowspan="@rowDist"></MudTd>
-                                    <MudTd colspan="4" rowspan="@rowDist"></MudTd>
-                                    <MudTd colspan="4" rowspan="@rowDist"></MudTd>
-                                    <MudTd colspan="3" rowspan="@rowDist"></MudTd>
-                                    <MudTd colspan="2" rowspan="@rowDist"></MudTd>
                                     <MudTd colspan="3" rowspan="@rowDist"></MudTd>
                                     <MudTd colspan="3" rowspan="@rowDist"></MudTd>
+                                    <MudTd colspan="3" rowspan="@rowDist"></MudTd>
+                                }
+                            </MudTr>
+                        } *@
+
+                        @{
+                            int rowHubs = _sosSynopticRequeriments.SOSHubs.Count();
+                        }
+
+                        @foreach (var (ope, index) in _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Select((o, i) => (o, i)))
+                        {
+                            <MudTr>
+
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="1" rowspan="@rowHubs"></MudTd>
+                                    <MudTh colspan="4" rowspan="@rowHubs">@_soshub.Folio <br /> (@_soshub.ProcessSheet)</MudTh>
+                                }
+
+                                <MudTd colspan="1" class="verticalText">
+                                    @ope.SOSHub.Folio  <br /> (@ope.SOSHub.ProcessSheet)
+                                </MudTd>
+                                <MudTd colspan="3" Style="border-right: none;">
+                                    @if (ope.Type == TypeOperacion.Person)
+                                    {
+                                        <MudTextField AutoGrow @bind-Value="_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.ElementAt(index).TypeText" Label="Person Data" />
+                                    }
+                                </MudTd>
+
+                                <MudTd align="center" colspan="2" style="position: relative; border-left: none; border-right: none; padding: 0;">
+                                   
+                                    <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background-color: black;"></div>
+                                    <MudToggleIconButton Variant="Variant.Filled"
+                                                         Toggled="@((ope.Type == TypeOperacion.Machine))"
+                                                         ToggledChanged="@(toggled => ChangeOperationType(index, toggled ? TypeOperacion.Machine : TypeOperacion.Person))"
+                                                         Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft"
+                                                         ToggledIcon="@Icons.Material.Filled.KeyboardDoubleArrowRight"
+                                                         Color="@Color.Primary"
+                                                         ToggledColor="@Color.Secondary"
+                                                         Title="@(ope.Type == TypeOperacion.Person ? "Switch To Machine" : "Switch To Persona")" />
+                                </MudTd>
+
+                                <MudTd colspan="3" Style="border-left: none;">
+                                    @if (ope.Type == TypeOperacion.Machine)
+                                    {
+                                        <MudTextField  AutoGrow @bind-Value="_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.ElementAt(index).TypeText" Label="Machine Data" />
+                                    }
+                                </MudTd>
+
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="4" rowspan="@rowHubs"></MudTd>
+                                }
+                                <MudTd colspan="4">
+
+                                </MudTd>
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="3" rowspan="@rowHubs"></MudTd>
+                                    <MudTd colspan="3" rowspan="@rowHubs"></MudTd>
+                                    <MudTd colspan="2" rowspan="@rowHubs"></MudTd>
+                                    <MudTd colspan="2" rowspan="@rowHubs"></MudTd>
                                 }
                             </MudTr>
                         }
@@ -518,6 +648,7 @@ else
                 </MudSimpleTable>
 
             </MudPaper>
+
         </MudTabPanel>
 
     </MudTabs>

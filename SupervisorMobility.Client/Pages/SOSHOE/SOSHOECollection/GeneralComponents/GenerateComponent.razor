@@ -1,5 +1,7 @@
 ﻿@inject Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment Environment
+@inject IStringLocalizer<Resource1> Localizer1
 @inject IStringLocalizer<Resource> Localizer
+
 @inject IUserService UsersService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -10,6 +12,8 @@
 @inject ISOSDistributionService SOSDistributionServices
 @inject ISOSFlowService SOSFlowServices
 @inject ISOSSequenceService SOSSequenceServices
+@inject IHCIService HCIsServices
+
 
 @inject IPlantService PlantServices
 @inject IDepartmentService DepartmentServices
@@ -135,6 +139,28 @@
                             </MudCardHeader>
                         </MudCard>
                         break;
+                    case 33:
+                        <MudCard Elevation="0" Class="mr-5" Style="margin-top: -10px;">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudAvatar>
+                                        <MudImage Src="Images/reparto-de-beneficios.png" />
+                                    </MudAvatar>
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Distribution</b></MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudItem style="padding-top: 5px; padding-left:10px;">
+                                        @if (_sosHub.SOSDistribution.Count > 0 && _sosDistribution.DistributionLogbooks?.Last().Status != 2 || _sosDistribution.SOSDistributionId != 0)
+                                        {
+                                            <SupervisorMobility.Client.Pages.Components.ButtonQuickView ButtonText="@Localizer["details"]" OnClick="() => Details<SOSDistribution>(_sosDistribution.SOSDistributionId)"></SupervisorMobility.Client.Pages.Components.ButtonQuickView>
+                                        }
+                                    </MudItem>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                        </MudCard>
+                        break;
                     case 4:
                         <MudCard Elevation="0" Class="mr-5" Style="margin-top: -10px;">
                             <MudCardHeader>
@@ -203,7 +229,52 @@
                             </MudCardHeader>
                         </MudCard>
                         break;
+                    case 66:
+                        <MudCard Elevation="0" Class="mr-5" Style="margin-top: -10px;">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudAvatar>
+                                        <MudImage Src="Images/flujo-de-requisitos.png" />
+                                    </MudAvatar>
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Cuadro Sinoptico de Requisitos de Operación</b></MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
 
+                                    <MudItem style="padding-top: 5px; padding-left:10px;">
+                                        @if (_sosHub.SOSSynopticOperatingRequirements.Count > 0 && _SOSSynopticRequirements.SynopticRequirementsLogbooks?.Last().Status != 2 || _SOSSynopticRequirements.SOSSynopticTableofOperatingRequirementsId != 0)
+                                        {
+                                            <SupervisorMobility.Client.Pages.Components.ButtonQuickView OnClick="() => Details<SOSSynopticRequirementsOperationSequence>(_SOSSynopticRequirements.SOSSynopticTableofOperatingRequirementsId)" ButtonText="@Localizer["details"]"></SupervisorMobility.Client.Pages.Components.ButtonQuickView>
+                                        }
+                                    </MudItem>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                        </MudCard>
+                        break;
+                    case 9:
+                        <MudCard Elevation="0" Class="mr-5" Style="margin-top: -10px;">
+                            <MudCardHeader>
+                                <CardHeaderAvatar>
+                                    <MudAvatar>
+                                        <MudImage Src="Images/flujo-de-requisitos.png" />
+                                    </MudAvatar>
+                                </CardHeaderAvatar>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Hoja de Control Individual</b></MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+
+                                    <MudItem style="padding-top: 5px; padding-left:10px;">
+                                        @if (_sosHub.HciId != null && _sosHub.HciId != 0)
+                                        {
+                                            <SupervisorMobility.Client.Pages.Components.ButtonQuickView OnClick="() => Details<HCI>(_hci.HCIId)" ButtonText="@Localizer["details"]"></SupervisorMobility.Client.Pages.Components.ButtonQuickView>
+                                        }
+                                    </MudItem>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                        </MudCard>
+                        break;
                     case 7:
                         <MudCard Elevation="0" Class="mr-5" Style="margin-top: -10px;">
                             <MudCardHeader>
@@ -2292,7 +2363,7 @@
                         <MudItem Style="margin-top: -15px; width: 100%">
                             @if (_sosHub.SOSSynopticOperatingRequirements.Count == 0 || _SOSSynopticRequirements.SynopticRequirementsLogbooks?.Last().SOSSynopticRequirementsLogbookId == 0)
                             {
-                                <MudContainer>
+                                @*  <MudContainer>
                                     <MudTextField @bind-Value="searchSequence" Placeholder="Buscar sequencia..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
                                     <MudToggleGroup Vertical T="SOSSequence" SelectionMode="SelectionMode.MultiSelection" @bind-values="_SOSSynopticRequirements.Sequences" Color="Color.Primary" CheckMark Class="toggle-group-container">
                                         @foreach (SOSSequence sequence in FilteredSequences)
@@ -2327,11 +2398,30 @@
                                             </div>
                                         }
                                     </MudToggleGroup>
+                                </MudContainer> *@
+
+                                <MudContainer>
+                                    <MudTextField @bind-Value="searchSosHub" Placeholder="Buscar colector..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+                                    <MudToggleGroup Vertical T="SOSHub" SelectionMode="SelectionMode.MultiSelection" @bind-values="_SOSSynopticRequirements.SOSHubs" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                                        @foreach (SOSHub dtcollect in FilteredSosHubs)
+                                        {
+                                            <div class="toggle-column">
+                                                <MudToggleItem Value="@(dtcollect)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                                                    <div class="mud-width-full mud-height-full">
+                                                        <div class="d-flex align-center justify-space-between flex-wrap">
+                                                            <MudText Class="ellipsis">@dtcollect.Folio</MudText>
+                                                        </div>
+                                                        <MudText Typo="Typo.subtitle2">@dtcollect.ProcessSheet</MudText>
+                                                    </div>
+                                                </MudToggleItem>
+                                            </div>
+                                        }
+                                    </MudToggleGroup>
                                 </MudContainer>
                             }
                             else
                             {
-                                <MudSimpleTable Style="width:100%">
+                                @*  <MudSimpleTable Style="width:100%">
                                     <MudTHeadRow>
                                         <MudTh>
                                             Sequence Name
@@ -2382,6 +2472,30 @@
                                             </MudTd>
                                         </MudTr>
                                     }
+                                </MudSimpleTable> *@
+                                <MudSimpleTable Style="width:100%">
+                                    <MudTHeadRow>
+                                        <MudTh>
+                                            Folio Name
+                                        </MudTh>
+                                        <MudTh>
+                                            ProcessSheet Name
+                                        </MudTh>
+                                    </MudTHeadRow>
+
+                                    @foreach (var (dtCollect, index) in _SOSSynopticRequirements.SOSHubs.Select((dtCollect, index) => (dtCollect, index)))
+                                    {
+                                        <MudTr>
+                                            <MudTd>
+                                                <MudChip Color="Color.Primary" Icon="@Icons.Material.Filled.Work" Size="Size.Small" Variant="Variant.Text" Style="cursor:pointer">
+                                                    @(dtCollect.Folio)
+                                                </MudChip>
+                                            </MudTd>
+                                            <MudTd>
+                                                <MudText>@dtCollect.ProcessSheet</MudText>
+                                            </MudTd>
+                                        </MudTr>
+                                    }
                                 </MudSimpleTable>
                             }
                         </MudItem>
@@ -2391,7 +2505,7 @@
                     <div class="d-flex" style="height:100%; max-height: auto; overflow-x: hidden">
                         <style>
                             .synoptic-table {
-                                overflow:hidden;
+                                overflow: hidden;
                                 border-collapse: collapse;
                                 width: 100%;
                                 table-layout: fixed;
@@ -2864,9 +2978,110 @@
                     break;
                 case 9:
                     <div class="d-flex" style="height:100%; max-height: auto">
-                        <MudItem>
+                            @if (_sosHub.HciId != null && _sosHub.HciId != 0)
+                            {
+                                <SupervisorMobility.Client.Pages.Inicio.HCIPage.Components.GeneralInfo _hci="_hci" image="/Images/profilepicture.png" />
+                            }
+                            else
+                            {
+                                
+                                    <MudContainer Style="width:40%">
+                                        <MudAutocomplete FullWidth Class="mt-5" Clearable T="User" Label="@Localizer1["User"]" @bind-Value="_SelectUser"
+                                                         SearchFunc="@SearchSV" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer1["UsersPHSupervisor"]}" : $"[{e.Payroll}] - {e.Name} - {e.Group?.Description}")"
+                                                         Variant="Variant.Outlined"
+                                                         ShowProgressIndicator="true" MaxItems="10" ResetValueOnEmptyText>
+                                            <ItemTemplate Context="e">
+                                                <MudItem Style="text-align: center">
+                                                    @switch (e.UserType)
+                                                    {
+                                                        case 3:
+                                                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Class="mr-15 mt-1"> @Localizer1["UsersSupervisor"] </MudChip>
+                                                            break;
+                                                    }
+                                                </MudItem>
+                                                <div class="font-weight-bold"><b>@Localizer1["UsersName"]:</b>  @e.Name</div>
+                                                <div class="font-weight-bold"><b>@Localizer1["UserPayroll"]:</b>  @e.Payroll</div>
+                                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@e.Area?.Code - @e.Area?.Description </MudChip>
 
-                        </MudItem>
+                                            </ItemTemplate>
+                                        </MudAutocomplete>
+
+                                        @if (_SelectUser != null)
+                                        {
+                                            <MudCard Class="mt-10">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar Color="Color.Secondary">U</MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.body1">@_SelectUser.Name</MudText>
+
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                                <MudCardContent>
+                                                    <div class="font-weight-bold"><b>@Localizer1["UserId"]:</b>  @_SelectUser?.UserId</div>
+                                                    <div class="font-weight-bold"><b>@Localizer1["UsersGroup"]:</b>  @_SelectUser?.Group?.Description</div>
+                                                    <div class="font-weight-bold"><b>@Localizer["UsersArea"]:</b>  </div>
+                                                    <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@_SelectUser?.Area?.Code - @_SelectUser?.Area?.Description </MudChip>
+                                                </MudCardContent>
+                                                <MudCardActions Style="justify-content: flex-end;">
+                                                </MudCardActions>
+                                            </MudCard>
+                                        }
+                                        else
+                                        {
+                                            <MudChip Icon="@Icons.Material.Filled.CrisisAlert" Class="mt=10" Style="display: flex;" Color="Color.Info">Select User from list</MudChip>
+                                        }
+                                    </MudContainer>
+                                    <MudContainer Style="width:60%">
+                                        @if (_SelectUser != null)
+                                        {
+                                            <MudSimpleTable Elevation="0">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <MudSimpleTable Elevation="0">
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <MudTextField Value="_SelectUser?.Name" Label="@Localizer["name"]" Variant="Variant.Text" ReadOnly></MudTextField>
+                                                                        </td>
+                                                                        <td>
+                                                                            <MudTextField Value="_SelectUser?.Payroll" Label="@Localizer["payroll"]" Variant="Variant.Text" ReadOnly></MudTextField>
+                                                                        </td>
+                                                                        <td>
+                                                                            <MudDatePicker Date="_SelectUser?.BirthDate" Label="@Localizer["BirthDate"]" Variant="Variant.Text" ReadOnly></MudDatePicker>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <MudTextField Value="_SelectUser?.Management" Label="@Localizer["Management"]" Variant="Variant.Text" ReadOnly></MudTextField>
+                                                                        </td>
+                                                                        <td>
+                                                                            <MudTextField Value="@(_SelectUser?.Department?.Description ?? "")" Label="@Localizer["department"]" Variant="Variant.Text" ReadOnly></MudTextField>
+                                                                        </td>
+                                                                        <td>
+                                                                            <MudTextField Value="_SelectUser?.Process" Label="@Localizer["SectionProcess"]" Variant="Variant.Text" ReadOnly></MudTextField>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </MudSimpleTable>
+                                                        </td>
+                                                        <td class="d-flex flex-column" style="align-items:center;">
+                                                            <MudDatePicker FullWidth Date="_SelectUser?.IncomesDate" Label="@Localizer["EntryDate"]" Variant="Variant.Text" ReadOnly></MudDatePicker>
+                                                            <br />
+                                                            <MudImage Src="@string.Empty" Alt="Image" Elevation="25" Height="150" />
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </MudSimpleTable>
+
+                                        }
+                                    </MudContainer>
+                               
+                            }
                     </div>
                     break;
             }
@@ -3142,6 +3357,14 @@
                     }
                     break;
                 case 8: break;
+                case 9:
+                    @if (_sosHub.HciId == 0 || _sosHub.HciId == null)
+                    {
+                        <MudButton Style="float: right" Class="mb-5" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.GeneratingTokens" OnClick="@(() => GenerateHci())" Color="Color.Primary">
+                            <MudText>Generate</MudText>
+                        </MudButton>
+                    }
+                    break;
             }
         }
     </DialogActions>

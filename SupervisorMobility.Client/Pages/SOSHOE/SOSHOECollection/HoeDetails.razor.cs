@@ -167,7 +167,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (_sosHub.Folio.Contains("-L-"))
             {
                 productSide = "L";
-            }else if (_sosHub.Folio.Contains("-R-"))
+            } else if (_sosHub.Folio.Contains("-R-"))
             {
                 productSide = "R";
             }
@@ -311,6 +311,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             foreach (var pat in _sosHub.PATs)
             {
                 Documents.Add(pat);
+            }
+
+            if (_sosHub.Hci != null )
+            {
+                Documents.Add(_sosHub.Hci);
             }
 
             StateHasChanged();

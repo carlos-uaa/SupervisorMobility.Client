@@ -68,99 +68,104 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             else
             {
                 _sosSynopticRequeriments = await SynopticRequirementsService.GetSOSSynopticTableofOperatingRequirements((int)SynopticRequirementsId, true, true, true);
-                _soshub = await sosHubService.GetSOSHub( (int)_sosSynopticRequeriments.SOSHubId, true, true, includePeople: true, includeInformation: true, includeModel: true);
+                _soshub = await SOSHubServices.GetSOSHub( (int)_sosSynopticRequeriments.SOSHubId, true, true, includePeople: true, includeInformation: true, includeModel: true);
                 _distribution = await DistributionService.GetDistributionWithCollections((int)_soshub.PlantId, (int)_soshub.AreaId, (int)_soshub.DistributionId);
 
                 AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_soshub?.DistributionId, includeSOS: true);
                 AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_soshub?.DistributionId, includeSOS: true);
 
+
+                AvailableSoshubs = await SOSHubServices.GetAllSOSHub();
+                AvailableSoshubs = AvailableSoshubs.Where(s => s.DistributionId == _soshub.DistributionId).ToList();
+                AvailableSoshubs.RemoveAll(s => s.SOSHubId == _soshub.SOSHubId);
+
                 int secuenceInt = 0;
 
-                foreach (var analysis in _sosSynopticRequeriments.Analyses)
-                {
-                    Console.WriteLine($"Analysis: {analysis.SOSAnalysisId}");
-                    foreach (Section sect in analysis.SOSHub.Sections)
-                    {
-                        Console.WriteLine($"{analysis.SOSAnalysisId} Sec: {sect.Step}");
+                //foreach (var analysis in _sosSynopticRequeriments.Analyses)
+                //{
+                //    Console.WriteLine($"Analysis: {analysis.SOSAnalysisId}");
+                //    foreach (Section sect in analysis.SOSHub.Sections)
+                //    {
+                //        Console.WriteLine($"{analysis.SOSAnalysisId} Sec: {sect.Step}");
 
-                        if (_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence != null &&
-                            _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Any(seq => seq.SectionId == sect.SectionId))
-                        {
-                            _combinedItems.Add(
-                                new DropItem
-                                {
-                                    Name = sect.Step,
-                                    Type = $"SOSAnalysis",
-                                    Zone = $"CombinedZone",
-                                    //Identifier = $"CombinedZone",
-                                    Identifier = $"Analysis_{analysis.SOSAnalysisId}",
-                                    section = sect,
-                                    Sequence = secuenceInt
-                                }
-                            );
-                        }
-                        else
-                        {
-                            _combinedItems.Add(
-                                new DropItem
-                                {
-                                    Name = sect.Step,
-                                    Type = $"SOSAnalysis",
-                                    Zone = $"Analysis_{analysis.SOSAnalysisId}",
-                                    Identifier = $"Analysis_{analysis.SOSAnalysisId}",
-                                    section = sect,
-                                    Sequence = secuenceInt
-                                }
-                                );
+                //        if (_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence != null &&
+                //            _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Any(seq => seq.SectionId == sect.SectionId))
+                //        {
+                //            _combinedItems.Add(
+                //                new DropItem
+                //                {
+                //                    Name = sect.Step,
+                //                    Type = $"SOSAnalysis",
+                //                    Zone = $"CombinedZone",
+                //                    //Identifier = $"CombinedZone",
+                //                    Identifier = $"Analysis_{analysis.SOSAnalysisId}",
+                //                    section = sect,
+                //                    Sequence = secuenceInt
+                //                }
+                //            );
+                //        }
+                //        else
+                //        {
+                //            _combinedItems.Add(
+                //                new DropItem
+                //                {
+                //                    Name = sect.Step,
+                //                    Type = $"SOSAnalysis",
+                //                    Zone = $"Analysis_{analysis.SOSAnalysisId}",
+                //                    Identifier = $"Analysis_{analysis.SOSAnalysisId}",
+                //                    section = sect,
+                //                    Sequence = secuenceInt
+                //                }
+                //                );
 
-                        }
-                        secuenceInt++;
-                    }
-                }
+                //        }
+                //        secuenceInt++;
+                //    }
+                //}
 
-                foreach (var sequence in _sosSynopticRequeriments.Sequences)
-                {
-                    //Console.WriteLine(JsonSerializer.Serialize(sequence));
+                //foreach (var sequence in _sosSynopticRequeriments.Sequences)
+                //{
+                //    //Console.WriteLine(JsonSerializer.Serialize(sequence));
 
-                    //int temp = AvailableSequences.FindIndex(a => a.SOSSequenceId == sequence.SOSSequenceId);
-                    //AvailableSequences[temp].SOSHub = sequence.SOSHub;
+                //    //int temp = AvailableSequences.FindIndex(a => a.SOSSequenceId == sequence.SOSSequenceId);
+                //    //AvailableSequences[temp].SOSHub = sequence.SOSHub;
 
-                    foreach (Section sect in sequence.SOSHub.Sections)
-                    {
-                        if (_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence != null &&
-                            _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Any(seq => seq.SectionId == sect.SectionId))
-                        {
-                            _combinedItems.Add(
-                                new DropItem
-                                {
-                                    Name = sect.Step,
-                                    Type = $"SOSSequence",
-                                    Zone = $"CombinedZone",
-                                    //Identifier = $"CombinedZone",
-                                    Identifier = $"Sequence_{sequence.SOSSequenceId}",
-                                    section = sect,
-                                    Sequence = secuenceInt
-                                }
-                            );
-                        }
-                        else
-                        {
-                            _combinedItems.Add(
-                                new DropItem
-                                {
-                                    Name = sect.Step,
-                                    Type = $"SOSSequence",
-                                    Zone = $"Sequence_{sequence.SOSSequenceId}",
-                                    Identifier = $"Sequence_{sequence.SOSSequenceId}",
-                                    section = sect,
-                                    Sequence = secuenceInt
-                                }
-                            );
-                        }
-                        secuenceInt++;
-                    }
+                //    foreach (Section sect in sequence.SOSHub.Sections)
+                //    {
+                //        if (_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence != null &&
+                //            _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Any(seq => seq.SectionId == sect.SectionId))
+                //        {
+                //            _combinedItems.Add(
+                //                new DropItem
+                //                {
+                //                    Name = sect.Step,
+                //                    Type = $"SOSSequence",
+                //                    Zone = $"CombinedZone",
+                //                    //Identifier = $"CombinedZone",
+                //                    Identifier = $"Sequence_{sequence.SOSSequenceId}",
+                //                    section = sect,
+                //                    Sequence = secuenceInt
+                //                }
+                //            );
+                //        }
+                //        else
+                //        {
+                //            _combinedItems.Add(
+                //                new DropItem
+                //                {
+                //                    Name = sect.Step,
+                //                    Type = $"SOSSequence",
+                //                    Zone = $"Sequence_{sequence.SOSSequenceId}",
+                //                    Identifier = $"Sequence_{sequence.SOSSequenceId}",
+                //                    section = sect,
+                //                    Sequence = secuenceInt
+                //                }
+                //            );
+                //        }
+                //        secuenceInt++;
+                //    }
 
-                }
+                //}
 
             }
 
@@ -237,8 +242,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         #endregion
 
         #region Sequencesanalyses
+        List<SOSHub> AvailableSoshubs = new();
+
         List<SOSAnalysis> AvailableAnalyses = new();
         List<SOSSequence> AvailableSequences = new();
+
+        private string searchSosHub = "";
+        private IEnumerable<SOSHub> FilteredSosHubs =>
+            AvailableSoshubs.Where(op =>
+                string.IsNullOrEmpty(searchSosHub) ||
+                (op.Folio?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.ProcessSheet?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.OtherInformation?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false));
+
 
         private string searchAnalysis = "";
         private IEnumerable<SOSAnalysis> FilteredAnalysis =>
@@ -393,65 +409,115 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
         }
 
+        private void CloseStructure()
+        {
+            VerifyItemsSequence();
+            StateHasChanged();
+        }
+
         private void VerifyItemsSequence()
         {
             if (_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence == null)
             {
                 _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
 
-                foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone"))
+                //Esto es del drag and drop, se quita porque no se usa por ahora
+                //foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone"))
+                //{
+                //    if (item.section != null)
+                //    {
+                //        var operationSequence = new SOSSynopticRequirementsOperationSequence
+                //        {
+                //            SectionId = item.section.SectionId,
+                //            Section = item.section,
+                //            Sequence = item.Sequence,
+
+                //            IsActive = true
+                //        };
+                //        _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Add(operationSequence);
+                //    }
+                //}
+                int sequ = 0;
+                foreach (var dtCollect in _sosSynopticRequeriments.SOSHubs)
                 {
-                    if (item.section != null)
+                    var operationSequence = new SOSSynopticRequirementsOperationSequence
                     {
-                        var operationSequence = new SOSSynopticRequirementsOperationSequence
-                        {
-                            SectionId = item.section.SectionId,
-                            Section = item.section,
-                            Sequence = item.Sequence,
-                           
-                            IsActive = true
-                        };
-                        _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Add(operationSequence);
-                    }
+                        SOSHubId = dtCollect.SOSHubId,
+                        SOSHub = dtCollect,
+                        Sequence = sequ,
+
+                        IsActive = true
+                    };
+                    sequ++;
+                    _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Add(operationSequence);
                 }
             }
             else
             {
                 // Añadir los que faltan y actualizar secuencia
-                foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone"))
+                //foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone"))
+                //{
+                //    if (!_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Any(t => t.SectionId == item.section.SectionId))
+                //    {
+                //        var operationSequence = new SOSSynopticRequirementsOperationSequence
+                //        {
+                //            SectionId = item.section.SectionId,
+                //            Section = item.section,
+                //            Sequence = item.Sequence,
+
+                //            IsActive = true
+                //        };
+
+                //        _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Add(operationSequence);
+                //    }
+                //    else
+                //    {
+                //        var existingOperation = _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.FirstOrDefault(t => t.SectionId == item.section.SectionId);
+                //        if (existingOperation != null)
+                //        {
+                //            existingOperation.Sequence = item.Sequence;
+                //        }
+                //    }
+                //}
+
+
+                int sequ = _sosSynopticRequeriments.SOSHubs.Count() + 1;
+                foreach (SOSHub dtCollect in _sosSynopticRequeriments.SOSHubs)
                 {
-                    if (!_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Any(t => t.SectionId == item.section.SectionId))
+                    if (!_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Any(t => t.SOSHubId == dtCollect.SOSHubId))
                     {
                         var operationSequence = new SOSSynopticRequirementsOperationSequence
                         {
-                            SectionId = item.section.SectionId,
-                            Section = item.section,
-                            Sequence = item.Sequence,
-                           
+                            SOSHubId = dtCollect.SOSHubId,
+                            SOSHub = dtCollect,
+                            Sequence = sequ,
+
                             IsActive = true
                         };
-
+                        sequ++;
                         _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Add(operationSequence);
-                    }
-                    else
-                    {
-                        var existingOperation = _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.FirstOrDefault(t => t.SectionId == item.section.SectionId);
-                        if (existingOperation != null)
-                        {
-                            existingOperation.Sequence = item.Sequence;
-                        }
                     }
                 }
 
                 // Eliminar los que ya no están en _combinedItems
-                var validSectionIds = _combinedItems
-                    .Where(i => i.Zone == "CombinedZone" && i.section != null)
-                    .Select(i => i.section.SectionId)
-                    .ToHashSet();
+                //var validSectionIds = _combinedItems
+                //    .Where(i => i.Zone == "CombinedZone" && i.section != null)
+                //    .Select(i => i.section.SectionId)
+                //    .ToHashSet();
+
+                //_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence =
+                //    _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence
+                //        .Where(seq => validSectionIds.Contains(seq.SectionId ?? 0))
+                //        .OrderBy(seq => seq.Sequence)
+                //        .ToList();
+
+                var validHubIds = _sosSynopticRequeriments.SOSHubs
+                  .Select(i => i.SOSHubId)
+                  .ToHashSet();
 
                 _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence =
                     _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence
-                        .Where(seq => validSectionIds.Contains(seq.SectionId ?? 0))
+                        .Where(seq => validHubIds.Contains(seq.SOSHubId ?? 0))
                         .OrderBy(seq => seq.Sequence)
                         .ToList();
             }
@@ -464,9 +530,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             int newIndex = dropItem.IndexInZone;
 
-            ///
+            
             _combinedItems.UpdateOrder(dropItem, item => item.Sequence, newIndex);
-            Console.WriteLine("Combined: " + JsonSerializer.Serialize(_combinedItems.Where(i => i.Zone == "CombinedZone").OrderBy(s => s.Sequence)));
+            Console.WriteLine("Combined: " + JsonSerializer.Serialize(_combinedItems.Where(i => i.Zone.Contains("OP")).OrderBy(s => s.Sequence)));
 
 
             //if (_sosDistribution.SOSDistributionOperationSequence == null)
@@ -577,7 +643,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
 
         #endregion
+        private void ChangeOperationType(int index, TypeOperacion newType)
+        {
+            var item = _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.ElementAt(index);
+            item.Type = newType;
 
+            //if (newType == TypeOperacion.None)
+            //{
+            //    item.TypeText = string.Empty;
+            //}
+
+         
+        }
 
     }
 }
