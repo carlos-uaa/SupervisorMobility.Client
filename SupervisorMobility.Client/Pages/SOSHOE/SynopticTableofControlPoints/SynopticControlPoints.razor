@@ -1,39 +1,67 @@
 ﻿@page "/soshoe/SynopticControlPoints/Details/{SynopticControlPointsId:int}"
 
 @inject IBreadcrumbService BreadcrumbService
-@inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject IStringLocalizer<ResourceSTCP> Localizer
 @inject ISynopticControlPointsService SynopticControlPointsService
 @inject ISOSHubService sosHubService
 
 <style>
-    .synoptic-table {
+    .synoptic-table table {
         border-collapse: collapse;
         width: 100%;
-        table-layout: fixed;
-        font-size: 12px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background: white;
     }
 
-        .synoptic-table th,
-        .synoptic-table td {
-            border: 1px solid black;
-            padding: 2px 4px;
-            text-align: center;
-            vertical-align: middle;
-            white-space: pre-line;
-            word-break: break-word;
-        }
+    .synoptic-table th,
+    .synoptic-table td {
+        padding: 10px 8px !important;
+        text-align: left;
+        border: 1px solid #ddd;
+        text-transform: uppercase !important;
+    }
 
-        .synoptic-table th {
-            background-color: #f0f0f0;
-            font-weight: bold;
-        }
+    .synoptic-table thead th {
+        background: #0b8ff40d;
+        color: #333;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
+    .center {
+        text-align: center !important;
+    }
 
-    
+    .noBorderTop {
+        border-top: none !important;
+    }
+
+    .noBorderBottom {
+        border-bottom: none !important;
+    }
+
+    .noborder {
+        border: none !important;
+    }
+
+    .synoptic-table tbody th {
+        background-color: #0b8ff40d;
+        color: #333;
+        font-weight: 600 !important;
+    }
+
+    /* Separadores vacíos */
+    .synoptic-table tbody td[colspan="18"] {
+        background-color: transparent;
+        border: none;
+    }
 </style>
 
 
@@ -108,150 +136,165 @@ else
         </tbody>
     </MudSimpleTable>
 
-    <MudText Typo="Typo.h6"><b>Synoptic Table Of Control Points</b></MudText>
+    <MudText Typo="Typo.h6"><b>@Localizer["titleSynopticTableOfControlPoints"]</b></MudText>
     <MudPaper Square="true" Elevation="3">
         <MudSimpleTable Class="synoptic-table">
-
-            <MudTr>
-                <MudTh colspan="9" rowspan="2"><b>PROCESO</b> @_sosSynopticControlPoints.ProcessName </MudTh>
-                <MudTd colspan="8" rowspan="2"><b>MODELOS</b>
-                    @if (_soshub.AppliedModels?.Count > 0)
+            <thead>
+                <MudTr>
+                    <MudTh ColSpan="5" Class="noBorderBottom">@Localizer["SCPProcess"]</MudTh>
+                    <MudTh ColSpan="4" Class="noBorderBottom">@Localizer["SCPModels"]</MudTh>
+                    @if (TryGetSynopticPointsLogbooksElementAtIndex(2, out var item))
                     {
-                        <MudItem Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap;" Class="gap-4 pb-5">
-                            @foreach (Product item in _soshub.AppliedModels)
+                        <MudTd ColSpan="3" Class="center">@item.Approver?.Name</MudTd>
+                        <MudTd ColSpan="1" Class="center">@DateFormat(item?.Date)</MudTd>
+                        <MudTd ColSpan="4" Class="center">@item.Changes</MudTd>
+                        <MudTd ColSpan="2" Class="center">
+                            @if (item.NoRevision == 0)
                             {
-                                <MudChip T="string" Icon="@Icons.Material.Filled.DirectionsCar" Color="Color.Secondary">@item.Description</MudChip>
+                                <b>N</b>
                             }
-                        </MudItem>
+                            else
+                            {
+                                @item.NoRevision
+                            }
+                        </MudTd>
                     }
-                </MudTd>
-                @if (TryGetSynopticPointsLogbooksElementAtIndex(2, out var item))
-                {
-                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
-                    <MudTh colspan="2">@item.Date</MudTh>
-                    <MudTh colspan="4"> @item.Changes</MudTh>
-                    <MudTh>
-                        @if (item.NoRevision == 0)
+                    else
+                    {
+                        <MudTd ColSpan="3"></MudTd>
+                        <MudTd ColSpan="1"></MudTd>
+                        <MudTd ColSpan="4"></MudTd>
+                        <MudTd ColSpan="2"></MudTd>
+                    }
+                </MudTr>
+                <MudTr>
+                    <MudTd ColSpan="5" Class="center noBorderTop">@_sosSynopticControlPoints.ProcessName</MudTd>
+                    <MudTd ColSpan="4" Class="center noBorderTop">
+                        @if (_soshub.AppliedModels?.Count > 0)
                         {
-                            <b>N</b>
+                            <MudItem Style="max-height: 80vh; overflow-y: scroll; display: flex; flex-wrap: wrap; padding-bottom: 0 !important" Class="gap-4 pb-5">
+                                @foreach (Product item in _soshub.AppliedModels)
+                                {
+                                    <MudChip Style="border-radius:4px !important;" T="string" Icon="@Icons.Material.Filled.DirectionsCar" Color="Color.Primary">@item.Description</MudChip>
+                                }
+                            </MudItem>
                         }
-                        else
-                        {
-                            @item.NoRevision
-                        }
-                    </MudTh>
-                }
-                else
-                {
-                    <MudTh colspan="2"></MudTh>
-                    <MudTh colspan="2"></MudTh>
-                    <MudTh colspan="4"></MudTh>
-                    <MudTh></MudTh>
-                }
-            </MudTr>
-            <MudTr>
-               
-                @if (TryGetSynopticPointsLogbooksElementAtIndex(1, out var item))
-                {
-                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
-                    <MudTh colspan="2">@item.Date</MudTh>
-                    <MudTh colspan="4"> @item.Changes</MudTh>
-                    <MudTh>
-                        @if (item.NoRevision == 0)
-                        {
-                            <b>N</b>
-                        }
-                        else
-                        {
-                            @item.NoRevision
-                        }
-                    </MudTh>
-                }
-                else
-                {
-                    <MudTh colspan="2"></MudTh>
-                    <MudTh colspan="2"></MudTh>
-                    <MudTh colspan="4"></MudTh>
-                    <MudTh></MudTh>
-                }
-            </MudTr>
+                    </MudTd>
 
-            <MudTr>
-                <MudTh colspan="9" rowspan="2"><b>MES</b> @_sosSynopticControlPoints.CreatedAt </MudTh>
-                <MudTd colspan="8" rowspan="2"><b>PLANTA</b></MudTd>
-                @if (TryGetSynopticPointsLogbooksElementAtIndex(0, out var item))
-                {
-                    <MudTh colspan="2">@item.Approver?.Name</MudTh>
-                    <MudTh colspan="2">@item.Date</MudTh>
-                    <MudTh colspan="4"> @item.Changes</MudTh>
-                    <MudTh>
-                        @if (item.NoRevision == 0)
+                    @if (TryGetSynopticPointsLogbooksElementAtIndex(1, out var item))
+                    {
+                        <MudTd ColSpan="3" Class="center">@item.Approver?.Name</MudTd>
+                        <MudTd ColSpan="1" Class="center">@DateFormat(item?.Date)</MudTd>
+                        <MudTd ColSpan="4" Class="center">@item.Changes</MudTd>
+                        <MudTd ColSpan="2" Class="center">
+                            @if (item.NoRevision == 0)
+                            {
+                                <b>N</b>
+                            }
+                            else
+                            {
+                                @item.NoRevision
+                            }
+                        </MudTd>
+                    }
+                    else
+                    {
+                        <MudTd ColSpan="3"></MudTd>
+                        <MudTd ColSpan="1"></MudTd>
+                        <MudTd ColSpan="4"></MudTd>
+                        <MudTd ColSpan="2"></MudTd>
+                    }
+                    
+                </MudTr>
+                <MudTr>
+                    <MudTh ColSpan="5" Class="noBorderBottom">@Localizer["SCPMonth"]</MudTh>
+                    <MudTh ColSpan="4" Class="noBorderBottom">@Localizer["SCPPlant"]</MudTh>
+                    @if (TryGetSynopticPointsLogbooksElementAtIndex(0, out var item))
+                    {
+                        <MudTd ColSpan="3" Class="center">@item.Approver?.Name</MudTd>
+                        <MudTd ColSpan="1" Class="center">@DateFormat(item?.Date)</MudTd>
+                        <MudTd ColSpan="4" Class="center">@item.Changes</MudTd>
+                        <MudTd ColSpan="2" Class="center">
+                            @if (item.NoRevision == 0)
+                            {
+                                <b>N</b>
+                            }
+                            else
+                            {
+                                @item.NoRevision
+                            }
+                        </MudTd>
+                    }
+                    else
+                    {
+                        <MudTd ColSpan="3"></MudTd>
+                        <MudTd ColSpan="1"></MudTd>
+                        <MudTd ColSpan="4"></MudTd>
+                        <MudTd ColSpan="2"></MudTd>
+                    }
+                </MudTr>
+                <MudTr>
+                    <MudTd ColSpan="5" Class="center noBorderTop">@DateFormatString(_sosSynopticControlPoints.CreatedAt)</MudTd>
+                    
+                        @if (_soshub.Plant!=null)
                         {
-                            <b>N</b>
+                           <MudTd ColSpan="4" Class="center noBorderTop"> @_soshub.Plant.Description</MudTd>
                         }
                         else
                         {
-                            @item.NoRevision
+                        <MudTd ColSpan="4" Class="center noBorderTop">@Localizer["SCPnotPlant"]</MudTd>
                         }
-                    </MudTh>
-                }
-                else
-                {
-                    <MudTh colspan="2"></MudTh>
-                    <MudTh colspan="2"></MudTh>
-                    <MudTh colspan="4"></MudTh>
-                    <MudTh></MudTh>
-                }
-            </MudTr>
-            <MudTr>
-                    <MudTh colspan="2">APROBO</MudTh>
-                    <MudTh colspan="2">FECHA</MudTh>
-                    <MudTh colspan="4">CAMBIO</MudTh>
-                    <MudTh>NO</MudTh>
-            </MudTr>
-            <MudTr>
-                <MudTd colspan="26"></MudTd>
-            </MudTr>
-            <MudTr>
-                <MudTd colspan="9" rowspan="1"> <b>ELABORO:</b> @_sosSynopticControlPoints?.Creator?.Name</MudTd>
-                <MudTd colspan="8" rowspan="1"> <b>REVISO:</b> @_sosSynopticControlPoints?.Reviewer?.Name</MudTd>
-                <MudTd colspan="9" rowspan="1"> <b>APROBÓ:</b> @_sosSynopticControlPoints?.Approver?.Name</MudTd>
-            </MudTr> 
-            <MudTr>
-                <MudTd colspan="26"></MudTd>
-            </MudTr>
 
-           
+                    <MudTd ColSpan="3" Class="center">@Localizer["SCPApproved"]</MudTd>
+                    <MudTd ColSpan="1" Class="center">@Localizer["SCPDate"]</MudTd>
+                    <MudTd ColSpan="4" Class="center">@Localizer["SCPchange"]</MudTd>
+                    <MudTd ColSpan="2" Class="center">@Localizer["SCPNo"]</MudTd>
+                </MudTr>
+            </thead>
+
             <tbody>
                 <MudTr>
-                    <MudTh colspan="1" rowspan="2"><b>No </b></MudTh>
-                    <MudTh colspan="8" rowspan="2"><b>PUNTOS DE CONTROL</b></MudTh>
-                    <MudTh colspan="2" rowspan="2"><b>GRADO DE <br /> IMPORTANCOA</b></MudTh>
-                    <MudTh colspan="8"><b>CONFIRMACION DE SUPERVISOR</b></MudTh>
-                    <MudTh colspan="9" rowspan="2"><b>OBSERVACIONES  </b></MudTh>
-                    
+                    <MudTd ColSpan="18" Style="height: 10px;"></MudTd>
                 </MudTr>
                 <MudTr>
-                    <MudTh colspan="2"><b>OBSERVACION DE </b> <br /> <b>LA OPERACION </b>  </MudTh>
-                    <MudTh colspan="2"><b>REGISTRO DEL </b> <br /> <b> OPERADOR </b>  </MudTh>
-                    <MudTh colspan="2"><b>CHECAR </b> <br /><b>PRODUCTO Y </b> <br /> <b> CONDICION</b>  </MudTh>
-                    <MudTh colspan="2"><b>REGISTRO DEL </b> <br /> <b> SUVERVISOR </b>  </MudTh>
-                    
+                    <MudTh>@Localizer["SCPPreparedBy"]</MudTh>
+                    <MudTd ColSpan="4">@_sosSynopticControlPoints?.Creator?.Name</MudTd>
+                    <MudTh>@Localizer["SCPReviewedBy"]</MudTh>
+                    <MudTd ColSpan="3">@_sosSynopticControlPoints?.Reviewer?.Name</MudTd>
+                    <MudTh ColSpan="2">@Localizer["SCPApprovedBy"]</MudTh>
+                    <MudTd ColSpan="8">@_sosSynopticControlPoints?.Approver?.Name</MudTd>
                 </MudTr>
-
-                @for(int i = 0;  i < 20; i++){
+                <MudTr>
+                    <MudTd ColSpan="18" Style="height: 10px;"></MudTd>
+                </MudTr>
+                <MudTr>
+                    <MudTh RowSpan="2" Class="center">@Localizer["SCPNo"]</MudTh>
+                    <MudTh RowSpan="2" ColSpan="4" Class="center">@Localizer["SCPControlPoints"]</MudTh>
+                    <MudTh RowSpan="2" Class="center">@Localizer["SCPDegreeOfImportance"]</MudTh>
+                    <MudTh ColSpan="6" Class="center">@Localizer["SCPSupervisorConfirmation"]</MudTh>
+                    <MudTh RowSpan="2" ColSpan="7" Class="center">@Localizer["SCPObservations"]</MudTh>
+                </MudTr>
+                <MudTr>
+                    <MudTd Class="center">@Localizer["SCPOperationObservations"]</MudTd>
+                    <MudTd Class="center">@Localizer["SCPOperatorRecord"]</MudTd>
+                    <MudTd Class="center">@Localizer["SCPCheckProdAndCond"]</MudTd>
+                    <MudTd ColSpan="2" Class="center">@Localizer["SCPSupervisorRecord"]</MudTd>
+                </MudTr>
+                @for(int i = 0; i < 20; i++)
+                {
                     <MudTr>
-                        <MudTh colspan="1"></MudTh>
-                        <MudTh colspan="8"></MudTh>
-                        <MudTh colspan="2"></MudTh>
-                        <MudTh colspan="2"></MudTh>
-                        <MudTh colspan="2"></MudTh>
-                        <MudTh colspan="2"></MudTh>
-                        <MudTh colspan="2"></MudTh>
-                        <MudTh colspan="9"></MudTh>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd ColSpan="4" Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd ColSpan="8" Class="center"></MudTd>
                     </MudTr>
                 }
             </tbody>
+            
         </MudSimpleTable>
      
     </MudPaper>
