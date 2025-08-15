@@ -3,6 +3,7 @@ using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using SupervisorMobility.Client.Services.SOS_Services.SOSHubService;
+using System.Globalization;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
 {
@@ -137,7 +138,46 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
         {
             NavigationManager.NavigateTo($"/soshoe/hoe/HoeDetails/{HoeId}");
         }
-            #endregion
+        #endregion
 
+
+        #region generalfunctions
+        //&===================== FUNCTIONS FOR GENERAL COMPONENT =====================&\\
+
+        /// <summary>
+        /// Formats a nullable <see cref="DateTime"/> as "MONTH YEAR" in uppercase,
+        /// using the current culture for language. Returns an empty string if null.
+        /// </summary>
+        /// <param name="date">The date to format. Output depends on the current culture.</param>
+        /// <returns>Formatted month and year string, or empty if null.</returns>
+        private string DateFormatString(DateTime? date)
+        {
+            if (!date.HasValue) return "";
+
+            string language = CultureInfo.CurrentCulture.Name ?? "es-MX";
+            CultureInfo cultureInfo = new CultureInfo(language);
+
+            return date.Value.ToString("MMMM yyyy", cultureInfo).ToUpper();
         }
+
+        /// <summary>
+        /// Formats a nullable <see cref="DateTime"/> as "dd/MM/yyyy hh:mm:ss tt" in uppercase,
+        /// using the current culture for language and time format. Returns an empty string if null.
+        /// </summary>
+        /// <param name="date">The date to format. Output depends on the current culture.</param>
+        /// <returns>Formatted date and time string, or empty if null.</returns>
+        private string DateFormat(DateTime? date)
+        {
+            if (!date.HasValue) return "";
+
+            string language = CultureInfo.CurrentCulture.Name ?? "es-MX";
+            CultureInfo cultureInfo = new CultureInfo(language);
+
+            return date.Value.ToString("dd/MM/yyyy hh:mm:ss tt", cultureInfo).ToUpper();
+        }
+
+        #endregion
+    }
+
+
 }
