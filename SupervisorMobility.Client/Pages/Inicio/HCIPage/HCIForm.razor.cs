@@ -46,10 +46,52 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         public List<HCICategory> categories = new();
         public List<Commentary> comments = new();
 
+
+        //User
+        private string json = string.Empty;
+        public User user = new();
+        public bool logged = false;
+
+        private async Task GetUserAsync()
+        {
+            if (!await TryGetAsync())
+            {
+                user = new();
+            }
+        }
+
+        private async Task<bool> TryGetAsync()
+        {
+            bool hasProperty = await HasPropertyAsync();
+            if (hasProperty)
+            {
+                json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+                user = JsonSerializer.Deserialize<User>(json) ?? new();
+
+            }
+            return hasProperty;
+        }
+
+        private async Task<bool> HasPropertyAsync()
+            => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+
         protected async override Task OnInitializedAsync()
         {
             var currentUrl = NavManager.Uri;
             Details = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase);
+
+            logged = await HasPropertyAsync();
+            if (!logged)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add($"Error You have to log in", Severity.Error);
+                NavManager.NavigateTo($"/");
+                return;
+            }
+
+            await GetUserAsync();
 
             if (HCIID == null)
             {

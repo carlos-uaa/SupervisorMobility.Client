@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -783,6 +784,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 NavigationManager.NavigateTo($"/PAT/{id}");
             }
+            else if (typeof(T) == typeof(HCI))
+            {
+                NavigationManager.NavigateTo($"/HCI/Details/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofControlPoints))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofOperatingRequirements))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{id}");
+            }
             // A�adir m�s casos seg�n sea necesario
         }
 
@@ -811,6 +824,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             else if (typeof(T) == typeof(PAT))
             {
                 NavigationManager.NavigateTo($"/PAT/Update/{id}");
+            }
+            else if (typeof(T) == typeof(HCI))
+            {
+                NavigationManager.NavigateTo($"/HCI/update/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofControlPoints))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Update/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofOperatingRequirements))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Update/{id}");
             }
             // A�adir m�s casos seg�n sea necesario
         }
@@ -970,33 +995,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             if (selectedRowNumber == SelectTableEventDocument.Items.ToList().IndexOf(args.Item))
             {
-                //HoeDetails(args.Item.SOSHubId);
-                //aqui va los details
+                
+                var method = GetType().GetMethod(nameof(Details), BindingFlags.Instance | BindingFlags.Public);
 
-                if (args.Item is SOSAnalysis)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{SosDocId}");
-                }
-                else if (args.Item is SOSCombination)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Combination/Details/{SosDocId}");
-                }
-                else if (args.Item is SOSDistribution)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{SosDocId}");
-                }
-                else if (args.Item is SOSFlow)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Flow/Details/{SosDocId}");
-                }
-                else if (args.Item is SOSSequence)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{SosDocId}");
-                }  
-                else if (args.Item is PAT)
-                {
-                    NavigationManager.NavigateTo($"/PAT/{SosDocId}");
-                }
+                var generic = method.MakeGenericMethod(args.Item.GetType());
+                generic.Invoke(this, new object[] { SosDocId });
+
+
+                //if (args.Item is SOSAnalysis)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{SosDocId}");
+                //}
+                //else if (args.Item is SOSCombination)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Combination/Details/{SosDocId}");
+                //}
+                //else if (args.Item is SOSDistribution)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{SosDocId}");
+                //}
+                //else if (args.Item is SOSFlow)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Flow/Details/{SosDocId}");
+                //}
+                //else if (args.Item is SOSSequence)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{SosDocId}");
+                //}  
+                //else if (args.Item is PAT)
+                //{
+                //    NavigationManager.NavigateTo($"/PAT/{SosDocId}");
+                //}
             }
             else
             {
@@ -1033,6 +1062,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 {
                     SosDocId = pat.PATid;
                 }
+                else if (element is HCI hci)
+                {
+                    SosDocId = hci.HCIId;
+                }
+                else if (element is SOSSynopticTableofControlPoints csro)
+                {
+                    SosDocId = csro.SOSSynopticTableofControlPointsId;
+                }
+                else if (element is SOSSynopticTableofOperatingRequirements cscp)
+                {
+                    SosDocId = cscp.SOSSynopticTableofOperatingRequirementsId;
+                }
                 return "selected"; // Mantener la fila seleccionada
             }
             else if (SelectTableEventDocument.SelectedItem != null && SelectTableEventDocument.SelectedItem.Equals(element))
@@ -1060,6 +1101,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else if (element is PAT pat)
                 {
                     SosDocId = pat.PATid;
+                }
+                else if (element is HCI hci)
+                {
+                    SosDocId = hci.HCIId;
+                }
+                else if (element is SOSSynopticTableofControlPoints csro)
+                {
+                    SosDocId = csro.SOSSynopticTableofControlPointsId;
+                }
+                else if (element is SOSSynopticTableofOperatingRequirements cscp)
+                {
+                    SosDocId = cscp.SOSSynopticTableofOperatingRequirementsId;
                 }
 
                 selectedRowNumber = rowNumber;

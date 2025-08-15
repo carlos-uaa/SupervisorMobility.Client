@@ -1,5 +1,18 @@
 ﻿@inject IStringLocalizer<Resource> Localizer
 @inject IILUService ILUServices
+@inject ISnackbar Snackbar
+
+@inject IPlantService PlantServices
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionService
+
+<style>
+
+    #ToolTipSearch.mud-tooltip-root {
+        display: block !important;
+        width: 90% !important;
+    }
+</style>
 
 <MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
     <TitleContent>
@@ -8,8 +21,101 @@
         </div>
     </TitleContent>
     <ChildContent>
+
+
+
         <MudSimpleTable Elevation="0">
             <thead>
+                <tr>
+                    <th colspan="4">
+                        <div Style="display: flex; align-items: center; width:100%; min-width:80%" >
+
+                        <MudTooltip Text= Arrow="true" Placement="Placement.Right" Color="Color.Info">
+                            <MudToggleIconButton ToggledChanged="(() => ActiveFilters())"
+                                                 Icon="@Icons.Material.Filled.FilterAltOff"
+                                                 Color="@color"
+                                                 ToggledIcon="@Icons.Material.Filled.FilterAlt"
+                                                 ToggledColor="@Color.Success"
+                                                 title="@Localizer["showHideFilters"]" />
+                        </MudTooltip>
+                   
+                      
+                        @if (filters == false)
+                        {
+                            <MudTooltip id="ToolTipSearch" Text="@Localizer["search"]">
+                                <ChildContent>
+                                    <div style="width:100%">
+                                        <MudTextField @bind-Value="searchString" Clearable Placeholder=@Localizer["search"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5 ml-5 mr-5" ></MudTextField>
+                                    </div>
+                                </ChildContent>
+                            </MudTooltip>
+                        }
+                        @if (filters == true)
+                        {
+                              <MudSpacer />
+                            <MudSelect T="int" Label=@Localizer["plant"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@plantId" For="@(() => plantId)" SelectedValuesChanged="ShowAreas" Style="width: 15vw;">
+                        <MudSelectItem Value="0">@Localizer["allPlants"]</MudSelectItem>
+                        @foreach (var type in _plants)
+                        {
+                            <MudSelectItem Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                        <MudSpacer />
+                         @if (plantId != 0)
+                    {
+                        @*Mud select of Areas for Admin*@
+                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" Style="width: 15vw;">
+                            <MudSelectItem Value="0">@Localizer["allAreas"]</MudSelectItem>
+                            @foreach (var type in _areas)
+                            {
+                                <MudSelectItem Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                    else
+                    {
+                        @*Mud select for SSV *@
+                        <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@areaId" For="@(() => areaId)" Style="width: 15vw;">
+                            <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
+                        </MudSelect>
+                    }
+                            
+                            <MudSpacer />
+                            <MudDatePicker Placeholder=@Localizer["dd/mm/yyyy"] Date="@filterDate" DateChanged="OnDateChange" Label=@Localizer["date"] Color="Color.Info" AdornmentColor="Color.Info" Style="max-width: 12vw" Variant="Variant.Outlined" Margin="Margin.Dense" Class="pt-2" Clearable />
+                            
+                            @* <MudSpacer />
+                            <MudSelect Clearable T="int" Label=@Localizer["status"] Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@statusId" SelectedValuesChanged="Filters">
+                                <MudSelectItem Value="0" Disabled>@Localizer["notSelected"]</MudSelectItem>
+
+                                @foreach (var status in new[] {0, 1, 2, 3, 4, 5, 6, 7 , 8, 9, 10, 11})
+                                {
+                                    var statusCount = _LevelsILU[status].ILULevelCode switch
+                                    {
+                                        "ITrainee" or "I" or "ILeader" or "LTrainee" or "LTraineeLeader" => "Images/I.png",
+                                        "L" or "LLeader" or "UTrainee" or "ULeaderTrainee" => "Images/L.png",
+                                        "U" or "ULeader" => "Images/U.png",
+                                        _ => "Images/default.png"
+                                    };
+
+                                    var isDisabled = status == 0;
+
+                                    <MudSelectItem Value="@status" Disabled="@isDisabled">
+                                        <MudChip Variant="Variant.Outlined" Color="Color.Info" Size="Size.Small" Style="margin: 0px">
+                                            <MudImage Src="@statusCount" Alt="ILU Image" Height="30" Class="rounded-lg" Style="margin-top: -5px" />
+                                        </MudChip>
+                                        @Localizer[GetStatusLabel(status)]
+                                    </MudSelectItem>
+                                }
+                            </MudSelect> *@
+                            <MudSpacer />
+                            <MudTooltip Text=@Localizer["clearFilters"] Arrow="true" Placement="Placement.Left" Color="Color.Error">
+                                <MudIconButton Icon="@Icons.Material.Filled.Clear" Color="Color.Error" @onclick="(() => ClearFilters())" Class="mr-0"></MudIconButton>
+                            </MudTooltip>
+                        }
+                        </div>
+                    </th>
+                </tr>
+
                 <tr>
                     <th style="text-align:center">@Localizer["Period"]</th>
                     <th style="text-align:center">@Localizer["OperationDescription"]</th>
