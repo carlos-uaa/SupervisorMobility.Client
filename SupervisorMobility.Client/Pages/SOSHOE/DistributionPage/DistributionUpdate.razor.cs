@@ -211,7 +211,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 AddItem();
             }
 
-            cycleId = _sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime != null ? GetCycleId(_sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime) : 0;
+            cycleId = _sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime ?? 0;
 
             //if (_sosDistribution.Times == null)
             //{
