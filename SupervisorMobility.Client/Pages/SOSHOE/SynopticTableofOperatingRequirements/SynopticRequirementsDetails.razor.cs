@@ -1,5 +1,6 @@
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Globalization;
 
@@ -65,7 +66,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             else
             {
                 _sosSynopticRequeriments = await SynopticRequirementsService.GetSOSSynopticTableofOperatingRequirements((int)SynopticRequirementsId, true, true, true);
-                _soshub = await sosHubService.GetSOSHub( (int)_sosSynopticRequeriments.SOSHubId, true, true, includePeople: true, includeInformation: true, includeModel: true);
+                _soshub = await sosHubService.GetSOSHub((int)_sosSynopticRequeriments.SOSHubId, true, true, includePeople: true, includeInformation: true, includeModel: true);
                 _distribution = await DistributionService.GetDistributionWithCollections((int)_soshub.PlantId, (int)_soshub.AreaId, (int)_soshub.DistributionId);
             }
 
@@ -160,6 +161,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             return date.Value.ToString("dd/MM/yyyy hh:mm:ss tt", cultureInfo).ToUpper();
         }
 
+
+        #endregion
+
+        #region downloadFormat
+        //&===================== FUNCTIONS FOR DOWNLOAD FORMAT =====================&\\
+        private async void DownloadSTOR()
+        {
+            await SynopticRequirementsService.GenerateExcelSTOperatingRequirements((int)SynopticRequirementsId);
+        }
 
         #endregion
 

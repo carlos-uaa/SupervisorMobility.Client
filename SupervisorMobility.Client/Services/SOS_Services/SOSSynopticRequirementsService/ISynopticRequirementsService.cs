@@ -12,5 +12,6 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirement
         Task<string> ShowIlustrationSOSSynopticTableofOperatingRequirements(int idfile);
 
         Task<bool> RemoveIlustrationFromSOSData(int SOS_SOSSynopticTableofOperatingRequirements_id, int ImageFile_id);
+        Task GenerateExcelSTOperatingRequirements(int Id);
     }
 }
