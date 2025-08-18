@@ -210,7 +210,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 AddItem();
             }
 
-            cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
+            cycleId = _sosAnalysis.SOSHub?.TrainingTime ?? 0;
 
             if (_sosAnalysis.Times == null)
             {
@@ -229,7 +229,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
             }
             else
             {
-                //iterar sobre ellos para añadir casos faltantes de haber
+                //iterar sobre ellos para aï¿½adir casos faltantes de haber
                 foreach (Section section in _sosAnalysis.SOSHub.Sections)
                 {
                     if(!_sosAnalysis.Times.Any(t => t.SectionId == section.SectionId)) {
