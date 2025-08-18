@@ -278,7 +278,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             departmentId = _sosHub.DepartmentId ?? departmentId;
 
 
-            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
+            cycleId = _sosHub.TrainingTime ?? 0;
             
 
             //_sosHub.AppliedModel = _products.Find(p => p.ProductId == _sosHub.AppliedModelId);
@@ -314,7 +314,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
 
             StateHasChanged();
-            //faltan añadir los diagramas
+            //faltan aï¿½adir los diagramas
 
             return new AsyncVoidMethodBuilder();
         }
@@ -656,17 +656,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     var startIndex = match.Index;
                     var endIndex = startIndex + criticalPoint.Length;
 
-                    // Agregar el texto normal antes del punto crítico
+                    // Agregar el texto normal antes del punto crï¿½tico
                     builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
 
-                    // Agregar el punto crítico resaltado
+                    // Agregar el punto crï¿½tico resaltado
                     builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
 
                     currentIndex = endIndex;
                 }
             }
 
-            // Agregar el texto normal después del último punto crítico
+            // Agregar el texto normal despuï¿½s del ï¿½ltimo punto crï¿½tico
             builder.Append(text.Substring(currentIndex));
 
             return new MarkupString(builder.ToString());
@@ -778,7 +778,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 NavigationManager.NavigateTo($"/PAT/{id}");
             }
-            // Añadir más casos según sea necesario
+            // Aï¿½adir mï¿½s casos segï¿½n sea necesario
         }
 
         public void Update<T>(int id) where T : class
@@ -807,7 +807,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 NavigationManager.NavigateTo($"/PAT/Update/{id}");
             }
-            // Añadir más casos según sea necesario
+            // Aï¿½adir mï¿½s casos segï¿½n sea necesario
         }
 
         private MudMessageBox _DeleteAnalysis;
