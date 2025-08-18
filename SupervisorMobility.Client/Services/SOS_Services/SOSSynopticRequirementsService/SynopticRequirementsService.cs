@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Presentation;
 using Microsoft.JSInterop;
+using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
 using System.Net.Http.Json;
@@ -10,15 +11,17 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirement
     public class SynopticRequirementsService : ISynopticRequirementsService
     {
         private readonly HttpClient _http;
+        private readonly ISnackbar snackbar;
         private readonly JsonSerializerOptions _options;
         private readonly IJSRuntime _js;
 
         // Constructor
-        public SynopticRequirementsService(HttpClient HttpClientService, IJSRuntime jSRuntime)
+        public SynopticRequirementsService(HttpClient HttpClientService, IJSRuntime jSRuntime, ISnackbar snackbar)
         {
             _http = HttpClientService;
             _js = jSRuntime;
             _options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            this.snackbar = snackbar;
         }
 
 
@@ -132,6 +135,23 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirement
             }
 
             return true;
+        }
+
+        public async Task GenerateExcelSTOperatingRequirements(int Id)
+        {
+            var response = await _http.GetAsync($"SOS/SynopticTableofOperatingRequirements/GenerateExcelSTOperatingRequirements/{Id}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                snackbar.Add("Error while exporting, could not download file", Severity.Error);
+            }
+            else
+            {
+                var filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
+                var fileStream = response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+            }
         }
 
 
