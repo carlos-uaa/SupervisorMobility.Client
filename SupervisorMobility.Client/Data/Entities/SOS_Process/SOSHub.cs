@@ -23,7 +23,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public ICollection<FileUpload>? Videos { get; set; } = new List<FileUpload>();
         
         public string? RevisedItems { get; set; }
-        public string? TrainingTime { get; set; }
+        public int? TrainingTime { get; set; }
         public string? OtherInformation { get; set; }
 
         public ICollection<Equipment>? SafetyEquipment { get; set; } = new List<Equipment>();
