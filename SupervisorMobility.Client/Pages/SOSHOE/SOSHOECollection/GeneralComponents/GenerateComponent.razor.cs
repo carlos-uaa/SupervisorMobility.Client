@@ -199,7 +199,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             departmentId = _sosHub.DepartmentId ?? departmentId;
 
 
-            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
+            cycleId = _sosHub.TrainingTime ?? 0;
 
             loading += 10;
 

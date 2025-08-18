@@ -580,7 +580,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             //_sosHub.AppliedModelId = productId;
             _sosHub.IsActive = true;
-            _sosHub.TrainingTime = $"{cycleId} {(cycleId == 1 ? "cycle" : "cycles")}";
+            _sosHub.TrainingTime = cycleId;
             _sosHub.CreatedDate = createdDateTime;
             _sosHub.ModifiedDate = modifiedDateTime;
             _sosHub.PlantId = plantId;
@@ -887,7 +887,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             productSide = _sosHub.Folio.Split('-')[2] ?? productSide;
 
-            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
+            cycleId = _sosHub.TrainingTime ?? 0;
             StateHasChanged();
 
             return new AsyncVoidMethodBuilder();
