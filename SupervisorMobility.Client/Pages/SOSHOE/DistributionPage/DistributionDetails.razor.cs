@@ -106,7 +106,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                     capturedImages.Add(image);
                 }
             }
-            cycleId = _sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime != null ? GetCycleId(_sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime) : 0;
+            cycleId = _sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime ?? 0;
 
             //creacion artificial
             //if (_sosDistribution.Times == null)
