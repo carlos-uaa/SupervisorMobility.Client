@@ -3506,6 +3506,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             lup = new();
 
             Snackbar.Add($"Lup item added", Severity.Info);
+            StateHasChanged();
 
         }
 
