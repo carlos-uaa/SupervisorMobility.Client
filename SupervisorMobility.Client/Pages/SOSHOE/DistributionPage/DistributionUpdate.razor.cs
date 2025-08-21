@@ -230,7 +230,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             //}
             //else
             //{
-            //    //iterar sobre ellos para añadir casos faltantes de haber
+            //    //iterar sobre ellos para aï¿½adir casos faltantes de haber
             //    foreach (Section section in _sosDistribution.SOSHub.Sections)
             //    {
             //        if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
@@ -246,17 +246,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             //    }
             //}
 
-            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[5];
-            var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[5];
-            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[5];
+            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("ï¿½") ?? new string[5];
+            var tempCycleTimes = _sosDistribution.CycleTime?.Split("ï¿½") ?? new string[5];
+            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("ï¿½") ?? new string[5];
 
             var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
-            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
-            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
-            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('§') ?? new string[0];
-            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('§') ?? new string[0];
-            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('§') ?? new string[0];
-            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('§') ?? new string[0];
+            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('ï¿½') ?? new string[0];
+            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('ï¿½') ?? new string[0];
+            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('ï¿½') ?? new string[0];
+            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('ï¿½') ?? new string[0];
+            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('ï¿½') ?? new string[0];
+            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('ï¿½') ?? new string[0];
 
             for (int i = 0; i < 5; i++)
             {
@@ -459,7 +459,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 if (indexTime != -1)
                 {
                     var timeEntry = _sosDistribution.SOSDistributionOperationSequence.ElementAt(indexTime);
-                    var splitTimes = timeEntry.Times?.Split("§") ?? new string[5];
+                    var splitTimes = timeEntry.Times?.Split("ï¿½") ?? new string[5];
 
                     if (splitTimes.Length < 5)
                     {
@@ -468,7 +468,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
                     splitTimes[index] = newValue;
 
-                    timeEntry.Times = string.Join("§", splitTimes);
+                    timeEntry.Times = string.Join("ï¿½", splitTimes);
                 }
                 //else
                 //{
@@ -487,8 +487,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 double totalSectTimes = _sosDistribution.SOSDistributionOperationSequence
                     .Select(t =>
                     {
-                        var times = t.Times?.Split("§");
-                        // Verifica que el índice esté dentro del rango
+                        var times = t.Times?.Split("ï¿½");
+                        // Verifica que el ï¿½ndice estï¿½ dentro del rango
                         return (times != null && index < times.Length) ? times[index] : null;
                     })
                     .Where(splitTime => !string.IsNullOrEmpty(splitTime))
@@ -516,7 +516,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             double totalSectTimes = _sosDistribution.SOSDistributionOperationSequence
                 .Select(t =>
                 {
-                    var times = t.Times?.Split("§");
+                    var times = t.Times?.Split("ï¿½");
                     return (times != null && index < times.Length) ? times[index] : null;
                 })
                 .Where(splitTime => !string.IsNullOrEmpty(splitTime))
@@ -540,7 +540,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             {
                 timesArray[i] = i == index ? newValue : "";
             }
-            return string.Join("§", timesArray);
+            return string.Join("ï¿½", timesArray);
         }
 
         //Commentaries
@@ -621,15 +621,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();
 
-            _sosDistribution.AdditionalTime = string.Join("§", additionalTimes);
-            _sosDistribution.CycleTime = string.Join("§", cycleTimes);
-            _sosDistribution.AplicationModels = string.Join("§", applicationModels);
-            _sosDistribution.SOSDistributionAdditionalTime.TakeQuantity = string.Join("§", takeQuantity);
-            _sosDistribution.SOSDistributionAdditionalTime.TakeTime = string.Join("§", takeTime);
-            _sosDistribution.SOSDistributionAdditionalTime.LeaveQuantity = string.Join("§", leaveQuantity);
-            _sosDistribution.SOSDistributionAdditionalTime.LeaveTime = string.Join("§", leaveTime);
-            _sosDistribution.SOSDistributionAdditionalTime.StepsQuantity = string.Join("§", stepsQuantity);
-            _sosDistribution.SOSDistributionAdditionalTime.StepsTime = string.Join("§", stepsTime);
+            _sosDistribution.AdditionalTime = string.Join("ï¿½", additionalTimes);
+            _sosDistribution.CycleTime = string.Join("ï¿½", cycleTimes);
+            _sosDistribution.AplicationModels = string.Join("ï¿½", applicationModels);
+            _sosDistribution.SOSDistributionAdditionalTime.TakeQuantity = string.Join("ï¿½", takeQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.TakeTime = string.Join("ï¿½", takeTime);
+            _sosDistribution.SOSDistributionAdditionalTime.LeaveQuantity = string.Join("ï¿½", leaveQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.LeaveTime = string.Join("ï¿½", leaveTime);
+            _sosDistribution.SOSDistributionAdditionalTime.StepsQuantity = string.Join("ï¿½", stepsQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.StepsTime = string.Join("ï¿½", stepsTime);
 
             var result = await SOSDistributionServices.UpdateSOSDistribution(_sosDistribution);
 
@@ -873,7 +873,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             }
             else
             {
-                // Añadir los que faltan y actualizar secuencia
+                // Aï¿½adir los que faltan y actualizar secuencia
                 foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone"))
                 {
                     if (!_sosDistribution.SOSDistributionOperationSequence.Any(t => t.SectionId == item.section.SectionId))
@@ -899,7 +899,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                     }
                 }
 
-                // Eliminar los que ya no están en _combinedItems
+                // Eliminar los que ya no estï¿½n en _combinedItems
                 var validSectionIds = _combinedItems
                     .Where(i => i.Zone == "CombinedZone" && i.section != null)
                     .Select(i => i.section.SectionId)
@@ -925,35 +925,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             Console.WriteLine("Combined: " + JsonSerializer.Serialize(_combinedItems.Where(i => i.Zone == "CombinedZone").OrderBy(s => s.Sequence)));
 
 
-            //if (_sosDistribution.SOSDistributionOperationSequence == null)
-            //    _sosDistribution.SOSDistributionOperationSequence = new List<SOSDistributionOperationSequence>();
+            if (_sosDistribution.SOSDistributionOperationSequence == null)
+                _sosDistribution.SOSDistributionOperationSequence = new List<SOSDistributionOperationSequence>();
 
-            //// Elimina los que ya no están en _combinedItems
-            //var validSectionIds = _combinedItems
-            //    .Where(i => i.Zone == "CombinedZone" && i.section != null)
-            //    .Select(i => i.section.SectionId)
-            //    .ToHashSet();
+            // Elimina los que ya no estÃ¡n en _combinedItems
+            var validSectionIds = _combinedItems
+                .Where(i => i.Zone == "CombinedZone" && i.section != null)
+                .Select(i => i.section.SectionId)
+                .ToHashSet();
 
-            //_sosDistribution.SOSDistributionOperationSequence =
-            //    _sosDistribution.SOSDistributionOperationSequence
-            //        .Where(seq => validSectionIds.Contains(seq.SectionId ?? 0))
-            //        .ToList();
+            _sosDistribution.SOSDistributionOperationSequence =
+                _sosDistribution.SOSDistributionOperationSequence
+                    .Where(seq => validSectionIds.Contains(seq.SectionId ?? 0))
+                    .ToList();
 
-            //// Añade los que faltan
-            //foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone" && i.section != null))
-            //{
-            //    if (!_sosDistribution.SOSDistributionOperationSequence.Any(seq => seq.SectionId == item.section.SectionId))
-            //    {
-            //        _sosDistribution.SOSDistributionOperationSequence.Add(new SOSDistributionOperationSequence
-            //        {
-            //            SectionId = item.section.SectionId,
-            //            Section = item.section,
-            //            SequenceId = item.Sequence,
-            //            Times = CreateTimeString("0", 0),
-            //            IsActive = true
-            //        });
-            //    }
-            //}
+            // AÃ±ade los que faltan
+            foreach (var item in _combinedItems.Where(i => i.Zone == "CombinedZone" && i.section != null))
+            {
+                if (!_sosDistribution.SOSDistributionOperationSequence.Any(seq => seq.SectionId == item.section.SectionId))
+                {
+                    _sosDistribution.SOSDistributionOperationSequence.Add(new SOSDistributionOperationSequence
+                    {
+                        SectionId = item.section.SectionId,
+                        Section = item.section,
+                        SequenceId = item.Sequence,
+                        Times = CreateTimeString("0", 0),
+                        IsActive = true
+                    });
+                }
+            }
+
+            StateHasChanged();
 
         }
 
@@ -1001,17 +1003,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                     var startIndex = match.Index;
                     var endIndex = startIndex + criticalPoint.Length;
 
-                    // Agregar el texto normal antes del punto crítico
+                    // Agregar el texto normal antes del punto crï¿½tico
                     builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
 
-                    // Agregar el punto crítico resaltado
+                    // Agregar el punto crï¿½tico resaltado
                     builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
 
                     currentIndex = endIndex;
                 }
             }
 
-            // Agregar el texto normal después del último punto crítico
+            // Agregar el texto normal despuï¿½s del ï¿½ltimo punto crï¿½tico
             builder.Append(text.Substring(currentIndex));
 
             return new MarkupString(builder.ToString());

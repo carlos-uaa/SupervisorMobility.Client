@@ -1533,6 +1533,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             lup = new Lup();
 
             Snackbar.Add("Lup item added", Severity.Info);
+            StateHasChanged();
         }
 
         private void RemoveFromList(int pilarId, int indexRemove)

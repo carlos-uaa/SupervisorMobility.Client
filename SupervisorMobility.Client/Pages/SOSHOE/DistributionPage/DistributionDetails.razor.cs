@@ -78,7 +78,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
-            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeTimes: true);
+            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeTimes: true, includeCollections: true);
             if (_sosDistribution.DistributionLogbooks != null)
             {
                 mostRecentLogs = _sosDistribution.DistributionLogbooks
@@ -125,7 +125,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             //}
             //else
             //{
-            //    //iterar sobre existentes para añadir casos faltantes de haber
+            //    //iterar sobre existentes para aï¿½adir casos faltantes de haber
             //    foreach (Section section in _sosDistribution.SOSHub.Sections)
             //    {
             //        if (!_sosDistribution.Times.Any(t => t.SectionId == section.SectionId))
@@ -143,32 +143,32 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
 
 
-            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[0];
-            var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[0];
-            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[0];
+            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("ï¿½") ?? new string[0];
+            var tempCycleTimes = _sosDistribution.CycleTime?.Split("ï¿½") ?? new string[0];
+            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("ï¿½") ?? new string[0];
 
-            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
-            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
-            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('§') ?? new string[0];
-            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('§') ?? new string[0];
-            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('§') ?? new string[0];
-            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('§') ?? new string[0];
+            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('ï¿½') ?? new string[0];
+            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('ï¿½') ?? new string[0];
+            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('ï¿½') ?? new string[0];
+            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('ï¿½') ?? new string[0];
+            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('ï¿½') ?? new string[0];
+            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('ï¿½') ?? new string[0];
 
             for (int i = 0; i < 5; i++)
             {
-                additionalTimes[i] = i < tempAdditionalTimes.Length && !string.IsNullOrWhiteSpace(tempAdditionalTimes[i]) ? tempAdditionalTimes[i] : "0";
-                cycleTimes[i] = i < tempCycleTimes.Length && !string.IsNullOrWhiteSpace(tempCycleTimes[i]) ? tempCycleTimes[i] : "0";
-                applicationModels[i] = i < tempApplicationModels.Length && !string.IsNullOrWhiteSpace(tempApplicationModels[i]) ? tempApplicationModels[i] : "";
-                takeQuantity[i] = i < tempTakeQuantity.Length && !string.IsNullOrWhiteSpace(tempTakeQuantity[i]) ? tempTakeQuantity[i] : "0";
-                leaveQuantity[i] = i < tempLeaveQuantity.Length && !string.IsNullOrWhiteSpace(tempLeaveQuantity[i]) ? tempLeaveQuantity[i] : "0";
-                stepsQuantity[i] = i < tempStepsQuantity.Length && !string.IsNullOrWhiteSpace(tempStepsQuantity[i]) ? tempStepsQuantity[i] : "0";
+                additionalTimes[i] = i < tempAdditionalTimes.Length && !string.IsNullOrWhiteSpace(tempAdditionalTimes[i]) && !tempAdditionalTimes[i].Contains("Â§") ? tempAdditionalTimes[i] : "0";
+                cycleTimes[i] = i < tempCycleTimes.Length && !string.IsNullOrWhiteSpace(tempCycleTimes[i]) && !tempCycleTimes[i].Contains("Â§") ? tempCycleTimes[i] : "0";
+                applicationModels[i] = i < tempApplicationModels.Length && !string.IsNullOrWhiteSpace(tempApplicationModels[i]) && !tempApplicationModels[i].Contains("Â§") ? tempApplicationModels[i] : "";
+                takeQuantity[i] = i < tempTakeQuantity.Length && !string.IsNullOrWhiteSpace(tempTakeQuantity[i]) && !tempTakeQuantity[i].Contains("Â§") ? tempTakeQuantity[i] : "0";
+                leaveQuantity[i] = i < tempLeaveQuantity.Length && !string.IsNullOrWhiteSpace(tempLeaveQuantity[i]) && !tempLeaveQuantity[i].Contains("Â§") ? tempLeaveQuantity[i] : "0";
+                stepsQuantity[i] = i < tempStepsQuantity.Length && !string.IsNullOrWhiteSpace(tempStepsQuantity[i]) && !tempStepsQuantity[i].Contains("Â§") ? tempStepsQuantity[i] : "0";
             }
 
             for (int i = 0; i < 6; i++)
             {
-                takeTime[i] = i < tempTakeTime.Length && !string.IsNullOrWhiteSpace(tempTakeTime[i]) ? tempTakeTime[i] : "0";
-                leaveTime[i] = i < tempLeaveTime.Length && !string.IsNullOrWhiteSpace(tempLeaveTime[i]) ? tempLeaveTime[i] : "0";
-                stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) ? tempStepsTime[i] : "0";
+                takeTime[i] = i < tempTakeTime.Length && !string.IsNullOrWhiteSpace(tempTakeTime[i]) && !tempTakeTime[i].Contains("Â§") ? tempTakeTime[i] : "0";
+                leaveTime[i] = i < tempLeaveTime.Length && !string.IsNullOrWhiteSpace(tempLeaveTime[i]) && !tempLeaveTime[i].Contains("Â§") ? tempLeaveTime[i] : "0";
+                stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) && !tempStepsTime[i].Contains("Â§") ? tempStepsTime[i] : "0";
             }
 
             _sosDistribution.SOSDistributionOperationSequence = _sosDistribution.SOSDistributionOperationSequence
@@ -379,7 +379,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
 
 
-            // Si ninguna está vacía o nula, retorna false
+            // Si ninguna estï¿½ vacï¿½a o nula, retorna false
             return false;
         }
 
