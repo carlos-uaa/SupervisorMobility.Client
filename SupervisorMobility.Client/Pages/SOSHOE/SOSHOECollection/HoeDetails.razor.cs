@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -167,7 +168,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (_sosHub.Folio.Contains("-L-"))
             {
                 productSide = "L";
-            }else if (_sosHub.Folio.Contains("-R-"))
+            } else if (_sosHub.Folio.Contains("-R-"))
             {
                 productSide = "R";
             }
@@ -278,7 +279,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             departmentId = _sosHub.DepartmentId ?? departmentId;
 
 
-            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
+            cycleId = _sosHub.TrainingTime ?? 0;
             
 
             //_sosHub.AppliedModel = _products.Find(p => p.ProductId == _sosHub.AppliedModelId);
@@ -313,8 +314,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 Documents.Add(pat);
             }
 
+            if (_sosHub.Hci != null )
+            {
+                Documents.Add(_sosHub.Hci);
+            }
+
             StateHasChanged();
-            //faltan añadir los diagramas
+            //faltan aï¿½adir los diagramas
 
             return new AsyncVoidMethodBuilder();
         }
@@ -656,17 +662,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     var startIndex = match.Index;
                     var endIndex = startIndex + criticalPoint.Length;
 
-                    // Agregar el texto normal antes del punto crítico
+                    // Agregar el texto normal antes del punto crï¿½tico
                     builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
 
-                    // Agregar el punto crítico resaltado
+                    // Agregar el punto crï¿½tico resaltado
                     builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
 
                     currentIndex = endIndex;
                 }
             }
 
-            // Agregar el texto normal después del último punto crítico
+            // Agregar el texto normal despuï¿½s del ï¿½ltimo punto crï¿½tico
             builder.Append(text.Substring(currentIndex));
 
             return new MarkupString(builder.ToString());
@@ -732,6 +738,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             selectedIndexPageGenerate = indexPage;
             ShowGenerateDialog = false;
 
+            _sosHub.Plant = _plants.FirstOrDefault(p => p.PlantId == plantId);
+            _sosHub.Area = _areas.FirstOrDefault(a => a.AreaId == areaId);
+            _sosHub.Distribution = _distributions.FirstOrDefault(d => d.DistributionId == distributionId);
+            _sosHub.Department = _departments.FirstOrDefault(d => d.DepartmentId == departmentId);
+            _sosHub.Station = _stations.FirstOrDefault(s => s.StationId == stationId);
+
+
             var parameters = new DialogParameters { { "selectedIndexPageGenerate", indexPage }, { "user", user }, { "SOSHubId", SOSHubId },
                 { "_sosHub", _sosHub }, { "_supervisors", _supervisors }, { "_plants", _plants }, { "_areas", _areas }, { "_distributions", _distributions }, { "_departments", _departments },
                 { "_stations", _stations }
@@ -771,7 +784,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 NavigationManager.NavigateTo($"/PAT/{id}");
             }
-            // Añadir más casos según sea necesario
+            else if (typeof(T) == typeof(HCI))
+            {
+                NavigationManager.NavigateTo($"/HCI/Details/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofControlPoints))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofOperatingRequirements))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{id}");
+            }
+            // Aï¿½adir mï¿½s casos segï¿½n sea necesario
         }
 
         public void Update<T>(int id) where T : class
@@ -800,7 +825,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 NavigationManager.NavigateTo($"/PAT/Update/{id}");
             }
-            // Añadir más casos según sea necesario
+            else if (typeof(T) == typeof(HCI))
+            {
+                NavigationManager.NavigateTo($"/HCI/update/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofControlPoints))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Update/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofOperatingRequirements))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Update/{id}");
+            }
+            // Aï¿½adir mï¿½s casos segï¿½n sea necesario
         }
 
         private MudMessageBox _DeleteAnalysis;
@@ -958,33 +995,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             if (selectedRowNumber == SelectTableEventDocument.Items.ToList().IndexOf(args.Item))
             {
-                //HoeDetails(args.Item.SOSHubId);
-                //aqui va los details
+                
+                var method = GetType().GetMethod(nameof(Details), BindingFlags.Instance | BindingFlags.Public);
 
-                if (args.Item is SOSAnalysis)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{SosDocId}");
-                }
-                else if (args.Item is SOSCombination)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Combination/Details/{SosDocId}");
-                }
-                else if (args.Item is SOSDistribution)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{SosDocId}");
-                }
-                else if (args.Item is SOSFlow)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Flow/Details/{SosDocId}");
-                }
-                else if (args.Item is SOSSequence)
-                {
-                    NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{SosDocId}");
-                }  
-                else if (args.Item is PAT)
-                {
-                    NavigationManager.NavigateTo($"/PAT/{SosDocId}");
-                }
+                var generic = method.MakeGenericMethod(args.Item.GetType());
+                generic.Invoke(this, new object[] { SosDocId });
+
+
+                //if (args.Item is SOSAnalysis)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{SosDocId}");
+                //}
+                //else if (args.Item is SOSCombination)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Combination/Details/{SosDocId}");
+                //}
+                //else if (args.Item is SOSDistribution)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{SosDocId}");
+                //}
+                //else if (args.Item is SOSFlow)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Flow/Details/{SosDocId}");
+                //}
+                //else if (args.Item is SOSSequence)
+                //{
+                //    NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{SosDocId}");
+                //}  
+                //else if (args.Item is PAT)
+                //{
+                //    NavigationManager.NavigateTo($"/PAT/{SosDocId}");
+                //}
             }
             else
             {
@@ -1021,6 +1062,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 {
                     SosDocId = pat.PATid;
                 }
+                else if (element is HCI hci)
+                {
+                    SosDocId = hci.HCIId;
+                }
+                else if (element is SOSSynopticTableofControlPoints csro)
+                {
+                    SosDocId = csro.SOSSynopticTableofControlPointsId;
+                }
+                else if (element is SOSSynopticTableofOperatingRequirements cscp)
+                {
+                    SosDocId = cscp.SOSSynopticTableofOperatingRequirementsId;
+                }
                 return "selected"; // Mantener la fila seleccionada
             }
             else if (SelectTableEventDocument.SelectedItem != null && SelectTableEventDocument.SelectedItem.Equals(element))
@@ -1048,6 +1101,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else if (element is PAT pat)
                 {
                     SosDocId = pat.PATid;
+                }
+                else if (element is HCI hci)
+                {
+                    SosDocId = hci.HCIId;
+                }
+                else if (element is SOSSynopticTableofControlPoints csro)
+                {
+                    SosDocId = csro.SOSSynopticTableofControlPointsId;
+                }
+                else if (element is SOSSynopticTableofOperatingRequirements cscp)
+                {
+                    SosDocId = cscp.SOSSynopticTableofOperatingRequirementsId;
                 }
 
                 selectedRowNumber = rowNumber;

@@ -9,7 +9,7 @@
         public int? Status { get; set; }
         public bool? IsActive { get; set; }
 
-        public int SOSSynopticTableofControlPointsiD { get; set; }
+        public int SOSSynopticTableofControlPointsId { get; set; }
         public SOSSynopticTableofControlPoints? SOSSynopticTableofControlPoints { get; set; }
 
 

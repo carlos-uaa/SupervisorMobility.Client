@@ -1,0 +1,659 @@
+﻿@page "/soshoe/SynopticRequirements/Update/{SynopticRequirementsId:int}"
+
+@inject IBreadcrumbService BreadcrumbService
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@inject ISOSHubService SOSHubServices
+@inject ISynopticRequirementsService SynopticRequirementsService
+@inject ISOSAnalysisService SOSAnalysisServices
+@inject ISOSSequenceService SOSSequenceServices
+
+
+@inject IDistributionService DistributionService
+
+<style>
+    .synoptic-table {
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;
+        font-size: 12px;
+    }
+
+        .synoptic-table th,
+        .synoptic-table td {
+            border: 1px solid black;
+            padding: 2px 4px;
+            text-align: center;
+            vertical-align: middle;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+
+        .synoptic-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+    .verticalText {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+    }
+
+</style>
+
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto; float: right" Dense>
+        <thead>
+            <tr>
+                <th rowspan="2">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+
+                    <MudItem Style="justify-content: end" Class="ml-auto">
+                        <MudItem Class="d-flex">
+                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3" Icon="@Icons.Material.Filled.Info" IconColor="Color.Info" @onclick="(() => HoeDetails((int)_sosSynopticRequeriments.SOSHubId))" OnTouch="(() => HoeDetails((int)_sosSynopticRequeriments.SOSHubId))">@Localizer["GoCollection"]</MudChip>
+                        </MudItem>
+                        <MudItem Class="d-flex">
+                            @if ((user.UserType == 1 || user.UserType == 2)
+                                                    && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status == 1)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Variant="Variant.Text">
+                                    @Localizer["new"]
+                                </MudChip>
+                            }
+
+                            @if ((user.UserType == 1 || user.UserType == 2)
+                                                    && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status != 2)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                    @Localizer["review"]!
+                                </MudChip>
+                            }
+                            else if (_sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                            && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                            && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status == 2)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success" Variant="Variant.Text">
+                                    @Localizer["approved"]!
+                                </MudChip>
+                            }
+
+
+                        </MudItem>
+                    </MudItem>
+                </td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+    <MudText Typo="Typo.h6"><b>Synoptic  Table of Operating Requirements</b></MudText>
+
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Style="width: 100%;">
+        <MudTabPanel Text="Select Sequences/Analyses">
+
+            @*     <MudContainer>
+                <MudTextField @bind-Value="searchSequence" Placeholder="Buscar sequencia..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+                <MudToggleGroup Vertical T="SOSSequence" SelectionMode="SelectionMode.MultiSelection" @bind-values="SequencesSelected" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                    @foreach (SOSSequence sequence in FilteredSequences)
+                    {
+                        <div class="toggle-column">
+                            <MudToggleItem Value="@(sequence)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                                <div class="mud-width-full mud-height-full">
+                                    <div class="d-flex align-center justify-space-between flex-wrap">
+                                        <MudText Class="ellipsis">@sequence.InternalControlNumber</MudText>
+                                    </div>
+                                    <MudText Typo="Typo.subtitle2">@sequence.OperationName</MudText>
+                                </div>
+                            </MudToggleItem>
+                        </div>
+                    }
+                </MudToggleGroup>
+            </MudContainer>
+            <MudContainer>
+                <MudTextField @bind-Value="searchAnalysis" Placeholder="Buscar analisis..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+                <MudToggleGroup Vertical T="SOSAnalysis" SelectionMode="SelectionMode.MultiSelection" @bind-Values="AnalysesSelected" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                    @foreach (SOSAnalysis analisis in FilteredAnalysis)
+                    {
+                        <div class="toggle-column">
+                            <MudToggleItem Value="@(analisis)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                                <div class="mud-width-full mud-height-full">
+                                    <div class="d-flex align-center justify-space-between flex-wrap">
+                                        <MudText Class="ellipsis">@analisis.InternalControlNumber</MudText>
+                                    </div>
+                                    <MudText Typo="Typo.subtitle2">@analisis.OperationName</MudText>
+                                </div>
+                            </MudToggleItem>
+                        </div>
+                    }
+                </MudToggleGroup>
+            </MudContainer> *@
+
+            <MudContainer>
+                <MudTextField @bind-Value="searchSosHub" Placeholder="Buscar colector..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
+                <MudToggleGroup Vertical T="SOSHub" SelectionMode="SelectionMode.MultiSelection" @bind-values="_sosSynopticRequeriments.SOSHubs" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                    @foreach (SOSHub dtcollect in FilteredSosHubs)
+                    {
+                        <div class="toggle-column">
+                            <MudToggleItem Value="@(dtcollect)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
+                                <div class="mud-width-full mud-height-full">
+                                    <div class="d-flex align-center justify-space-between flex-wrap">
+                                        <MudText Class="ellipsis">@dtcollect.Folio</MudText>
+                                    </div>
+                                    <MudText Typo="Typo.subtitle2">@dtcollect.ProcessSheet</MudText>
+                                </div>
+                            </MudToggleItem>
+                        </div>
+                    }
+                </MudToggleGroup>
+            </MudContainer>
+
+        </MudTabPanel>
+        @*    <MudTabPanel Text="Order Items">
+            <MudDropContainer T="DropItem" Items="_combinedItems" ItemsSelector="@((item, dropzone) => item.Zone == dropzone)" ItemDropped="ItemUpdated" Class="drop-container">
+                <ChildContent>
+                    <MudContainer Style="display:flex">
+                        <MudContainer Style="width:50%">
+
+                            <MudDropZone T="DropItem" Identifier="SOSAnalysis" Class="drop-item drop-scroll rounded-lg mud-alert-text-success" CanDrop="@((item) => item.Type == "SOSSequence" && item.Type == "SOSAnalysis")">
+                                <MudText Typo="Typo.h6" Class="mb-4">Analyses </MudText>
+
+                                <MudSimpleTable Style="width:100%;" Class="sticky-table styled-table table-striped sticky-header" Striped="true">
+                                    <thead>
+                                        <MudTr>
+                                            <MudTh Style="width: 45%">Análisis</MudTh>
+                                            <MudTh Style="width: 20%">Paso</MudTh>
+                                            <MudTh Style="width: 10%">Tiempo</MudTh>
+                                            <MudTh>Puntos Crítico</MudTh>
+                                        </MudTr>
+                                    </thead>
+
+                                </MudSimpleTable>
+
+                                @foreach (var analysis in _sosSynopticRequeriments.Analyses)
+                                {
+                                    @if (analysis.SOSHub != null)
+                                    {
+                                        <MudListSubheader Class="mt-4 pb-2">@analysis.OperationName</MudListSubheader>
+                                        <MudDropZone T="DropItem" AllowReorder ItemDraggingClass="mud-info-text" Identifier="@($"Analysis_{analysis.SOSAnalysisId}")" Class="rounded mud-background-gray"
+                                                     CanDrop="@((item) => item.Type == "SOSAnalysis")" Style="min-height:60px">
+
+                                        </MudDropZone>
+                                    }
+                                }
+                            </MudDropZone>
+
+                            <MudDropZone T="DropItem" Identifier="SOSSequence" Class="drop-item drop-scroll rounded-lg mud-alert-text-info flex-grow-1" CanDrop="@((item) => item.Type == "SOSSequence" && item.Type == "SOSAnalysis")">
+                                <MudText Typo="Typo.h6" Class="mb-4">Sequences </MudText>
+                                <MudSimpleTable Style="width:100%;" Class="sticky-table styled-table table-striped" Striped="true">
+                                    <thead>
+                                        <MudTr>
+                                            <MudTh Style="width: 20%">Paso</MudTh>
+                                            <MudTh Style="width: 10%">Tiempo</MudTh>
+                                            <MudTh>Puntos Crítico</MudTh>
+                                        </MudTr>
+                                    </thead>
+
+                                </MudSimpleTable>
+                                @foreach (var sequence in _sosSynopticRequeriments.Sequences)
+                                {
+                                    @if (sequence.SOSHub != null)
+                                    {
+                                        <MudListSubheader Class="mt-4 pb-2">@sequence.OperationName</MudListSubheader>
+                                        <MudDropZone T="DropItem" AllowReorder ItemDraggingClass="mud-info-text" Identifier="@($"Sequence_{sequence.SOSSequenceId}")" Class="rounded mud-background-gray"
+                                                     CanDrop="@((item) => item.Type == "SOSSequence")" Style="min-height:60px">
+
+                                        </MudDropZone>
+                                    }
+                                }
+                            </MudDropZone>
+                        </MudContainer>
+
+                        <MudContainer Style="width:50%">
+
+
+                            <MudText Typo="Typo.h6" Class="mb-4">Structure document </MudText>
+                            @foreach (var op in _distribution.Operations.Where(o => _soshub.AppliedModels.Any(m => m.Description == o.ProductName || m.Code == o.ProductName)))
+                            {
+
+                                <MudListSubheader Class="mt-4 pb-2">(@op.Code) @op.Description</MudListSubheader>
+                                <MudDropZone T="DropItem" AllowReorder ItemDraggingClass="mud-info-text" Identifier="@($"OP_{op.OperationId}")" Class="rounded mud-background-gray"
+                                             Style="min-height:100px">
+
+                                </MudDropZone>
+
+                            }
+
+
+                        </MudContainer>
+                    </MudContainer>
+                </ChildContent>
+                <ItemRenderer>
+                    <MudPaper Elevation="4" Class="pa-2 my-1 d-flex align-items-center">
+                        <MudSimpleTable Style="width:100%;" Class="styled-table table-striped" Striped="true">
+                            <MudTr>
+                                @if (context.Type == "SOSAnalysis")
+                                {
+                                    <MudTd Style="width:45%; background-color: white;">
+                                        @foreach (var (analisis, indexAnalisis) in context.section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                        {
+                                            @if (analisis.CriticalPoints.Any())
+                                            {
+                                                <MudText T="MarkupString" ReadOnly="true" Variant="Variant.Text">
+                                                    @((MarkupString)GenerateHighlightedText(GetFormatedAnalisisText(context.section, indexAnalisis), analisis.CriticalPoints))
+                                                </MudText>
+                                                @if (analisis != context.section.Analyses.Last())
+                                                {
+                                                    <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <MudText Typo="Typo.subtitle1">
+                                                    @context.section.Analyses[indexAnalisis].Text
+                                                </MudText>
+                                                @if (analisis != context.section.Analyses.Last())
+                                                {
+                                                    <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                                }
+                                            }
+                                        }
+                                    </MudTd>
+                                }
+                                <MudTd Style="width:20%">
+                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                        @context.section.Step
+                                    </MudText>
+                                </MudTd>
+                                <MudTh Style="width: 10%"></MudTh>
+
+                                <MudTd>
+                                    @if (!string.IsNullOrEmpty(context.section.Step))
+                                    {
+                                        @foreach (var (analisis, indexAnalisis) in context.section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                        {
+                                            <MudItem>
+                                                @foreach (var (criticalPoint, indexPoints) in analisis.CriticalPoints.Select((criticalPoint, indexPoints) => (criticalPoint, indexPoints)))
+                                                {
+                                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                        @context.section.Analyses[indexAnalisis].CriticalPoints[indexPoints]
+                                                    </MudText>
+                                                    <MudText>
+                                                        @ReasonFormat(context.section.Analyses[indexAnalisis].Reasons[indexPoints])
+                                                    </MudText>
+                                                    @if (criticalPoint != context.section.Analyses[indexAnalisis].CriticalPoints.Last())
+                                                    {
+                                                        <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                                    }
+                                                }
+                                            </MudItem>
+                                            @if (analisis != context.section.Analyses.Last())
+                                            {
+                                                <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                            }
+                                        }
+                                    }
+                                </MudTd>
+
+                            </MudTr>
+
+                        </MudSimpleTable>
+                    </MudPaper>
+                </ItemRenderer>
+            </MudDropContainer>
+
+        </MudTabPanel>  *@
+        <MudTabPanel Text="Synoptic" OnClick="VerifyItemsSequence">
+
+            <MudPaper Square="true" Elevation="3">
+                <MudSimpleTable Class="synoptic-table">
+
+                    <MudTr>
+                        <MudTh colspan="7"><b>NOMBRE DEL PROCESO</b></MudTh>
+                        <MudTd colspan="6"><b>DEPARTAMENTO</b></MudTd>
+                        <MudTh colspan="4"><b>PLANTA</b></MudTh>
+                        <MudTd colspan="4"><b>FECHA</b></MudTd>
+                        <MudTd coslpan="2" rowspan="7"></MudTd>
+                        @if (TryGetSynopticRequirementsLogbooksElementAtIndex(4, out var item))
+                        {
+                            <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                            <MudTh colspan="4"> @item.Changes</MudTh>
+                            <MudTh colspan="2">@item.Date</MudTh>
+                            <MudTh>
+                                @if (item.NoRevision == 0)
+                                {
+                                    <b>N</b>
+                                }
+                                else
+                                {
+                                    @item.NoRevision
+                                }
+                            </MudTh>
+                        }
+                        else
+                        {
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                            <MudTh colspan="4"></MudTh>
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                        }
+                    </MudTr>
+                    <MudTr>
+                        <MudTh colspan="7" rowspan="2"> @_sosSynopticRequeriments.ProcessName </MudTh>
+                        <MudTd colspan="6" rowspan="2"> @_soshub?.Department?.Description</MudTd>
+                        <MudTh colspan="4" rowspan="2"> @_soshub?.Plant?.Description</MudTh>
+                        <MudTd colspan="4" rowspan="2"> @_sosSynopticRequeriments.CreatedAt </MudTd>
+
+                        @if (TryGetSynopticRequirementsLogbooksElementAtIndex(3, out var item))
+                        {
+                            <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                            <MudTh colspan="4"> @item.Changes</MudTh>
+                            <MudTh colspan="2">@item.Date</MudTh>
+                            <MudTh>
+                                @if (item.NoRevision == 0)
+                                {
+                                    <b>N</b>
+                                }
+                                else
+                                {
+                                    @item.NoRevision
+                                }
+                            </MudTh>
+                        }
+                        else
+                        {
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                            <MudTh colspan="4"></MudTh>
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                        }
+                    </MudTr>
+                    <MudTr>
+                        @if (TryGetSynopticRequirementsLogbooksElementAtIndex(2, out var item))
+                        {
+                            <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                            <MudTh colspan="4"> @item.Changes</MudTh>
+                            <MudTh colspan="2">@item.Date</MudTh>
+                            <MudTh>
+                                @if (item.NoRevision == 0)
+                                {
+                                    <b>N</b>
+                                }
+                                else
+                                {
+                                    @item.NoRevision
+                                }
+                            </MudTh>
+                        }
+                        else
+                        {
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                            <MudTh colspan="4"></MudTh>
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                        }
+                    </MudTr>
+                    <MudTr>
+                        <MudTh colspan="6"><b>ELABORO</b></MudTh>
+                        <MudTd colspan="6"><b>REVISO</b></MudTd>
+                        <MudTh colspan="6"><b>APROBO</b></MudTh>
+                        <MudTd colspan="3"><b>HOJA</b></MudTd>
+
+                        @if (TryGetSynopticRequirementsLogbooksElementAtIndex(1, out var item))
+                        {
+                            <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                            <MudTh colspan="4"> @item.Changes</MudTh>
+                            <MudTh colspan="2">@item.Date</MudTh>
+                            <MudTh>
+                                @if (item.NoRevision == 0)
+                                {
+                                    <b>N</b>
+                                }
+                                else
+                                {
+                                    @item.NoRevision
+                                }
+                            </MudTh>
+                        }
+                        else
+                        {
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                            <MudTh colspan="4"></MudTh>
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                        }
+                    </MudTr>
+                    <MudTr>
+                        <MudTh colspan="6" rowspan="2">@_sosSynopticRequeriments?.Creator?.Name</MudTh>
+                        <MudTh colspan="6" rowspan="2">@_sosSynopticRequeriments?.Reviewer?.Name</MudTh>
+                        <MudTh colspan="6" rowspan="2">@_sosSynopticRequeriments?.Approver?.Name</MudTh>
+                        <MudTd rowspan="2"></MudTd>
+                        <MudTd rowspan="2"></MudTd>
+                        <MudTd rowspan="2"></MudTd>
+                        @if (TryGetSynopticRequirementsLogbooksElementAtIndex(0, out var item))
+                        {
+                            <MudTh colspan="2">@item.Approver?.Name</MudTh>
+                            <MudTh>@_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTh>
+                            <MudTh colspan="4"> @item.Changes</MudTh>
+                            <MudTh colspan="2">@item.Date</MudTh>
+                            <MudTh>
+                                @if (item.NoRevision == 0)
+                                {
+                                    <b>N</b>
+                                }
+                                else
+                                {
+                                    @item.NoRevision
+                                }
+                            </MudTh>
+                        }
+                        else
+                        {
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                            <MudTh colspan="4"></MudTh>
+                            <MudTh colspan="2"></MudTh>
+                            <MudTh></MudTh>
+                        }
+                    </MudTr>
+                    <MudTr>
+                        <MudTh colspan="2"><b>APROBO </b></MudTh>
+                        <MudTh><b>NO </b></MudTh>
+                        <MudTh colspan="4"><b>CAMBIO </b></MudTh>
+                        <MudTh colspan="2"><b>FECHA </b></MudTh>
+                        <MudTh><b>REV.</b></MudTh>
+                    </MudTr>
+                    <MudTr>
+                        <MudTd colspan="32"></MudTd>
+                    </MudTr>
+                    <tbody>
+                        <MudTr>
+                            <MudTh colspan="1" rowspan="2"><b>No </b></MudTh>
+                            <MudTh colspan="4" rowspan="2"><b>NOMBRE DEL PROCESO</b></MudTh>
+                            <MudTh colspan="1" rowspan="2"><b>No. DE <br /> SOS</b></MudTh>
+                            <MudTh colspan="8"><b>OPERACIONES</b></MudTh>
+                            <MudTh colspan="4" rowspan="2"><b>CONDICIONES <br /> ESTABLECIDA </b></MudTh>
+                            <MudTh colspan="4" rowspan="2"><b>CARACTERISTICAS DE <br /> ASEGURAMIENTO DE CALIDAD</b></MudTh>
+                            <MudTh colspan="3" rowspan="2"><b>GRADO DE <br /> DIFICULTAD</b></MudTh>
+                            <MudTh colspan="2" rowspan="2"><b>TIEMPO DE <br /> APRENDIZAJE </b></MudTh>
+                            <MudTh colspan="3" rowspan="2"><b>CONOCIMIENTOS</b></MudTh>
+                            <MudTh colspan="3" rowspan="2"><b> HABILIDADES </b></MudTh>
+                        </MudTr>
+                        <MudTr>
+                            <MudTh colspan="4"><b>POR PERSONA </b></MudTh>
+                            <MudTh colspan="4"><b>POR MAQUINA </b></MudTh>
+                        </MudTr>
+
+                        @*  @{
+                            int rowDist = _distribution.Operations.Where(o => _soshub.AppliedModels.Any(m => m.Description == o.ProductName || m.Code == o.ProductName)).Count();
+                        } *@
+
+                        @*  @foreach (var (ope, index) in _distribution.Operations
+                                            .Where(o => _soshub.AppliedModels.Any(m => m.Description == o.ProductName || m.Code == o.ProductName))
+                                            .Select((o, i) => (o, i)))
+                        {
+                            <MudTr>
+
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="1" rowspan="@rowDist"></MudTd>
+                                    <MudTh colspan="4" rowspan="@rowDist">@_soshub.Distribution.Description</MudTh>
+                                }
+
+                                <MudTd colspan="1" class="verticalText">
+                                    @ope.Code
+                                </MudTd>
+                                <MudTd colspan="4">
+                                 @ope.Description
+                                </MudTd>
+                                <MudTd colspan="4"></MudTd>
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="4" rowspan="@rowDist"></MudTd>
+                                }
+                                <MudTd colspan="4">
+                                    @foreach (var item in _combinedItems.Where(c => c.Zone == $"OP_{ope.OperationId}"))
+                                    {
+                                        @foreach (var (analisis, indexAnalisis) in item.section.Analyses.Select((analisis, indexAnalisis) => (analisis, indexAnalisis)))
+                                        {
+                                            <MudItem>
+                                                @foreach (var (criticalPoint, indexPoints) in analisis.CriticalPoints.Select((criticalPoint, indexPoints) => (criticalPoint, indexPoints)))
+                                                {
+                                                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                                                        @item.section.Analyses[indexAnalisis].CriticalPoints[indexPoints]
+                                                    </MudText>
+                                                    <MudText>
+                                                        @ReasonFormat(item.section.Analyses[indexAnalisis].Reasons[indexPoints])
+                                                    </MudText>
+                                                    @if (criticalPoint != item.section.Analyses[indexAnalisis].CriticalPoints.Last())
+                                                    {
+                                                        <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                                    }
+                                                }
+                                            </MudItem>
+                                            @if (analisis != item.section.Analyses.Last())
+                                            {
+                                                <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+                                            }
+                                        }
+
+                                    }
+                                </MudTd>
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="3" rowspan="@rowDist"></MudTd>
+                                    <MudTd colspan="3" rowspan="@rowDist"></MudTd>
+                                    <MudTd colspan="3" rowspan="@rowDist"></MudTd>
+                                }
+                            </MudTr>
+                        } *@
+
+                        @{
+                            int rowHubs = _sosSynopticRequeriments.SOSHubs.Count();
+                        }
+
+                        @foreach (var (ope, index) in _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Select((o, i) => (o, i)))
+                        {
+                            <MudTr>
+
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="1" rowspan="@rowHubs"></MudTd>
+                                    <MudTh colspan="4" rowspan="@rowHubs">@_soshub.Folio <br /> (@_soshub.ProcessSheet)</MudTh>
+                                }
+
+                                <MudTd colspan="1" class="verticalText">
+                                    @ope.SOSHub.Folio  <br /> (@ope.SOSHub.ProcessSheet)
+                                </MudTd>
+                                <MudTd colspan="3" Style="border-right: none;">
+                                    @if (ope.Type == TypeOperacion.Person)
+                                    {
+                                        <MudTextField AutoGrow @bind-Value="_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.ElementAt(index).TypeText" Label="Person Data" />
+                                    }
+                                </MudTd>
+
+                                <MudTd align="center" colspan="2" style="position: relative; border-left: none; border-right: none; padding: 0;">
+                                   
+                                    <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background-color: black;"></div>
+                                    <MudToggleIconButton Variant="Variant.Filled"
+                                                         Toggled="@((ope.Type == TypeOperacion.Machine))"
+                                                         ToggledChanged="@(toggled => ChangeOperationType(index, toggled ? TypeOperacion.Machine : TypeOperacion.Person))"
+                                                         Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft"
+                                                         ToggledIcon="@Icons.Material.Filled.KeyboardDoubleArrowRight"
+                                                         Color="@Color.Primary"
+                                                         ToggledColor="@Color.Secondary"
+                                                         Title="@(ope.Type == TypeOperacion.Person ? "Switch To Machine" : "Switch To Persona")" />
+                                </MudTd>
+
+                                <MudTd colspan="3" Style="border-left: none;">
+                                    @if (ope.Type == TypeOperacion.Machine)
+                                    {
+                                        <MudTextField  AutoGrow @bind-Value="_sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.ElementAt(index).TypeText" Label="Machine Data" />
+                                    }
+                                </MudTd>
+
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="4" rowspan="@rowHubs"></MudTd>
+                                }
+                                <MudTd colspan="4">
+
+                                </MudTd>
+                                @if (index == 0)
+                                {
+                                    <MudTd colspan="3" rowspan="@rowHubs"></MudTd>
+                                    <MudTd colspan="3" rowspan="@rowHubs"></MudTd>
+                                    <MudTd colspan="2" rowspan="@rowHubs"></MudTd>
+                                    <MudTd colspan="2" rowspan="@rowHubs"></MudTd>
+                                }
+                            </MudTr>
+                        }
+
+                    </tbody>
+                </MudSimpleTable>
+
+            </MudPaper>
+
+        </MudTabPanel>
+
+    </MudTabs>
+
+    <br />
+}
+
+

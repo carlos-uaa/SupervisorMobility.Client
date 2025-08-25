@@ -1,6 +1,8 @@
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Data.Entities;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using System.Globalization;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequirements
 {
@@ -26,6 +28,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
         //SynopticRequirements
         SOSSynopticTableofOperatingRequirements _sosSynopticRequeriments { get; set; } = new();
+        SOSHub _soshub { get; set; } = new();
+        Distribution _distribution { get; set; } = new();
         protected async override Task OnInitializedAsync()
         {
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -61,8 +65,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             }
             else
             {
-
+                _sosSynopticRequeriments = await SynopticRequirementsService.GetSOSSynopticTableofOperatingRequirements((int)SynopticRequirementsId, true, true, true);
+                _soshub = await sosHubService.GetSOSHub((int)_sosSynopticRequeriments.SOSHubId, true, true, includePeople: true, includeInformation: true, includeModel: true);
+                _distribution = await DistributionService.GetDistributionWithCollections((int)_soshub.PlantId, (int)_soshub.AreaId, (int)_soshub.DistributionId);
             }
+
+
             ShowLoading = false;
             StateHasChanged();
         }
@@ -98,7 +106,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         #region SynopticRequirements
         private void UpdateSynopticRequirements(int SynopticId)
         {
-            
+            NavigationManager.NavigateTo($"soshoe/SynopticRequirements/Update/{SynopticId}");
         }
 
 
@@ -130,9 +138,40 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         #region Hoe
         private void HoeDetails(int HoeId)
         {
-            NavigationManager.NavigateTo($"/soshoe/hoe/HoeDetails/{HoeId}");
+            NavigationManager.NavigateTo($"/soshoe/Hub/Details/{HoeId}");
         }
-            #endregion
+        #endregion
 
+        #region generalfunctions
+        //&===================== FUNCTIONS FOR GENERAL COMPONENT =====================&\\
+
+        /// <summary>
+        /// Formats a nullable <see cref="DateTime"/> as "MONTH YEAR" in uppercase.
+        /// Returns empty string if null.
+        /// </summary>
+        /// <param name="date">The date to format.</param>
+        /// <returns>Formatted month and year string, or empty if null.</returns>
+        private string DateFormat(DateTime? date)
+        {
+            if (!date.HasValue) return "";
+
+            string language = CultureInfo.CurrentCulture.Name ?? "es-MX";
+            CultureInfo cultureInfo = new CultureInfo(language);
+
+            return date.Value.ToString("dd/MM/yyyy hh:mm:ss tt", cultureInfo).ToUpper();
         }
+
+
+        #endregion
+
+        #region downloadFormat
+        //&===================== FUNCTIONS FOR DOWNLOAD FORMAT =====================&\\
+        private async void DownloadSTOR()
+        {
+            await SynopticRequirementsService.GenerateExcelSTOperatingRequirements((int)SynopticRequirementsId);
+        }
+
+        #endregion
+
+    }
 }

@@ -1,5 +1,7 @@
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities.SOS_Process;
+using SupervisorMobility.Client.Pages.Inicio.HCIPage.Components;
+using SupervisorMobility.Client.Services.HCIService;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralComponents
 {
@@ -26,8 +28,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         public SOSAnalysis _sosAnalysis { get; set; } = new SOSAnalysis();
         public SOSDistribution _sosDistribution { get; set; } = new SOSDistribution();
         public SOSFlow _sosFlow { get; set; } = new SOSFlow();
-        SOSSequence _sosSequence { get; set; } = new SOSSequence();
+        public SOSSequence _sosSequence { get; set; } = new SOSSequence();
         public SOSCombination _sosCombination { get; set; } = new SOSCombination();
+        public HCI _hci { get; set; } = new HCI();
+        private List<User> _Users;
+        private User _SelectUser;
+
+
+        public SOSSynopticTableofOperatingRequirements _SOSSynopticRequirements { get; set; } = new SOSSynopticTableofOperatingRequirements();
+
+        public SOSSynopticTableofControlPoints _sosControlPoints { get; set; } = new SOSSynopticTableofControlPoints();
 
         public int ApproverAnalysisId { get; set; }
         public int ReviewerAnalysisId { get; set; }
@@ -71,6 +81,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         int ApproverSequenceId = 0;
         int ReviewerSequenceId = 0;
 
+        int OwnerSynopticRequirementsId = 0;
+        int ApproverSynopticRequirementsId = 0;
+        int ReviewerSynopticRequirementsId = 0;
+
+
+        int OwnerControlPointsId = 0;
+        int ApproverControlPointsId = 0;
+        int ReviewerControlPointsId = 0;
+
         public int supervisorOwnerId { get; set; } = 0;
         public int supervisorEditorId { get; set; } = 0;
         public int OperatorTurn1 { get; set; } = 0;
@@ -89,7 +108,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         protected async override Task OnInitializedAsync()
         {
-            if(_plants == null || !_plants.Any())
+            if (_plants == null || !_plants.Any())
             {
                 _plants = await PlantServices.GetPlants();
                 _plants = _plants.OrderBy(p => p.Description).ToList();
@@ -187,7 +206,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             departmentId = _sosHub.DepartmentId ?? departmentId;
 
 
-            cycleId = _sosHub.TrainingTime != null ? GetCycleId(_sosHub.TrainingTime) : 0;
+            cycleId = _sosHub.TrainingTime ?? 0;
 
             loading += 10;
 
@@ -377,6 +396,120 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                     }
                     loading += 10;
                     break;
+                case 6:
+                    if (_sosHub.SOSSynopticOperatingRequirements.Count > 0)
+                    {
+                        _SOSSynopticRequirements = _sosHub.SOSSynopticOperatingRequirements.FirstOrDefault();
+                        if (_SOSSynopticRequirements.SOSSynopticTableofOperatingRequirementsId != 0 && _SOSSynopticRequirements.SynopticRequirementsLogbooks.Count > 0)
+                        {
+                            ApproverDistributionId = (int)(_SOSSynopticRequirements.SynopticRequirementsLogbooks.Last().Status != 2 ? _SOSSynopticRequirements.SynopticRequirementsLogbooks.Last().ApproverId : 0);
+                            ReviewerDistributionId = (int)(_SOSSynopticRequirements.SynopticRequirementsLogbooks.Last().Status != 2 ? _SOSSynopticRequirements.SynopticRequirementsLogbooks.Last().ReviewerId : 0);
+                        }
+
+                        if (_SOSSynopticRequirements.SynopticRequirementsLogbooks.Count == 0)
+                        {
+                            _SOSSynopticRequirements.SynopticRequirementsLogbooks.Add(new SOSSynopticRequirementsLogbook());
+                        }
+
+                        loading += 3;
+
+
+
+                        loading += 2;
+
+                        AvailableSoshubs = await SOSHubServices.GetAllSOSHub();
+                        AvailableSoshubs = AvailableSoshubs.Where(s => s.DistributionId == _sosHub.DistributionId).ToList();
+                        AvailableSoshubs.RemoveAll(s => s.SOSHubId == _sosHub.SOSHubId);
+
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+                        //lo redirigimos a la vista dado que ya hay datos
+                        selectedIndexPageGenerate = 66;
+
+                        loading += 5;
+                    }
+                    else
+                    {
+                        //preparamos los datos
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+
+                        _SOSSynopticRequirements.CreatedAt = DateTime.Now;
+
+                        loading += 10;
+                    }
+                    break;
+                case 7:
+                    if (_sosHub.SOSSynopticControlPoints.Count > 0)
+                    {
+                        _sosControlPoints = _sosHub.SOSSynopticControlPoints.FirstOrDefault();
+                        if (_sosControlPoints.SOSSynopticTableofControlPointsId != 0 && _sosControlPoints.SynopticPointsLogbooks.Count > 0)
+                        {
+                            ApproverDistributionId = (int)(_sosControlPoints.SynopticPointsLogbooks.Last().Status != 2 ? _sosControlPoints.SynopticPointsLogbooks.Last().ApproverId : 0);
+                        }
+
+                        if (_sosControlPoints.SynopticPointsLogbooks.Count == 0)
+                        {
+                            _sosControlPoints.SynopticPointsLogbooks.Add(new SOSSynopticPointsLogbook());
+                        }
+
+                        loading += 3;
+
+
+
+                        loading += 2;
+
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+                        //lo redirigimos a la vista dado que ya hay datos
+                        selectedIndexPageGenerate = 66;
+
+                        loading += 5;
+                    }
+                    else
+                    {
+                        //preparamos los datos
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+
+                        _sosControlPoints.CreatedAt = DateTime.Now;
+
+                        loading += 10;
+                    }
+                    break;
+
+                case 9:
+                    if (_sosHub.HciId != null && _sosHub.HciId != 0)
+                    {
+                        _hci = await HCIsServices.GetHCI((int)_sosHub.HciId);
+
+                        loading += 3;
+
+
+
+                        loading += 2;
+
+
+
+                        loading += 5;
+                    }
+                    else
+                    {
+                        _Users = await HCIsServices.GetUsersWithoutHCI();
+
+
+                        loading += 10;
+                    }
+                    break;
+
             }
             loaded = true;
             StateHasChanged();
@@ -1167,6 +1300,305 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         }
 
+        #region GenerateSynopticRequirements
+
+        SOSSynopticRequirementsLogbook logSynopticRequirements { get; set; } = new SOSSynopticRequirementsLogbook();
+        public async void GenerateSynopticRequirements()
+        {
+
+            if (_sosHub.SOSSynopticOperatingRequirements.Count > 0)
+            {
+                //REVISION
+                if (ReviewerSynopticRequirementsId == 0 || ApproverSynopticRequirementsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                       ApproverSynopticRequirementsId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                    return;
+                }
+
+                var copySequences = _SOSSynopticRequirements.Sequences;
+                var copyAnalyses = _SOSSynopticRequirements.Analyses;
+
+                _SOSSynopticRequirements = _sosHub.SOSSynopticOperatingRequirements.First();
+
+                if (_SOSSynopticRequirements.SynopticRequirementsLogbooks.First().SOSSynopticRequirementsLogbookId == 0)
+                {
+                    _SOSSynopticRequirements.SynopticRequirementsLogbooks.Clear();
+                }
+
+                logSynopticRequirements.NoRevision = _SOSSynopticRequirements.SynopticRequirementsLogbooks?.Count();
+                logSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                logSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                logSynopticRequirements.Date = System.DateTime.Now;
+                logSynopticRequirements.Status = 1;
+                logSynopticRequirements.IsActive = true;
+                if (_SOSSynopticRequirements.SynopticRequirementsLogbooks == null)
+                {
+                    _SOSSynopticRequirements.SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>();
+                }
+
+                _SOSSynopticRequirements.SynopticRequirementsLogbooks.Add(logSynopticRequirements);
+
+
+
+                var Gen_SOSSynopticRequirements = await SOSHubServices.GenerateSynopticRequirements(SOSHubId, _SOSSynopticRequirements);
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                if (Gen_SOSSynopticRequirements != 0)
+                {
+                    Snackbar.Add($"{Localizer["_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Info);
+                    NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{_SOSSynopticRequirements.SOSSynopticTableofOperatingRequirementsId}");
+                    _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements();
+                    //Pregutar si quiere ver el analisis generado
+                }
+                else
+                {
+                    Snackbar.Add($"{Localizer["Fail_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Error);
+                }
+
+                StateHasChanged();
+
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(_SOSSynopticRequirements.ProcessName) || OwnerSynopticRequirementsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                       OwnerSynopticRequirementsId == 0 ? "Es necesario el elaborador" : "Es necesario el nombre de processo!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else if (ApproverSynopticRequirementsId == 0 || ReviewerSynopticRequirementsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                      ApproverSynopticRequirementsId == 0 ? "Es necesario el aprovador" : "Es necesario seleccionar el editor!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    _SOSSynopticRequirements.SOSHubId = SOSHubId;
+
+                    _SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                    _SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                    _SOSSynopticRequirements.CreatorId = OwnerSynopticRequirementsId;
+
+                    logSynopticRequirements.NoRevision = 0;
+                    logSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                    logSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                    logSynopticRequirements.Date = System.DateTime.Now;
+                    logSynopticRequirements.Status = 1;
+                    logSynopticRequirements.IsActive = true;
+                    if (_SOSSynopticRequirements.SynopticRequirementsLogbooks == null)
+                    {
+                        _SOSSynopticRequirements.SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>();
+                    }
+
+                    _SOSSynopticRequirements.SynopticRequirementsLogbooks.Add(logSynopticRequirements);
+
+
+                    if (_SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence == null)
+                    {
+                        _SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
+                    }
+
+
+
+                    var Gen_SOSSynopticRequirements = await SOSHubServices.GenerateSynopticRequirements(SOSHubId, _SOSSynopticRequirements);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (Gen_SOSSynopticRequirements != 0)
+                    {
+                        Snackbar.Add($"{Localizer["_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Info);
+                        NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{Gen_SOSSynopticRequirements}");
+                        _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["Fail_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
+            }
+
+        }
+
+        #endregion
+
+
+        #region GenerateSynopticControlPoints
+
+        SOSSynopticPointsLogbook logGenerateSynopticControlPoints { get; set; } = new SOSSynopticPointsLogbook();
+        public async void GenerateSynopticControlPoints()
+        {
+
+            if (_sosHub.SOSSynopticControlPoints.Count > 0)
+            {
+                //REVISION
+                if (ApproverControlPointsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                       "Warning",
+                       ApproverControlPointsId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
+                       yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                    return;
+                }
+
+                var copySequences = _sosControlPoints.Sequences;
+                var copyAnalyses = _sosControlPoints.Analyses;
+
+                _sosControlPoints = _sosHub.SOSSynopticControlPoints.First();
+
+                if (_sosControlPoints.SynopticPointsLogbooks.First().SOSSynopticPointsLogbookId == 0)
+                {
+                    _sosControlPoints.SynopticPointsLogbooks.Clear();
+                }
+
+                logGenerateSynopticControlPoints.NoRevision = _sosControlPoints.SynopticPointsLogbooks?.Count();
+                logGenerateSynopticControlPoints.ApproverId = ApproverControlPointsId;
+                logGenerateSynopticControlPoints.Date = System.DateTime.Now;
+                logGenerateSynopticControlPoints.Status = 1;
+                logGenerateSynopticControlPoints.IsActive = true;
+                if (_sosControlPoints.SynopticPointsLogbooks == null)
+                {
+                    _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>();
+                }
+
+                _sosControlPoints.SynopticPointsLogbooks.Add(logGenerateSynopticControlPoints);
+
+
+
+                var Gen_SOSSynopticRequirements = await SOSHubServices.GenerateSynopticControlPoints(SOSHubId, _sosControlPoints);
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                if (Gen_SOSSynopticRequirements != 0)
+                {
+                    Snackbar.Add($"{Localizer["_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Info);
+                    NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{_sosControlPoints.SOSSynopticTableofControlPointsId}");
+                    _sosControlPoints = new SOSSynopticTableofControlPoints();
+                    //Pregutar si quiere ver el analisis generado
+                }
+                else
+                {
+                    Snackbar.Add($"{Localizer["Fail_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Error);
+                }
+
+                StateHasChanged();
+
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(_sosControlPoints.ProcessName) || OwnerControlPointsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                       OwnerControlPointsId == 0 ? "Es necesario el elaborador" : "Es necesario el nombre de processo!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else if (ApproverControlPointsId == 0 || ReviewerControlPointsId == 0)
+                {
+                    bool? result = await DialogService.ShowMessageBox(
+                      "Warning",
+                      ApproverControlPointsId == 0 ? "Es necesario el aprovador" : "Es necesario seleccionar el editor!",
+                      yesText: "Ok!");
+                    var state = result == null ? "Canceled" : "Deleted!";
+                    StateHasChanged();
+                }
+                else
+                {
+                    _sosControlPoints.SOSHubId = SOSHubId;
+                    _sosControlPoints.ReviewerId = ReviewerControlPointsId;
+                    _sosControlPoints.ApproverId = ApproverControlPointsId;
+                    _sosControlPoints.CreatorId = OwnerControlPointsId;
+
+                    logGenerateSynopticControlPoints.NoRevision = 0;
+                    logGenerateSynopticControlPoints.ApproverId = ApproverControlPointsId;
+                    logGenerateSynopticControlPoints.Date = System.DateTime.Now;
+                    logGenerateSynopticControlPoints.Status = 1;
+                    logGenerateSynopticControlPoints.IsActive = true;
+                    if (_sosControlPoints.SynopticPointsLogbooks == null)
+                    {
+                        _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>();
+                    }
+
+                    _sosControlPoints.SynopticPointsLogbooks.Add(logGenerateSynopticControlPoints);
+
+
+                    if (_sosControlPoints.SOSSynopticRequirementsOperationSequence == null)
+                    {
+                        _sosControlPoints.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
+                    }
+
+
+
+                    var Gen_sosControlPoints = await SOSHubServices.GenerateSynopticControlPoints(SOSHubId, _sosControlPoints);
+
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    if (Gen_sosControlPoints != 0)
+                    {
+                        Snackbar.Add($"{Localizer["_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Info);
+                        NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{Gen_sosControlPoints}");
+                        _sosControlPoints = new SOSSynopticTableofControlPoints();
+                        //Pregutar si quiere ver el analisis generado
+                    }
+                    else
+                    {
+                        Snackbar.Add($"{Localizer["Fail_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Error);
+                    }
+
+                    StateHasChanged();
+                }
+            }
+
+
+        }
+
+        #endregion
+
+        #region HCI
+
+        private async void GenerateHci()
+        {
+
+            _hci.User = await UsersService.GetUserAndCollection(_SelectUser.UserId);
+            _hci.UserId = _SelectUser.UserId;
+
+            _hci.SOSHubId = _sosHub.SOSHubId;
+
+
+            if (await HCIsServices.CreateHCI(_hci))
+            {
+                Snackbar.Add("Created succesfully", Severity.Success);
+                var UpdatedUser = await UsersService.GetUser(_SelectUser.UserId);
+                NavigationManager.NavigateTo($"/HCI/Details/{UpdatedUser.HciId}");
+            }
+            else
+            {
+                Snackbar.Add("Error", Severity.Error);
+            }
+        }
+
+        #endregion
+
+        List<SOSHub> AvailableSoshubs = new();
         List<SOSAnalysis> AvailableAnalyses = new();
         List<SOSSequence> AvailableSequences = new();
 
@@ -1177,6 +1609,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 (op.InternalControlNumber?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.ProcessName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.OperationName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false));
+
+        private string searchSosHub = "";
+        private IEnumerable<SOSHub> FilteredSosHubs =>
+            AvailableSoshubs.Where(op =>
+                string.IsNullOrEmpty(searchSosHub) ||
+                (op.Folio?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.ProcessSheet?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (op.OtherInformation?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false));
+
 
         private string searchSequence = "";
         private IEnumerable<SOSSequence> FilteredSequences =>
@@ -1386,12 +1827,67 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             {
                 NavigationManager.NavigateTo($"/PAT/{id}");
             }
-            // Añadir más casos según sea necesario
+            else if (typeof(T) == typeof(SOSSynopticTableofOperatingRequirements))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{id}");
+            }
+            else if (typeof(T) == typeof(SOSSynopticTableofControlPoints))
+            {
+                NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{id}");
+            }
+            else if (typeof(T) == typeof(HCI))
+            {
+                NavigationManager.NavigateTo($"/HCI/Details/{id}");
+            }
+
+            // Aï¿½adir mï¿½s casos segï¿½n sea necesario
         }
 
         public void ReturnToGenerateindex()
         {
             MudDialog.Close(DialogResult.Ok("Reopen"));
         }
+
+
+
+        private async Task<IEnumerable<User>> SearchSV(string value)
+        {
+
+            var reviewerIds = _sosHub.ReviewerEditors?.Select(r => r.UserId).ToHashSet() ?? new HashSet<int>();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                var orderedUsers = _Users
+                        .OrderByDescending(u => u.SuperiorId.HasValue && reviewerIds.Contains(u.SuperiorId.Value))
+                        .ToList();
+
+                return orderedUsers;
+            }
+
+            value = value.Trim().ToLowerInvariant();
+
+            await Task.Delay(150);
+
+            return _Users.OrderByDescending(u => u.SuperiorId.HasValue && reviewerIds.Contains(u.SuperiorId.Value)).Where(x =>
+                (!string.IsNullOrEmpty(x.Name) && x.Name.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (x.Payroll.HasValue && x.Payroll.Value.ToString().Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(x.Email) && x.Email.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(x.Management) && x.Management.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(x.Process) && x.Process.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                (x.Plant != null && (
+                    (!string.IsNullOrEmpty(x.Plant.Description) && x.Plant.Description.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(x.Plant.Code) && x.Plant.Code.Contains(value, StringComparison.OrdinalIgnoreCase))
+                )) ||
+                (x.Area != null && (
+                    (!string.IsNullOrEmpty(x.Area.Description) && x.Area.Description.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(x.Area.Code) && x.Area.Code.Contains(value, StringComparison.OrdinalIgnoreCase))
+                )) ||
+                (x.Group != null && (
+                    (!string.IsNullOrEmpty(x.Group.Description) && x.Group.Description.Contains(value, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(x.Group.Code) && x.Group.Code.Contains(value, StringComparison.OrdinalIgnoreCase))
+                )) ||
+                x.UserId.ToString().Contains(value, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+
     }
 }

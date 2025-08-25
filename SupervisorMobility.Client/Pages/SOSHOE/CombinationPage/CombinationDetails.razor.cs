@@ -98,7 +98,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                     capturedImages.Add(image);
                 }
             }
-            cycleId = _sosCombination.SOSHub?.TrainingTime != null ? GetCycleId(_sosCombination.SOSHub.TrainingTime) : 0;
+            cycleId = _sosCombination.SOSHub?.TrainingTime ?? 0;
 
 
             UpdateTableValues();
@@ -295,7 +295,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             //        string.IsNullOrEmpty(operation.PartsPerCycle))
             //    {
             //        lastValidOperationIndex = index - 1;
-            //        break; // Salir del bucle una vez que se encuentra la primera operación vacía
+            //        break; // Salir del bucle una vez que se encuentra la primera operaciï¿½n vacï¿½a
             //    }
             //}
         }
@@ -334,7 +334,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 (_CellSize*15,  32, 2.5,-5, 403)
             };
 
-            // Función de interpolación
+            // Funciï¿½n de interpolaciï¿½n
             static double Interpolate(double x, double x0, double y0, double x1, double y1) =>
                 y0 + (x - x0) * (y1 - y0) / (x1 - x0);
 
@@ -349,7 +349,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 {
                     double t = (step - stepPresets[i].step) / (stepPresets[i + 1].step - stepPresets[i].step);
 
-                    // Para top y left, seleccionamos el más común entre los dos puntos
+                    // Para top y left, seleccionamos el mï¿½s comï¿½n entre los dos puntos
                     int top = stepPresets[i].top == stepPresets[i + 1].top ?
                         stepPresets[i].top :
                         (t > 0.5 ? stepPresets[i + 1].top : stepPresets[i].top);
@@ -358,7 +358,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                         stepPresets[i].left :
                         (t > 0.5 ? stepPresets[i + 1].left : stepPresets[i].left);
 
-                    // Interpolación para angle y width
+                    // Interpolaciï¿½n para angle y width
                     double angle = Interpolate(step, stepPresets[i].step, stepPresets[i].angle,
                                              stepPresets[i + 1].step, stepPresets[i + 1].angle);
 
@@ -435,7 +435,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 (_CellSize*30,   40, 1.5, -5, 885)
             };
 
-            // Función de interpolación
+            // Funciï¿½n de interpolaciï¿½n
             static double Interpolate(double x, double x0, double y0, double x1, double y1) =>
                 y0 + (x - x0) * (y1 - y0) / (x1 - x0);
 
@@ -450,7 +450,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                 {
                     double t = (step - stepPresets[i].step) / (stepPresets[i + 1].step - stepPresets[i].step);
 
-                    // Para top y left, seleccionamos el más común entre los dos puntos
+                    // Para top y left, seleccionamos el mï¿½s comï¿½n entre los dos puntos
                     int top = stepPresets[i].top == stepPresets[i + 1].top ?
                         stepPresets[i].top :
                         (t > 0.5 ? stepPresets[i + 1].top : stepPresets[i].top);
@@ -459,7 +459,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
                         stepPresets[i].left :
                         (t > 0.5 ? stepPresets[i + 1].left : stepPresets[i].left);
 
-                    // Interpolación para angle y width
+                    // Interpolaciï¿½n para angle y width
                     double angle = Interpolate(step, stepPresets[i].step, stepPresets[i].angle,
                                              stepPresets[i + 1].step, stepPresets[i + 1].angle);
 

@@ -1,0 +1,85 @@
+﻿@page "/demos"
+@* @page "/soshoe/Flow/Details/{FlowId:int}" *@
+
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+
+@using Blazor.Diagrams.Components.Widgets
+
+<style>
+
+
+    .diagram-container {
+	width: 100%;
+    height: 100%;
+    border: 1px solid black; /* Just visual */
+}
+</style>
+
+<MudButton Icon="@Icons.Material.Filled.GridOff" OnClick="_ => GridPoints = !_gridPoints">
+    <span>Grid is @(_gridPoints ? "On" : "Off")</span>
+</MudButton>
+
+
+<MudItem Class=" mr-8 mb-4">
+    <MudPaper Height="120vh" Style="overflow:hidden; position:relative;">
+        <MudDrawerContainer Class="mud-height-full">
+
+            <MudDrawer Open Fixed="false" Elevation="1" Variant="@DrawerVariant.Mini" Style="scrollbar-width: none;">
+                <MudNavMenu>
+
+                    @if (!_gridPoints)
+                    {
+                        <MudNavLink Icon="@Icons.Material.Filled.GridOff" OnClick="_ => GridPoints = !_gridPoints">
+                            <span>Grid is @(_gridPoints ? "On" : "Off")</span>
+                        </MudNavLink>
+                    }
+                    else
+                    {
+                        <MudNavLink Icon="@Icons.Material.Filled.GridOn" OnClick="_ => GridPoints = !_gridPoints">
+                            <span>Grid is @(_gridPoints ? "On" : "Off")</span>
+                        </MudNavLink>
+                    }
+                    <div class="col-6">
+                        <div class="text-center" draggable="true" @ondragstart="() => OnDragStart(0)">
+                            <div style="pointer-events:none;">
+                                <img class="d-block m-auto" width="100px" height="100px" src="../Images/admin.png" />
+                                <span>Default Node</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center" draggable="true" @ondragstart="() => OnDragStart(1)">
+                            <div style="pointer-events:none;">
+                                <img class="d-block m-auto" width="100px" height="100px"  src="..\Images\admin.png" />
+                                <span>Bot Answer Node</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                </MudNavMenu>
+            </MudDrawer>
+
+            <div class="mud-height-full" style="display: flex; align-items: center; flex-direction: row;">
+
+                <div class="diagram-container" ondragover="event.preventDefault();" @ondragover:preventDefault @ondrop="OnDrop">
+                        <CascadingValue Value="_blazorDiagram">
+                            <DiagramCanvas>
+                                <Widgets>
+                                    <GridWidget Size="30" Mode="@(GridPoints ? GridMode.Line : GridMode.Point )" BackgroundColor="white" />
+                                </Widgets>
+                            </DiagramCanvas>
+                        </CascadingValue>
+                  
+                </div>
+
+            </div>
+        </MudDrawerContainer>
+    </MudPaper>
+
+</MudItem>
+
+

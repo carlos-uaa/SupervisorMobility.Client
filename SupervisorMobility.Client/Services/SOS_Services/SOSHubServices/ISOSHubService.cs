@@ -28,6 +28,11 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         Task<int> GenerateDistribution(int SOS_DataPool_id, SOSDistribution distribution);
         Task<int> GenerateSequence(int SOS_DataPool_id, SOSSequence sequence);
         Task<int> GeneratePat(int SOS_DataPool_id, PAT pat);
+
+        Task<int> GenerateSynopticRequirements(int SOS_DataPool_id, SOSSynopticTableofOperatingRequirements SynopticRequirements);
+        Task<int> GenerateSynopticControlPoints(int SOS_DataPool_id, SOSSynopticTableofControlPoints SynopticControlPoints);
+
+
         //Histoy
         Task<List<SOSHub>> GetAllHistorySOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false);
     }
