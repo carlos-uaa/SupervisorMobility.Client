@@ -51,6 +51,27 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSDistributionService
 
             return SOSDistributionsRetorned;
         }
+
+        public async Task<SOSDistribution> GetSOSDistributionBySosHub(int SOSDistributionId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false, bool includeTurns = false, bool includeTimes = false, bool includeCollections = false)
+        {
+            var response = await _http.GetAsync($"SOS/Distribution/bySosHub/{SOSDistributionId}?includeImages={includeImages}&includeNotes={includeNotes}&includeLogbooks={includeLogbooks}&includeSpecialCases={includeSpecialCases}&includeSOS={includeSOS}&includeImagesSOS={includeImagesSOS}&includeTurns={includeTurns}&includeTimes={includeTimes}&includeCollections={includeCollections}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ApplicationException(content);
+            }
+            var SOSDistributionsRetorned = JsonSerializer.Deserialize<SOSDistribution>(content, _options);
+
+            return SOSDistributionsRetorned;
+        }
+
+
         public async Task<SOSDistribution> UpdateSOSDistribution(SOSDistribution SosEntity)
         {
             var response = await _http.PutAsJsonAsync($"SOS/Distribution/{SosEntity.SOSDistributionId}", SosEntity);
