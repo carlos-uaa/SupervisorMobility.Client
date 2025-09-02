@@ -98,3 +98,11 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public string After { get; set; }
     }
 }
+
+public class SOSHubDtoList
+{
+    public int SOSHubId { get; set; }
+    public string? Folio { get; set; }
+    public string? ProcessSheet { get; set; }
+    public bool Selected { get; set; } = false;
+}
