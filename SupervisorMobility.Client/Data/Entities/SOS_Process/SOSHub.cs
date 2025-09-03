@@ -45,6 +45,9 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
 
+        public int? CreatorId { get; set; }
+        public User? Creator { get; set; }
+
         public List<User>? ApproverOwners { get; set; }
         public List<User>? ReviewerEditors { get; set; }
 
