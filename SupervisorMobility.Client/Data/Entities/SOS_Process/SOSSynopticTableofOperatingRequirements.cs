@@ -1,4 +1,5 @@
-﻿namespace SupervisorMobility.Client.Data.Entities.SOS_Process
+﻿
+namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 {
     public class SOSSynopticTableofOperatingRequirements
     {
@@ -22,7 +23,7 @@
         public ICollection<SOSSynopticRequirementsOperationSequence>? SOSSynopticRequirementsOperationSequence { get; set; }
 
         public ICollection<SOSSynopticRequirementsLogbook>? SynopticRequirementsLogbooks { get; set; } = new List<SOSSynopticRequirementsLogbook>();
-
+        public IEnumerable<SOSSynopticTableRequirementOperationDifficulty>? RequirementDifficulties { get; set; } = new List<SOSSynopticTableRequirementOperationDifficulty>();
 
         public bool? IsActive { get; set; }
         public int? SOSHubId { get; set; }
