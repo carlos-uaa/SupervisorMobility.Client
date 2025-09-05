@@ -615,7 +615,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.TrainingTime = cycleId;
             _sosHub.CreatedDate = createdDateTime;
             _sosHub.ModifiedDate = modifiedDateTime;
-            _sosHub.CreatorId = user.UserId;
             _sosHub.DepartmentId = departmentId;
             _sosHub.StationId = stationId;
             _sosHub.PlantId = plantId;
