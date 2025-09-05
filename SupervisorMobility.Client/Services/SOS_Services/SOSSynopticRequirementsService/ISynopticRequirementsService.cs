@@ -5,7 +5,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirement
     {
         Task<SOSSynopticTableofOperatingRequirements> GetSOSSynopticTableofOperatingRequirements(int SOSSynopticTableofOperatingRequirementsId, bool includeLogbooks = false, bool includeSOS = false, bool includeCollections = false);
         Task<List<SOSSynopticTableofOperatingRequirements>> GetAllSOSSynopticTableofOperatingRequirements(bool includeLogbooks = false, bool includeSOS = false, bool includeCollections = false);
-        Task<SOSSynopticTableofOperatingRequirements> UpdateSOSSynopticTableofOperatingRequirements(SOSSynopticTableofOperatingRequirements SosEntity);
+        Task<SOSSynopticTableofOperatingRequirements> UpdateSOSSynopticTableofOperatingRequirements(SOSSynopticTableofOperatingRequirementsForUpdateDto SosEntity);
         Task<bool> DeleteSOSSynopticTableofOperatingRequirements(int SosEntity_id);
 
         Task<FileUpload> AddIllustrationToSOSSynopticTableofOperatingRequirements(MultipartFormDataContent? contentfiles, int SOS_SOSSynopticTableofOperatingRequirements_id);

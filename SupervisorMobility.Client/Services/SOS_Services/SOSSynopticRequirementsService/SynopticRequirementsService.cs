@@ -54,7 +54,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirement
 
             return SOSSynopticTableofOperatingRequirementssRetorned;
         }
-        public async Task<SOSSynopticTableofOperatingRequirements> UpdateSOSSynopticTableofOperatingRequirements(SOSSynopticTableofOperatingRequirements SosEntity)
+        public async Task<SOSSynopticTableofOperatingRequirements> UpdateSOSSynopticTableofOperatingRequirements(SOSSynopticTableofOperatingRequirementsForUpdateDto SosEntity)
         {
             var response = await _http.PutAsJsonAsync($"SOS/SynopticTableofOperatingRequirements/{SosEntity.SOSSynopticTableofOperatingRequirementsId}", SosEntity);
             var content = await response.Content.ReadAsStringAsync();
