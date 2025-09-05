@@ -45,9 +45,6 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
 
-        public int? CreatorId { get; set; }
-        public User? Creator { get; set; }
-
         public List<User>? ApproverOwners { get; set; }
         public List<User>? ReviewerEditors { get; set; }
 
@@ -85,6 +82,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
 
         public List<SOSSynopticTableofControlPoints>? SOSSynopticControlPoints { get; set; } = new List<SOSSynopticTableofControlPoints>();
         public List<SOSSynopticTableofOperatingRequirements>? SOSSynopticOperatingRequirements { get; set; } = new List<SOSSynopticTableofOperatingRequirements>();
+        public ICollection<SOSSynopticTableRequirementOperationDifficulty>? SOSSynopticOperatingRequirementsDifficulties { get; set; } = new List<SOSSynopticTableRequirementOperationDifficulty>();
 
         public List<PAT>? PATs { get; set; } = new List<PAT>();
 
