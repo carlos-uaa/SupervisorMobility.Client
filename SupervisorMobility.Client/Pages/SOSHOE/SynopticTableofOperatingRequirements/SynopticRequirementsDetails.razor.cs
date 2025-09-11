@@ -33,6 +33,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         //+================== HUB ANS LISTs ===================+\\
         SOSHub _soshub { get; set; } = new();
 
+        //+==================== KNOWLEDGE =====================+\\
+        private List<Knowledge> _KnowledgeGeneral = new();
+
+        //+====================== SKILL =======================+\\
+        private List<Skill> _SkillGeneral = new();
+
 
         // =================================================== \\
         //&============ COMPONENT INITIALIZATION =============&\\
@@ -51,6 +57,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             if (!await CheckUserLoginAsync())
                 return;
 
+            await LoadKnowlege();
+            await LoadSkills();
             await LoadSynopticRequirementsAndHubsAsync();
 
             ShowLoading = false;
@@ -109,6 +117,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             _soshub = await SOSHubServices.GetSOSHub((int)_sosSynopticRequeriments.SOSHubId!, true, true, includePeople: true, includeInformation: true, includeModel: true);
 
             await FillDistributions(_sosSynopticRequeriments);
+        }
+
+        /// <summary>
+        /// Loads knowledge data asynchronously from the service and assigns it to the general knowledge field.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task LoadKnowlege()
+        {
+            // Fetch knowledge data from the service
+            _KnowledgeGeneral = await KnowledgeServices.GetKnowledges();
+        }
+
+
+        /// <summary>
+        /// Loads skills data asynchronously from the service and assigns it to the general skills field.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task LoadSkills()
+        {
+            // Fetch skills data from the service
+            _SkillGeneral = await SkillServices.GetSkills();
         }
 
         #endregion
@@ -518,6 +547,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         {
             return distribution.SOSHubs!.FirstOrDefault(s => s.SOSHubId == distribution.SOSHubId)?.TrainingTime ?? 0;
         }
+
+        /// <summary>
+        /// Gets all skills associated with a specific SOS hub.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <returns>A list of <c>SOSSTROSkillHub</c> for the given SOS hub, or an empty list if none exist.</returns>
+        public List<SOSSTROSkillHub> GetSkills(int sosHubId)
+        {
+            return _sosSynopticRequeriments.SOSSTROSkill?.Where(a => a.SOSHubId == sosHubId).ToList() ?? new List<SOSSTROSkillHub>();
+        }
+
+        /// <summary>
+        /// Gets all knowledges associated with a specific SOS hub.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <returns>A list of <c>SOSSTROKnowledgeHub</c> for the given SOS hub, or <c>null</c> if none exist.</returns>
+        public List<SOSSTROKnowledgeHub> GetKnowledges(int sosHubId)
+        {
+            return _sosSynopticRequeriments.SOSSTROKnowledge?.Where(a => a.SOSHubId == sosHubId).ToList();
+        }
+
 
         //&===================== FUNCTIONS FOR DOWNLOAD FORMAT =====================&\\
         private async void DownloadSTOR()

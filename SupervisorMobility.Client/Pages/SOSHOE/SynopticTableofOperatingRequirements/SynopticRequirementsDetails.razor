@@ -11,7 +11,9 @@
 @inject IStringLocalizer<ResourceSTOR> LocalizerSTOR
 
 @* - Application / Domain services *@
+@inject ISkillService SkillServices
 @inject ISOSHubService SOSHubServices
+@inject IKnowledgeService KnowledgeServices
 @inject ISOSDistributionService SOSDistributionServices
 @inject ISynopticRequirementsService SynopticRequirementsService
 
@@ -282,11 +284,11 @@ else
                 <MudSimpleTable class="syntable">
                     <thead>
                         <MudTr>
-                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 60px;">
                                 @LocalizerSTOR["STORNumber"]</MudTh>
-                            <MudTh colspan="8" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="8" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 150px;">
                                 @LocalizerSTOR["STORProcessName"]</MudTh>
-                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 80px;">
                                 @LocalizerSTOR["STORSOSNumber"]</MudTh>
                             <MudTh colspan="4" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STOROperations"]
                             </MudTh>
@@ -302,9 +304,9 @@ else
                             <MudTh colspan="2" rowspan="2" class="syntable__hd syntable__hd--ctr">
                                 @LocalizerSTOR["STORLearningTime"]
                             </MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
                                 @LocalizerSTOR["STORKnowledge"]</MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
                                 @LocalizerSTOR["STORSkills"]</MudTh>
                         </MudTr>
                         <MudTr>
@@ -409,11 +411,37 @@ else
                                                     <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
                                                     <MudText Typo="Typo.h5">@GetTrainingTime(distribution) Dias</MudText>
                                                     </MudTd>
-                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
-
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: sub;">
+                                                        <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                @foreach(var knowledge in GetKnowledges((int)distribution.SOSHubId!)){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: sub; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Color="Color.Primary" Size="Size.Small"/>
+                                                                            <div>@(_KnowledgeGeneral.FirstOrDefault(t => t.Id == knowledge.KnowledgeId)?.Name)</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
                                                     </MudTd>
-                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
-
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: sub;">
+                                                        <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                @foreach(var skill in GetSkills((int)distribution.SOSHubId!)){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: sub; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Handyman" Color="Color.Success" Size="Size.Small"/>
+                                                                            <div>@(_SkillGeneral.FirstOrDefault(t => t.Id == skill.SkillId)?.Name)</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
                                                     </MudTd>
                                                 }
                                             </MudTr>
