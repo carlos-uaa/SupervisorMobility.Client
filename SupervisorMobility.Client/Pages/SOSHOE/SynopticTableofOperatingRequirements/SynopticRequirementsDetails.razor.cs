@@ -231,7 +231,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             foreach (var HubId in SOSHubsId)
             {
-                var distribution = await SOSDistributionServices.GetSOSDistributionBySosHub(HubId, includeCollections: true);
+                var distribution = await SOSDistributionServices.GetSOSDistributionBySosHub(HubId, includeSOS: true, includeCollections: true);
 
                 // NOTE: Separate hubs that have valid distributions from those that don't
                 if (distribution == null || !(distribution.Analyses?.Any() == true || distribution.Sequences?.Any() == true))
