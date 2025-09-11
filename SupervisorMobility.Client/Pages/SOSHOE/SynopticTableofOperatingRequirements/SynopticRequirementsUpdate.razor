@@ -17,7 +17,9 @@
 @inject IStringLocalizer<ResourceSTOR> LocalizerSTOR
 
 @* -Application / Domain services *@
+@inject ISkillService SkillServices
 @inject ISOSHubService SOSHubServices
+@inject IKnowledgeService KnowledgeServices
 @inject ISOSAnalysisService SOSAnalysisServices
 @inject ISOSSequenceService SOSSequenceServices
 @inject ISOSDistributionService SOSDistributionServices
@@ -312,11 +314,11 @@ else
                 <MudSimpleTable class="syntable">
                     <thead>
                         <MudTr>
-                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 60px;">
                                 @LocalizerSTOR["STORNumber"]</MudTh>
-                            <MudTh colspan="8" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="8" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 150px;">
                                 @LocalizerSTOR["STORProcessName"]</MudTh>
-                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 80px;">
                                 @LocalizerSTOR["STORSOSNumber"]</MudTh>
                             <MudTh colspan="4" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STOROperations"]
                             </MudTh>
@@ -332,9 +334,9 @@ else
                             <MudTh colspan="2" rowspan="2" class="syntable__hd syntable__hd--ctr">
                                 @LocalizerSTOR["STORLearningTime"]
                             </MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
                                 @LocalizerSTOR["STORKnowledge"]</MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
                                 @LocalizerSTOR["STORSkills"]</MudTh>
                         </MudTr>
                         <MudTr>
@@ -428,7 +430,7 @@ else
                                                     </table>
                                                 </MudTd>
                                                 @if (rowIndex == 0){
-                                                    <MudTd colspan="2" rowspan="@sections.Count" class="@("syntable__c syntable__c--ctr " + GetStepClass(sections, rowIndex))">
+                                                    <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
                                                         <div style="display: grid; place-items: center;">
                                                             <div style="width: 165px;">
                                                                 <MudSelect T="DifficultyLevel" Value="@GetDifficultyLevel(distribution)" ValueChanged="@(newLevel => ChangeLevelDistribution(distribution, newLevel))" Label="Select a Level" FitContent="true" Margin=Margin.Dense Variant="Variant.Outlined">
@@ -444,11 +446,109 @@ else
                                                     <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
                                                     <MudText Typo="Typo.h5">@GetTrainingTime(distribution) Dias</MudText>
                                                     </MudTd>
-                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: sub;">
+                                                        <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: sub;">
 
+                                                                        <MudAutocomplete T="string"
+                                                                                        Value="GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName ?? string.Empty"
+                                                                                        ValueChanged="val => SetSelectedKnowledge((int)distribution.SOSHubId!, val)"
+                                                                                        Label="Buscar conocimiento"
+                                                                                        SearchFunc="@(text => SearchKnowledge(text, (int)distribution.SOSHubId!))"
+                                                                                        Placeholder="Buscar conocimiento..."
+                                                                                        Variant="Variant.Text"
+                                                                                        AnchorOrigin="Origin.BottomCenter"
+                                                                                        AdornmentColor="Color.Info"
+                                                                                        ResetValueOnEmptyText
+                                                                                        CoerceText="false"
+                                                                                        CoerceValue="true"
+                                                                                        Clearable
+                                                                                        ShowProgressIndicator="true"
+                                                                                        ProgressIndicatorColor="Color.Info"
+                                                                                        OpenIcon="@Icons.Material.Filled.AutoGraph">
+                                                                        </MudAutocomplete>
+
+                                                                        @if (IsExistingKnowledge((int)distribution.SOSHubId!))
+                                                                        {
+                                                                            <MudButton Color="Color.Primary" @onclick="() => AddSelectedKnowledge((int)distribution.SOSHubId!)">
+                                                                                Agregar conocimiento
+                                                                            </MudButton>
+                                                                        }
+                                                                        else if (!string.IsNullOrWhiteSpace(GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName))
+                                                                        {
+                                                                            <MudButton Color="Color.Secondary" @onclick="() => OpenAddKnowledgeModal((int)distribution.SOSHubId!)">
+                                                                                Crear conocimiento
+                                                                            </MudButton>
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+
+                                                                @foreach(var id in GetKnowledgeDTO(distribution.SOSHubId??0)!.KnowledgeIds){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: sub; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" @onclick="() => RemoveKnowledge((int)distribution.SOSHubId!,id)"/>
+                                                                            <div>@(_KnowledgeGeneral.FirstOrDefault(t => t.Id == id)?.Name)</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
                                                     </MudTd>
-                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: sub;">
+                                                        <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: sub;">
 
+                                                                        <MudAutocomplete T="string"
+                                                                                        Value="GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName ?? string.Empty"
+                                                                                        ValueChanged="val => SetSelectedSkill((int)distribution.SOSHubId!, val)"
+                                                                                        Label="Buscar Habilidad"
+                                                                                        SearchFunc="@(text => SearchSkill(text, (int)distribution.SOSHubId!))"
+                                                                                        Placeholder="Buscar Habilidad..."
+                                                                                        Variant="Variant.Text"
+                                                                                        AnchorOrigin="Origin.BottomCenter"
+                                                                                        AdornmentColor="Color.Success"
+                                                                                        ResetValueOnEmptyText
+                                                                                        CoerceText="false"
+                                                                                        CoerceValue="true"
+                                                                                        Clearable
+                                                                                        ShowProgressIndicator="true"
+                                                                                        ProgressIndicatorColor="Color.Info"
+                                                                                        OpenIcon="@Icons.Material.Filled.Handyman">
+                                                                        </MudAutocomplete>
+
+                                                                        @if (IsExistingSkill((int)distribution.SOSHubId!))
+                                                                        {
+                                                                            <MudButton Color="Color.Primary" @onclick="() => AddSelectedSkill((int)distribution.SOSHubId!)">
+                                                                                Agregar Habilidad
+                                                                            </MudButton>
+                                                                        }
+                                                                        else if (!string.IsNullOrWhiteSpace(GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName))
+                                                                        {
+                                                                            <MudButton Color="Color.Secondary" @onclick="() => OpenAddSkillModal((int)distribution.SOSHubId!)">
+                                                                                Crear Habilidad
+                                                                            </MudButton>
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+
+                                                                @foreach(var id in GetSkillDTO(distribution.SOSHubId??0)!.SkillIds){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: sub; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" @onclick="() => RemoveSkill((int)distribution.SOSHubId!,id)"/>
+                                                                            <div>@(_SkillGeneral.FirstOrDefault(t => t.Id == id)?.Name)</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
                                                     </MudTd>
                                                 }
                                             </MudTr>

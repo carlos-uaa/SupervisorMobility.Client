@@ -7,6 +7,8 @@ using Microsoft.JSInterop;
 
 // - Custom project imports
 using SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequirements.Modals;
+using SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequirements.Collections.Skill;
+using SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequirements.Collections.Knowledge;
 
 /// <summary>
 /// Component for updating a Synoptic Table of Operating Requirements (STRO) within the SOSHOE module.
@@ -43,6 +45,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         IEnumerable<SOSHubDtoList> SOSHubList = new List<SOSHubDtoList>();
 
 
+        //+==================== KNOWLEDGE =====================+\\
+        private List<Knowledge> _KnowledgeGeneral = new();
+        public List<KnowledgeDynamicDTO> KnowledgeDynamicDTO = new List<KnowledgeDynamicDTO>();
+
+        //+====================== SKILL =======================+\\
+        private List<Skill> _SkillGeneral = new();
+        public List<SkillDynamicDTO> SkillDynamicDTO = new List<SkillDynamicDTO>();
+
+
         // =================================================== \\
         //&============ COMPONENT INITIALIZATION =============&\\
         // =================================================== \\
@@ -60,6 +71,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             if (!await CheckUserLoginAsync())
                 return;
 
+            await LoadKnowlege();
+            await LoadSkills();
             await LoadSynopticRequirementsAndHubsAsync();
 
             ShowLoading = false;
@@ -121,6 +134,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             AvailableSosHubs = (await SOSHubServices.GetAllSOSHub()).Where(s => s.DistributionId == _soshub.DistributionId && s.SOSHubId != _soshub.SOSHubId).ToList();
 
             await VerifySOSHubsSR(_sosSynopticRequeriments);
+        }
+
+        /// <summary>
+        /// Loads knowledge data asynchronously from the service and assigns it to the general knowledge field.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task LoadKnowlege()
+        {
+            // Fetch knowledge data from the service
+            _KnowledgeGeneral = await KnowledgeServices.GetKnowledges();
+        }
+
+
+        /// <summary>
+        /// Loads skills data asynchronously from the service and assigns it to the general skills field.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task LoadSkills()
+        {
+            // Fetch skills data from the service
+            _SkillGeneral = await SkillServices.GetSkills();
         }
 
 
@@ -253,6 +287,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         /// Updates the component state accordingly.
         /// </summary>
         /// <param name="sosHubList">The list of SOS hubs to process.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task FillDistributions(IEnumerable<SOSHubDtoList> sosHubList)
         {
             LoadingDistributions = true;
@@ -283,9 +318,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // NOTE: Notify user about hubs without distributions
             if (hubsWithoutDistribution.Count > 0) ShowMessageNotDistribution(hubsWithoutDistribution);
+
+            // Update component state with distributions and hubs that have valid data
             SetDistributionSTRO(distributions, hubsWithDistribution);
 
+            // NOTE: Add dynamic knowledge filters for each distribution
+            AddFiltersDynamicKnowledge(hubsWithDistribution, _KnowledgeGeneral);
+
+            // NOTE: Add dynamic skill filters for each distribution
+            AddFiltersDynamicSkill(hubsWithDistribution, _SkillGeneral);
         }
+
 
 
         /// <summary>
@@ -332,7 +375,61 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         }
 
         /// <summary>
-        /// Displays a warning message for SOS hubs without associated distributions 
+        /// Builds dynamic knowledge filters for the selected SOS hubs based on their existing knowledge requirements.
+        /// Updates the <c>KnowledgeDynamicDTO</c> collection accordingly.
+        /// </summary>
+        /// <param name="selectedSosHubsDto">The list of selected SOS hubs.</param>
+        /// <param name="Knowledges">The complete list of available knowledge items.</param>
+        private void AddFiltersDynamicKnowledge(List<SOSHubDtoList> selectedSosHubsDto, List<Knowledge> Knowledges)
+        {
+            var copyKnowledges = _sosSynopticRequeriments.SOSSTROKnowledge;
+
+            KnowledgeDynamicDTO = selectedSosHubsDto.Select(a =>
+            {
+                // Extract knowledge IDs already assigned to this hub
+                var knowledgeIds = copyKnowledges?.Where(k => k.SOSHubId == a.SOSHubId).Select(ka => ka.KnowledgeId).ToList() ?? new List<int>();
+
+                // Build the dynamic DTO with unassigned knowledge as filter options
+                return new KnowledgeDynamicDTO
+                {
+                    SOSHubId = a.SOSHubId,
+                    SelectedKnowledgeName = string.Empty,
+                    KnowledgeIds = knowledgeIds,
+                    FilteredKnowledge = Knowledges.Where(k => !knowledgeIds.Contains(k.Id)).Select(k => new Knowledge { Id = k.Id, Name = k.Name }).ToList()
+                };
+            }).ToList();
+        }
+
+
+        /// <summary>
+        /// Builds dynamic skill filters for the selected SOS hubs based on their existing skill requirements.
+        /// Updates the <c>SkillDynamicDTO</c> collection accordingly.
+        /// </summary>
+        /// <param name="selectedSosHubsDto">The list of selected SOS hubs.</param>
+        /// <param name="Skills">The complete list of available skill items.</param>
+        private void AddFiltersDynamicSkill(List<SOSHubDtoList> selectedSosHubsDto, List<Skill> Skills)
+        {
+            var copySkills = _sosSynopticRequeriments.SOSSTROSkill;
+
+            SkillDynamicDTO = selectedSosHubsDto.Select(a =>
+            {
+                // Extract skill IDs already assigned to this hub
+                var SkillIds = copySkills?.Where(k => k.SOSHubId == a.SOSHubId).Select(ka => ka.SkillId).ToList() ?? new List<int>();
+
+                // Build the dynamic DTO with unassigned skills as filter options
+                return new SkillDynamicDTO
+                {
+                    SOSHubId = a.SOSHubId,
+                    SelectedSkillName = string.Empty,
+                    SkillIds = SkillIds,
+                    FilteredSkill = Skills.Where(k => !SkillIds.Contains(k.Id)).Select(k => new Skill { Id = k.Id, Name = k.Name }).ToList()
+                };
+            }).ToList();
+        }
+
+
+        /// <summary>
+        /// Displays a warning message for SOS hubs without associated distributions
         /// and removes them from the current hub list.
         /// </summary>
         /// <param name="hubsWithoutDistribution">List of SOS hubs missing distributions.</param>
@@ -384,18 +481,29 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
         /// <summary>
         /// Removes a distribution and its related data from the synoptic requirements.
+        /// Updates SOS hubs, requirement difficulties, and dynamic filters accordingly.
         /// </summary>
         /// <param name="item">The distribution to remove.</param>
         private void RemoveDistribution(SOSDistribution item)
         {
-            // Remove hub reference
+            // Remove the hub reference from synoptic requirements
             _sosSynopticRequeriments.SOSHubs = _sosSynopticRequeriments?.SOSHubs?.Where(s => s.SOSHubId != item.SOSHubId);
-            _sosSynopticRequeriments!.RequirementDifficulties = _sosSynopticRequeriments.RequirementDifficulties = _sosSynopticRequeriments.RequirementDifficulties?.Where(r => r.SOSHubId == item.SOSHubId);
 
-            // Update hub list in UI
+            // Remove requirement difficulties associated with the hub
+            _sosSynopticRequeriments!.RequirementDifficulties = _sosSynopticRequeriments.RequirementDifficulties?.Where(r => r.SOSHubId != item.SOSHubId);
+
+            // Update hub list in UI to exclude the removed hub
             SOSHubList = SOSHubList.Where(s => s.SOSHubId != item.SOSHubId).ToList();
+
+            // Update dynamic filters for knowledge and skills if needed
+            KnowledgeDynamicDTO = KnowledgeDynamicDTO.Where(s => s.SOSHubId != item.SOSHubId).ToList();
+
+            SkillDynamicDTO = SkillDynamicDTO.Where(s => s.SOSHubId != item.SOSHubId).ToList();
+
+            // Refresh the UI state
             StateHasChanged();
         }
+
 
         /// <summary>
         /// Determines whether a sequence or analysis should be rendered at the given row index.
@@ -636,6 +744,291 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             return distribution.SOSHubs!.FirstOrDefault(s => s.SOSHubId == distribution.SOSHubId)?.TrainingTime ?? 0;
         }
 
+        // =================================================== \\
+        //&============ FUNCTIONS TO KNOWLEDGES ==============&\\
+        // =================================================== \\
+
+        /// <summary>
+        /// Gets the knowledge DTO for a SOS hub, or an empty instance if not found.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <returns>The corresponding <c>KnowledgeDynamicDTO</c> or a new empty instance.</returns>
+        private KnowledgeDynamicDTO GetKnowledgeDTO(int SOSHubId)
+        {
+            return KnowledgeDynamicDTO.FirstOrDefault(k => k.SOSHubId == SOSHubId) ?? new KnowledgeDynamicDTO { };
+        }
+
+        /// <summary>
+        /// Checks if the selected knowledge exists in the filtered list.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <returns><c>true</c> if exists; otherwise <c>false</c>.</returns>
+        /// </returns>
+        private bool IsExistingKnowledge(int SosHubId)
+        {
+            var dto = KnowledgeDynamicDTO.FirstOrDefault(k => k.SOSHubId == SosHubId);
+            if (dto == null) return false;
+
+            // Return false if filtered knowledge list or selected knowledge name is null/empty
+            if (dto.FilteredKnowledge == null || string.IsNullOrWhiteSpace(dto.SelectedKnowledgeName)) return false;
+
+            // Check if selected knowledge exists in the filtered list
+            return dto.FilteredKnowledge.Any(t => t.Name.Equals(dto.SelectedKnowledgeName, StringComparison.OrdinalIgnoreCase));
+        }
+
+
+        /// <summary>
+        /// Sets the selected knowledge name for a SOS hub.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <param name="value">The knowledge name (empty if null).</param>
+        private void SetSelectedKnowledge(int SOSHubId, string value)
+        {
+            var dto = KnowledgeDynamicDTO.FirstOrDefault(k => k.SOSHubId == SOSHubId);
+
+            if (dto != null)
+            {
+                dto.SelectedKnowledgeName = value ?? string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Adds the selected knowledge to assigned list and removes it from filtered list.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        private void AddSelectedKnowledge(int SosHubId)
+        {
+            var dto = KnowledgeDynamicDTO.FirstOrDefault(k => k.SOSHubId == SosHubId);
+
+            if (dto == null) return;
+
+            // NOTE: Find the knowledge matching the selected name
+            var knowledge = dto.FilteredKnowledge.FirstOrDefault(t => t.Name.Equals(dto.SelectedKnowledgeName, StringComparison.OrdinalIgnoreCase));
+
+            if (knowledge == null) return;
+
+            // NOTE: Add to assigned and remove from filtered list
+            dto.KnowledgeIds.Add(knowledge.Id);
+            dto.FilteredKnowledge.Remove(knowledge);
+
+            // Reset selection
+            dto.SelectedKnowledgeName = string.Empty;
+            StateHasChanged();
+        }
+
+        /// <summary>
+        /// Removes a knowledge from assigned list and adds it back to filtered list.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <param name="knowledgeId">The knowledge ID to remove.</param>
+        private void RemoveKnowledge(int SosHubId, int idKnowledge)
+        {
+            var dto = KnowledgeDynamicDTO.FirstOrDefault(k => k.SOSHubId == SosHubId);
+            if (dto == null) return;
+
+            // NOTE: Find the knowledge in the general list
+            var knowledge = _KnowledgeGeneral.FirstOrDefault(t => t.Id == idKnowledge);
+            if (knowledge == null) return;
+
+            // Remove from assigned and add back to filtered list
+            dto.KnowledgeIds.Remove(knowledge.Id);
+            dto.FilteredKnowledge.Add(knowledge);
+
+            // Reset selection
+            dto.SelectedKnowledgeName = string.Empty;
+            StateHasChanged();
+        }
+
+        // -============ DYNAMIC FILTER HELPERS =============-+\\
+
+        /// <summary>
+        /// Searches for knowledge names containing the given value.
+        /// </summary>
+        /// <param name="value">The search term.</param>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <returns>Matching knowledge names or empty array.</returns>
+        private async Task<IEnumerable<string>> SearchKnowledge(string value, int SosHubId)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return Array.Empty<string>();
+
+            var dto = GetKnowledgeDTO(SosHubId);
+            if (dto == null || dto.FilteredKnowledge == null) return Array.Empty<string>();
+
+            // NOTE: Filter knowledge names case-insensitively
+            var filtered = dto.FilteredKnowledge.Where(k => k.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(k => k.Name).ToList() ?? new List<string>();
+
+            // NOTE: Small delay to simulate async operation for UI responsiveness
+            await Task.Delay(50);
+
+            return filtered;
+        }
+
+        /// <summary>
+        /// Opens a modal to add a new knowledge item for a SOS hub.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        private async Task OpenAddKnowledgeModal(int SosHubId)
+        {
+            var dto = KnowledgeDynamicDTO.FirstOrDefault(k => k.SOSHubId == SosHubId);
+
+            var parameters = new DialogParameters { { "KnowledgeName", dto?.SelectedKnowledgeName ?? "" } };
+            var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+            // NOTE: Show modal dialog
+            var dialog = DialogService.Show<AddKnowledge_modal>("Crear Habilidad", parameters, options);
+            var result = await dialog.Result;
+
+            // NOTE: If user confirms, add new knowledge to general list and update all filtered lists
+            if (!result.Canceled && result.Data != null)
+            {
+                var newKnowledge = (Knowledge)result.Data;
+                _KnowledgeGeneral.Add(newKnowledge);
+                KnowledgeDynamicDTO.ForEach(a => a.FilteredKnowledge.Add(newKnowledge));
+            }
+        }
+
+
+        // =================================================== \\
+        //&============== FUNCTIONS TO SKILLS ================&\\
+        // =================================================== \\
+
+        /// <summary>
+        /// Gets the Skill DTO for a SOS hub, or an empty instance if not found.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <returns>The corresponding <c>SkillDynamicDTO</c> or a new empty instance.</returns>
+        private SkillDynamicDTO GetSkillDTO(int SOSHubId)
+        {
+            return SkillDynamicDTO.FirstOrDefault(k => k.SOSHubId == SOSHubId) ?? new SkillDynamicDTO { };
+        }
+
+        /// <summary>
+        /// Checks if the selected Skill exists in the filtered list.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <returns><c>true</c> if exists; otherwise <c>false</c>.</returns>
+        /// </returns>
+        private bool IsExistingSkill(int SosHubId)
+        {
+            var dto = SkillDynamicDTO.FirstOrDefault(k => k.SOSHubId == SosHubId);
+            if (dto == null) return false;
+
+            // Return false if filtered Skill list or selected Skill name is null/empty
+            if (dto.FilteredSkill == null || string.IsNullOrWhiteSpace(dto.SelectedSkillName)) return false;
+
+            // Check if selected Skill exists in the filtered list
+            return dto.FilteredSkill.Any(t => t.Name.Equals(dto.SelectedSkillName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Sets the selected Skill name for a SOS hub.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <param name="value">The Skill name (empty if null).</param>
+        private void SetSelectedSkill(int SOSHubId, string value)
+        {
+            var dto = SkillDynamicDTO.FirstOrDefault(k => k.SOSHubId == SOSHubId);
+
+            if (dto != null)
+            {
+                dto.SelectedSkillName = value ?? string.Empty;
+            }
+        }
+
+
+        /// <summary>
+        /// Adds the selected Skill to assigned list and removes it from filtered list.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        private void AddSelectedSkill(int SosHubId)
+        {
+            var dto = SkillDynamicDTO.FirstOrDefault(k => k.SOSHubId == SosHubId);
+            if (dto == null) return;
+
+            // NOTE: Find the Skill matching the selected name
+            var Skill = dto.FilteredSkill.FirstOrDefault(t => t.Name.Equals(dto.SelectedSkillName, StringComparison.OrdinalIgnoreCase));
+            if (Skill == null) return;
+
+            // NOTE: Add to assigned and remove from filtered list
+            dto.SkillIds.Add(Skill.Id);
+            dto.FilteredSkill.Remove(Skill);
+
+            // Reset selection
+            dto.SelectedSkillName = string.Empty;
+            StateHasChanged();
+        }
+
+        /// <summary>
+        /// Removes a Skill from assigned list and adds it back to filtered list.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <param name="SkillId">The Skill ID to remove.</param>
+        private void RemoveSkill(int SosHubId, int idSkill)
+        {
+            var dto = SkillDynamicDTO.FirstOrDefault(k => k.SOSHubId == SosHubId);
+            if (dto == null) return;
+
+            // NOTE: Find the Skill in the general list
+            var Skill = _SkillGeneral.FirstOrDefault(t => t.Id == idSkill);
+            if (Skill == null) return;
+
+            // Remove from assigned and add back to filtered list
+            dto.SkillIds.Remove(Skill.Id);
+            dto.FilteredSkill.Add(Skill);
+
+            // Reset selection
+            dto.SelectedSkillName = string.Empty;
+            StateHasChanged();
+        }
+
+        // -============ DYNAMIC FILTER HELPERS =============-+\\
+
+        /// <summary>
+        /// Searches for Skill names containing the given value.
+        /// </summary>
+        /// <param name="value">The search term.</param>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        /// <returns>Matching Skill names or empty array.</returns>
+        private async Task<IEnumerable<string>> SearchSkill(string value, int SosHubId)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return Array.Empty<string>();
+
+            var dto = GetSkillDTO(SosHubId);
+            if (dto == null || dto.FilteredSkill == null) return Array.Empty<string>();
+
+            // NOTE: Filter Skill names case-insensitively
+            var filtered = dto.FilteredSkill.Where(k => k.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(k => k.Name).ToList() ?? new List<string>();
+
+            // NOTE: Small delay to simulate async operation for UI responsiveness
+            await Task.Delay(50);
+
+            return filtered;
+        }
+
+        /// <summary>
+        /// Opens a modal to add a new Skill item for a SOS hub.
+        /// </summary>
+        /// <param name="sosHubId">The SOS hub ID.</param>
+        private async Task OpenAddSkillModal(int SosHubId)
+        {
+            var dto = SkillDynamicDTO.FirstOrDefault(k => k.SOSHubId == SosHubId);
+
+            var parameters = new DialogParameters { { "SkillName", dto?.SelectedSkillName ?? "" } };
+            var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+            // NOTE: Show modal dialog
+            var dialog = DialogService.Show<AddSkill_modal>("Crear Habilidad", parameters, options);
+            var result = await dialog.Result;
+
+            // NOTE: If user confirms, add new Skill to general list and update all filtered lists
+            if (!result.Canceled && result.Data != null)
+            {
+                var newSkill = (Skill)result.Data;
+                _SkillGeneral.Add(newSkill);
+                SkillDynamicDTO.ForEach(a => a.FilteredSkill.Add(newSkill));
+            }
+        }
+
 
         // =================================================== \\
         //&============ FUNCTIONS TO UPDATE SCRO =============&\\
@@ -648,7 +1041,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         public async Task UpdateSTRO()
         {
             // Prepare the data transfer object for updating STRO
-            var stroUpdateDto = FormatterSendDataSTRO(_sosSynopticRequeriments);
+            var stroUpdateDto = FormatterSendDataSTRO(_sosSynopticRequeriments, KnowledgeDynamicDTO, SkillDynamicDTO);
 
             // Call service to update the Synoptic Table
             var updateResult = await SynopticRequirementsService.UpdateSOSSynopticTableofOperatingRequirements(stroUpdateDto);
@@ -670,11 +1063,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         }
 
         /// <summary>
-        /// Maps a SOSSynopticTableofOperatingRequirements entity to a DTO suitable for update operations.
+        /// Maps a <c>SOSSynopticTableofOperatingRequirements</c> entity to a DTO suitable for update operations.
+        /// Combines existing entity data with dynamic knowledge and skill filters.
         /// </summary>
         /// <param name="STRO">The source Synoptic Table of Operating Requirements entity.</param>
+        /// <param name="knowledgeDynamicDTOs">Dynamic knowledge filters to include in the DTO.</param>
+        /// <param name="skillDynamicDTOs">Dynamic skill filters to include in the DTO.</param>
         /// <returns>A DTO containing the necessary fields for updating the STRO.</returns>
-        private static SOSSynopticTableofOperatingRequirementsForUpdateDto FormatterSendDataSTRO(SOSSynopticTableofOperatingRequirements STRO)
+        private static SOSSynopticTableofOperatingRequirementsForUpdateDto FormatterSendDataSTRO(SOSSynopticTableofOperatingRequirements STRO, List<KnowledgeDynamicDTO> knowledgeDynamicDTOs, List<SkillDynamicDTO> skillDynamicDTOs)
         {
             return new SOSSynopticTableofOperatingRequirementsForUpdateDto
             {
@@ -686,10 +1082,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
                 ApproverId = STRO.ApproverId,
                 IsActive = STRO.IsActive,
                 SOSHubId = STRO.SOSHubId,
-                SOSHubIds = STRO?.SOSHubs?.Select(s => s.SOSHubId).ToList(), // Include all associated hub IDs
-                RequirementDifficulties = STRO?.RequirementDifficulties?.ToList(),  // Copy current requirement difficulties
+
+                // Include all associated hub IDs
+                SOSHubIds = STRO?.SOSHubs?.Select(s => s.SOSHubId).ToList(),
+
+                // Copy current requirement difficulties
+                RequirementDifficulties = STRO?.RequirementDifficulties?.ToList(),
+
+                // Map dynamic knowledge IDs to the DTO
+                SOSSTROKnowledge = knowledgeDynamicDTOs.SelectMany(a => a.KnowledgeIds.Select(k => new SOSSTROKnowledgeHub { Id = 0, KnowledgeId = k, SOSHubId = a.SOSHubId })).ToList(),
+
+                // Map dynamic skill IDs to the DTO
+                SOSSTROSkill = skillDynamicDTOs.SelectMany(a => a.SkillIds.Select(s => new SOSSTROSkillHub { Id = 0, SkillId = s, SOSHubId = a.SOSHubId })).ToList()
             };
         }
-
     }
 }
