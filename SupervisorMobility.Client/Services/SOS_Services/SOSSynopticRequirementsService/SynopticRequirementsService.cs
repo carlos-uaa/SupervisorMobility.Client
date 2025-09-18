@@ -54,7 +54,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirement
 
             return SOSSynopticTableofOperatingRequirementssRetorned;
         }
-        public async Task<SOSSynopticTableofOperatingRequirements> UpdateSOSSynopticTableofOperatingRequirements(SOSSynopticTableofOperatingRequirements SosEntity)
+        public async Task<SOSSynopticTableofOperatingRequirements> UpdateSOSSynopticTableofOperatingRequirements(SOSSynopticTableofOperatingRequirementsForUpdateDto SosEntity)
         {
             var response = await _http.PutAsJsonAsync($"SOS/SynopticTableofOperatingRequirements/{SosEntity.SOSSynopticTableofOperatingRequirementsId}", SosEntity);
             var content = await response.Content.ReadAsStringAsync();
@@ -137,7 +137,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirement
             return true;
         }
 
-        public async Task GenerateExcelSTOperatingRequirements(int Id)
+        public async Task GenerateExcelSTOperatingRequirements(int Id, string nameProcess)
         {
             var response = await _http.GetAsync($"SOS/SynopticTableofOperatingRequirements/GenerateExcelSTOperatingRequirements/{Id}");
 
@@ -147,10 +147,16 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSynopticRequirement
             }
             else
             {
-                var filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
-                var fileStream = response.Content.ReadAsStreamAsync();
-                using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                var originalFileName = response.Content.Headers.ContentDisposition?.FileName?.Replace("\"", string.Empty) ?? "file.xlsx";
+                var extension = Path.GetExtension(originalFileName);
+
+                var filename = $"CSRO_{nameProcess.ToUpper()}_{Id}{extension}";
+
+                var fileStream = await response.Content.ReadAsStreamAsync();
+                using var streamRef = new DotNetStreamReference(stream: fileStream);
                 await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+
+                snackbar.Add($"CSRO \"{nameProcess.ToUpper()}\" was downloaded successfully.", Severity.Success);
             }
         }
 

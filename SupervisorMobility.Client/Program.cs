@@ -5,6 +5,16 @@ global using SupervisorMobility.Client.Data.Entities.CDMS;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Documents;
 global using SupervisorMobility.Client.Data.Entities.CDMS.Folders;
 global using SupervisorMobility.Client.Data.Entities.SOS_Process;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Dtos;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Enums;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Knowledge;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Knowledge.Dtos;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Skill;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Skill.Dtos;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Conditions;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Conditions.Dtos;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.SOSSynopticTableRO;
 global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.JobStructureService;
 global using SupervisorMobility.Client.Services.DistributionService;
@@ -60,6 +70,8 @@ global using SupervisorMobility.Client.Services.SOS_Services.SOSSynopticControlP
 global using SupervisorMobility.Client.Services.SOS_Services.MaterialServices;
 global using SupervisorMobility.Client.Services.SOS_Services.ToolServices;
 global using SupervisorMobility.Client.Services.SOS_Services.EquipmentServices;
+global using SupervisorMobility.Client.Services.SOS_Services.KnowledgeServices;
+global using SupervisorMobility.Client.Services.SOS_Services.SkillServices;
 global using SupervisorMobility.Client.Services.ExportationService;
 global using SupervisorMobility.Client.Services.CalendarProductiveService;
 global using SupervisorMobility.Client.Services.MetricsService;
@@ -143,6 +155,8 @@ builder.Services.AddScoped<ISOSSequenceService, SOSSequenceService>();
 builder.Services.AddScoped<ISynopticRequirementsService, SynopticRequirementsService>();
 builder.Services.AddScoped<ISynopticControlPointsService, SynopticControlPointsService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+builder.Services.AddScoped<IKnowledgeService, KnowledgeService>();
+builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IToolService, ToolService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 
@@ -180,6 +194,7 @@ public class AutoMapperProfiles : Profile
     {
         CreateMap<ChecklistAnswer, ChecklistAnswerDto>().ReverseMap();
         CreateMap<ChecklistAnswerDto, ChecklistAnswer>().ReverseMap();
+        CreateMap<SOSDistribution, SOSDristributionSTROTable>().ReverseMap();
 
         CreateMap<int?, int>().ConvertUsing<IntTypeConverter>();
         CreateMap<DateTime?, DateTime>().ConvertUsing<DateTimeTypeConverter>();

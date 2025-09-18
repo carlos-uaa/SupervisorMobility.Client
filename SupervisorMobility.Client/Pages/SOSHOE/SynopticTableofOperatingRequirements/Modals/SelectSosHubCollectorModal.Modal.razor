@@ -1,0 +1,107 @@
+﻿@using System.Threading.Tasks
+<style>
+    .cards {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .cards__card {
+        border-left: 4px solid #0a7bcf;
+        transition: transform 0.3s ease;
+        box-shadow: 0px 4px 8px #0a7bcf3b;
+    }
+
+    .cards__card:hover {
+        transform: scale(1.01);
+    }
+
+    .cards__separator {
+        width: 2px;
+        height: 0;
+        background: #0a7bcf;
+        margin-right: 5px;
+        margin-left: 5px;
+        transition: height 0.3s ease;
+    }
+
+    .cards__card:hover .cards__separator {
+        height: 40px;
+    }
+</style>
+
+<MudDialog MaxWidth="MaxWidth.Small">
+
+    <DialogContent>
+        <!-- Header -->
+        <MudText Typo="Typo.h6" Color="Color.Dark" Class="font-weight-bold mb-3 px-2">
+            Seleccione una distribución del colector
+        </MudText>
+
+        <!-- Search -->
+        <MudTextField Class="px-2" @bind-Value="searchTerm" Placeholder="Buscar colector..." Variant="Variant.Text"
+            Adornment="Adornment.End" Immediate="true" AdornmentIcon="@Icons.Material.Filled.Search">
+        </MudTextField>
+
+        <!-- Filtered list -->
+        <MudList Dense="true" Class="px-2 mt-6" Style="max-height: 500px; overflow-y: auto;">
+            @if (FilteredItems?.Any() == true)
+            {
+                @foreach (var item in FilteredItems)
+                {
+                    <MudPaper Class="cards__card mb-4" Square="false"
+                        Style="display:flex; align-items:center; padding:0.8rem; border-radius:4px; cursor:pointer; transition: all 0.2s;">
+                        <MudCheckBox @bind-Value="item.Selected" Color="Color.Primary"></MudCheckBox>
+                        <div class="cards__separator"></div>
+                        <div class="ml-3">
+                            <MudText Typo="Typo.subtitle1" Color="Color.Primary">@item.Folio</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Dark">@item.ProcessSheet</MudText>
+                        </div>
+                    </MudPaper>
+                }
+            }
+            else
+            {
+                <MudText Typo="Typo.body2" Color="Color.Default" Class="mx-4 my-2">No se encontraron resultados.</MudText>
+            }
+        </MudList>
+    </DialogContent>
+
+    <!-- Actions -->
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Accept">Aceptar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="Cancel">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    // original list of soshub collectors
+    [Parameter] public IEnumerable<SOSHubDtoList> listSOSHub { get; set; }
+
+
+    private string searchTerm = string.Empty;
+    private IEnumerable<SOSHubDtoList> FilteredItems =>
+    string.IsNullOrWhiteSpace(searchTerm)
+    ? listSOSHub
+    : listSOSHub.Where(i => (i.Folio?.ToString() ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+
+    private void OnSearchChanged(KeyboardEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    private void Accept()
+    {
+        var selected = listSOSHub.Where(x => x.Selected).ToList();
+        MudDialog?.Close(DialogResult.Ok(selected));
+    }
+
+    private void Cancel()
+    {
+        MudDialog?.Cancel();
+    }
+}

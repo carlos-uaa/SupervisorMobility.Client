@@ -78,7 +78,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             _sourceMsgLoading.Add($"{Localizer1["Loading10"]}");
             _sourceMsgLoading.Add($"{Localizer1["Loading11"]}");
 
-            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeTimes: true, includeCollections: true);
+            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeTimes: true, includeCollections: true, includeTurns: true);
             if (_sosDistribution.DistributionLogbooks != null)
             {
                 mostRecentLogs = _sosDistribution.DistributionLogbooks
@@ -220,7 +220,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 return 0;
             }
         }
-        
+
 
 
         public static string ReasonFormat(string input)
@@ -284,7 +284,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
         bool visibleExportDocument = false;
 
-        SOSHub _sosHub { get; set; } = new(); 
+        SOSHub _sosHub { get; set; } = new();
         private async void GoDownloadSosHub()
         {
             await Exportation.ExportDistributionToExcel(DistributionId.Value);
@@ -362,10 +362,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             // Validar Distribution
             if (hub.Distribution == null)
                 return true;
-            
+
             if (hub.ApproverOwners == null)
                 return true;
-            
+
             if (hub.ReviewerEditors == null)
                 return true;
 

@@ -1,19 +1,28 @@
 ﻿@page "/soshoe/SynopticRequirements/Details/{SynopticRequirementsId:int}"
 
-@inject IBreadcrumbService BreadcrumbService
+@* - Core services *@
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+@* - Localization *@
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IStringLocalizer<ResourceSTOR> LocalizerSTOR
-@inject ISnackbar Snackbar
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
+
+@* - Application / Domain services *@
+@inject ISkillService SkillServices
+@inject ISOSHubService SOSHubServices
+@inject IKnowledgeService KnowledgeServices
+@inject ISOSDistributionService SOSDistributionServices
 @inject ISynopticRequirementsService SynopticRequirementsService
-@inject IDistributionService DistributionService
 
-@inject ISOSHubService sosHubService
+@* - UI / Components *@
+@inject IBreadcrumbService BreadcrumbService
 
+
+@* -Styles for the main synoptic table, hover effects, vertical text, child tables *@
 <style>
-    /* Bloque principal */
     .syntable {
         border-collapse: collapse;
         width: 100%;
@@ -25,6 +34,14 @@
 
     .syntable.fullh table {
         height: 100%;
+    }
+
+    .syntable table tr {
+        transition: 300ms ease-in-out all;
+    }
+
+    .syntable table tr:hover {
+        cursor: pointer;
     }
 
     .syntable.fullh .mud-table-container {
@@ -54,16 +71,17 @@
         text-align: center !important;
     }
 
+    .syntable__c--nbt {
+        border-top: none !important;
+        border-bottom: none !important;
+    }
+
     .syntable__c--nt {
         border-top: none !important;
     }
 
-    .syntable__c--nb {
-        border-bottom: none !important;
-    }
-
-    .syntable__c--n {
-        border: none !important;
+    .syntable__c--vertical {
+        writing-mode: sideways-lr !important;
     }
 
     /* Celdas especiales */
@@ -72,9 +90,38 @@
         color: #333;
         font-weight: 600 !important;
     }
+
+
+    .syntable__c--conChildTable {
+        padding: 0 !important;
+        vertical-align: top;
+    }
+
+    /* Loadding */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .overlay-content {
+        min-width: 500px;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
 </style>
 
-
+@* LOADING STATE *@
 @if (ShowLoading)
 {
     <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true"
@@ -82,7 +129,7 @@
         <ItemTemplate>
             <div class="d-flex flex-column flex-column justify-center" style="height:100%">
                 <MudItem class="d-flex flex-column justify-center align-self-center">
-                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;"
+                    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;"
                         Indeterminate="true" />
                 </MudItem>
                 @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
@@ -108,7 +155,7 @@ else
                         <MudItem Class="d-flex">
                             <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3"
                                 Icon="@Icons.Material.Filled.Info" IconColor="Color.Info"
-                                @onclick="(() => HoeDetails((int)_sosSynopticRequeriments.SOSHubId))"
+                                @onclick="(() => HoeDetails((int)_sosSynopticRequeriments.SOSHubId!))"
                                 OnTouch="(() => HoeDetails((int)_sosSynopticRequeriments.SOSHubId))">
                                 @Localizer["GoCollection"]</MudChip>
                         </MudItem>
@@ -149,7 +196,7 @@ else
                         <MudItem Class="d-flex">
                             <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3"
                                 Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info"
-                                @onclick="(() => UpdateSynopticRequirements((int)SynopticRequirementsId))"
+                                @onclick="(() => UpdateSynopticRequirements((int)SynopticRequirementsId!))"
                                 OnTouch="(() => UpdateSynopticRequirements((int)SynopticRequirementsId))">
                                 @Localizer["update"]</MudChip>
                         </MudItem>
@@ -161,10 +208,9 @@ else
 
     <MudText Typo="Typo.h6"><b>@LocalizerSTOR["STORTable"]</b></MudText>
 
-
-
     <MudPaper Square="true" Elevation="3">
         <div>
+            @* Header table showing process info, department, plant, dates, and logbook statuses *@
             <div style="display: flex; width: 100%; gap: 1rem;">
                 <div style="flex: 5;">
                     <MudSimpleTable class="syntable fullh" Style="height:100%;">
@@ -218,7 +264,7 @@ else
                                         <MudTd colspan="3" class="syntable__c syntable__c--ctr">@item?.Changes</MudTd>
                                         <MudTd colspan="2" class="syntable__c syntable__c--ctr">@DateFormat(item?.Date)</MudTd>
                                         <MudTd colspan="1" class="syntable__c syntable__c--ctr">
-                                            @if (item.NoRevision == 0)
+                                            @if (item!.NoRevision == 0)
                                             {
                                                 <b>N</b>
                                             }
@@ -261,15 +307,15 @@ else
                 <MudSimpleTable class="syntable">
                     <thead>
                         <MudTr>
-                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 60px;">
                                 @LocalizerSTOR["STORNumber"]</MudTh>
-                            <MudTh colspan="8" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="8" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 150px;">
                                 @LocalizerSTOR["STORProcessName"]</MudTh>
-                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 80px;">
                                 @LocalizerSTOR["STORSOSNumber"]</MudTh>
                             <MudTh colspan="4" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STOROperations"]
                             </MudTh>
-                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 250px;">
                                 @LocalizerSTOR["STORConditions"]
                             </MudTh>
                             <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr">
@@ -281,9 +327,9 @@ else
                             <MudTh colspan="2" rowspan="2" class="syntable__hd syntable__hd--ctr">
                                 @LocalizerSTOR["STORLearningTime"]
                             </MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
                                 @LocalizerSTOR["STORKnowledge"]</MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
                                 @LocalizerSTOR["STORSkills"]</MudTh>
                         </MudTr>
                         <MudTr>
@@ -292,38 +338,154 @@ else
                         </MudTr>
                     </thead>
                     <tbody>
-
-                        <MudTr>
-                            <MudTd colspan="1" class="syntable__c syntable__c--ctr">1</MudTd>
-                            <MudTd colspan="8" class="syntable__c syntable__c--ctr">@_soshub?.Folio (@_soshub?.ProcessSheet)</MudTd>
-                            <MudTd colspan="1" class="syntable__c syntable__c--ctr"></MudTd>
-                            <MudTd colspan="1" class="syntable__c syntable__c--ctr"></MudTd>
-                            <MudTd colspan="2" class="syntable__c syntable__c--ctr"></MudTd>
-                            <MudTd colspan="5" class="syntable__c syntable__c--ctr"></MudTd>
-                            <MudTd colspan="4" class="syntable__c syntable__c--ctr"></MudTd>
-                            <MudTd colspan="2" class="syntable__c syntable__c--ctr"></MudTd>
-                            <MudTd colspan="2" class="syntable__c syntable__c--ctr"></MudTd>
-                            <MudTd colspan="3" class="syntable__c syntable__c--ctr"></MudTd>
-                            <MudTd colspan="3" class="syntable__c syntable__c--ctr"></MudTd>
-                        </MudTr>
-
-                        @for (int i = 0; i < 20; i++)
-                        {
+                        @if(LoadingDistributions){
                             <MudTr>
-                                <MudTd colspan="1" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="8" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="1" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="1" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="2" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="5" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="4" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="2" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="2" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="3" class="syntable__c syntable__c--ctr"></MudTd>
-                                <MudTd colspan="3" class="syntable__c syntable__c--ctr"></MudTd>
+                                <MudTd ColSpan="30" Class="syntable__c syntable__c--ctr">
+                                    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" style="height: 300px;">
+                                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                                        <MudText Typo="Typo.body1" Class="mt-2">Loading selected distributions...</MudText>
+                                    </MudStack>
+                                </MudTd>
                             </MudTr>
-                        }
+                            }else{
+                                @if (_sosSynopticRequeriments?.SOSHubs?.Count() == 0)
+                                {
+                                    <MudTr>
+                                        <MudTd colspan="30" class="syntable__c syntable__c--ctr">
+                                            <MudStack Direction="Column" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
 
+                                                <MudItem Style="width: 30%;align-items: center;" Class="d-flex flex-column justify-center">
+                                                    <MudImage Src="Images/Ilustration/NotDistribution1.png" Fluid="true" Style="width: 90%;" />
+                                                    <MudText Typo="Typo.body1" Color="Color.Default" Style="line-height: 1.25;">
+                                                            No distributions selected yet, this synoptic chart of operational requirements has no assigned distributions.
+                                                    </MudText>
+
+                                                    <MudText Typo="Typo.body2" Color="Color.Info" Align="Align.Center">
+                                                            Update this document to include a distribution so that the information is displayed here.
+                                                    </MudText>
+                                                </MudItem>
+                                            </MudStack>
+                                        </MudTd>
+                                    </MudTr>
+                                }
+                                else
+                                {
+                                    @foreach (var distribution in GetDistributions())
+                                    {
+                                        var sections = BuildOperationSequences(distribution);
+
+                                        @foreach (var rowIndex in Enumerable.Range(0, sections.Count))
+                                        {
+                                            <MudTr>
+                                                @if (rowIndex == 0)
+                                                {
+                                                    <MudTd colspan="1" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
+                                                        1
+                                                    </MudTd>
+
+                                                    <MudTd colspan="8" rowspan="@sections.Count"
+                                                        class="syntable__c syntable__c--ctr">
+                                                        @distribution.ProcessName
+                                                    </MudTd>
+                                                }
+
+                                                @* Analyses *@
+                                                @if (shouldRenderSequenceOrAnalyses(distribution, rowIndex))
+                                                {
+                                                    <MudTd rowspan="@CalculateRowSpan(distribution, rowIndex)"
+                                                        class="syntable__c syntable__c--ctr syntable__c--vertical">
+                                                        @ShowSequenceOrAnalyses(distribution, rowIndex)
+                                                    </MudTd>
+                                                }
+
+
+                                                 @* Steps *@
+                                                <MudTd colspan="1" class="@(GetStepClass(sections, rowIndex))">
+                                                    @(GetStepSection(distribution, sections[rowIndex]).IsMachineOperation ? GetStepSection(distribution, sections[rowIndex]).Step : "")
+                                                </MudTd>
+                                                <MudTd colspan="2" class="@(GetStepClass(sections, rowIndex))">
+                                                    @(!GetStepSection(distribution, sections[rowIndex]).IsMachineOperation ? GetStepSection(distribution, sections[rowIndex]).Step : "")
+                                                </MudTd>
+
+
+                                            <MudTd colspan="5" class="@("syntable__c syntable__c--ctr" + GetStepClass(sections, rowIndex))" style="vertical-align: middle;">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                @foreach(var Condition in GetEstablishedCondition((int)sections[rowIndex].SectionId!)){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: middle; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Adjust" Color="Color.Primary" Size="Size.Small"/>
+                                                                            <div>@Condition.Condition</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                    </table>
+                                                </MudTd>
+                                                <MudTd colspan="4" class="@("syntable__c syntable__c--ctr syntable__c--conChildTable" + GetStepClass(sections, rowIndex))">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                        <tbody>
+                                                            @foreach(var (criticalPoint, index) in GetCriticalPoints(sections[rowIndex]).Select((value,i)=>(value,i))){
+                                                            <tr>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 16px;">@(index+1) .- @criticalPoint</td>
+                                                            </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </MudTd>
+                                                @if (rowIndex == 0){
+                                                    <MudTd colspan="2" rowspan="@sections.Count" class="@("syntable__c syntable__c--ctr " + GetStepClass(sections, rowIndex))">
+                                                        <div style="display: grid; place-items: center;">
+                                                            <div style="width: 165px;">
+                                                                <MudText Typo="Typo.h4">@GetDifficultyLevel(distribution)</MudText>
+                                                            </div>
+                                                        </div>
+                                                    </MudTd>
+
+                                                    <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
+                                                    <MudText Typo="Typo.h5">@GetTrainingTime(distribution) Dias</MudText>
+                                                    </MudTd>
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: top;">
+                                                        <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                @foreach(var knowledge in GetKnowledges((int)distribution.SOSHubId!)){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Color="Color.Primary" Size="Size.Small"/>
+                                                                            <div>@(_KnowledgeGeneral.FirstOrDefault(t => t.Id == knowledge.KnowledgeId)?.Name)</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </MudTd>
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: top;">
+                                                        <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                @foreach(var skill in GetSkills((int)distribution.SOSHubId!)){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIcon Icon="@Icons.Material.Filled.Handyman" Color="Color.Success" Size="Size.Small"/>
+                                                                            <div>@(_SkillGeneral.FirstOrDefault(t => t.Id == skill.SkillId)?.Name)</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </MudTd>
+                                                }
+                                            </MudTr>
+                                        }
+
+                                    }
+                                }
+                            }
                     </tbody>
                 </MudSimpleTable>
             </div>
@@ -334,4 +496,14 @@ else
         <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled"
             Size="Size.Small" OnClick="DownloadSTOR">Export</MudButton>
     </MudItem>
+
+
+    @if(IsDownload){
+        <div class="overlay">
+            <MudPaper Class="overlay-content" Elevation="6">
+                <MudText Typo="Typo.h6" class="mb-3">Descargando...</MudText>
+                <MudProgressLinear Color="Color.Info" Size="Size.Medium" Indeterminate="true" Class="my-4" />
+            </MudPaper>
+        </div>
+    }
 }

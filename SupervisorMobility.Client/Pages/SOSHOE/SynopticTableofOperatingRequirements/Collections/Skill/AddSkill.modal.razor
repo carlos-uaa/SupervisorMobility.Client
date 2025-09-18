@@ -1,0 +1,175 @@
+@*- Core .NET imports *@
+@using System.ComponentModel.DataAnnotations
+
+@*- Third-party imports *@
+@using MudBlazor
+
+@*- Custom project imports *@
+@inject ISnackbar Snackbar
+@inject ISkillService SkillServices
+@inject IDialogService DialogService
+
+
+@* =================================================== *@
+@**====================== MODAL ======================**@
+@* =================================================== *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudTextField @bind-Value="SkillForm.Name" Label="Nombre" Required="true" For="@(() => SkillForm.Name)"
+                Immediate="true" MaxLength="50" />
+            <MudTextField @bind-Value="SkillForm.Description" Label="Descripción" For="@(() => SkillForm.Description)"
+                Immediate="true" MaxLength="200" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(!form?.IsValid ?? true)">
+            Guardar
+        </MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="Cancel">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@* =================================================== *@
+@**======================= CODE ======================**@
+@* =================================================== *@
+@code {
+    @*+====================== INPUT =======================+*@
+    [Parameter]
+    public string? SkillName { get; set; }
+
+    @*+====================== FORMS =======================+*@
+    public class SkillDTO
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        [StringLength(50, ErrorMessage = "El nombre no puede exceder 50 caracteres")]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(200, ErrorMessage = "La descripción no puede exceder 200 caracteres")]
+        public string? Description { get; set; }
+    }
+
+    @*+==================== SKILL FORM ====================+*@
+    private SkillDTO SkillForm = new();
+    private MudForm? form;
+
+    @*+================== DIALOG INSTANCE =================+*@
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = default!;
+
+
+    @* =================================================== *@
+    @*&=================== LIFE CYCLES ===================&*@
+    @* =================================================== *@
+
+    /// <summary>
+    /// Initializes the component and sets the initial skill name if provided.
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        // NOTE: Assign initial skill name from parameter if available
+        if (!string.IsNullOrEmpty(SkillName))
+        {
+            SkillForm.Name = SkillName;
+        }
+    }
+
+
+    /// <summary>
+    /// Validates the form after the first render and triggers a UI update.
+    /// </summary>
+    /// <param name="firstRender">Indicates if this is the first render of the component.</param>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // NOTE: Validate form on initial render and refresh UI to reflect validation state
+        if (firstRender && form != null)
+        {
+            await form.Validate();
+            StateHasChanged();
+        }
+    }
+
+
+
+    @* =================================================== *@
+    @*&================= FUNCTIONS SKILL =================&*@
+    @* =================================================== *@
+
+    /// <summary>
+    /// Handles form submission by validating the form and saving the skill if valid.
+    /// </summary>
+    private async Task Submit()
+    {
+        // NOTE: Validate form before submission
+        if (form != null)
+        {
+            await form.Validate();
+
+            // NOTE: Only save skill if form is valid
+            if (form.IsValid)
+            {
+                await SaveSkill();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Saves the skill using the <c>SkillServices</c> and provides user feedback via snackbar notifications.
+    /// Handles success, failure, and exceptions during the save operation.
+    /// </summary>
+    private async Task SaveSkill()
+    {
+        try
+        {
+            // NOTE: Create DTO from the form input values
+            var SkillDto = new CreateSkillDto
+            {
+                Name = SkillForm.Name,
+                Description = SkillForm.Description
+            };
+
+            // NOTE: Call service to create the skill
+            var resultCreateKL = await SkillServices.CreateSkill(SkillDto);
+
+            if (resultCreateKL.Id != 0)
+            {
+                // NOTE: Handle success: notify user, reset form, and close dialog
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Conocimiento creado exitosamente.", Severity.Success);
+
+                SkillForm = new SkillDTO();
+                await form!.ResetAsync();
+                MudDialog.Close(resultCreateKL);
+            }
+            else
+            {
+                // NOTE: Handle failure: notify user and close dialog
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("No se pudo crear el conocimiento.", Severity.Error);
+                MudDialog.Close(null);
+            }
+        }
+        catch (Exception ex)
+        {
+            // NOTE: Handle exceptions: show error message and close dialog
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add($"Error al guardar el conocimiento: {ex.Message}", Severity.Error);
+            MudDialog.Close(null);
+        }
+    }
+
+
+    /// <summary>
+    /// Cancels the current dialog without saving any changes.
+    /// </summary>
+    private void Cancel()
+    {
+        // NOTE: Close the dialog using MudDialog's cancel mechanism
+        MudDialog.Cancel();
+    }
+
+}

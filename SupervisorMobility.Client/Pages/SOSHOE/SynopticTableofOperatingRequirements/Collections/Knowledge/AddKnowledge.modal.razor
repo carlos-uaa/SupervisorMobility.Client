@@ -1,0 +1,167 @@
+@*- Core .NET imports *@
+@using System.ComponentModel.DataAnnotations
+
+@*- Third-party imports *@
+@using MudBlazor
+
+@*- Custom project imports *@
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IKnowledgeService KnowledgeServices
+
+
+@* =================================================== *@
+@**====================== MODAL ======================**@
+@* =================================================== *@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudTextField @bind-Value="KnowledgeForm.Name" Label="Nombre" Required="true"
+                For="@(() => KnowledgeForm.Name)" Immediate="true" MaxLength="50" />
+            <MudTextField @bind-Value="KnowledgeForm.Description" Label="Descripción"
+                For="@(() => KnowledgeForm.Description)" Immediate="true" MaxLength="200" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(!form?.IsValid ?? true)">
+            Guardar
+        </MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="Cancel">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@* =================================================== *@
+@**======================= CODE ======================**@
+@* =================================================== *@
+@code {
+    @*+====================== INPUT =======================+*@
+    [Parameter]
+    public string? KnowledgeName { get; set; }
+
+    @*+====================== FORMS =======================+*@
+    public class KnowledgeDTO
+    {
+        [Required(ErrorMessage = "El nombre es obligatorio")]
+        [StringLength(50, ErrorMessage = "El nombre no puede exceder 50 caracteres")]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(200, ErrorMessage = "La descripción no puede exceder 200 caracteres")]
+        public string? Description { get; set; }
+    }
+    @*+================== KNOWLEDGE FORM ==================+*@
+    private KnowledgeDTO KnowledgeForm = new();
+    private MudForm? form;
+
+    @*+================== DIALOG INSTANCE =================+*@
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = default!;
+
+    @* =================================================== *@
+    @*&=================== LIFE CYCLES ===================&*@
+    @* =================================================== *@
+
+    /// <summary>
+    /// Initializes the component and sets the inital knowledge name if provided.
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        // NOTE: Assing initial knowledge name from parameter if available
+        if (!string.IsNullOrEmpty(KnowledgeName))
+        {
+            KnowledgeForm.Name = KnowledgeName;
+        }
+    }
+
+    /// <summary>
+    /// Validates the form after the first render and triggers a UI update.
+    /// </summary>
+    /// <param name="firstRender">Indicates if this is the first render of the component.</param>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // NOTE: Validate form on initial render and refresh UI to reflect validation state
+        if (firstRender && form != null)
+        {
+            await form.Validate();
+            StateHasChanged();
+        }
+    }
+
+    @* =================================================== *@
+    @*&=============== FUNCTIONS KNWOLEDGE ===============&*@
+    @* =================================================== *@
+    /// <summary>
+    /// Handles the form submission: validates the form and saves the knowledge if the form is valid.
+    /// </summary>
+    private async Task Submit()
+    {
+        // NOTE: Ensure the form reference exists
+        if (form == null) return;
+
+        // Validate form inputs
+        await form.Validate();
+
+        // NOTE: Save knowledge only if the form is valid
+        if (form.IsValid)
+            await SaveKnowledge();
+    }
+
+
+    /// <summary>
+    /// Saves a new knowledge item using <c>KnowledgeServices</c> and provides user feedback via snackbars.
+    /// Handles success, failure, and exceptions during the save operation.
+    /// </summary>
+    private async Task SaveKnowledge()
+    {
+        try
+        {
+            // NOTE: Create DTO from form input
+            var knowledgeDto = new CreateKnowledgeDto
+            {
+                Name = KnowledgeForm.Name,
+                Description = KnowledgeForm.Description
+            };
+
+            // NOTE: Call backend service to create the knowledge
+            var resultCreateKL = await KnowledgeServices.CreateKnowledge(knowledgeDto);
+
+            if (resultCreateKL.Id != 0)
+            {
+                // NOTE: On success, show success notification, reset form, and close dialog
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Knowledge created successfully.", Severity.Success);
+
+                KnowledgeForm = new KnowledgeDTO();
+                await form!.ResetAsync();
+                MudDialog.Close(resultCreateKL);
+            }
+            else
+            {
+                // NOTE: On failure (Id = 0), show error notification and close dialog
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                Snackbar.Add("Failed to create knowledge.", Severity.Error);
+                MudDialog.Close(null);
+            }
+        }
+        catch (Exception ex)
+        {
+            // NOTE: On exception, show error notification and close dialog
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+            Snackbar.Add($"Error saving knowledge: {ex.Message}", Severity.Error);
+            MudDialog.Close(null);
+        }
+    }
+
+
+    /// <summary>
+    /// Cancels the current dialog without saving any changes.
+    /// </summary>
+    private void Cancel()
+    {
+        // NOTE: Close the dialog using MudDialog's cancel mechanism
+        MudDialog.Cancel();
+    }
+}
