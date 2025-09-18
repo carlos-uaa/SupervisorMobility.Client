@@ -568,6 +568,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             return _sosSynopticRequeriments.SOSSTROKnowledge?.Where(a => a.SOSHubId == sosHubId).ToList();
         }
 
+        /// <summary>
+        /// Retrieves all established conditions for a specific section.
+        /// Returns an empty list if no conditions exist for the section.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section.</param>
+        /// <returns>A list of <see cref="EstablishedConditions"/> for the specified section.</returns>
+        private List<EstablishedConditions> GetEstablishedCondition(int sectionId)
+        {
+            // NOTE: Return all conditions for the section or an empty list if none exist
+            return _sosSynopticRequeriments?.EstablishedConditions?.Where(e => e.SectionId == sectionId).ToList() ?? new List<EstablishedConditions>();
+        }
+
 
         //&===================== FUNCTIONS FOR DOWNLOAD FORMAT =====================&\\
         private async void DownloadSTOR()
