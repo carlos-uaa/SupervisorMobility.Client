@@ -53,16 +53,24 @@
     }
 
     .syntable__c--ctr_conditions{
-        vertical-align: sub;
+        vertical-align: top;
     }
 
-    .syntable__c--ctr_conditions button{
+    .syntable__c--ctr_conditions .InputText{
         opacity: 0;
         transition: 300ms ease-in-out all;
+        display: flex; 
+        justify-content: left;
+        align-items: end;
+        gap:0.5rem;
     }
 
-     .syntable table tr:hover .syntable__c--ctr_conditions button{
-        opacity:1;
+    .syntable__c--ctr_conditions .mud-input-control>.mud-input-control-input-container>div.mud-input.mud-input-text{
+        margin-top: 0 !important;
+    }
+
+     .syntable table tr:hover .syntable__c--ctr_conditions .InputText{
+        opacity: 1;
      }
 
     .syntable.fullh .mud-table-container {
@@ -115,7 +123,7 @@
 
     .syntable__c--conChildTable{
         padding: 0 !important;
-        vertical-align: sub;
+        vertical-align: top;
     }
 
 </style>
@@ -322,7 +330,7 @@ else
                                 @LocalizerSTOR["STORSOSNumber"]</MudTh>
                             <MudTh colspan="4" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STOROperations"]
                             </MudTh>
-                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 250px;">
                                 @LocalizerSTOR["STORConditions"]
                             </MudTh>
                             <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr">
@@ -415,15 +423,51 @@ else
                                                 </MudTd>
 
 
-                                            <MudTd colspan="5" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))">
-                                                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" />
+                                                <MudTd colspan="5" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))" style="vertical-align: top; padding: 0px 8px;">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important;">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 8px 8px 8px;">
+                                                                    <div class="InputText">
+                                                                        <MudTextField
+                                                                                    T="string"
+                                                                                    Value="GetEstablishedCondition((int)sections[rowIndex].SectionId!)?.InputEstablishedCondition ?? string.Empty"
+                                                                                    ValueChanged="val => ChangeEstablishedCondition((int)sections[rowIndex].SectionId!, val)"
+                                                                                    Margin="Margin.Dense" Variant="Variant.Text" Clearable="true"
+                                                                                    Adornment="Adornment.End"
+                                                                                    AdornmentIcon="@Icons.Material.Rounded.TextFields"
+                                                                                    AdornmentColor="Color.Dark" Immediate="true" />
+                                                                        <MudIconButton Icon="@Icons.Material.Rounded.Add" OnClick="() => AddEstablishedCondition((int)sections[rowIndex].SectionId!)" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"/>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            @{
+                                                                var ConditionCollect = GetEstablishedCondition((int)sections[rowIndex].SectionId!);
+
+                                                                @foreach(var Condition in ConditionCollect.EstablishedConditions){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 8px;">
+                                                                        <div style="display: flex; align-items: end; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="()=> RemoveEstablishedCondition(ConditionCollect,Condition.Id,Condition.Condition)"/>
+                                                                            <MudTextField T="string"
+                                                                                        Value="Condition.Condition"
+                                                                                        ValueChanged="@(value => OnConditionChanged(Condition, value))"
+                                                                                        Variant="Variant.Text"
+                                                                                        Margin="Margin.Dense"/>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
                                                 </MudTd>
                                                 <MudTd colspan="4" class="@("syntable__c syntable__c--ctr syntable__c--conChildTable" + GetStepClass(sections, rowIndex))">
                                                     <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
                                                         <tbody>
                                                             @foreach(var (criticalPoint, index) in GetCriticalPoints(sections[rowIndex]).Select((value,i)=>(value,i))){
                                                             <tr>
-                                                                <td style="border: none !important; vertical-align: sub; padding: 4px 16px;">@(index+1) .- @criticalPoint</td>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 16px;">@(index+1) .- @criticalPoint</td>
                                                             </tr>
                                                             }
                                                         </tbody>
@@ -446,11 +490,11 @@ else
                                                     <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
                                                     <MudText Typo="Typo.h5">@GetTrainingTime(distribution) Dias</MudText>
                                                     </MudTd>
-                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: sub;">
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: top;">
                                                         <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td style="border: none !important; vertical-align: sub;">
+                                                                    <td style="border: none !important; vertical-align: top;">
 
                                                                         <MudAutocomplete T="string"
                                                                                         Value="GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName ?? string.Empty"
@@ -487,7 +531,7 @@ else
 
                                                                 @foreach(var id in GetKnowledgeDTO(distribution.SOSHubId??0)!.KnowledgeIds){
                                                                 <tr>
-                                                                    <td style="border: none !important; vertical-align: sub; padding: 4px 16px;">
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 16px;">
                                                                         <div style="display: flex; align-items: center; gap: 0.25rem;">
                                                                             <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" @onclick="() => RemoveKnowledge((int)distribution.SOSHubId!,id)"/>
                                                                             <div>@(_KnowledgeGeneral.FirstOrDefault(t => t.Id == id)?.Name)</div>
@@ -498,11 +542,11 @@ else
                                                             </tbody>
                                                         </table>
                                                     </MudTd>
-                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: sub;">
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: top;">
                                                         <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
                                                             <tbody>
                                                                 <tr>
-                                                                    <td style="border: none !important; vertical-align: sub;">
+                                                                    <td style="border: none !important; vertical-align: top;">
 
                                                                         <MudAutocomplete T="string"
                                                                                         Value="GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName ?? string.Empty"
@@ -539,7 +583,7 @@ else
 
                                                                 @foreach(var id in GetSkillDTO(distribution.SOSHubId??0)!.SkillIds){
                                                                 <tr>
-                                                                    <td style="border: none !important; vertical-align: sub; padding: 4px 16px;">
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 16px;">
                                                                         <div style="display: flex; align-items: center; gap: 0.25rem;">
                                                                             <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" @onclick="() => RemoveSkill((int)distribution.SOSHubId!,id)"/>
                                                                             <div>@(_SkillGeneral.FirstOrDefault(t => t.Id == id)?.Name)</div>

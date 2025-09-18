@@ -53,6 +53,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         private List<Skill> _SkillGeneral = new();
         public List<SkillDynamicDTO> SkillDynamicDTO = new List<SkillDynamicDTO>();
 
+        //+============= ESTEBLISHED CONDITIONS ===============+\\
+        public List<EstablishedConditionDynamicDTO> EstablishedConditionDynamicDTO = new List<EstablishedConditionDynamicDTO>();
 
         // =================================================== \\
         //&============ COMPONENT INITIALIZATION =============&\\
@@ -327,6 +329,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // NOTE: Add dynamic skill filters for each distribution
             AddFiltersDynamicSkill(hubsWithDistribution, _SkillGeneral);
+
+            // NOTE: Add dynamic input for each section in each distribution
+            SetEstablishedConditionsDynamic();
         }
 
 
@@ -497,8 +502,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // Update dynamic filters for knowledge and skills if needed
             KnowledgeDynamicDTO = KnowledgeDynamicDTO.Where(s => s.SOSHubId != item.SOSHubId).ToList();
-
             SkillDynamicDTO = SkillDynamicDTO.Where(s => s.SOSHubId != item.SOSHubId).ToList();
+
+            // update dynamic inputs for established conditions
+            SetEstablishedConditionsDynamic();
 
             // Refresh the UI state
             StateHasChanged();
@@ -1031,6 +1038,184 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
 
         // =================================================== \\
+        //&============= ESTABLISHED CONDITIONS ==============&\\
+        // =================================================== \\
+
+        /// <summary>
+        /// Sets the established conditions dynamically for each SOS hub's first distribution.
+        /// Aggregates them into <see cref="EstablishedConditionDynamicDTO"/> objects.
+        /// </summary>
+        private void SetEstablishedConditionsDynamic()
+        {
+            // NOTE: Exit early if there are no SOS hubs
+            if (_sosSynopticRequeriments?.SOSHubs == null) return;
+
+            var copyEstablishedConditions = _sosSynopticRequeriments.EstablishedConditions ?? new List<EstablishedConditions>();
+            var generalEConditions = new List<EstablishedConditionDynamicDTO>();
+
+            foreach (var hub in _sosSynopticRequeriments.SOSHubs)
+            {
+                // NOTE: Only consider the first distribution of the hub
+                var firstDistribution = hub?.SOSDistribution?.FirstOrDefault();
+                if (firstDistribution == null) continue;
+
+                var sectionsDistribution = BuildOperationSequences(firstDistribution);
+
+                // NOTE: Map each section to a dynamic DTO with its established conditions
+                var setECDynamicDistribution = sectionsDistribution.Select(section =>
+                {
+                    var establishedForSection = copyEstablishedConditions.Where(ec => ec.SectionId == section.SectionId).ToList();
+
+                    return new EstablishedConditionDynamicDTO
+                    {
+                        SectionId = section.SectionId ?? 0,
+                        InputEstablishedCondition = string.Empty,
+                        EstablishedConditions = establishedForSection
+                    };
+                }
+                );
+
+                generalEConditions.AddRange(setECDynamicDistribution);
+            }
+
+            // NOTE: Assign the aggregated dynamic conditions to the property
+            EstablishedConditionDynamicDTO = generalEConditions;
+        }
+
+        /// <summary>
+        /// Retrieves the dynamic established condition for a given section.
+        /// Returns a new <see cref="EstablishedConditionDynamicDTO"/> if none exists for the section.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section.</param>
+        /// <returns>The <see cref="EstablishedConditionDynamicDTO"/> for the specified section.</returns>
+        private EstablishedConditionDynamicDTO GetEstablishedCondition(int sectionId)
+        {
+            // NOTE: Return the first matching DTO or a new instance if not found
+            return EstablishedConditionDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId) ?? new EstablishedConditionDynamicDTO();
+        }
+
+
+        /// <summary>
+        /// Removes an established condition from the provided dynamic DTO.
+        /// Can remove by condition ID or by condition string if ID is zero.
+        /// </summary>
+        /// <param name="EstablishedConditionsDynamic">The dynamic DTO containing established conditions.</param>
+        /// <param name="IdECondition">The ID of the condition to remove. If zero, the <paramref name="Condition"/> string is used.</param>
+        /// <param name="Condition">The condition string to remove if <paramref name="IdECondition"/> is zero.</param>
+        private void RemoveEstablishedCondition(EstablishedConditionDynamicDTO EstablishedConditionsDynamic, int IdECondition, string Condition)
+        {
+            // NOTE: Remove by ID if provided, otherwise remove by condition string
+            if (IdECondition != 0)
+            {
+                EstablishedConditionsDynamic.EstablishedConditions.RemoveAll(e => e.Id == IdECondition);
+            }
+            else
+            {
+                EstablishedConditionsDynamic.EstablishedConditions.RemoveAll(e => e.Condition == Condition);
+            }
+        }
+
+        /// <summary>
+        /// Validates the provided established condition and shows a notification if invalid.
+        /// Ensures the condition string is not null, empty, or shorter than the specified minimum length.
+        /// </summary>
+        /// <param name="item">The established condition to validate.</param>
+        /// <param name="minLength">The minimum required length for the condition. Default is 2.</param>
+        private void ValidateAndNotify(EstablishedConditions item, int minLength = 2)
+        {
+            // NOTE: Show an error notification if the condition is null, empty, or too short
+            if (string.IsNullOrWhiteSpace(item.Condition) || item.Condition.Length < minLength)
+            {
+                Snackbar.Add($"El valor debe tener al menos {minLength} caracteres.", Severity.Error);
+            }
+        }
+
+        /// <summary>
+        /// Handles changes to an established condition and validates the new value.
+        /// Updates the condition if it meets the minimum length, otherwise shows a warning.
+        /// </summary>
+        /// <param name="item">The established condition being updated.</param>
+        /// <param name="value">The new value for the condition.</param>
+        /// <param name="minLength">The minimum required length for the condition. Default is 2.</param>
+        private void OnConditionChanged(EstablishedConditions item, string value, int minLength = 2)
+        {
+            if (string.IsNullOrEmpty(value) || value.Length < minLength)
+            {
+                Snackbar.Add($"El valor debe tener al menos {minLength} caracteres.", Severity.Warning);
+
+                // NOTE: Truncate existing value if it exists
+                if (!string.IsNullOrEmpty(item.Condition))
+                {
+                    item.Condition = new string(item.Condition.Take(minLength).ToArray());
+                }
+
+                return;
+            }
+
+            // NOTE: Update the condition with the new valid value
+            item.Condition = value;
+        }
+
+        /// <summary>
+        /// Changes the input value of the established condition for a given section.
+        /// If the section does not exist, the method exits silently.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section to update.</param>
+        /// <param name="value">The new input value for the condition.</param>
+        public void ChangeEstablishedCondition(int sectionId, string value)
+        {
+            // NOTE: Find the section by ID; exit if not found
+            var section = EstablishedConditionDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId);
+            if (section == null) return;
+
+            // NOTE: Update the input value safely
+            section.InputEstablishedCondition = value ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Adds a new established condition to the specified section.
+        /// Validates that the input is not empty and prevents duplicate conditions.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section to add the condition to.</param>
+        public void AddEstablishedCondition(int sectionId)
+        {
+            // NOTE: Find the section by ID; exit if not found
+            var ECondition = EstablishedConditionDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId);
+            if (ECondition == null) return;
+
+            var valueNewECondition = ECondition.InputEstablishedCondition;
+
+            // NOTE: Notify and exit if input is empty
+            if (string.IsNullOrWhiteSpace(valueNewECondition))
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add("No puede agregar una condicion vacia, ingrese texto", Severity.Info);
+                return;
+            }
+
+            // NOTE: Check for duplicate conditions (case-insensitive)
+            var existEstablishedCondition = ECondition.EstablishedConditions.Any(a => string.Equals(a.Condition, valueNewECondition, StringComparison.OrdinalIgnoreCase));
+            if (!existEstablishedCondition)
+            {
+                // NOTE: Add new condition and reset input
+                ECondition.InputEstablishedCondition = string.Empty;
+                ECondition.EstablishedConditions.Add(new EstablishedConditions { Id = 0, Condition = valueNewECondition, SectionId = sectionId, SOSSynopticTableofOperatingRequirementsId = _sosSynopticRequeriments.SOSSynopticTableofOperatingRequirementsId });
+                StateHasChanged();
+
+            }
+            else
+            {
+                // NOTE: Notify if the condition already exists
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add("Ya existe esta condicion establecida para estos puntos criticos", Severity.Warning);
+            }
+        }
+
+
+
+        // =================================================== \\
         //&============ FUNCTIONS TO UPDATE SCRO =============&\\
         // =================================================== \\
 
@@ -1041,7 +1226,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         public async Task UpdateSTRO()
         {
             // Prepare the data transfer object for updating STRO
-            var stroUpdateDto = FormatterSendDataSTRO(_sosSynopticRequeriments, KnowledgeDynamicDTO, SkillDynamicDTO);
+            var stroUpdateDto = FormatterSendDataSTRO(_sosSynopticRequeriments, KnowledgeDynamicDTO, SkillDynamicDTO, EstablishedConditionDynamicDTO);
 
             // Call service to update the Synoptic Table
             var updateResult = await SynopticRequirementsService.UpdateSOSSynopticTableofOperatingRequirements(stroUpdateDto);
@@ -1064,13 +1249,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
         /// <summary>
         /// Maps a <c>SOSSynopticTableofOperatingRequirements</c> entity to a DTO suitable for update operations.
-        /// Combines existing entity data with dynamic knowledge and skill filters.
+        /// Combines existing entity data with dynamic knowledge, skill, and established condition filters.
         /// </summary>
         /// <param name="STRO">The source Synoptic Table of Operating Requirements entity.</param>
         /// <param name="knowledgeDynamicDTOs">Dynamic knowledge filters to include in the DTO.</param>
         /// <param name="skillDynamicDTOs">Dynamic skill filters to include in the DTO.</param>
+        /// <param name="EstablishedConditionDynamicDTOs">Dynamic established condition filters to include in the DTO.</param>
         /// <returns>A DTO containing the necessary fields for updating the STRO.</returns>
-        private static SOSSynopticTableofOperatingRequirementsForUpdateDto FormatterSendDataSTRO(SOSSynopticTableofOperatingRequirements STRO, List<KnowledgeDynamicDTO> knowledgeDynamicDTOs, List<SkillDynamicDTO> skillDynamicDTOs)
+        private static SOSSynopticTableofOperatingRequirementsForUpdateDto FormatterSendDataSTRO(SOSSynopticTableofOperatingRequirements STRO, List<KnowledgeDynamicDTO> knowledgeDynamicDTOs, List<SkillDynamicDTO> skillDynamicDTOs, List<EstablishedConditionDynamicDTO> EstablishedConditionDynamicDTOs)
         {
             return new SOSSynopticTableofOperatingRequirementsForUpdateDto
             {
@@ -1083,17 +1269,20 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
                 IsActive = STRO.IsActive,
                 SOSHubId = STRO.SOSHubId,
 
-                // Include all associated hub IDs
+                // NOTE: Include all associated hub IDs
                 SOSHubIds = STRO?.SOSHubs?.Select(s => s.SOSHubId).ToList(),
 
-                // Copy current requirement difficulties
+                // NOTE: Copy current requirement difficulties
                 RequirementDifficulties = STRO?.RequirementDifficulties?.ToList(),
 
-                // Map dynamic knowledge IDs to the DTO
+                // NOTE: Map dynamic knowledge IDs to the DTO
                 SOSSTROKnowledge = knowledgeDynamicDTOs.SelectMany(a => a.KnowledgeIds.Select(k => new SOSSTROKnowledgeHub { Id = 0, KnowledgeId = k, SOSHubId = a.SOSHubId })).ToList(),
 
-                // Map dynamic skill IDs to the DTO
-                SOSSTROSkill = skillDynamicDTOs.SelectMany(a => a.SkillIds.Select(s => new SOSSTROSkillHub { Id = 0, SkillId = s, SOSHubId = a.SOSHubId })).ToList()
+                // NOTE: Map dynamic skill IDs to the DTO
+                SOSSTROSkill = skillDynamicDTOs.SelectMany(a => a.SkillIds.Select(s => new SOSSTROSkillHub { Id = 0, SkillId = s, SOSHubId = a.SOSHubId })).ToList(),
+
+                // NOTE: Map dynamic established conditions to the DTO
+                EstablishedConditions = EstablishedConditionDynamicDTOs.SelectMany(e => e.EstablishedConditions.Select(ec => new EstablishedConditions { Id = ec.Id, Condition = ec.Condition, SectionId = ec.SectionId, SOSSynopticTableofOperatingRequirementsId = ec.SOSSynopticTableofOperatingRequirementsId })).ToList()
             };
         }
     }
