@@ -22,6 +22,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         public bool ShowLoading = true;
         public bool LoadingDistributions { get; set; } = false;
         private IList<string> _sourceMsgLoading = new List<string>();
+        public bool IsDownload = false;
 
         //+==================== USER LOGIN ===================+\\
         public User user = new();
@@ -582,10 +583,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
 
         //&===================== FUNCTIONS FOR DOWNLOAD FORMAT =====================&\\
-        private async void DownloadSTOR()
+        private async Task DownloadSTOR()
         {
-            await SynopticRequirementsService.GenerateExcelSTOperatingRequirements((int)SynopticRequirementsId!);
+            try
+            {
+                IsDownload = true;
+
+                if (SynopticRequirementsId == null) throw new InvalidOperationException("SynopticRequirementsId is null.");
+                await SynopticRequirementsService.GenerateExcelSTOperatingRequirements((int)SynopticRequirementsId, _sosSynopticRequeriments.ProcessName);
+
+                IsDownload = false;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error while downloading STOR: {ex.Message}");
+                IsDownload = false;
+            }
         }
+
 
 
 
