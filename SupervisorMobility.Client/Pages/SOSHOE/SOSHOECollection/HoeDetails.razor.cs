@@ -168,7 +168,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (_sosHub.Folio.Contains("-L-"))
             {
                 productSide = "L";
-            } else if (_sosHub.Folio.Contains("-R-"))
+            }
+            else if (_sosHub.Folio.Contains("-R-"))
             {
                 productSide = "R";
             }
@@ -280,7 +281,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
 
             cycleId = _sosHub.TrainingTime ?? 0;
-            
+
 
             //_sosHub.AppliedModel = _products.Find(p => p.ProductId == _sosHub.AppliedModelId);
 
@@ -296,7 +297,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             foreach (var distribution in _sosHub.SOSDistribution)
             {
-                Documents.Add(distribution);
+                if (distribution.SOSHubId == _sosHub.SOSHubId) Documents.Add(distribution);
             }
 
             foreach (var flow in _sosHub.SOSFlow)
@@ -314,7 +315,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 Documents.Add(pat);
             }
 
-            if (_sosHub.Hci != null )
+            if (_sosHub.Hci != null)
             {
                 Documents.Add(_sosHub.Hci);
             }
@@ -972,7 +973,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         _sosHub.PATs.RemoveAll(pat => pat.PATid == id);
 
-                        Documents.RemoveAll(doc => doc is PAT pat  && pat.PATid == id);
+                        Documents.RemoveAll(doc => doc is PAT pat && pat.PATid == id);
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"{Localizer["succesRemovePat"]}", Severity.Info);
@@ -995,7 +996,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             if (selectedRowNumber == SelectTableEventDocument.Items.ToList().IndexOf(args.Item))
             {
-                
+
                 var method = GetType().GetMethod(nameof(Details), BindingFlags.Instance | BindingFlags.Public);
 
                 var generic = method.MakeGenericMethod(args.Item.GetType());
@@ -1057,7 +1058,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else if (element is SOSSequence sequence)
                 {
                     SosDocId = sequence.SOSSequenceId;
-                } 
+                }
                 else if (element is PAT pat)
                 {
                     SosDocId = pat.PATid;
@@ -1097,7 +1098,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 else if (element is SOSSequence sequence)
                 {
                     SosDocId = sequence.SOSSequenceId;
-                }   
+                }
                 else if (element is PAT pat)
                 {
                     SosDocId = pat.PATid;
@@ -1130,7 +1131,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             if (selectedRowNumberPat == SelectTableEventDocumentPat.Items.ToList().IndexOf(args.Item))
             {
-               if (args.Item is PAT)
+                if (args.Item is PAT)
                 {
                     NavigationManager.NavigateTo($"/PAT/{SosDocId}");
                 }
@@ -1146,7 +1147,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         {
             if (selectedRowNumberPat == rowNumber)
             {
-                 if (element is PAT pat)
+                if (element is PAT pat)
                 {
                     SosDocId = pat.PATid;
                 }
@@ -1154,7 +1155,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
             else if (SelectTableEventDocumentPat.SelectedItem != null && SelectTableEventDocumentPat.SelectedItem.Equals(element))
             {
-                 if (element is PAT pat)
+                if (element is PAT pat)
                 {
                     SosDocId = pat.PATid;
                 }
@@ -1252,7 +1253,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         #region PAT
 
-        
+
 
         private async Task OnAplicationDateChanged(DateTime? newDate)
         {
@@ -1260,7 +1261,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             StateHasChanged();
         }
 
-        
+
         #endregion
     }
 }
