@@ -4,6 +4,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Enums
     {
         A,
         B,
-        C
+        C,
+        OBD
     }
 }
