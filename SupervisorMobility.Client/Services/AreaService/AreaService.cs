@@ -78,6 +78,23 @@ namespace SupervisorMobility.Client.Services.AreaService
             return areas;
         }
         
+        public async Task<List<Area>> GetAreasByIds(List<int> areasids)
+        {
+            var content = JsonContent.Create(areasids);
+            var response = await _http.PostAsync($"plants/0/areas/byIds", content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new List<Area>();
+            }
+
+            var areas = JsonSerializer.Deserialize<List<Area>>(responseContent, _options);
+
+            return areas;
+        }
+        
         public async Task<List<Area>> GetAreasIncludeCollections(int plantId)
         {
             var response = await _http.GetAsync($"plants/{plantId}/areas?includeCollections=true");

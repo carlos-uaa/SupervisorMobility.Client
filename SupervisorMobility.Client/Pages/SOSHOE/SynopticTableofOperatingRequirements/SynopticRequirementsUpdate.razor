@@ -1,0 +1,615 @@
+﻿@page "/soshoe/SynopticRequirements/Update/{SynopticRequirementsId:int}"
+
+
+@*
++   PAGE: Update Synoptic Requirements
+    PURPOSE: View and edit a Synoptic Requirements record, including distributions, sequences, operations, and critical points. 
++*@
+
+@* -Core services *@
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+
+@* -Localization *@
+@inject IStringLocalizer<Resource> Localizer
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<ResourceSTOR> LocalizerSTOR
+
+@* -Application / Domain services *@
+@inject ISkillService SkillServices
+@inject ISOSHubService SOSHubServices
+@inject IKnowledgeService KnowledgeServices
+@inject ISOSAnalysisService SOSAnalysisServices
+@inject ISOSSequenceService SOSSequenceServices
+@inject ISOSDistributionService SOSDistributionServices
+@inject ISynopticRequirementsService SynopticRequirementsService
+
+@* -UI / Components *@
+@inject IDialogService DialogService
+@inject IBreadcrumbService BreadcrumbService
+
+@* -Styles for the main synoptic table, hover effects, vertical text, child tables *@
+<style>
+    .syntable {
+        border-collapse: collapse;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background: white;
+    }
+
+    .syntable.fullh table {
+        height: 100%;
+    }
+
+    .syntable table tr{
+        transition: 300ms ease-in-out all;
+    }
+
+    .syntable table tr:hover{
+        cursor: pointer;
+    }
+
+    .syntable__c--ctr_conditions{
+        vertical-align: top;
+    }
+
+    .syntable__c--ctr_conditions .InputText{
+        opacity: 0;
+        transition: 300ms ease-in-out all;
+        display: flex; 
+        justify-content: left;
+        align-items: end;
+        gap:0.5rem;
+    }
+
+    .syntable__c--ctr_conditions .mud-input-control>.mud-input-control-input-container>div.mud-input.mud-input-text{
+        margin-top: 0 !important;
+    }
+
+     .syntable table tr:hover .syntable__c--ctr_conditions .InputText{
+        opacity: 1;
+     }
+
+    .syntable.fullh .mud-table-container {
+        height: 100%;
+    }
+
+    /* Elementos */
+    .syntable__hd,
+    .syntable__c {
+        padding: 10px 8px !important;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    .syntable__hd {
+        background: #0b8ff40d;
+        color: #333;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Modificadores */
+    .syntable__hd--ctr,
+    .syntable__c--ctr {
+        text-align: center !important;
+    }
+
+    .syntable__c--nbt{
+        border-top: none !important;
+        border-bottom: none !important;
+    }
+
+    .syntable__c--nt{
+        border-top: none !important;
+    }
+
+    .syntable__c--vertical{
+        writing-mode: sideways-lr !important;
+    }
+
+    /* Celdas especiales */
+    .syntable__rt {
+        background-color: #0b8ff40d;
+        color: #333;
+        font-weight: 600 !important;
+    }
+
+
+    .syntable__c--conChildTable{
+        padding: 0 !important;
+        vertical-align: top;
+    }
+
+</style>
+
+@* LOADING STATE *@
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true"
+        Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@Color.Primary" Style="height:70px;width:70px;"
+                        Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto; float: right" Dense>
+        <thead>
+            <tr>
+                <th rowspan="2">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+
+                    <MudItem Style="justify-content: end" Class="ml-auto">
+                        <MudItem Class="d-flex">
+                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3"
+                                Icon="@Icons.Material.Filled.Info" IconColor="Color.Info"
+                                @onclick="(() => HoeDetails((int)_sosSynopticRequeriments.SOSHubId!))"
+                                OnTouch="(() => HoeDetails((int)_sosSynopticRequeriments.SOSHubId))">
+                                @Localizer["GoCollection"]</MudChip>
+                        </MudItem>
+                        <MudItem Class="d-flex">
+                            @if ((user.UserType == 1 || user.UserType == 2)
+                                                    && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status == 1)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning"
+                                    Variant="Variant.Text">
+                                    @Localizer["new"]
+                                </MudChip>
+                            }
+
+                            @if ((user.UserType == 1 || user.UserType == 2)
+                                                    && _sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                                                    && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status != 2)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success"
+                                    Variant="Variant.Text">
+                                    @Localizer["review"]!
+                                </MudChip>
+                            }
+                            else if (_sosSynopticRequeriments?.SynopticRequirementsLogbooks != null
+                            && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Any()
+                            && _sosSynopticRequeriments.SynopticRequirementsLogbooks.Last().Status == 2)
+                            {
+                                <MudChip Class="mr-10" Icon="@Icons.Material.Filled.PlaylistAddCheck" Color="Color.Success"
+                                    Variant="Variant.Text">
+                                    @Localizer["approved"]!
+                                </MudChip>
+                            }
+
+
+                        </MudItem>
+                    </MudItem>
+                </td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+    <MudText Typo="Typo.h6"><b>@LocalizerSTOR["STORTable"]</b></MudText>
+
+    <MudPaper Square="true" Elevation="3">
+        <div>
+            @* Header table showing process info, department, plant, dates, and logbook statuses *@
+            <div style="display: flex; width: 100%; gap: 1rem;">
+                <div style="flex: 5;">
+                    <MudSimpleTable class="syntable fullh" Style="height:100%;">
+                        <thead>
+                            <MudTr>
+                                <MudTh colspan="4" class="syntable__hd">@LocalizerSTOR["STORProcessName"]</MudTh>
+                                <MudTh colspan="4" class="syntable__hd">@LocalizerSTOR["STORDepartment"]</MudTh>
+                                <MudTh colspan="3" class="syntable__hd">@LocalizerSTOR["STORPlant"]</MudTh>
+                                <MudTh colspan="2" class="syntable__hd">@LocalizerSTOR["STORDate"]</MudTh>
+                            </MudTr>
+                            <MudTr>
+                                <MudTd colspan="4" class="syntable__c syntable__c--ctr">
+                                    @_sosSynopticRequeriments.ProcessName</MudTd>
+                                <MudTd colspan="4" class="syntable__c syntable__c--ctr">@_soshub?.Department?.Description
+                                </MudTd>
+                                <MudTd colspan="3" class="syntable__c syntable__c--ctr">@_soshub?.Plant?.Description</MudTd>
+                                <MudTd colspan="2" class="syntable__c syntable__c--ctr">
+                                    @DateFormat(_sosSynopticRequeriments.CreatedAt)</MudTd>
+                            </MudTr>
+                            <MudTr>
+                                <MudTh colspan="4" class="syntable__hd">@LocalizerSTOR["STORPrepared"]</MudTh>
+                                <MudTh colspan="4" class="syntable__hd">@LocalizerSTOR["STORReviewed"]</MudTh>
+                                <MudTh colspan="3" class="syntable__hd">@LocalizerSTOR["STORApproved"]</MudTh>
+                                <MudTh colspan="2" class="syntable__hd">@LocalizerSTOR["STORSheet"]</MudTh>
+                            </MudTr>
+                            <MudTr>
+                                <MudTd colspan="4" class="syntable__c syntable__c--ctr">
+                                    @_sosSynopticRequeriments?.Creator?.Name</MudTd>
+                                <MudTd colspan="4" class="syntable__c syntable__c--ctr">
+                                    @_sosSynopticRequeriments?.Reviewer?.Name</MudTd>
+                                <MudTd colspan="3" class="syntable__c syntable__c--ctr">
+                                    @_sosSynopticRequeriments?.Approver?.Name</MudTd>
+                                <MudTd colspan="1" class="syntable__c syntable__c--ctr">1</MudTd>
+                                <MudTd colspan="1" class="syntable__c syntable__c--ctr">1</MudTd>
+                            </MudTr>
+                        </thead>
+                    </MudSimpleTable>
+                </div>
+                <div style="flex: 3;">
+                    <MudSimpleTable class="syntable fullh" Style="height:100%;">
+                        <thead>
+                            @for (int i = 4; i >= 0; i--)
+                            {
+                                @if (TryGetSynopticRequirementsLogbooksElementAtIndex(i, out var item))
+                                {
+
+                                    <MudTr>
+                                        <MudTd colspan="2" class="syntable__c syntable__c--ctr">@item?.Approver?.Name</MudTd>
+                                        <MudTd colspan="1" class="syntable__c syntable__c--ctr">
+                                            @_sosSynopticRequeriments?.SynopticRequirementsLogbooks?.Count()</MudTd>
+                                        <MudTd colspan="3" class="syntable__c syntable__c--ctr">@item?.Changes</MudTd>
+                                        <MudTd colspan="2" class="syntable__c syntable__c--ctr">@DateFormat(item?.Date)</MudTd>
+                                        <MudTd colspan="1" class="syntable__c syntable__c--ctr">
+                                            @if (item!.NoRevision == 0)
+                                            {
+                                                <b>N</b>
+                                            }
+                                            else
+                                            {
+                                                @item.NoRevision
+                                            }
+                                        </MudTd>
+                                    </MudTr>
+                                }
+                                else
+                                {
+                                    <MudTr>
+                                        <MudTd colspan="2" class="syntable__c syntable__c--ctr"></MudTd>
+                                        <MudTd colspan="1" class="syntable__c syntable__c--ctr"></MudTd>
+                                        <MudTd colspan="3" class="syntable__c syntable__c--ctr"></MudTd>
+                                        <MudTd colspan="2" class="syntable__c syntable__c--ctr"></MudTd>
+                                        <MudTd colspan="1" class="syntable__c syntable__c--ctr"></MudTd>
+                                    </MudTr>
+                                }
+                            }
+
+
+                            <MudTr>
+                                <MudTh colspan="2" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORApproved"]
+                                </MudTh>
+                                <MudTh colspan="1" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORNumber"]
+                                </MudTh>
+                                <MudTh colspan="3" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORChange"]
+                                </MudTh>
+                                <MudTh colspan="2" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORDate"]</MudTh>
+                                <MudTh colspan="1" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORRevNumber"]
+                                </MudTh>
+                            </MudTr>
+                        </thead>
+                    </MudSimpleTable>
+                </div>
+            </div>
+
+            <div style="display: flex; width: 100%; gap: 1rem; margin-top: 1.5rem; flex-direction: column;">
+
+                @* Buttons for adding/editing distributions *@
+                <MudItem Class="d-flex flex-row gap-4">
+                    @if (_sosSynopticRequeriments?.SOSHubs?.Count() == 0)
+                    {
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" Size="Size.Small" OnClick="OpenDialogListSOSHub">Agregar Distribución</MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Small" OnClick="OpenDialogListSOSHub">Editar Distribuciones</MudButton>
+                    }
+                </MudItem>
+
+                 @* Table rows generated for each distribution with sequences, steps, and critical points *@
+                <MudSimpleTable class="syntable">
+                    <thead>
+                        <MudTr>
+                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 60px;">
+                                @LocalizerSTOR["STORNumber"]</MudTh>
+                            <MudTh colspan="8" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 150px;">
+                                @LocalizerSTOR["STORProcessName"]</MudTh>
+                            <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 80px;">
+                                @LocalizerSTOR["STORSOSNumber"]</MudTh>
+                            <MudTh colspan="4" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STOROperations"]
+                            </MudTh>
+                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 250px;">
+                                @LocalizerSTOR["STORConditions"]
+                            </MudTh>
+                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                                @LocalizerSTOR["STORQuality"]
+                            </MudTh>
+                            <MudTh colspan="2" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                                @LocalizerSTOR["STORDifficulty"]
+                            </MudTh>
+                            <MudTh colspan="2" rowspan="2" class="syntable__hd syntable__hd--ctr">
+                                @LocalizerSTOR["STORLearningTime"]
+                            </MudTh>
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
+                                @LocalizerSTOR["STORKnowledge"]</MudTh>
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
+                                @LocalizerSTOR["STORSkills"]</MudTh>
+                        </MudTr>
+                        <MudTr>
+                            <MudTh class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORPerPerson"]</MudTh>
+                            <MudTh class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORPerMachine"]</MudTh>
+                        </MudTr>
+                    </thead>
+                    <tbody>
+                        @if(LoadingDistributions){
+                            <MudTr>
+                                <MudTd ColSpan="30" Class="syntable__c syntable__c--ctr">
+                                    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" style="height: 300px;">
+                                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                                        <MudText Typo="Typo.body1" Class="mt-2">Loading selected distributions...</MudText>
+                                    </MudStack>
+                                </MudTd>
+                            </MudTr>
+                            }else{
+                                @if (_sosSynopticRequeriments?.SOSHubs?.Count() == 0)
+                                {
+                                    <MudTr>
+                                        <MudTd colspan="30" class="syntable__c syntable__c--ctr">
+                                            <MudStack Direction="Column" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
+
+                                                <MudItem Style="width: 30%;align-items: center;" Class="d-flex flex-column justify-center">
+                                                    <MudImage Src="Images/Ilustration/NotDistribution1.png" Fluid="true" Style="width: 90%;" />
+                                                    <MudText Typo="Typo.body1" Color="Color.Default" Style="line-height: 1.25;">
+                                                            No distributions selected yet, this synoptic chart of operational requirements has no assigned distributions.
+                                                    </MudText>
+
+                                                    <MudText Typo="Typo.body2" Color="Color.Info" Align="Align.Center">
+                                                            Select or add a distribution to display the information here.
+                                                    </MudText>
+                                                </MudItem>
+                                            </MudStack>
+                                        </MudTd>
+                                    </MudTr>
+                                }
+                                else
+                                {
+                                    @foreach (var distribution in GetDistributions())
+                                    {
+                                        var sections = BuildOperationSequences(distribution);
+
+                                        @foreach (var rowIndex in Enumerable.Range(0, sections.Count))
+                                        {
+                                            <MudTr>
+                                                @if (rowIndex == 0)
+                                                {
+                                                    <MudTd colspan="1" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" OnClick="() => RemoveDistribution(distribution)" />
+                                                    </MudTd>
+
+                                                    <MudTd colspan="8" rowspan="@sections.Count"
+                                                        class="syntable__c syntable__c--ctr">
+                                                        @distribution.ProcessName
+                                                    </MudTd>
+                                                }
+
+                                                @* Analyses *@
+                                                @if (shouldRenderSequenceOrAnalyses(distribution, rowIndex))
+                                                {
+                                                    <MudTd rowspan="@CalculateRowSpan(distribution, rowIndex)"
+                                                        class="syntable__c syntable__c--ctr syntable__c--vertical">
+                                                        @ShowSequenceOrAnalyses(distribution, rowIndex)
+                                                    </MudTd>
+                                                }
+
+
+                                                 @* Steps *@
+                                                <MudTd colspan="1" class="@(GetStepClass(sections, rowIndex))">
+                                                    @(GetStepSection(distribution, sections[rowIndex]).IsMachineOperation ? GetStepSection(distribution, sections[rowIndex]).Step : "")
+                                                </MudTd>
+                                                <MudTd colspan="2" class="@(GetStepClass(sections, rowIndex))">
+                                                    @(!GetStepSection(distribution, sections[rowIndex]).IsMachineOperation ? GetStepSection(distribution, sections[rowIndex]).Step : "")
+                                                </MudTd>
+
+
+                                                <MudTd colspan="5" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))" style="vertical-align: top; padding: 0px 8px;">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important;">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 8px 8px 8px;">
+                                                                    <div class="InputText">
+                                                                        <MudTextField
+                                                                                    T="string"
+                                                                                    Value="GetEstablishedCondition((int)sections[rowIndex].SectionId!)?.InputEstablishedCondition ?? string.Empty"
+                                                                                    ValueChanged="val => ChangeEstablishedCondition((int)sections[rowIndex].SectionId!, val)"
+                                                                                    Margin="Margin.Dense" Variant="Variant.Text" Clearable="true"
+                                                                                    Adornment="Adornment.End"
+                                                                                    AdornmentIcon="@Icons.Material.Rounded.TextFields"
+                                                                                    AdornmentColor="Color.Dark" Immediate="true" />
+                                                                        <MudIconButton Icon="@Icons.Material.Rounded.Add" OnClick="() => AddEstablishedCondition((int)sections[rowIndex].SectionId!)" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"/>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            @{
+                                                                var ConditionCollect = GetEstablishedCondition((int)sections[rowIndex].SectionId!);
+
+                                                                @foreach(var Condition in ConditionCollect.EstablishedConditions){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 8px;">
+                                                                        <div style="display: flex; align-items: end; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="()=> RemoveEstablishedCondition(ConditionCollect,Condition.Id,Condition.Condition)"/>
+                                                                            <MudTextField T="string"
+                                                                                        Value="Condition.Condition"
+                                                                                        ValueChanged="@(value => OnConditionChanged(Condition, value))"
+                                                                                        Variant="Variant.Text"
+                                                                                        Margin="Margin.Dense"/>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </MudTd>
+                                                <MudTd colspan="4" class="@("syntable__c syntable__c--ctr syntable__c--conChildTable" + GetStepClass(sections, rowIndex))">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                        <tbody>
+                                                            @foreach(var (criticalPoint, index) in GetCriticalPoints(sections[rowIndex]).Select((value,i)=>(value,i))){
+                                                            <tr>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 16px;">@(index+1) .- @criticalPoint</td>
+                                                            </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </MudTd>
+                                                @if (rowIndex == 0){
+                                                    <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
+                                                        <div style="display: grid; place-items: center;">
+                                                            <div style="width: 165px;">
+                                                                <MudSelect T="DifficultyLevel" Value="@GetDifficultyLevel(distribution)" ValueChanged="@(newLevel => ChangeLevelDistribution(distribution, newLevel))" Label="Select a Level" FitContent="true" Margin=Margin.Dense Variant="Variant.Outlined">
+                                                                    @foreach (var level in Enum.GetValues(typeof(DifficultyLevel)).Cast<DifficultyLevel>())
+                                                                    {
+                                                                        <MudSelectItem Value="@level">@level</MudSelectItem>
+                                                                    }
+                                                                </MudSelect>
+                                                            </div>
+                                                        </div>
+                                                    </MudTd>
+
+                                                    <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
+                                                    <MudText Typo="Typo.h5">@GetTrainingTime(distribution) Dias</MudText>
+                                                    </MudTd>
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: top;">
+                                                        <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top;">
+
+                                                                        <MudAutocomplete T="string"
+                                                                                        Value="GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName ?? string.Empty"
+                                                                                        ValueChanged="val => SetSelectedKnowledge((int)distribution.SOSHubId!, val)"
+                                                                                        Label="Buscar conocimiento"
+                                                                                        SearchFunc="@(text => SearchKnowledge(text, (int)distribution.SOSHubId!))"
+                                                                                        Placeholder="Buscar conocimiento..."
+                                                                                        Variant="Variant.Text"
+                                                                                        AnchorOrigin="Origin.BottomCenter"
+                                                                                        AdornmentColor="Color.Info"
+                                                                                        ResetValueOnEmptyText
+                                                                                        CoerceText="false"
+                                                                                        CoerceValue="true"
+                                                                                        Clearable
+                                                                                        ShowProgressIndicator="true"
+                                                                                        ProgressIndicatorColor="Color.Info"
+                                                                                        OpenIcon="@Icons.Material.Filled.AutoGraph">
+                                                                        </MudAutocomplete>
+
+                                                                        @if (IsExistingKnowledge((int)distribution.SOSHubId!))
+                                                                        {
+                                                                            <MudButton Color="Color.Primary" @onclick="() => AddSelectedKnowledge((int)distribution.SOSHubId!)">
+                                                                                Agregar conocimiento
+                                                                            </MudButton>
+                                                                        }
+                                                                        else if (!string.IsNullOrWhiteSpace(GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName))
+                                                                        {
+                                                                            <MudButton Color="Color.Secondary" @onclick="() => OpenAddKnowledgeModal((int)distribution.SOSHubId!)">
+                                                                                Crear conocimiento
+                                                                            </MudButton>
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+
+                                                                @foreach(var id in GetKnowledgeDTO(distribution.SOSHubId??0)!.KnowledgeIds){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" @onclick="() => RemoveKnowledge((int)distribution.SOSHubId!,id)"/>
+                                                                            <div>@(_KnowledgeGeneral.FirstOrDefault(t => t.Id == id)?.Name)</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </MudTd>
+                                                    <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: top;">
+                                                        <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top;">
+
+                                                                        <MudAutocomplete T="string"
+                                                                                        Value="GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName ?? string.Empty"
+                                                                                        ValueChanged="val => SetSelectedSkill((int)distribution.SOSHubId!, val)"
+                                                                                        Label="Buscar Habilidad"
+                                                                                        SearchFunc="@(text => SearchSkill(text, (int)distribution.SOSHubId!))"
+                                                                                        Placeholder="Buscar Habilidad..."
+                                                                                        Variant="Variant.Text"
+                                                                                        AnchorOrigin="Origin.BottomCenter"
+                                                                                        AdornmentColor="Color.Success"
+                                                                                        ResetValueOnEmptyText
+                                                                                        CoerceText="false"
+                                                                                        CoerceValue="true"
+                                                                                        Clearable
+                                                                                        ShowProgressIndicator="true"
+                                                                                        ProgressIndicatorColor="Color.Info"
+                                                                                        OpenIcon="@Icons.Material.Filled.Handyman">
+                                                                        </MudAutocomplete>
+
+                                                                        @if (IsExistingSkill((int)distribution.SOSHubId!))
+                                                                        {
+                                                                            <MudButton Color="Color.Primary" @onclick="() => AddSelectedSkill((int)distribution.SOSHubId!)">
+                                                                                Agregar Habilidad
+                                                                            </MudButton>
+                                                                        }
+                                                                        else if (!string.IsNullOrWhiteSpace(GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName))
+                                                                        {
+                                                                            <MudButton Color="Color.Secondary" @onclick="() => OpenAddSkillModal((int)distribution.SOSHubId!)">
+                                                                                Crear Habilidad
+                                                                            </MudButton>
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+
+                                                                @foreach(var id in GetSkillDTO(distribution.SOSHubId??0)!.SkillIds){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 16px;">
+                                                                        <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" @onclick="() => RemoveSkill((int)distribution.SOSHubId!,id)"/>
+                                                                            <div>@(_SkillGeneral.FirstOrDefault(t => t.Id == id)?.Name)</div>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </MudTd>
+                                                }
+                                            </MudTr>
+                                        }
+
+                                    }
+                                }
+                            }
+                    </tbody>
+                </MudSimpleTable>
+            </div>
+        </div>
+    </MudPaper>
+
+    <MudItem Class="ml-auto mt-4 d-flex flex-row-reverse pb-4 gap-4">
+        <MudButton Color="Color.Primary" OnClick=UpdateSTRO StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Size="Size.Small">Guardar Cambios</MudButton>
+    </MudItem>
+
+
+}

@@ -118,7 +118,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             }
 
 
-            cycleId = _sosCombination.SOSHub?.TrainingTime != null ? GetCycleId(_sosCombination.SOSHub.TrainingTime) : 0;
+            cycleId = _sosCombination.SOSHub?.TrainingTime ?? 0;
 
             UpdateTableValues();
 

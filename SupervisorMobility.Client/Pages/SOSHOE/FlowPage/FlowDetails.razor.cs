@@ -149,7 +149,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.FlowPage
 
 
 
-                cycleId = _sosFlow.SOSHub?.TrainingTime != null ? GetCycleId(_sosFlow.SOSHub.TrainingTime) : 0;
+                cycleId = _sosFlow.SOSHub?.TrainingTime ?? 0;
 
             }
             ShowLoading = false;

@@ -104,7 +104,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                         capturedImages.Add(image);
                     }
                 }
-                cycleId = _sosAnalysis.SOSHub.TrainingTime != null ? GetCycleId(_sosAnalysis.SOSHub.TrainingTime) : 0;
+                cycleId = _sosAnalysis.SOSHub?.TrainingTime ?? 0;
 
                 //creacion artificial
                 if (_sosAnalysis.Times == null)
@@ -123,7 +123,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 }
                 else
                 {
-                    //iterar sobre existentes para añadir casos faltantes de haber
+                    //iterar sobre existentes para aï¿½adir casos faltantes de haber
                     foreach (Section section in _sosAnalysis.SOSHub.Sections)
                     {
                         if (!_sosAnalysis.Times.Any(t => t.SectionId == section.SectionId))

@@ -162,7 +162,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
         public async Task<AsyncVoidMethodBuilder> SetUserInfo()
         {
 
-            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeCollections: true, includeTimes: true);
+            _sosDistribution = await SOSDistributionServices.GetSOSDistribution((int)DistributionId, true, true, true, true, true, includeCollections: true, includeTimes: true, includeTurns: true);
             if (_sosDistribution.DistributionLogbooks != null)
             {
                 mostRecentLogs = _sosDistribution.DistributionLogbooks
@@ -211,7 +211,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 AddItem();
             }
 
-            cycleId = _sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime != null ? GetCycleId(_sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime) : 0;
+            cycleId = _sosDistribution.SOSHubs?.FirstOrDefault()?.TrainingTime ?? 0;
 
             //if (_sosDistribution.Times == null)
             //{
@@ -260,19 +260,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
             for (int i = 0; i < 5; i++)
             {
-                additionalTimes[i] = i < tempAdditionalTimes.Length && !string.IsNullOrWhiteSpace(tempAdditionalTimes[i]) ? tempAdditionalTimes[i] : "0";
-                cycleTimes[i] = "0";
-                applicationModels[i] = i < tempApplicationModels.Length && !string.IsNullOrWhiteSpace(tempApplicationModels[i]) ? tempApplicationModels[i] : "";
-                takeQuantity[i] = i < tempTakeQuantity.Length && !string.IsNullOrWhiteSpace(tempTakeQuantity[i]) ? tempTakeQuantity[i] : "0";
-                leaveQuantity[i] = i < tempLeaveQuantity.Length && !string.IsNullOrWhiteSpace(tempLeaveQuantity[i]) ? tempLeaveQuantity[i] : "0";
-                stepsQuantity[i] = i < tempStepsQuantity.Length && !string.IsNullOrWhiteSpace(tempStepsQuantity[i]) ? tempStepsQuantity[i] : "0";
+                additionalTimes[i] = i < tempAdditionalTimes.Length && !string.IsNullOrWhiteSpace(tempAdditionalTimes[i]) && !tempAdditionalTimes[i].Contains("§") ? tempAdditionalTimes[i] : "0";
+                cycleTimes[i] = i < tempCycleTimes.Length && !string.IsNullOrWhiteSpace(tempCycleTimes[i]) && !tempCycleTimes[i].Contains("§") ? tempCycleTimes[i] : "0";
+                applicationModels[i] = i < tempApplicationModels.Length && !string.IsNullOrWhiteSpace(tempApplicationModels[i]) && !tempApplicationModels[i].Contains("§") ? tempApplicationModels[i] : "";
+                takeQuantity[i] = i < tempTakeQuantity.Length && !string.IsNullOrWhiteSpace(tempTakeQuantity[i]) && !tempTakeQuantity[i].Contains("§") ? tempTakeQuantity[i] : "0";
+                leaveQuantity[i] = i < tempLeaveQuantity.Length && !string.IsNullOrWhiteSpace(tempLeaveQuantity[i]) && !tempLeaveQuantity[i].Contains("§") ? tempLeaveQuantity[i] : "0";
+                stepsQuantity[i] = i < tempStepsQuantity.Length && !string.IsNullOrWhiteSpace(tempStepsQuantity[i]) && !tempStepsQuantity[i].Contains("§") ? tempStepsQuantity[i] : "0";
             }
 
             for (int i = 0; i < 6; i++)
             {
-                takeTime[i] = i < tempTakeTime.Length && !string.IsNullOrWhiteSpace(tempTakeTime[i]) ? tempTakeTime[i] : "0";
-                leaveTime[i] = i < tempLeaveTime.Length && !string.IsNullOrWhiteSpace(tempLeaveTime[i]) ? tempLeaveTime[i] : "0";
-                stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) ? tempStepsTime[i] : "0";
+                takeTime[i] = i < tempTakeTime.Length && !string.IsNullOrWhiteSpace(tempTakeTime[i]) && !tempTakeTime[i].Contains("§") ? tempTakeTime[i] : "0";
+                leaveTime[i] = i < tempLeaveTime.Length && !string.IsNullOrWhiteSpace(tempLeaveTime[i]) && !tempLeaveTime[i].Contains("§") ? tempLeaveTime[i] : "0";
+                stepsTime[i] = i < tempStepsTime.Length && !string.IsNullOrWhiteSpace(tempStepsTime[i]) && !tempStepsTime[i].Contains("§") ? tempStepsTime[i] : "0";
             }
 
             for (int i = 0; i < 5; i++)
@@ -631,8 +631,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             _sosDistribution.SOSDistributionAdditionalTime.StepsQuantity = string.Join("�", stepsQuantity);
             _sosDistribution.SOSDistributionAdditionalTime.StepsTime = string.Join("�", stepsTime);
 
-            var result = await SOSDistributionServices.UpdateSOSDistribution(_sosDistribution);
+            _sosDistribution.SOSDistributionOperationSequence = _sosDistribution.SOSDistributionOperationSequence.Select((item, index) => { item.SequenceId = index; return item;}).ToList();
 
+            var result = await SOSDistributionServices.UpdateSOSDistribution(_sosDistribution);
+            Console.WriteLine(result);
             if (result != null)
             {
                 Snackbar.Add($"Distribution Updated!", Severity.Info);

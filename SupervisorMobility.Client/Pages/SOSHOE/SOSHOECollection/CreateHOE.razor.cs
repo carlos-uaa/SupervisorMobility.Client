@@ -42,7 +42,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         int stationId = 0;
 
 
-        private string BaseText = "Este es un texto de ejemplo donde los términos serán resaltados.";
+        private string BaseText = "Este es un texto de ejemplo donde los tï¿½rminos serï¿½n resaltados.";
         private string HighlightedText;
 
 
@@ -612,9 +612,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 return;
             }
             _sosHub.IsActive = true;
-            _sosHub.TrainingTime = $"{cycleId} {(cycleId == 1 ? "cycle" : "cycles")}";
+            _sosHub.TrainingTime = cycleId;
             _sosHub.CreatedDate = createdDateTime;
             _sosHub.ModifiedDate = modifiedDateTime;
+            _sosHub.CreatorId = user.UserId;
             _sosHub.DepartmentId = departmentId;
             _sosHub.StationId = stationId;
             _sosHub.PlantId = plantId;
@@ -1512,17 +1513,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     var startIndex = match.Index;
                     var endIndex = startIndex + criticalPoint.Length;
 
-                    // Agregar el texto normal antes del punto crítico
+                    // Agregar el texto normal antes del punto crï¿½tico
                     builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
 
-                    // Agregar el punto crítico resaltado
+                    // Agregar el punto crï¿½tico resaltado
                     builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
 
                     currentIndex = endIndex;
                 }
             }
 
-            // Agregar el texto normal después del último punto crítico
+            // Agregar el texto normal despuï¿½s del ï¿½ltimo punto crï¿½tico
             builder.Append(text.Substring(currentIndex));
 
             return new MarkupString(builder.ToString());
@@ -1530,7 +1531,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         void CreateBakup()
         {
-            // Combina todos los análisis: los de RawAnalisis y los de las secciones
+            // Combina todos los anï¿½lisis: los de RawAnalisis y los de las secciones
             var allAnalyses = new List<AnalysisBkup>();
 
             // Agrega los de RawAnalisis
@@ -1619,10 +1620,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         {
             if (_sosHub.Sections.Count > 0)
             {
-                // Obtener los Uid de los análisis de la sección que se va a eliminar
+                // Obtener los Uid de los anï¿½lisis de la secciï¿½n que se va a eliminar
                 var uidsToReinsert = item.Analyses.Select(analysis => analysis.Uid).ToList();
 
-                // Para cada Uid, encontrar su posición correcta en RawAnalisis según RawAnalisisBk
+                // Para cada Uid, encontrar su posiciï¿½n correcta en RawAnalisis segï¿½n RawAnalisisBk
                 foreach (var uid in uidsToReinsert)
                 {
                     // Verificar si el Uid existe en RawAnalisisBk
@@ -1631,7 +1632,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     {
                         int indexInsert = RawAnalisisBk.FindIndex(a => a.Uid == uid);
 
-                        // Encontrar el índice donde insertar en RawAnalisis
+                        // Encontrar el ï¿½ndice donde insertar en RawAnalisis
                         int insertPosition = RawAnalisis
                             .Select((value, index) => new { Value = value, Index = index })
                             .Where(x => RawAnalisisBk.FindIndex(a => a.Uid == x.Value.Uid) >= indexInsert)
@@ -1639,7 +1640,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                             .DefaultIfEmpty(RawAnalisis.Count)
                             .First();
 
-                        // Insertar el AnalysisBkup en la posición correcta
+                        // Insertar el AnalysisBkup en la posiciï¿½n correcta
                         RawAnalisis.Insert(insertPosition, analysisToInsert);
                     }
                     else
@@ -1655,7 +1656,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                     }
                 }
 
-                // Eliminar la sección de Sections
+                // Eliminar la secciï¿½n de Sections
                 _sosHub.Sections.Remove(item);
             }
         }

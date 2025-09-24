@@ -23,7 +23,7 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public ICollection<FileUpload>? Videos { get; set; } = new List<FileUpload>();
         
         public string? RevisedItems { get; set; }
-        public string? TrainingTime { get; set; }
+        public int? TrainingTime { get; set; }
         public string? OtherInformation { get; set; }
 
         public ICollection<Equipment>? SafetyEquipment { get; set; } = new List<Equipment>();
@@ -44,6 +44,9 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
+
+        public int? CreatorId { get; set; }
+        public User? Creator { get; set; }
 
         public List<User>? ApproverOwners { get; set; }
         public List<User>? ReviewerEditors { get; set; }
@@ -79,7 +82,16 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public List<SOSDistribution>? SOSDistribution { get; set; } = new List<SOSDistribution>();
         public List<SOSFlow>? SOSFlow { get; set; } = new List<SOSFlow>();
         public List<SOSSequence>? SOSSequence { get; set; } = new List<SOSSequence>();
+
+        public List<SOSSynopticTableofControlPoints>? SOSSynopticControlPoints { get; set; } = new List<SOSSynopticTableofControlPoints>();
+        public List<SOSSynopticTableofOperatingRequirements>? SOSSynopticOperatingRequirements { get; set; } = new List<SOSSynopticTableofOperatingRequirements>();
+        public ICollection<SOSSynopticTableRequirementOperationDifficulty>? SOSSynopticOperatingRequirementsDifficulties { get; set; } = new List<SOSSynopticTableRequirementOperationDifficulty>();
+
         public List<PAT>? PATs { get; set; } = new List<PAT>();
+
+        public int? HciId { get; set; }
+        public HCI? Hci { get; set; }
+
         public bool? IsActive { get; set; }
     }
 
@@ -89,4 +101,12 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public string Before { get; set; }
         public string After { get; set; }
     }
+}
+
+public class SOSHubDtoList
+{
+    public int SOSHubId { get; set; }
+    public string? Folio { get; set; }
+    public string? ProcessSheet { get; set; }
+    public bool Selected { get; set; } = false;
 }
