@@ -21,6 +21,31 @@
 @inject IAreaService AreaServices
 @inject IDistributionService DistributionServices
 
+<style>
+    .cards__card {
+        border-left: 4px solid #0a7bcf;
+        transition: transform 0.3s ease;
+        box-shadow: 0px 4px 8px #0a7bcf3b;
+    }
+
+    .cards__card:hover {
+        transform: scale(1.01);
+    }
+
+    .cards__separator {
+        width: 2px;
+        height: 0;
+        background: #0a7bcf;
+        margin-right: 5px;
+        margin-left: 5px;
+        transition: height 0.3s ease;
+    }
+
+    .cards__card:hover .cards__separator {
+        height: 40px;
+    }
+</style>
+
 <MudDialog DisableSidePadding="false" Options="dialogPagesOptions" Style="min-height: 30vh; max-height:75vh">
     <TitleContent>
         <MudItem Style="float: left">
@@ -1208,35 +1233,43 @@
                             @if (_sosHub.SOSDistribution.Count == 0 || _sosDistribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0)
                             {
                                 <MudContainer>
-                                    <MudTextField @bind-Value="searchSequence" Placeholder="Buscar sequencia..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
-                                    <MudToggleGroup Vertical T="SOSSequence" SelectionMode="SelectionMode.MultiSelection" @bind-values="_sosDistribution.Sequences" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                                    <MudTextField @bind-Value="searchSequence" Margin="Margin.Dense" Placeholder="Buscar sequencia..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable Style="margin: 0px 6px 0 6px;"/>
+                                    <MudToggleGroup Vertical T="SOSSequence" SelectionMode="SelectionMode.MultiSelection" Delimiters="false" @bind-values="_sosDistribution.Sequences" Color="Color.Primary" CheckMark Class="toggle-group-container" Style="margin-top: 10px;">
                                         @foreach (SOSSequence sequence in FilteredSequences)
                                         {
                                             <div class="toggle-column">
-                                                <MudToggleItem Value="@(sequence)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
-                                                    <div class="mud-width-full mud-height-full">
-                                                        <div class="d-flex align-center justify-space-between flex-wrap">
-                                                            <MudText Class="ellipsis">@sequence.InternalControlNumber</MudText>
+                                                <MudToggleItem Value="@(sequence)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" Class="cards__card">
+                                                    <div class="mud-width-full mud-height-full justify-start d-flex" style="align-items: center;">
+                                                        <div class="cards__separator"></div>
+                                                        <div class="ml-3 mud-width-full">
+                                                            <div class="d-flex gap-2 mud-width-full" style="align-items: center; justify-content: space-between;">
+                                                                <MudText Typo="Typo.subtitle1" Class="ellipsis">@sequence.InternalControlNumber</MudText>
+                                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Label="true">@(AvailableSoshubs.FirstOrDefault( s => s.SOSHubId == sequence.SOSHubId)?.Folio)</MudChip>
+                                                            </div>
+                                                            <MudText Typo="Typo.body2" Class="ellipsis" Color="Color.Dark">@sequence.OperationName</MudText>
                                                         </div>
-                                                        <MudText Typo="Typo.subtitle2">@sequence.OperationName</MudText>
                                                     </div>
                                                 </MudToggleItem>
                                             </div>
                                         }
                                     </MudToggleGroup>
                                 </MudContainer>
-                                <MudContainer>
-                                    <MudTextField @bind-Value="searchAnalysis" Placeholder="Buscar analisis..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
-                                    <MudToggleGroup Vertical T="SOSAnalysis" SelectionMode="SelectionMode.MultiSelection" @bind-values="_sosDistribution.Analyses" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                                <MudContainer style="margin-top: 25px;">
+                                    <MudTextField @bind-Value="searchAnalysis" Margin="Margin.Dense" Placeholder="Buscar analisis..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable Style="margin: 0px 6px 0 6px;"/>
+                                    <MudToggleGroup Vertical T="SOSAnalysis" SelectionMode="SelectionMode.MultiSelection" Delimiters="false" @bind-values="_sosDistribution.Analyses" Color="Color.Primary" CheckMark Class="toggle-group-container" Style="margin-top: 10px;">
                                         @foreach (SOSAnalysis analisis in FilteredAnalysis)
                                         {
                                             <div class="toggle-column">
-                                                <MudToggleItem Value="@(analisis)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
-                                                    <div class="mud-width-full mud-height-full">
-                                                        <div class="d-flex align-center justify-space-between flex-wrap">
-                                                            <MudText Class="ellipsis">@analisis.InternalControlNumber</MudText>
+                                                <MudToggleItem Value="@(analisis)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" Class="cards__card">
+                                                    <div class="mud-width-full mud-height-full justify-start d-flex" style="align-items: center;">
+                                                        <div class="cards__separator"></div>
+                                                        <div class="ml-3 mud-width-full">
+                                                            <div class="d-flex gap-2 mud-width-full" style="align-items: center; justify-content: space-between;">
+                                                                <MudText Typo="Typo.subtitle1" Class="ellipsis">@analisis.InternalControlNumber</MudText>
+                                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Label="true">@(AvailableSoshubs.FirstOrDefault( s => s.SOSHubId == analisis.SOSHubId)?.Folio)</MudChip>
+                                                            </div>
+                                                            <MudText Typo="Typo.body2" Class="ellipsis" Color="Color.Dark">@analisis.OperationName</MudText>
                                                         </div>
-                                                        <MudText Typo="Typo.subtitle2">@analisis.OperationName</MudText>
                                                     </div>
                                                 </MudToggleItem>
                                             </div>
@@ -2363,55 +2396,22 @@
                         <MudItem Style="margin-top: -15px; width: 100%">
                             @if (_sosHub.SOSSynopticOperatingRequirements.Count == 0 || _SOSSynopticRequirements.SynopticRequirementsLogbooks?.Last().SOSSynopticRequirementsLogbookId == 0)
                             {
-                                @*  <MudContainer>
-                                    <MudTextField @bind-Value="searchSequence" Placeholder="Buscar sequencia..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
-                                    <MudToggleGroup Vertical T="SOSSequence" SelectionMode="SelectionMode.MultiSelection" @bind-values="_SOSSynopticRequirements.Sequences" Color="Color.Primary" CheckMark Class="toggle-group-container">
-                                        @foreach (SOSSequence sequence in FilteredSequences)
-                                        {
-                                            <div class="toggle-column">
-                                                <MudToggleItem Value="@(sequence)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
-                                                    <div class="mud-width-full mud-height-full">
-                                                        <div class="d-flex align-center justify-space-between flex-wrap">
-                                                            <MudText Class="ellipsis">@sequence.InternalControlNumber</MudText>
-                                                        </div>
-                                                        <MudText Typo="Typo.subtitle2">@sequence.OperationName</MudText>
-                                                    </div>
-                                                </MudToggleItem>
-                                            </div>
-                                        }
-                                    </MudToggleGroup>
-                                </MudContainer>
                                 <MudContainer>
-                                    <MudTextField @bind-Value="searchAnalysis" Placeholder="Buscar analisis..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
-                                    <MudToggleGroup Vertical T="SOSAnalysis" SelectionMode="SelectionMode.MultiSelection" @bind-values="_SOSSynopticRequirements.Analyses" Color="Color.Primary" CheckMark Class="toggle-group-container">
-                                        @foreach (SOSAnalysis analisis in FilteredAnalysis)
-                                        {
-                                            <div class="toggle-column">
-                                                <MudToggleItem Value="@(analisis)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
-                                                    <div class="mud-width-full mud-height-full">
-                                                        <div class="d-flex align-center justify-space-between flex-wrap">
-                                                            <MudText Class="ellipsis">@analisis.InternalControlNumber</MudText>
-                                                        </div>
-                                                        <MudText Typo="Typo.subtitle2">@analisis.OperationName</MudText>
-                                                    </div>
-                                                </MudToggleItem>
-                                            </div>
-                                        }
-                                    </MudToggleGroup>
-                                </MudContainer> *@
-
-                                <MudContainer>
-                                    <MudTextField @bind-Value="searchSosHub" Placeholder="Buscar colector..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable />
-                                    <MudToggleGroup Vertical T="SOSHub" SelectionMode="SelectionMode.MultiSelection" @bind-values="_SOSSynopticRequirements.SOSHubs" Color="Color.Primary" CheckMark Class="toggle-group-container">
+                                    <MudTextField @bind-Value="searchSosHub" Margin="Margin.Dense" Placeholder="Buscar colector..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Clearable Style="margin: 0px 6px 0 6px;"/>
+                                    <MudToggleGroup Vertical T="SOSHub" SelectionMode="SelectionMode.MultiSelection" Delimiters="false" @bind-values="_SOSSynopticRequirements.SOSHubs" Color="Color.Primary" CheckMark Class="toggle-group-container" Style="margin-top: 10px;">
                                         @foreach (SOSHub dtcollect in FilteredSosHubs)
                                         {
                                             <div class="toggle-column">
-                                                <MudToggleItem Value="@(dtcollect)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox">
-                                                    <div class="mud-width-full mud-height-full">
-                                                        <div class="d-flex align-center justify-space-between flex-wrap">
-                                                            <MudText Class="ellipsis">@dtcollect.Folio</MudText>
+                                                <MudToggleItem Value="@(dtcollect)" UnselectedIcon="@Icons.Material.Filled.CheckBoxOutlineBlank" SelectedIcon="@Icons.Material.Filled.CheckBox" Class="cards__card">
+                                                    <div class="mud-width-full mud-height-full justify-start d-flex" style="align-items: center;">
+                                                        <div class="cards__separator"></div>
+                                                        <div class="ml-3 mud-width-full">
+                                                            <div class="d-flex gap-2 mud-width-full" style="align-items: center; justify-content: space-between;">
+                                                                <MudText Typo="Typo.subtitle1" Class="ellipsis">@dtcollect.SOSDistribution?.FirstOrDefault()?.ProcessName</MudText>
+                                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Label="true">@dtcollect.Folio</MudChip>
+                                                            </div>
+                                                            <MudText Typo="Typo.body2" Class="ellipsis" Color="Color.Dark">@dtcollect.ProcessSheet</MudText>
                                                         </div>
-                                                        <MudText Typo="Typo.subtitle2">@dtcollect.ProcessSheet</MudText>
                                                     </div>
                                                 </MudToggleItem>
                                             </div>

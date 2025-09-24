@@ -133,10 +133,27 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             _soshub = await SOSHubServices.GetSOSHub((int)_sosSynopticRequeriments.SOSHubId!, true, true, includePeople: true, includeInformation: true, includeModel: true);
 
-            AvailableSosHubs = (await SOSHubServices.GetAllSOSHub()).Where(s => s.DistributionId == _soshub.DistributionId && s.SOSHubId != _soshub.SOSHubId).ToList();
+            var FilterSOSHubs = (await SOSHubServices.GetAllSOSHub(includeSOSDistribution: true)).Where(s => s.DistributionId == _soshub.DistributionId && s.SOSHubId != _soshub.SOSHubId).ToList();
+            AvailableSosHubs = CleanSOSHubs(FilterSOSHubs);
 
             await VerifySOSHubsSR(_sosSynopticRequeriments);
         }
+
+        /// <summary>
+        /// Cleans the SOSHubs by keeping only the matching SOSDistribution per hub.
+        /// </summary>
+        /// <param name="allFilterSosHubs">List of SOSHubs to clean.</param>
+        private List<SOSHub> CleanSOSHubs(List<SOSHub> allFilterSosHubs)
+        {
+            foreach (var hub in allFilterSosHubs)
+            {
+                var matchedDistribution = hub.SOSDistribution?.FirstOrDefault(s => s.SOSHubId == hub.SOSHubId);
+                hub.SOSDistribution = matchedDistribution != null ? new List<SOSDistribution> { matchedDistribution } : new List<SOSDistribution>();
+            }
+
+            return allFilterSosHubs.Where(h => h.SOSDistribution?.Any() == true).ToList();
+        }
+
 
         /// <summary>
         /// Loads knowledge data asynchronously from the service and assigns it to the general knowledge field.
@@ -280,6 +297,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
                 SOSHubId = item.SOSHubId,
                 Folio = item.Folio,
                 ProcessSheet = item.ProcessSheet,
+                OperationNameDistribution = item.SOSDistribution?.FirstOrDefault()?.OperationName,
                 Selected = SOSHubList.Any(sos => sos.SOSHubId == item.SOSHubId)
             }).ToList();
         }
@@ -693,7 +711,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // NOTE: Find the section matching the operation sequence
             Section? findStep = sections.FirstOrDefault(s => s.SectionId == operationSequence.SectionId);
-            return findStep ?? new Section { Step = "", IsMachineOperation = false };
+            return findStep ?? new Section { Step = "" };
         }
 
         /// <summary>

@@ -108,5 +108,6 @@ public class SOSHubDtoList
     public int SOSHubId { get; set; }
     public string? Folio { get; set; }
     public string? ProcessSheet { get; set; }
+    public string? OperationNameDistribution { get; set; }
     public bool Selected { get; set; } = false;
 }
