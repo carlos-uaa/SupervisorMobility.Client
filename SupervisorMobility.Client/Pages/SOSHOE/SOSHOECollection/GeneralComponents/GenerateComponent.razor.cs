@@ -354,10 +354,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                     else
                     {
                         //preparamos los datos
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
-                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                        AvailableSoshubs = await SOSHubServices.GetAllSOSHub();
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId!);
                         AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
-                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
 
                         loading += 10;
                     }
