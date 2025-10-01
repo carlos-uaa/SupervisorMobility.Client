@@ -770,6 +770,132 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         }
 
         // =================================================== \\
+        //&============ FUNCTIONS TO OPERATIONS ==============&\\
+        // =================================================== \\
+
+        /// <summary>
+        /// Retrieves an existing operation sequence for a given SOS Hub and section.
+        /// If not found, creates a new operation sequence and adds it to the current synoptic requirements.
+        /// </summary>
+        /// <param name="sosHubId">The ID of the SOS Hub.</param>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <returns>
+        /// Returns the existing or newly created <see cref="SOSSynopticRequirementsOperationSequence"/>.
+        /// </returns>
+        private SOSSynopticRequirementsOperationSequence GetOperationSequence(int sosHubId, int sectionId)
+        {
+            // NOTE: Try to find an existing sequence matching the SOS Hub and section
+            var existingSequence = _sosSynopticRequeriments?.SOSSynopticRequirementsOperationSequence?.FirstOrDefault(seq => seq.SosHubId == sosHubId && seq.SectionId == sectionId);
+            if (existingSequence != null) return existingSequence;
+
+            // NOTE: Attempt to find the section from the related SOS Hub's distribution
+            var section = _sosSynopticRequeriments?.SOSHubs?.FirstOrDefault(h => h.SOSHubId == sosHubId)?.SOSDistribution?.FirstOrDefault(d => d.SOSHubId == sosHubId)?.SOSDistributionOperationSequence?.FirstOrDefault(opSeq => opSeq.SectionId == sectionId);
+
+            // NOTE: Return an empty sequence if the section is not found
+            if (section == null) return new SOSSynopticRequirementsOperationSequence();
+
+            // NOTE: Create a new operation sequence based on found section details
+            var newSequence = new SOSSynopticRequirementsOperationSequence
+            {
+                Sequence = section.SequenceId,
+                SectionId = section.SectionId,
+                SosHubId = sosHubId,
+                Section = section.Section,
+                OperationPersonText = section.Section?.Step,
+                OperationMachineText = section.Section?.Step,
+                IsOperationPersonRequired = true,
+                IsOperationMachineRequired = false,
+                IsActive = true,
+                SOSSynopticTableofOperatingRequirementsId = _sosSynopticRequeriments!.SOSSynopticTableofOperatingRequirementsId
+            };
+
+            // NOTE: Add newly created sequence to the current synoptic requirements
+            _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Add(newSequence);
+
+            return newSequence;
+        }
+
+        /// <summary>
+        /// Sets the OperationPersonText for a specific SOS Hub and section,
+        /// validating the input value before updating.
+        /// </summary>
+        /// <param name="sosHubId">The ID of the SOS Hub.</param>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <param name="value">The new text value to set.</param>
+        private void SetOperationPersonText(int sosHubId, int sectionId, string value)
+        {
+            const int MinLength = 4;
+
+            // NOTE: Validate input value is not null, empty, or whitespace
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                Snackbar.Add("El valor no puede estar vac�o.", Severity.Warning);
+                return;
+            }
+
+            // NOTE: Find the operation sequence entry for the given SOS Hub and section
+            var item = _sosSynopticRequeriments?.SOSSynopticRequirementsOperationSequence?.FirstOrDefault(s => s.SosHubId == sosHubId && s.SectionId == sectionId);
+            if (item == null)
+            {
+                Snackbar.Add("No se encontr� el registro correspondiente.", Severity.Error);
+                return;
+            }
+
+            // NOTE: Validate minimum length requirement for the value
+            if (value.Length < MinLength)
+            {
+                Snackbar.Add($"El valor no puede tener menos de {MinLength} caracteres.", Severity.Warning);
+                return;
+            }
+
+            // NOTE: Update OperationPersonText if new value is longer or null
+            if (item.OperationPersonText == null || value.Length >= item.OperationPersonText.Length)
+            {
+                item.OperationPersonText = value;
+            }
+        }
+
+        /// <summary>
+        /// Sets the OperationMachineText for a specific SOS Hub and section,
+        /// validating the input value before updating.
+        /// </summary>
+        /// <param name="sosHubId">The ID of the SOS Hub.</param>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <param name="value">The new text value to set.</param>
+        private void SetOperationMachineText(int sosHubId, int sectionId, string value)
+        {
+            const int MinLength = 4;
+
+            // NOTE: Validate that value is not null, empty, or whitespace
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                Snackbar.Add("El valor no puede estar vac�o.", Severity.Warning);
+                return;
+            }
+
+            // NOTE: Locate the operation sequence for the given SOS Hub and section
+            var item = _sosSynopticRequeriments?.SOSSynopticRequirementsOperationSequence?.FirstOrDefault(s => s.SosHubId == sosHubId && s.SectionId == sectionId);
+            if (item == null)
+            {
+                Snackbar.Add("No se encontro el registro correspondiente.", Severity.Error);
+                return;
+            }
+
+            // NOTE: Ensure value meets minimum length requirement
+            if (value.Length < MinLength)
+            {
+                Snackbar.Add($"El valor no puede tener menos de {MinLength} caracteres.", Severity.Warning);
+                return;
+            }
+
+            // NOTE: Update OperationMachineText if new value is longer or null
+            if (item.OperationMachineText == null || value.Length >= item.OperationMachineText.Length)
+            {
+                item.OperationMachineText = value;
+            }
+        }
+
+        // =================================================== \\
         //&============ FUNCTIONS TO KNOWLEDGES ==============&\\
         // =================================================== \\
 
@@ -1134,21 +1260,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         }
 
         /// <summary>
-        /// Validates the provided established condition and shows a notification if invalid.
-        /// Ensures the condition string is not null, empty, or shorter than the specified minimum length.
-        /// </summary>
-        /// <param name="item">The established condition to validate.</param>
-        /// <param name="minLength">The minimum required length for the condition. Default is 2.</param>
-        private void ValidateAndNotify(EstablishedConditions item, int minLength = 2)
-        {
-            // NOTE: Show an error notification if the condition is null, empty, or too short
-            if (string.IsNullOrWhiteSpace(item.Condition) || item.Condition.Length < minLength)
-            {
-                Snackbar.Add($"El valor debe tener al menos {minLength} caracteres.", Severity.Error);
-            }
-        }
-
-        /// <summary>
         /// Handles changes to an established condition and validates the new value.
         /// Updates the condition if it meets the minimum length, otherwise shows a warning.
         /// </summary>
@@ -1279,6 +1390,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             return new SOSSynopticTableofOperatingRequirementsForUpdateDto
             {
                 SOSSynopticTableofOperatingRequirementsId = STRO.SOSSynopticTableofOperatingRequirementsId,
+                SOSSynopticRequirementsOperationSequence = STRO.SOSSynopticRequirementsOperationSequence,
                 InternalControlNumber = STRO.InternalControlNumber,
                 ProcessName = STRO.ProcessName,
                 CreatorId = STRO.CreatorId,
