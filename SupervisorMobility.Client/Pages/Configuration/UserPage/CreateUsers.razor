@@ -6,6 +6,7 @@
 @inject IDistributionService DistributionsServices
 @inject IUserService UserServices
 @inject IGroupService GroupServices
+@inject IDepartmentService DepartmentService
 @inject IHCIService HCIServices
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
@@ -194,8 +195,8 @@
                         else if(_user.UserType == 3 && LogedUser.UserType == 2){
                             <MudTextField @bind-Value="plantInfo" Label="@Localizer["UserslabelPlant"]" ReadOnly="true" Variant="Variant.Outlined" />
                             if(LogedUser.Areas != null){
-                                <MudSelect T="int" Label="@Localizer["UsersLabelArea"]" Variant="Variant.Outlined" Placeholder="@Localizer["UsersPHArea"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHArea"]</MudSelectItem>
+                                <MudSelect T="int" Label="@Localizer["stage"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectStage"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectStage"]</MudSelectItem>
                                 @foreach (var type in LogedUser.Areas)
                                     {
                                     <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
@@ -205,7 +206,23 @@
                             else
                             {
                                 <MudAlert Severity="Severity.Info">
-                                    <MudText Style="font-weight: bold;">@Localizer["UsersNoAreasSSV"].</MudText>
+                                    <MudText Style="font-weight: bold;">@Localizer["noStages"].</MudText>
+                                </MudAlert>
+                            }
+                            if (_deparments != null)
+                            {
+                                <MudSelect T="int" Label="@Localizer["departmentLabel"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectDepartment"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxDepa" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectDepartment"]</MudSelectItem>
+                                    @foreach (var type in _deparments)
+                                    {
+                                        <MudSelectItem Value="type.DepartmentId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info">
+                                    <MudText Style="font-weight: bold;">@Localizer["noDepartmentsFound"].</MudText>
                                 </MudAlert>
                             }
                             <MudTextField @bind-Value="grupInfo" Label="@Localizer["UsersLabelGroup"]" ReadOnly="true" Variant="Variant.Outlined" />
@@ -213,7 +230,38 @@
                         else if (_user.UserType == 4)
                         {
                             <MudTextField @bind-Value="plantInfo" Label="@Localizer["UsersLabelPlant"]" ReadOnly="true" Variant="Variant.Outlined" />
-                            <MudTextField @bind-Value="areaInfo" Label="@Localizer["UsersLabelArea"]" ReadOnly="true" Variant="Variant.Outlined" />
+                            if (LogedUser.Areas != null)
+                            {
+                                <MudSelect T="int" Label="@Localizer["stage"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectStage"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectStage"]</MudSelectItem>
+                                    @foreach (var type in LogedUser.Areas)
+                                    {
+                                        <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info">
+                                    <MudText Style="font-weight: bold;">@Localizer["noStages"].</MudText>
+                                </MudAlert>
+                            }
+                            if (_deparments != null)
+                            {
+                                <MudSelect T="int" Label="@Localizer["departmentLabel"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectDepartment"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxDepa" For="@(() => auxDepa)">
+                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectDepartment"]</MudSelectItem>
+                                    @foreach (var type in _deparments)
+                                    {
+                                        <MudSelectItem Value="type.DepartmentId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info">
+                                    <MudText Style="font-weight: bold;">@Localizer["noDepartmentsFound"].</MudText>
+                                </MudAlert>
+                            }
                             <MudTextField @bind-Value="grupInfo" Label="@Localizer["UsersLabelGroup"]" ReadOnly="true" Variant="Variant.Outlined" />
                         }
                         else if(_user.UserType == 5){
@@ -277,8 +325,6 @@
                                                 </MudAlert>
                                             </MudItem>
                                         }
-
-
                                     }
                                     break;
                                 case 0:
@@ -464,7 +510,7 @@
                                                 }
                                                 break;
                                             case 4:
-                                                @if (Supervisors.Count > 0)
+                                                @if (Supervisors.Count != null)
                                                 {
                                                     <MudItem Class="d-flex d-flex-row">
                                                         <MudSelect T="User" Label="@Localizer["UsersSupervisor"]" Placeholder="@Localizer["UsersPHSupervisor"]" @bind-Value="@_user.Superior" For="@(() => _user.Superior)" SelectedValuesChanged="SetSuperiorToUser" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
@@ -871,6 +917,7 @@
     private List<User> Managers = new List<User>();
 
     List<Plant> _plants { get; set; } = new();
+    List<Department> _deparments { get; set; } = new List<Department>();
     List<Area> _areas = new();
     List<Area> _areasManager = null;
     List<Distribution> _distributions = new();
@@ -883,6 +930,7 @@
 
     private int auxPlant = 0;
     private int auxArea = 0;
+    private int auxDepa = 0;
     private int auxDistribution = 0;
     private int auxGroup = 0;
 
@@ -897,7 +945,7 @@
     private bool IsLineSupport = false;
     private bool IsHeadCount = false;
     private bool IsRTC = false;
-    
+
 
     //Var On/Off Button Add
     private bool ActiveAddArea = true;
@@ -926,6 +974,7 @@
         _plants = await PlantServices.GetPlants();
         _groups = await GroupServices.GetGroups();
         _allUsers = await UserServices.GetUsers(true, false);
+        _deparments = await DepartmentService.GetDepartments();
     }
 
     private async void ShowAreasInvokeByPlantSelector()
@@ -1029,11 +1078,8 @@
         {
             _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
         }
-
+        StateHasChanged();
     }
-
-
-
 
     private async void OnSelectedAreaToManageFunction()
     {
@@ -1149,6 +1195,7 @@
                 else{
                     auxPlant = 0;
                     auxArea = 0;
+                    auxDepa = 0;
                     _user.GroupId = 0;
                 }
                 break;
@@ -1387,6 +1434,7 @@
 
         _user.PlantId = auxPlant;
         _user.AreaId = auxArea;
+        _user.DepartmentId = auxDepa;
         _user.DistributionId = auxDistribution;
         _user.GroupId = auxGroup;
 
@@ -1422,8 +1470,8 @@
             NavigationManager.NavigateTo("/usersmanagement");
         }
         else
+        {
             await JS.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
+        }
     }
-
-
 }
