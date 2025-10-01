@@ -550,6 +550,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         }
 
         /// <summary>
+        /// Retrieves an existing operation sequence for a given SOS Hub and section.
+        /// Returns a new empty sequence if none is found.
+        /// </summary>
+        /// <param name="sosHubId">The ID of the SOS Hub.</param>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <returns>
+        /// The existing <see cref="SOSSynopticRequirementsOperationSequence"/> 
+        /// matching the given SOS Hub and section, or a new empty sequence if not found.
+        /// </returns>
+        private SOSSynopticRequirementsOperationSequence GetOperationSequence(int sosHubId, int sectionId)
+        {
+            // NOTE: Return the first matching sequence or a new instance if none exists
+            return _sosSynopticRequeriments?.SOSSynopticRequirementsOperationSequence?.FirstOrDefault(s => s.SosHubId == sosHubId && s.SectionId == sectionId) ?? new SOSSynopticRequirementsOperationSequence();
+        }
+
+        /// <summary>
         /// Gets all skills associated with a specific SOS hub.
         /// </summary>
         /// <param name="sosHubId">The SOS hub ID.</param>
