@@ -1702,46 +1702,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
 
         }
+
         private Analysis ProcessText(string text)
         {
-            Analysis analysis = new Analysis { Text = text };
+            var analysis = new Analysis
+            {
+                Text = text,
+            };
+            BaseText = RemoveAsterisks(text);
 
-            // Remove asterisks from BaseText
-            BaseText = Regex.Replace(text, @"\*", "").ToString();
-
-            // Split text into segments
-            var segments = text.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries)
-                               .Select(segmentText => CreateSegment(segmentText))
-                               .ToList();
-
-            analysis.CriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
+            // Extraer todos los puntos críticos directamente
+            analysis.CriticalPoints = ExtractCriticalPoints(text);
             analysis.Reasons = Enumerable.Repeat(string.Empty, analysis.CriticalPoints.Count).ToList();
 
             return analysis;
         }
-        private Segment CreateSegment(string segmentText)
+
+        private List<string> ExtractCriticalPoints(string text)
         {
-            Segment segment = new Segment { Analysis = segmentText };
-
-            // Extract MainPoint
-            var mainPointRegex = new Regex(@"#(.*?)#");
-            var mainPointMatch = mainPointRegex.Match(segmentText);
-            segment.MainPoint = mainPointMatch.Success ? mainPointMatch.Groups[1].Value.Trim() : string.Empty;
-
-            // Extract CriticalPoints
-            var criticalPointsRegex = new Regex(@"\*(.*?)\*");
-            var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
-
-            foreach (Match match in criticalPointMatches)
-            {
-                if (match.Success)
-                {
-                    segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
-                }
-            }
-
-            return segment;
+            // Esta expresión captura *...* incluso si hay guiones dentro
+            var matches = Regex.Matches(text, @"\*(.*?)\*");
+            return matches.Cast<Match>()
+                          .Where(m => m.Success)
+                          .Select(m => m.Groups[1].Value.Trim())
+                          .ToList();
         }
+
+        private string RemoveAsterisks(string text)
+        {
+            return Regex.Replace(text, @"\*", "");
+        }
+
         #endregion
 
         #region Station
