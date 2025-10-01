@@ -507,7 +507,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // NOTE: Find the section matching the operation sequence
             Section? findStep = sections.FirstOrDefault(s => s.SectionId == operationSequence.SectionId);
-            return findStep ?? new Section { Step = "", IsMachineOperation = false };
+            return findStep ?? new Section { Step = "" };
         }
 
         /// <summary>
@@ -547,6 +547,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         public int GetTrainingTime(SOSDistribution distribution)
         {
             return distribution.SOSHubs!.FirstOrDefault(s => s.SOSHubId == distribution.SOSHubId)?.TrainingTime ?? 0;
+        }
+
+        /// <summary>
+        /// Retrieves an existing operation sequence for a given SOS Hub and section.
+        /// Returns a new empty sequence if none is found.
+        /// </summary>
+        /// <param name="sosHubId">The ID of the SOS Hub.</param>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <returns>
+        /// The existing <see cref="SOSSynopticRequirementsOperationSequence"/> 
+        /// matching the given SOS Hub and section, or a new empty sequence if not found.
+        /// </returns>
+        private SOSSynopticRequirementsOperationSequence GetOperationSequence(int sosHubId, int sectionId)
+        {
+            // NOTE: Return the first matching sequence or a new instance if none exists
+            return _sosSynopticRequeriments?.SOSSynopticRequirementsOperationSequence?.FirstOrDefault(s => s.SosHubId == sosHubId && s.SectionId == sectionId) ?? new SOSSynopticRequirementsOperationSequence();
         }
 
         /// <summary>
