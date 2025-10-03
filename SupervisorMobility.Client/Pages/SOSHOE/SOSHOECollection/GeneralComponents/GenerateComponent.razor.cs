@@ -1905,5 +1905,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             );
         }
 
+
+        public void ValidateNextStepDistribution()
+        {
+            if ((_sosDistribution.Sequences == null || _sosDistribution.Sequences.Count() <= 0) && (_sosDistribution.Analyses == null || _sosDistribution.Analyses.Count() <= 0))
+                Snackbar.Add("You need to select a Sequence or an Analysis to continue with the Next Step", Severity.Warning);
+            else
+                selectedIndexPageGenerate = 33;
+        }
     }
 }
