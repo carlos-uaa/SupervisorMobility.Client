@@ -466,10 +466,24 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     operationSpecProduct[i] = op.Description;
 
                                     Dictionary<string, List<string>> NameTimeList = new Dictionary<string, List<string>>();
-                                    var nameTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.NameTime);
+                                    Dictionary<string, string> nameTimeDict = null;
+                                    try
+                                    {
+                                        nameTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(op.NameTime);
+                                    }
+                                    catch (JsonException)
+                                    {
+                                        Snackbar.Add($"Name Time not valid in {op.Code}", Severity.Warning);
+                                        nameTimeDict = new Dictionary<string, string> { [prodName.Code] = "" };
+                                    }
+
                                     foreach (var kvp in nameTimeDict)
                                     {
-                                        NameTimeList[kvp.Key] = kvp.Value.Split('§').ToList();
+                                        if (!string.IsNullOrWhiteSpace(kvp.Key))
+                                        {
+                                            var items = kvp.Value.Split('§').Where(x => !string.IsNullOrEmpty(x)).ToList();
+                                            NameTimeList[kvp.Key] = items;
+                                        }
                                     }
 
                                     var names = NameTimeList[prodName.Code];
@@ -516,9 +530,19 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
                                     if (operation != null)
                                     {
 
-                                        var standardTimeDict = operation != null ? JsonSerializer.Deserialize<Dictionary<string, string>>(operation.StandardTime) : new Dictionary<string, string>();
+                                        Dictionary<string, string> standardTimeDict;
 
-                                        if (standardTimeDict != null && standardTimeDict.ContainsKey(productName))
+                                        try
+                                        {
+                                            standardTimeDict = JsonSerializer.Deserialize<Dictionary<string, string>>(operation.StandardTime);
+                                        }
+                                        catch (JsonException)
+                                        {
+                                            Snackbar.Add($"Standard Time invalid in {operation.Code}", Severity.Warning);
+                                            standardTimeDict = new Dictionary<string, string> { [productName] = "" };
+                                        }
+
+                                    if (standardTimeDict != null && standardTimeDict.ContainsKey(productName))
                                         {
                                             var standardTimeParts = standardTimeDict[productName].Split('§');
 
