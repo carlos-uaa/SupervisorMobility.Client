@@ -56,6 +56,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         //+============= ESTEBLISHED CONDITIONS ===============+\\
         public List<EstablishedConditionDynamicDTO> EstablishedConditionDynamicDTO = new List<EstablishedConditionDynamicDTO>();
 
+        //+=============== INSURANCE FEATURES =================+\\
+        public List<InsuranceFeaturesDynamicDTO> InsuranceFeaturesDynamicDTO = new List<InsuranceFeaturesDynamicDTO>();
+
         // =================================================== \\
         //&============ COMPONENT INITIALIZATION =============&\\
         // =================================================== \\
@@ -350,6 +353,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // NOTE: Add dynamic input for each section in each distribution
             SetEstablishedConditionsDynamic();
+
+            // NOTE: Add dynamic input for each section in each distribution
+            SetInsuranceFeaturesDynamic();
         }
 
 
@@ -524,6 +530,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // update dynamic inputs for established conditions
             SetEstablishedConditionsDynamic();
+
+            // update dynamic inputs for insurance features
+            SetInsuranceFeaturesDynamic();
 
             // Refresh the UI state
             StateHasChanged();
@@ -1360,6 +1369,167 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         }
 
 
+        // =================================================== \\
+        //&================ INSURANCE FEATURE ================&\\
+        // =================================================== \\
+
+        /// <summary>
+        /// Sets the insurances features dynamically for each SOS hub's first distribution.
+        /// Aggregates them into <see cref="InsuranceFeaturesDynamicDTO"/> objects.
+        /// </summary>
+        private void SetInsuranceFeaturesDynamic()
+        {
+            // NOTE: Exit early if there are no SOS hubs
+            if (_sosSynopticRequeriments?.SOSHubs == null) return;
+
+            var copyInsuranceFeatures = _sosSynopticRequeriments.InsuranceFeatures ?? new List<InsuranceFeatures>();
+            var generalEFeatures = new List<InsuranceFeaturesDynamicDTO>();
+
+            foreach (var hub in _sosSynopticRequeriments.SOSHubs)
+            {
+                // NOTE: Only consider the first distribution of the hub
+                var firstDistribution = hub?.SOSDistribution?.FirstOrDefault();
+                if (firstDistribution == null) continue;
+
+                var sectionsDistribution = BuildOperationSequences(firstDistribution);
+
+                // NOTE: Map each section to a dynamic DTO with its insurances features
+                var setEFDynamicDistribution = sectionsDistribution.Select(section =>
+                {
+                    var establishedForSection = copyInsuranceFeatures.Where(ec => ec.SectionId == section.SectionId).ToList();
+
+                    return new InsuranceFeaturesDynamicDTO
+                    {
+                        SectionId = section.SectionId ?? 0,
+                        InputInsuranceFeatures = string.Empty,
+                        InsuranceFeatures = establishedForSection
+                    };
+                }
+                );
+
+                generalEFeatures.AddRange(setEFDynamicDistribution);
+            }
+
+            // NOTE: Assign the aggregated dynamic insurances to the property
+            InsuranceFeaturesDynamicDTO = generalEFeatures;
+        }
+
+        /// <summary>
+        /// Retrieves the dynamic insurance feature for a given section.
+        /// Returns a new <see cref="InsuranceFeaturesDynamicDTO"/> if none exists for the section.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section.</param>
+        /// <returns>The <see cref="InsuranceFeaturesDynamicDTO"/> for the specified section.</returns>
+        private InsuranceFeaturesDynamicDTO GetInsuranceFeatures(int sectionId)
+        {
+            // NOTE: Return the first matching DTO or a new instance if not found
+            return InsuranceFeaturesDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId) ?? new InsuranceFeaturesDynamicDTO();
+        }
+
+
+        /// <summary>
+        /// Removes an insurance feature from the provided dynamic DTO.
+        /// Can remove by insurance ID or by insurance string if ID is zero.
+        /// </summary>
+        /// <param name="InsuranceFeaturesDynamic">The dynamic DTO containing insurances features.</param>
+        /// <param name="IdECondition">The ID of the insurance to remove. If zero, the <paramref name="Condition"/> string is used.</param>
+        /// <param name="Condition">The insurance string to remove if <paramref name="IdECondition"/> is zero.</param>
+        private void RemoveInsuranceFeatures(InsuranceFeaturesDynamicDTO InsuranceFeaturesDynamic, int IdEInsurance, string Insurance)
+        {
+            // NOTE: Remove by ID if provided, otherwise remove by insurance string
+            if (IdEInsurance != 0)
+            {
+                InsuranceFeaturesDynamic.InsuranceFeatures.RemoveAll(e => e.Id == IdEInsurance);
+            }
+            else
+            {
+                InsuranceFeaturesDynamic.InsuranceFeatures.RemoveAll(e => e.Insurance == Insurance);
+            }
+        }
+
+        /// <summary>
+        /// Handles changes to an insurance feature and validates the new value.
+        /// Updates the insurance if it meets the minimum length, otherwise shows a warning.
+        /// </summary>
+        /// <param name="item">The insurance feature being updated.</param>
+        /// <param name="value">The new value for the insurance.</param>
+        /// <param name="minLength">The minimum required length for the insurance. Default is 2.</param>
+        private void OnInsuranceChanged(InsuranceFeatures item, string value, int minLength = 2)
+        {
+            if (string.IsNullOrEmpty(value) || value.Length < minLength)
+            {
+                Snackbar.Add($"El valor debe tener al menos {minLength} caracteres.", Severity.Warning);
+
+                // NOTE: Truncate existing value if it exists
+                if (!string.IsNullOrEmpty(item.Insurance))
+                {
+                    item.Insurance = new string(item.Insurance.Take(minLength).ToArray());
+                }
+
+                return;
+            }
+
+            // NOTE: Update the insurance with the new valid value
+            item.Insurance = value;
+        }
+
+        /// <summary>
+        /// Changes the input value of the insurance feature for a given section.
+        /// If the section does not exist, the method exits silently.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section to update.</param>
+        /// <param name="value">The new input value for the insurance.</param>
+        public void ChangeInsuranceFeature(int sectionId, string value)
+        {
+            // NOTE: Find the section by ID; exit if not found
+            var section = InsuranceFeaturesDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId);
+            if (section == null) return;
+
+            // NOTE: Update the input value safely
+            section.InputInsuranceFeatures = value ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Adds a new insurance features to the specified section.
+        /// Validates that the input is not empty and prevents duplicate insurance.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section to add the insurance to.</param>
+        public void AddInsuranceFeatures(int sectionId)
+        {
+            // NOTE: Find the section by ID; exit if not found
+            var ECondition = InsuranceFeaturesDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId);
+            if (ECondition == null) return;
+
+            var valueNewEFeature = ECondition.InputInsuranceFeatures;
+
+            // NOTE: Notify and exit if input is empty
+            if (string.IsNullOrWhiteSpace(valueNewEFeature))
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add("No puede agregar una condicion vacia, ingrese texto", Severity.Info);
+                return;
+            }
+
+            // NOTE: Check for duplicate insurance (case-insensitive)
+            var existInsuranceFeatures = ECondition.InsuranceFeatures.Any(a => string.Equals(a.Insurance, valueNewEFeature, StringComparison.OrdinalIgnoreCase));
+            if (!existInsuranceFeatures)
+            {
+                // NOTE: Add new insurance and reset input
+                ECondition.InputInsuranceFeatures = string.Empty;
+                ECondition.InsuranceFeatures.Add(new InsuranceFeatures { Id = 0, Insurance = valueNewEFeature, SectionId = sectionId, SOSSynopticTableofOperatingRequirementsId = _sosSynopticRequeriments.SOSSynopticTableofOperatingRequirementsId });
+                StateHasChanged();
+
+            }
+            else
+            {
+                // NOTE: Notify if the insurance already exists
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add("Ya existe esta caracteristica para estas caracteristicas de aseguramiento", Severity.Warning);
+            }
+        }
+
 
         // =================================================== \\
         //&============ FUNCTIONS TO UPDATE SCRO =============&\\
@@ -1372,7 +1542,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         public async Task UpdateSTRO()
         {
             // Prepare the data transfer object for updating STRO
-            var stroUpdateDto = FormatterSendDataSTRO(_sosSynopticRequeriments, KnowledgeDynamicDTO, SkillDynamicDTO, EstablishedConditionDynamicDTO);
+            var stroUpdateDto = FormatterSendDataSTRO(_sosSynopticRequeriments, KnowledgeDynamicDTO, SkillDynamicDTO, EstablishedConditionDynamicDTO, InsuranceFeaturesDynamicDTO);
 
             // Call service to update the Synoptic Table
             var updateResult = await SynopticRequirementsService.UpdateSOSSynopticTableofOperatingRequirements(stroUpdateDto);
@@ -1402,7 +1572,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         /// <param name="skillDynamicDTOs">Dynamic skill filters to include in the DTO.</param>
         /// <param name="EstablishedConditionDynamicDTOs">Dynamic established condition filters to include in the DTO.</param>
         /// <returns>A DTO containing the necessary fields for updating the STRO.</returns>
-        private static SOSSynopticTableofOperatingRequirementsForUpdateDto FormatterSendDataSTRO(SOSSynopticTableofOperatingRequirements STRO, List<KnowledgeDynamicDTO> knowledgeDynamicDTOs, List<SkillDynamicDTO> skillDynamicDTOs, List<EstablishedConditionDynamicDTO> EstablishedConditionDynamicDTOs)
+        private static SOSSynopticTableofOperatingRequirementsForUpdateDto FormatterSendDataSTRO(SOSSynopticTableofOperatingRequirements STRO, List<KnowledgeDynamicDTO> knowledgeDynamicDTOs, List<SkillDynamicDTO> skillDynamicDTOs, List<EstablishedConditionDynamicDTO> EstablishedConditionDynamicDTOs,List<InsuranceFeaturesDynamicDTO> InsuranceFeaturesDynamicDTOs)
         {
             return new SOSSynopticTableofOperatingRequirementsForUpdateDto
             {
@@ -1429,7 +1599,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
                 SOSSTROSkill = skillDynamicDTOs.SelectMany(a => a.SkillIds.Select(s => new SOSSTROSkillHub { Id = 0, SkillId = s, SOSHubId = a.SOSHubId })).ToList(),
 
                 // NOTE: Map dynamic established conditions to the DTO
-                EstablishedConditions = EstablishedConditionDynamicDTOs.SelectMany(e => e.EstablishedConditions.Select(ec => new EstablishedConditions { Id = ec.Id, Condition = ec.Condition, SectionId = ec.SectionId, SOSSynopticTableofOperatingRequirementsId = ec.SOSSynopticTableofOperatingRequirementsId })).ToList()
+                EstablishedConditions = EstablishedConditionDynamicDTOs.SelectMany(e => e.EstablishedConditions.Select(ec => new EstablishedConditions { Id = ec.Id, Condition = ec.Condition, SectionId = ec.SectionId, SOSSynopticTableofOperatingRequirementsId = ec.SOSSynopticTableofOperatingRequirementsId })).ToList(),
+
+                // NOTE: Map dynamic insurances features to the DTO
+                InsuranceFeatures = InsuranceFeaturesDynamicDTOs.SelectMany(e => e.InsuranceFeatures.Select(ec => new InsuranceFeatures { Id = ec.Id, Insurance = ec.Insurance, SectionId = ec.SectionId, SOSSynopticTableofOperatingRequirementsId = ec.SOSSynopticTableofOperatingRequirementsId })).ToList()
             };
         }
     }

@@ -347,7 +347,7 @@ else
                                 @LocalizerSTOR["STORProcessName"]</MudTh>
                             <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 80px;">
                                 @LocalizerSTOR["STORSOSNumber"]</MudTh>
-                            <MudTh colspan="4" class="syntable__hd syntable__hd--ctr" Style="min-width: 300px; padding: 0 !important">
+                            <MudTh colspan="4" class="syntable__hd syntable__hd--ctr" Style="min-width: 300px; padding: 0 !important; width: 330px;">
                                 <div style="display: flex; flex-direction: column; align-items: center; height: 60px; width: 100%;">
                                     <div style="background: #f2fbff; text-align: center; font-weight: 600; flex: 1; display: flex; align-items: center; justify-content: center;">
                                         @LocalizerSTOR["STOROperations"]
@@ -476,7 +476,7 @@ else
                                                             <tr>
                                                                 <td style="border: none !important; vertical-align: top; padding: 4px 8px 8px 8px;">
                                                                     <div class="InputText">
-                                                                        <MudTextField Style="font-size: 0.675rem; width: 110px;"
+                                                                        <MudTextField Style="font-size: 0.675rem;"
                                                                                     T="string"
                                                                                     Value="GetEstablishedCondition((int)sections[rowIndex].SectionId!)?.InputEstablishedCondition ?? string.Empty"
                                                                                     ValueChanged="val => ChangeEstablishedCondition((int)sections[rowIndex].SectionId!, val)"
@@ -493,7 +493,7 @@ else
                                                                     <td style="border: none !important; vertical-align: top; padding: 4px 8px;">
                                                                         <div style="display: flex; align-items: end; gap: 0.25rem;">
                                                                             <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="()=> RemoveEstablishedCondition(ConditionCollect,Condition.Id,Condition.Condition)"/>
-                                                                            <MudTextField Style="font-size: 0.675rem; width: 110px;"
+                                                                            <MudTextField Style="font-size: 0.675rem;"
                                                                                         T="string"
                                                                                         Value="Condition.Condition"
                                                                                         ValueChanged="@(value => OnConditionChanged(Condition, value))"
@@ -507,13 +507,39 @@ else
                                                         </tbody>
                                                     </table>
                                                 </MudTd>
-                                                <MudTd colspan="4" class="@("syntable__c syntable__c--ctr syntable__c--conChildTable" + GetStepClass(sections, rowIndex))">
-                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                <MudTd colspan="4" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important;">
                                                         <tbody>
-                                                            @foreach(var (criticalPoint, index) in GetCriticalPoints(sections[rowIndex]).Select((value,i)=>(value,i))){
                                                             <tr>
-                                                                <td style="border: none !important; vertical-align: top; padding: 4px 16px;">@(index+1) .- @criticalPoint</td>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 8px 8px 8px; width: 150px;">
+                                                                    <div class="InputText">
+                                                                        <MudTextField Style="font-size: 0.675rem;"
+                                                                                    T="string"
+                                                                                    Value="GetInsuranceFeatures((int)sections[rowIndex].SectionId!)?.InputInsuranceFeatures ?? string.Empty"
+                                                                                    ValueChanged="val => ChangeInsuranceFeature((int)sections[rowIndex].SectionId!, val)"
+                                                                                    Margin="Margin.Dense" Variant="Variant.Text" Immediate="true" />
+                                                                        <MudIconButton Icon="@Icons.Material.Rounded.Add" OnClick="() => AddInsuranceFeatures((int)sections[rowIndex].SectionId!)" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"/>
+                                                                    </div>
+                                                                </td>
                                                             </tr>
+                                                            @{
+                                                                var InsuranceCollect = GetInsuranceFeatures((int)sections[rowIndex].SectionId!);
+
+                                                                @foreach(var Insurance in InsuranceCollect.InsuranceFeatures){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 8px; width: 150px;">
+                                                                        <div style="display: flex; align-items: end; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="()=> RemoveInsuranceFeatures(InsuranceCollect,Insurance.Id,Insurance.Insurance)"/>
+                                                                            <MudTextField Style="font-size: 0.675rem;"
+                                                                                        T="string"
+                                                                                        Value="Insurance.Insurance"
+                                                                                        ValueChanged="@(value => OnInsuranceChanged(Insurance, value))"
+                                                                                        Variant="Variant.Text"
+                                                                                        Margin="Margin.Dense"/>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
                                                             }
                                                         </tbody>
                                                     </table>
@@ -542,6 +568,7 @@ else
                                                                     <td style="border: none !important; vertical-align: top;">
 
                                                                         <MudAutocomplete T="string"
+                                                                                        style="width: 155px; font-size: 0.675rem;"
                                                                                         Value="GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName ?? string.Empty"
                                                                                         ValueChanged="val => SetSelectedKnowledge((int)distribution.SOSHubId!, val)"
                                                                                         Label="Buscar conocimiento"
@@ -561,13 +588,13 @@ else
 
                                                                         @if (IsExistingKnowledge((int)distribution.SOSHubId!))
                                                                         {
-                                                                            <MudButton Color="Color.Primary" @onclick="() => AddSelectedKnowledge((int)distribution.SOSHubId!)">
+                                                                            <MudButton Style="font-size: 0.675rem;" Color="Color.Primary" @onclick="() => AddSelectedKnowledge((int)distribution.SOSHubId!)">
                                                                                 Agregar conocimiento
                                                                             </MudButton>
                                                                         }
                                                                         else if (!string.IsNullOrWhiteSpace(GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName))
                                                                         {
-                                                                            <MudButton Color="Color.Secondary" @onclick="() => OpenAddKnowledgeModal((int)distribution.SOSHubId!)">
+                                                                            <MudButton Style="font-size: 0.675rem;" Color="Color.Secondary" @onclick="() => OpenAddKnowledgeModal((int)distribution.SOSHubId!)">
                                                                                 Crear conocimiento
                                                                             </MudButton>
                                                                         }
@@ -594,6 +621,7 @@ else
                                                                     <td style="border: none !important; vertical-align: top;">
 
                                                                         <MudAutocomplete T="string"
+                                                                                        style="width: 155px; font-size: 0.675rem;"
                                                                                         Value="GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName ?? string.Empty"
                                                                                         ValueChanged="val => SetSelectedSkill((int)distribution.SOSHubId!, val)"
                                                                                         Label="Buscar Habilidad"
@@ -613,13 +641,13 @@ else
 
                                                                         @if (IsExistingSkill((int)distribution.SOSHubId!))
                                                                         {
-                                                                            <MudButton Color="Color.Primary" @onclick="() => AddSelectedSkill((int)distribution.SOSHubId!)">
+                                                                            <MudButton Style="font-size: 0.675rem;" Color="Color.Primary" @onclick="() => AddSelectedSkill((int)distribution.SOSHubId!)">
                                                                                 Agregar Habilidad
                                                                             </MudButton>
                                                                         }
                                                                         else if (!string.IsNullOrWhiteSpace(GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName))
                                                                         {
-                                                                            <MudButton Color="Color.Secondary" @onclick="() => OpenAddSkillModal((int)distribution.SOSHubId!)">
+                                                                            <MudButton Style="font-size: 0.675rem;" Color="Color.Secondary" @onclick="() => OpenAddSkillModal((int)distribution.SOSHubId!)">
                                                                                 Crear Habilidad
                                                                             </MudButton>
                                                                         }
