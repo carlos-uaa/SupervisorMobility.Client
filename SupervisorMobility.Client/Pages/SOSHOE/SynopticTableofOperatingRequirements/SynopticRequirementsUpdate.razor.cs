@@ -810,7 +810,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             };
 
             // NOTE: Add newly created sequence to the current synoptic requirements
-            _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence.Add(newSequence);
+            _sosSynopticRequeriments.SOSSynopticRequirementsOperationSequence?.Add(newSequence);
 
             return newSequence;
         }
@@ -853,6 +853,23 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             {
                 item.OperationPersonText = value;
             }
+        }
+
+        private void SetOperationMachineRequired(int sosHubId, int sectionId, bool? value)
+        {
+            if (value == null) return;
+            // NOTE: Locate the operation sequence for the given SOS Hub and section
+            var item = _sosSynopticRequeriments?.SOSSynopticRequirementsOperationSequence?.FirstOrDefault(s => s.SosHubId == sosHubId && s.SectionId == sectionId);
+            if (item == null)
+            {
+                Snackbar.Add("No se encontro el registro correspondiente.", Severity.Error);
+                return;
+            }
+
+            var valueCast = (bool)value;
+
+            if (!valueCast) item.OperationMachineText = "";
+            item.IsOperationMachineRequired = valueCast;
         }
 
         /// <summary>
