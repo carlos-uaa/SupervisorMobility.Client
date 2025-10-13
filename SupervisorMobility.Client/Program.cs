@@ -16,6 +16,8 @@ global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection
 global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Conditions.Dtos;
 global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Insurance;
 global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.Insurance.Dtos;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.OperationM;
+global using SupervisorMobility.Client.Data.Entities.SOS_Process.STRO.Collection.OperationM.Dtos;
 global using SupervisorMobility.Client.Data.Entities.SOS_Process.SOSSynopticTableRO;
 global using SupervisorMobility.Client.Services.AreaService;
 global using SupervisorMobility.Client.Services.JobStructureService;

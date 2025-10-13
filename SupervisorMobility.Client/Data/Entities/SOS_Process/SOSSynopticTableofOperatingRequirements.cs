@@ -36,5 +36,6 @@ namespace SupervisorMobility.Client.Data.Entities.SOS_Process
         public ICollection<SOSSTROSkillHub>? SOSSTROSkill { get; set; } = new List<SOSSTROSkillHub>();
         public ICollection<EstablishedConditions>? EstablishedConditions { get; set; } = new List<EstablishedConditions>();
         public ICollection<InsuranceFeatures>? InsuranceFeatures { get; set; } = new List<InsuranceFeatures>();
+        public ICollection<OperationMachine>? OperationMachine { get; set; } = new List<OperationMachine>();
     }
 }

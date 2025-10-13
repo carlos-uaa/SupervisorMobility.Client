@@ -609,6 +609,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             return _sosSynopticRequeriments?.InsuranceFeatures?.Where(e => e.SectionId == sectionId).ToList() ?? new List<InsuranceFeatures>();
         }
 
+        /// <summary>
+        /// Retrieves all operations machine for a specific section.
+        /// Returns an empty list if no operation exist for the section.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section.</param>
+        /// <returns>A list of <see cref="OperationMachine"/> for the specified section.</returns>
+        private List<OperationMachine> GetOperationMachines(int sectionId)
+        {
+            // NOTE: Return all conditions for the section or an empty list if none exist
+            return _sosSynopticRequeriments?.OperationMachine?.Where(e => e.SectionId == sectionId).ToList() ?? new List<OperationMachine>();
+        }
+
 
         //&===================== FUNCTIONS FOR DOWNLOAD FORMAT =====================&\\
         private async Task DownloadSTOR()
