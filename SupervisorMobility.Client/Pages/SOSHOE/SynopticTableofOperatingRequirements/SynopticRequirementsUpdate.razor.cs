@@ -59,6 +59,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         //+=============== INSURANCE FEATURES =================+\\
         public List<InsuranceFeaturesDynamicDTO> InsuranceFeaturesDynamicDTO = new List<InsuranceFeaturesDynamicDTO>();
 
+        //+=============== OPERATION MACHINE ==================+\\
+        public List<OperationMachineDynamicDTO> OperationMachineDynamicDTO = new List<OperationMachineDynamicDTO>();
+
         // =================================================== \\
         //&============ COMPONENT INITIALIZATION =============&\\
         // =================================================== \\
@@ -356,6 +359,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // NOTE: Add dynamic input for each section in each distribution
             SetInsuranceFeaturesDynamic();
+
+            // NOTE: Add dynamic input for each section in each distribution
+            SetOperationMachineDynamic();
         }
 
 
@@ -533,6 +539,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // update dynamic inputs for insurance features
             SetInsuranceFeaturesDynamic();
+
+            // update dynamic inputs for operations machine
+            SetOperationMachineDynamic();
 
             // Refresh the UI state
             StateHasChanged();
@@ -1507,7 +1516,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             {
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-                Snackbar.Add("No puede agregar una condicion vacia, ingrese texto", Severity.Info);
+                Snackbar.Add("No puede agregar una caracteristica de aseguramiento vacia, ingrese texto", Severity.Info);
                 return;
             }
 
@@ -1530,6 +1539,168 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             }
         }
 
+        // =================================================== \\
+        //&================ OPERATION MACHINE ================&\\
+        // =================================================== \\
+
+        /// <summary>
+        /// Sets the operation machine dynamically for each SOS hub's first distribution.
+        /// Aggregates them into <see cref="OperationMachineDynamicDTO"/> objects.
+        /// </summary>
+        private void SetOperationMachineDynamic()
+        {
+            // NOTE: Exit early if there are no SOS hubs
+            if (_sosSynopticRequeriments?.SOSHubs == null) return;
+
+            var copyOperationMachine = _sosSynopticRequeriments.OperationMachine ?? new List<OperationMachine>();
+            var generalOperations = new List<OperationMachineDynamicDTO>();
+
+            foreach (var hub in _sosSynopticRequeriments.SOSHubs)
+            {
+                // NOTE: Only consider the first distribution of the hub
+                var firstDistribution = hub?.SOSDistribution?.FirstOrDefault();
+                if (firstDistribution == null) continue;
+
+                var sectionsDistribution = BuildOperationSequences(firstDistribution);
+
+                // NOTE: Map each section to a dynamic DTO with its insurances features
+                var setEFDynamicDistribution = sectionsDistribution.Select(section =>
+                {
+                    var establishedForSection = copyOperationMachine.Where(ec => ec.SectionId == section.SectionId).ToList();
+
+                    return new OperationMachineDynamicDTO
+                    {
+                        SectionId = section.SectionId ?? 0,
+                        InputOperationMachine = string.Empty,
+                        OperationMachine = establishedForSection
+                    };
+                }
+                );
+
+                generalOperations.AddRange(setEFDynamicDistribution);
+            }
+
+            // NOTE: Assign the aggregated dynamic insurances to the property
+            OperationMachineDynamicDTO = generalOperations;
+        }
+
+        /// <summary>
+        /// Retrieves the dynamic operation for a given section.
+        /// Returns a new <see cref="OperationMachineDynamicDTO"/> if none exists for the section.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section.</param>
+        /// <returns>The <see cref="OperationMachineDynamicDTO"/> for the specified section.</returns>
+        private OperationMachineDynamicDTO GetOperationMachine(int sectionId)
+        {
+            // NOTE: Return the first matching DTO or a new instance if not found
+            return OperationMachineDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId) ?? new OperationMachineDynamicDTO();
+        }
+
+
+        /// <summary>
+        /// Removes an operation machine from the provided dynamic DTO.
+        /// Can remove by operation ID or by operation string if ID is zero.
+        /// </summary>
+        /// <param name="OperationMachineDynamic">The dynamic DTO containing operation machine.</param>
+        /// <param name="IdECondition">The ID of the operation to remove. If zero, the <paramref name="Condition"/> string is used.</param>
+        /// <param name="Condition">The operation string to remove if <paramref name="IdECondition"/> is zero.</param>
+        private void RemoveOperationMachine(OperationMachineDynamicDTO OperationMachineDynamic, int IdOperation, string Operation)
+        {
+            // NOTE: Remove by ID if provided, otherwise remove by Operation string
+            if (IdOperation != 0)
+            {
+                OperationMachineDynamic.OperationMachine.RemoveAll(e => e.Id == IdOperation);
+            }
+            else
+            {
+                OperationMachineDynamic.OperationMachine.RemoveAll(e => e.Operation == Operation);
+            }
+        }
+
+        /// <summary>
+        /// Handles changes to an operation machine and validates the new value.
+        /// Updates the operation if it meets the minimum length, otherwise shows a warning.
+        /// </summary>
+        /// <param name="item">The operation machine being updated.</param>
+        /// <param name="value">The new value for the operation.</param>
+        /// <param name="minLength">The minimum required length for the operation. Default is 2.</param>
+        private void OnOperationChanged(OperationMachine item, string value, int minLength = 2)
+        {
+            if (string.IsNullOrEmpty(value) || value.Length < minLength)
+            {
+                Snackbar.Add($"El valor debe tener al menos {minLength} caracteres.", Severity.Warning);
+
+                // NOTE: Truncate existing value if it exists
+                if (!string.IsNullOrEmpty(item.Operation))
+                {
+                    item.Operation = new string(item.Operation.Take(minLength).ToArray());
+                }
+
+                return;
+            }
+
+            // NOTE: Update the Operation with the new valid value
+            item.Operation = value;
+        }
+
+        /// <summary>
+        /// Changes the input value of the operation machine for a given section.
+        /// If the section does not exist, the method exits silently.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section to update.</param>
+        /// <param name="value">The new input value for the operation.</param>
+        public void ChangeOperationMachine(int sectionId, string value)
+        {
+            // NOTE: Find the section by ID; exit if not found
+            var section = OperationMachineDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId);
+            if (section == null) return;
+
+            // NOTE: Update the input value safely
+            section.InputOperationMachine = value ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Adds a new operation machine to the specified section.
+        /// Validates that the input is not empty and prevents duplicate operation.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section to add the operation to.</param>
+        public void AddOperationMachine(int sectionId)
+        {
+            // NOTE: Find the section by ID; exit if not found
+            var ECondition = OperationMachineDynamicDTO.FirstOrDefault(e => e.SectionId == sectionId);
+            if (ECondition == null) return;
+
+            var valueNewOperation = ECondition.InputOperationMachine;
+
+            // NOTE: Notify and exit if input is empty
+            if (string.IsNullOrWhiteSpace(valueNewOperation))
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add("No puede agregar una operacion por maquina vacia, ingrese texto", Severity.Info);
+                return;
+            }
+
+            // NOTE: Check for duplicate operation (case-insensitive)
+            var existOperationMachine = ECondition.OperationMachine.Any(a => string.Equals(a.Operation, valueNewOperation, StringComparison.OrdinalIgnoreCase));
+            if (!existOperationMachine)
+            {
+                // NOTE: Add new operation and reset input
+                ECondition.InputOperationMachine = string.Empty;
+                ECondition.OperationMachine.Add(new OperationMachine { Id = 0, Operation = valueNewOperation, SectionId = sectionId, SOSSynopticTableofOperatingRequirementsId = _sosSynopticRequeriments.SOSSynopticTableofOperatingRequirementsId });
+                StateHasChanged();
+
+            }
+            else
+            {
+                // NOTE: Notify if the insurance already exists
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+                Snackbar.Add("Ya existe esta operacion por maquina", Severity.Warning);
+            }
+        }
+
+
 
         // =================================================== \\
         //&============ FUNCTIONS TO UPDATE SCRO =============&\\
@@ -1542,7 +1713,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         public async Task UpdateSTRO()
         {
             // Prepare the data transfer object for updating STRO
-            var stroUpdateDto = FormatterSendDataSTRO(_sosSynopticRequeriments, KnowledgeDynamicDTO, SkillDynamicDTO, EstablishedConditionDynamicDTO, InsuranceFeaturesDynamicDTO);
+            var stroUpdateDto = FormatterSendDataSTRO(_sosSynopticRequeriments, KnowledgeDynamicDTO, SkillDynamicDTO, EstablishedConditionDynamicDTO, InsuranceFeaturesDynamicDTO, OperationMachineDynamicDTO);
 
             // Call service to update the Synoptic Table
             var updateResult = await SynopticRequirementsService.UpdateSOSSynopticTableofOperatingRequirements(stroUpdateDto);
@@ -1572,7 +1743,14 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         /// <param name="skillDynamicDTOs">Dynamic skill filters to include in the DTO.</param>
         /// <param name="EstablishedConditionDynamicDTOs">Dynamic established condition filters to include in the DTO.</param>
         /// <returns>A DTO containing the necessary fields for updating the STRO.</returns>
-        private static SOSSynopticTableofOperatingRequirementsForUpdateDto FormatterSendDataSTRO(SOSSynopticTableofOperatingRequirements STRO, List<KnowledgeDynamicDTO> knowledgeDynamicDTOs, List<SkillDynamicDTO> skillDynamicDTOs, List<EstablishedConditionDynamicDTO> EstablishedConditionDynamicDTOs,List<InsuranceFeaturesDynamicDTO> InsuranceFeaturesDynamicDTOs)
+        private static SOSSynopticTableofOperatingRequirementsForUpdateDto FormatterSendDataSTRO(
+            SOSSynopticTableofOperatingRequirements STRO,
+            List<KnowledgeDynamicDTO> knowledgeDynamicDTOs,
+            List<SkillDynamicDTO> skillDynamicDTOs,
+            List<EstablishedConditionDynamicDTO> EstablishedConditionDynamicDTOs,
+            List<InsuranceFeaturesDynamicDTO> InsuranceFeaturesDynamicDTOs,
+            List<OperationMachineDynamicDTO> OperationMachineDynamicDTOs
+            )
         {
             return new SOSSynopticTableofOperatingRequirementsForUpdateDto
             {
@@ -1602,7 +1780,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
                 EstablishedConditions = EstablishedConditionDynamicDTOs.SelectMany(e => e.EstablishedConditions.Select(ec => new EstablishedConditions { Id = ec.Id, Condition = ec.Condition, SectionId = ec.SectionId, SOSSynopticTableofOperatingRequirementsId = ec.SOSSynopticTableofOperatingRequirementsId })).ToList(),
 
                 // NOTE: Map dynamic insurances features to the DTO
-                InsuranceFeatures = InsuranceFeaturesDynamicDTOs.SelectMany(e => e.InsuranceFeatures.Select(ec => new InsuranceFeatures { Id = ec.Id, Insurance = ec.Insurance, SectionId = ec.SectionId, SOSSynopticTableofOperatingRequirementsId = ec.SOSSynopticTableofOperatingRequirementsId })).ToList()
+                InsuranceFeatures = InsuranceFeaturesDynamicDTOs.SelectMany(e => e.InsuranceFeatures.Select(ec => new InsuranceFeatures { Id = ec.Id, Insurance = ec.Insurance, SectionId = ec.SectionId, SOSSynopticTableofOperatingRequirementsId = ec.SOSSynopticTableofOperatingRequirementsId })).ToList(),
+
+                // NOTE: Map dynamic Operations machine to the DTO
+                OperationMachine = OperationMachineDynamicDTOs.SelectMany(e => e.OperationMachine.Select(ec => new OperationMachine { Id = ec.Id, Operation = ec.Operation, SectionId = ec.SectionId, SOSSynopticTableofOperatingRequirementsId = ec.SOSSynopticTableofOperatingRequirementsId })).ToList()
             };
         }
     }

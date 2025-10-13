@@ -448,25 +448,42 @@ else
                                                         @GetOperationSequence((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!).OperationPersonText
                                                     </div>
                                                 </MudTd>
-                                                <MudTd colspan="2" class="@(GetStepClass(sections, rowIndex))" Style="min-width: 165px; width: 165px;">
-                                                    <div style="display: flex; align-items: center; gap: 0.25rem;">
-                                                        <MudCheckBox 
-                                                        Value="GetOperationSequence((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!).IsOperationMachineRequired" 
-                                                        ValueChanged="(bool? val) => SetOperationMachineRequired((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!, val)"
-                                                        Size="Size.Small"
-                                                        Color="Color.Primary"></MudCheckBox>
-                                                        @if(GetOperationSequence((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!).IsOperationMachineRequired ?? false){
-                                                            <MudTextField
-                                                            T="string"
-                                                            Value="GetOperationSequence((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!).OperationMachineText"
-                                                            ValueChanged="val => SetOperationMachineText((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!, val)"
-                                                            Variant="Variant.Outlined"
-                                                            Margin="Margin.Dense"
-                                                            Style="font-size: 0.675rem;"
-                                                            Lines="2"/>
-                                                        }
-                                                    </div>
-                                            
+                                                <MudTd colspan="2" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))" style="vertical-align: top; padding: 0px 8px; border-left: none !important;">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important;">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 8px 8px 8px;">
+                                                                    <div class="InputText">
+                                                                        <MudTextField Style="font-size: 0.675rem;"
+                                                                                    T="string"
+                                                                                    Value="GetOperationMachine((int)sections[rowIndex].SectionId!)?.InputOperationMachine ?? string.Empty"
+                                                                                    ValueChanged="val => ChangeOperationMachine((int)sections[rowIndex].SectionId!, val)"
+                                                                                    Margin="Margin.Dense" Variant="Variant.Text" Immediate="true" />
+                                                                        <MudIconButton Icon="@Icons.Material.Rounded.Add" OnClick="() => AddOperationMachine((int)sections[rowIndex].SectionId!)" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"/>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            @{
+                                                                var OperationCollect = GetOperationMachine((int)sections[rowIndex].SectionId!);
+
+                                                                @foreach(var Operation in OperationCollect.OperationMachine){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 8px;">
+                                                                        <div style="display: flex; align-items: end; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="()=> RemoveOperationMachine(OperationCollect,Operation.Id,Operation.Operation)"/>
+                                                                            <MudTextField Style="font-size: 0.675rem;"
+                                                                                        T="string"
+                                                                                        Value="Operation.Operation"
+                                                                                        ValueChanged="@(value => OnOperationChanged(Operation, value))"
+                                                                                        Variant="Variant.Text"
+                                                                                        Margin="Margin.Dense"/>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
                                                 </MudTd>
 
 
