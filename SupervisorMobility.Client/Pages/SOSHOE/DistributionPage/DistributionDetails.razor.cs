@@ -143,16 +143,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
 
 
-            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("�") ?? new string[0];
-            var tempCycleTimes = _sosDistribution.CycleTime?.Split("�") ?? new string[0];
-            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("�") ?? new string[0];
+            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[0];
+            var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[0];
+            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[0];
 
-            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('�') ?? new string[0];
-            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('�') ?? new string[0];
-            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('�') ?? new string[0];
-            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('�') ?? new string[0];
-            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('�') ?? new string[0];
-            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('�') ?? new string[0];
+            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
+            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
+            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('§') ?? new string[0];
+            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('§') ?? new string[0];
+            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('§') ?? new string[0];
+            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('§') ?? new string[0];
 
             for (int i = 0; i < 5; i++)
             {
