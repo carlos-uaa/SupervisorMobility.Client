@@ -246,17 +246,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             //    }
             //}
 
-            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("�") ?? new string[5];
-            var tempCycleTimes = _sosDistribution.CycleTime?.Split("�") ?? new string[5];
-            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("�") ?? new string[5];
+            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[5];
+            var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[5];
+            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[5];
 
             var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
-            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('�') ?? new string[0];
-            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('�') ?? new string[0];
-            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('�') ?? new string[0];
-            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('�') ?? new string[0];
-            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('�') ?? new string[0];
-            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('�') ?? new string[0];
+            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
+            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
+            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('§') ?? new string[0];
+            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('§') ?? new string[0];
+            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('§') ?? new string[0];
+            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('§') ?? new string[0];
 
             for (int i = 0; i < 5; i++)
             {
@@ -459,7 +459,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 if (indexTime != -1)
                 {
                     var timeEntry = _sosDistribution.SOSDistributionOperationSequence.ElementAt(indexTime);
-                    var splitTimes = timeEntry.Times?.Split("�") ?? new string[5];
+                    var splitTimes = timeEntry.Times?.Split("§") ?? new string[5];
 
                     if (splitTimes.Length < 5)
                     {
@@ -468,7 +468,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
                     splitTimes[index] = newValue;
 
-                    timeEntry.Times = string.Join("�", splitTimes);
+                    timeEntry.Times = string.Join("§", splitTimes);
                 }
                 //else
                 //{
@@ -487,7 +487,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
                 double totalSectTimes = _sosDistribution.SOSDistributionOperationSequence
                     .Select(t =>
                     {
-                        var times = t.Times?.Split("�");
+                        var times = t.Times?.Split("§");
                         // Verifica que el �ndice est� dentro del rango
                         return (times != null && index < times.Length) ? times[index] : null;
                     })
@@ -516,7 +516,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             double totalSectTimes = _sosDistribution.SOSDistributionOperationSequence
                 .Select(t =>
                 {
-                    var times = t.Times?.Split("�");
+                    var times = t.Times?.Split("§");
                     return (times != null && index < times.Length) ? times[index] : null;
                 })
                 .Where(splitTime => !string.IsNullOrEmpty(splitTime))
@@ -540,7 +540,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             {
                 timesArray[i] = i == index ? newValue : "";
             }
-            return string.Join("�", timesArray);
+            return string.Join("§", timesArray);
         }
 
         //Commentaries
@@ -621,15 +621,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();
 
-            _sosDistribution.AdditionalTime = string.Join("�", additionalTimes);
-            _sosDistribution.CycleTime = string.Join("�", cycleTimes);
-            _sosDistribution.AplicationModels = string.Join("�", applicationModels);
-            _sosDistribution.SOSDistributionAdditionalTime.TakeQuantity = string.Join("�", takeQuantity);
-            _sosDistribution.SOSDistributionAdditionalTime.TakeTime = string.Join("�", takeTime);
-            _sosDistribution.SOSDistributionAdditionalTime.LeaveQuantity = string.Join("�", leaveQuantity);
-            _sosDistribution.SOSDistributionAdditionalTime.LeaveTime = string.Join("�", leaveTime);
-            _sosDistribution.SOSDistributionAdditionalTime.StepsQuantity = string.Join("�", stepsQuantity);
-            _sosDistribution.SOSDistributionAdditionalTime.StepsTime = string.Join("�", stepsTime);
+            _sosDistribution.AdditionalTime = string.Join("§", additionalTimes);
+            _sosDistribution.CycleTime = string.Join("§", cycleTimes);
+            _sosDistribution.AplicationModels = string.Join("§", applicationModels);
+            _sosDistribution.SOSDistributionAdditionalTime.TakeQuantity = string.Join("§", takeQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.TakeTime = string.Join("§", takeTime);
+            _sosDistribution.SOSDistributionAdditionalTime.LeaveQuantity = string.Join("§", leaveQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.LeaveTime = string.Join("§", leaveTime);
+            _sosDistribution.SOSDistributionAdditionalTime.StepsQuantity = string.Join("§", stepsQuantity);
+            _sosDistribution.SOSDistributionAdditionalTime.StepsTime = string.Join("§", stepsTime);
 
             _sosDistribution.SOSDistributionOperationSequence = _sosDistribution.SOSDistributionOperationSequence.Select((item, index) => { item.SequenceId = index; return item;}).ToList();
 
