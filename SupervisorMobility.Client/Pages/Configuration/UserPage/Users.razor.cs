@@ -75,9 +75,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                             break;
                         case 2:
                             //SSV
-                            _users.Add(loggedUser);
+                            var actualUser = new User();
+                            actualUser = await UsersServices.GetUserAndCollection(loggedUser.UserId);
+                            _users.Add(actualUser);
 
-                            foreach (User item in loggedUser.Subordinates)
+                            foreach (User item in actualUser.Subordinates)
                             {
                                 //add SV
                                 _users.Add(item);

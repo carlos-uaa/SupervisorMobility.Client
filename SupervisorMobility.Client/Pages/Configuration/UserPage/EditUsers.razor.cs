@@ -31,7 +31,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         private List<User> Supervisors = new List<User>();
         private List<User> Operators = new List<User>();
 
-
         private List<User> _ReassignedUsers = new List<User>();
         private List<User> _ReassignedUsersAreas = new List<User>();
 
@@ -49,6 +48,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
         private int auxPlant = 0;
         private int auxArea = 0;
+        private int auxDepa = 0;
         private int auxDistribution = 0;
         private int auxGroup = 0;
 
@@ -114,12 +114,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             json = await JS.InvokeAsync<string>("localStorage.getItem", "user");
             LogedUser = JsonSerializer.Deserialize<User>(json) ?? new();
 
-
+            auxDepa = _user.DepartmentId ?? 0;
             auxPlant = _user.PlantId != null ? (int)_user.PlantId : 0;
             auxArea = _user.AreaId != null ? (int)_user.AreaId : 0;
             auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
             _departments = await DepartmentServices.GetDepartments();
-            if(_user.UserType == 4 && _user.DepartmentId != 0 && _user.DepartmentId != null)
+            if (_user.UserType == 4 && _user.DepartmentId != 0 && _user.DepartmentId != null)
             {
                 departmentId = (int)_user.DepartmentId;
             }
@@ -516,6 +516,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         auxPlant = 0;
                         auxArea = 0;
                         _user.GroupId = 0;
+                        auxDepa = 0;
                     }
                     break;
                 case 5: RemoveSuperiorUser(); break;
@@ -1774,6 +1775,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     }
                     usr.SuperiorId = _user.UserId;
                 }
+
+            _user.Department = null;
+            _user.DepartmentId = auxDepa;
 
             var ResponseUpdateUser = await UsersServices.UpdateUser(userId, _user, optionAreasReasign);
 

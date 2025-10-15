@@ -1499,32 +1499,43 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 return new MarkupString(text);
             }
 
-            var normalizedText = Normalize(text);
             var builder = new StringBuilder();
             var currentIndex = 0;
+            var matches = new List<Match>();
 
             foreach (var criticalPoint in criticalPoints)
             {
-                var normalizedCriticalPoint = Normalize(criticalPoint);
-                var match = Regex.Match(normalizedText, Regex.Escape(normalizedCriticalPoint), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-
-                if (match.Success)
-                {
-                    var startIndex = match.Index;
-                    var endIndex = startIndex + criticalPoint.Length;
-
-                    // Agregar el texto normal antes del punto cr�tico
-                    builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
-
-                    // Agregar el punto cr�tico resaltado
-                    builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
-
-                    currentIndex = endIndex;
-                }
+                var escaped = Regex.Escape(criticalPoint);
+                matches.AddRange(Regex.Matches(text, escaped, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).Cast<Match>());
             }
 
-            // Agregar el texto normal despu�s del �ltimo punto cr�tico
-            builder.Append(text.Substring(currentIndex));
+            // Ordenar por posición en el texto
+            var orderedMatches = matches
+                .OrderBy(m => m.Index)
+                .Aggregate(new List<Match>(), (acc, match) =>
+                {
+                    if (acc.Count == 0 || match.Index >= acc.Last().Index + acc.Last().Length)
+                    {
+                        acc.Add(match);
+                    }
+                    return acc;
+                });
+
+            foreach (var match in orderedMatches)
+            {
+                if (match.Index > currentIndex)
+                {
+                    builder.Append(text.Substring(currentIndex, match.Index - currentIndex));
+                }
+
+                builder.Append($"<mark>{text.Substring(match.Index, match.Length)}</mark>");
+                currentIndex = match.Index + match.Length;
+            }
+
+            if (currentIndex < text.Length)
+            {
+                builder.Append(text.Substring(currentIndex));
+            }
 
             return new MarkupString(builder.ToString());
         }
@@ -1702,46 +1713,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
 
         }
+
         private Analysis ProcessText(string text)
         {
-            Analysis analysis = new Analysis { Text = text };
+            var analysis = new Analysis
+            {
+                Text = text,
+            };
+            BaseText = RemoveAsterisks(text);
 
-            // Remove asterisks from BaseText
-            BaseText = Regex.Replace(text, @"\*", "").ToString();
-
-            // Split text into segments
-            var segments = text.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries)
-                               .Select(segmentText => CreateSegment(segmentText))
-                               .ToList();
-
-            analysis.CriticalPoints = segments.SelectMany(segment => segment.CriticalPoints).ToList();
+            // Extraer todos los puntos críticos directamente
+            analysis.CriticalPoints = ExtractCriticalPoints(text);
             analysis.Reasons = Enumerable.Repeat(string.Empty, analysis.CriticalPoints.Count).ToList();
 
             return analysis;
         }
-        private Segment CreateSegment(string segmentText)
+
+        private List<string> ExtractCriticalPoints(string text)
         {
-            Segment segment = new Segment { Analysis = segmentText };
-
-            // Extract MainPoint
-            var mainPointRegex = new Regex(@"#(.*?)#");
-            var mainPointMatch = mainPointRegex.Match(segmentText);
-            segment.MainPoint = mainPointMatch.Success ? mainPointMatch.Groups[1].Value.Trim() : string.Empty;
-
-            // Extract CriticalPoints
-            var criticalPointsRegex = new Regex(@"\*(.*?)\*");
-            var criticalPointMatches = criticalPointsRegex.Matches(segmentText);
-
-            foreach (Match match in criticalPointMatches)
-            {
-                if (match.Success)
-                {
-                    segment.CriticalPoints.Add(match.Groups[1].Value.Trim());
-                }
-            }
-
-            return segment;
+            // Esta expresión captura *...* incluso si hay guiones dentro
+            var matches = Regex.Matches(text, @"\*(.*?)\*");
+            return matches.Cast<Match>()
+                          .Where(m => m.Success)
+                          .Select(m => m.Groups[1].Value.Trim())
+                          .ToList();
         }
+
+        private string RemoveAsterisks(string text)
+        {
+            return Regex.Replace(text, @"\*", "");
+        }
+
         #endregion
 
         #region Station

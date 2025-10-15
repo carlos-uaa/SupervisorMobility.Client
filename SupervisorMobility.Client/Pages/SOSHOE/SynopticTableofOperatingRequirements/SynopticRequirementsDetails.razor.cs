@@ -507,7 +507,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
 
             // NOTE: Find the section matching the operation sequence
             Section? findStep = sections.FirstOrDefault(s => s.SectionId == operationSequence.SectionId);
-            return findStep ?? new Section { Step = "", IsMachineOperation = false };
+            return findStep ?? new Section { Step = "" };
         }
 
         /// <summary>
@@ -550,6 +550,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         }
 
         /// <summary>
+        /// Retrieves an existing operation sequence for a given SOS Hub and section.
+        /// Returns a new empty sequence if none is found.
+        /// </summary>
+        /// <param name="sosHubId">The ID of the SOS Hub.</param>
+        /// <param name="sectionId">The ID of the section.</param>
+        /// <returns>
+        /// The existing <see cref="SOSSynopticRequirementsOperationSequence"/> 
+        /// matching the given SOS Hub and section, or a new empty sequence if not found.
+        /// </returns>
+        private SOSSynopticRequirementsOperationSequence GetOperationSequence(int sosHubId, int sectionId)
+        {
+            // NOTE: Return the first matching sequence or a new instance if none exists
+            return _sosSynopticRequeriments?.SOSSynopticRequirementsOperationSequence?.FirstOrDefault(s => s.SosHubId == sosHubId && s.SectionId == sectionId) ?? new SOSSynopticRequirementsOperationSequence();
+        }
+
+        /// <summary>
         /// Gets all skills associated with a specific SOS hub.
         /// </summary>
         /// <param name="sosHubId">The SOS hub ID.</param>
@@ -579,6 +595,30 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         {
             // NOTE: Return all conditions for the section or an empty list if none exist
             return _sosSynopticRequeriments?.EstablishedConditions?.Where(e => e.SectionId == sectionId).ToList() ?? new List<EstablishedConditions>();
+        }
+
+        /// <summary>
+        /// Retrieves all insurance features for a specific section.
+        /// Returns an empty list if no insurance exist for the section.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section.</param>
+        /// <returns>A list of <see cref="EstablishedConditions"/> for the specified section.</returns>
+        private List<InsuranceFeatures> GetInsuranceFeatures(int sectionId)
+        {
+            // NOTE: Return all conditions for the section or an empty list if none exist
+            return _sosSynopticRequeriments?.InsuranceFeatures?.Where(e => e.SectionId == sectionId).ToList() ?? new List<InsuranceFeatures>();
+        }
+
+        /// <summary>
+        /// Retrieves all operations machine for a specific section.
+        /// Returns an empty list if no operation exist for the section.
+        /// </summary>
+        /// <param name="sectionId">The identifier of the section.</param>
+        /// <returns>A list of <see cref="OperationMachine"/> for the specified section.</returns>
+        private List<OperationMachine> GetOperationMachines(int sectionId)
+        {
+            // NOTE: Return all conditions for the section or an empty list if none exist
+            return _sosSynopticRequeriments?.OperationMachine?.Where(e => e.SectionId == sectionId).ToList() ?? new List<OperationMachine>();
         }
 
 

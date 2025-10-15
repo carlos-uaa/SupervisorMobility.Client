@@ -143,16 +143,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             var sosDistributionAdditionalTime = _sosDistribution.SOSDistributionAdditionalTime;
 
 
-            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("�") ?? new string[0];
-            var tempCycleTimes = _sosDistribution.CycleTime?.Split("�") ?? new string[0];
-            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("�") ?? new string[0];
+            var tempAdditionalTimes = _sosDistribution.AdditionalTime?.Split("§") ?? new string[0];
+            var tempCycleTimes = _sosDistribution.CycleTime?.Split("§") ?? new string[0];
+            var tempApplicationModels = _sosDistribution.AplicationModels?.Split("§") ?? new string[0];
 
-            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('�') ?? new string[0];
-            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('�') ?? new string[0];
-            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('�') ?? new string[0];
-            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('�') ?? new string[0];
-            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('�') ?? new string[0];
-            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('�') ?? new string[0];
+            var tempTakeQuantity = sosDistributionAdditionalTime?.TakeQuantity?.Split('§') ?? new string[0];
+            var tempTakeTime = sosDistributionAdditionalTime?.TakeTime?.Split('§') ?? new string[0];
+            var tempLeaveQuantity = sosDistributionAdditionalTime?.LeaveQuantity?.Split('§') ?? new string[0];
+            var tempLeaveTime = sosDistributionAdditionalTime?.LeaveTime?.Split('§') ?? new string[0];
+            var tempStepsQuantity = sosDistributionAdditionalTime?.StepsQuantity?.Split('§') ?? new string[0];
+            var tempStepsTime = sosDistributionAdditionalTime?.StepsTime?.Split('§') ?? new string[0];
 
             for (int i = 0; i < 5; i++)
             {
@@ -296,29 +296,28 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
 
             if (HasEmptyRequiredCollections(_sosHub))
             {
-                visibleExportDocument = true;
-
-                SnackbarService.Add("Ooops. Collector Incomplete!", Severity.Error, config =>
+                SnackbarService.Add("Some fields can be empty or wrong!", Severity.Info, config =>
                 {
-                    config.Action = "Go Edit Collector";
-                    config.ActionColor = Color.Primary;
+                    config.Action = "View Details";
+                    config.ActionColor = Color.Default;
+                    config.VisibleStateDuration = 5000;
                     config.Onclick = snackbar =>
                     {
-                        GoEditSosHub();
+                        visibleExportDocument = true;
+                        StateHasChanged();
                         return Task.CompletedTask;
                     };
                 });
-                StateHasChanged();
-                return;
             }
             else
             {
                 SnackbarService.Clear();
                 SnackbarService.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
                 SnackbarService.Add("Generando documento", Severity.Success);
-                await Exportation.ExportDistributionToExcel(DistributionId.Value);
             }
-
+            await Exportation.ExportDistributionToExcel(DistributionId.Value);
+            StateHasChanged();
+            return;
         }
 
         private bool HasEmptyRequiredCollections(SOSHub hub)
@@ -374,8 +373,5 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.DistributionPage
             // Si ninguna est� vac�a o nula, retorna false
             return false;
         }
-
-
-
     }
 }

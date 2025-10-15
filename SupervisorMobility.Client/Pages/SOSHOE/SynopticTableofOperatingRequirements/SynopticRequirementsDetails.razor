@@ -36,6 +36,29 @@
         height: 100%;
     }
 
+    .syntable.med table * tr > th {
+        line-height: 0.675rem;
+        font-size: 0.675rem;
+    }
+
+    .syntable.med table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .syntable.med table * tr > td {
+        font-size: 0.675rem;
+    }
+
+    .syntable.med .mud-table-container {
+        height: 490px;
+    }
+
+    .mud-simple-table table tbody tr:last-child td{
+        border-bottom: 1px solid var(--mud-palette-table-lines) !important;
+    }
+
     .syntable table tr {
         transition: 300ms ease-in-out all;
     }
@@ -57,7 +80,7 @@
     }
 
     .syntable__hd {
-        background: #0b8ff40d;
+        background: #f2fbff;
         color: #333;
         font-weight: 600 !important;
         text-transform: uppercase;
@@ -86,7 +109,7 @@
 
     /* Celdas especiales */
     .syntable__rt {
-        background-color: #0b8ff40d;
+        background-color: #f2fbff;
         color: #333;
         font-weight: 600 !important;
     }
@@ -303,8 +326,9 @@ else
                     </MudSimpleTable>
                 </div>
             </div>
-            <div style="display: flex; width: 100%; gap: 1rem; margin-top: 1.5rem;">
-                <MudSimpleTable class="syntable">
+            <div style="display: flex; width: 100%; gap: 1rem; margin-top: 2rem; flex-direction: column; overflow: hidden;box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                @* Table rows generated for each distribution with sequences, steps, and critical points *@
+                <MudSimpleTable class="syntable med" style="margin-top: -1px;">
                     <thead>
                         <MudTr>
                             <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 60px;">
@@ -313,9 +337,22 @@ else
                                 @LocalizerSTOR["STORProcessName"]</MudTh>
                             <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 80px;">
                                 @LocalizerSTOR["STORSOSNumber"]</MudTh>
-                            <MudTh colspan="4" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STOROperations"]
+                            <MudTh colspan="4" class="syntable__hd syntable__hd--ctr" Style="min-width: 300px; padding: 0 !important">
+                                <div style="display: flex; flex-direction: column; align-items: center; height: 60px; width: 100%;">
+                                    <div style="background: #f2fbff; text-align: center; font-weight: 600; flex: 1; display: flex; align-items: center; justify-content: center;">
+                                        @LocalizerSTOR["STOROperations"]
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; width: 100%; flex: 1;">
+                                        <div style="background: #f2fbff; text-align: center; flex: 1; font-weight: 600; display: flex; align-items: center; justify-content: center; border-top: 1px solid #ddd; border-right: 1px solid #ddd;">
+                                            @LocalizerSTOR["STORPerPerson"]
+                                        </div>
+                                        <div style="background: #f2fbff; text-align: center; flex: 1; font-weight: 600; display: flex; align-items: center; justify-content: center; border-top: 1px solid #ddd;">
+                                            @LocalizerSTOR["STORPerMachine"]
+                                        </div>
+                                    </div>
+                                </div>
                             </MudTh>
-                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 250px;">
+                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 150px;">
                                 @LocalizerSTOR["STORConditions"]
                             </MudTh>
                             <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr">
@@ -327,14 +364,10 @@ else
                             <MudTh colspan="2" rowspan="2" class="syntable__hd syntable__hd--ctr">
                                 @LocalizerSTOR["STORLearningTime"]
                             </MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 200px;">
                                 @LocalizerSTOR["STORKnowledge"]</MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 200px;">
                                 @LocalizerSTOR["STORSkills"]</MudTh>
-                        </MudTr>
-                        <MudTr>
-                            <MudTh class="syntable__hd">@LocalizerSTOR["STORPerPerson"]</MudTh>
-                            <MudTh class="syntable__hd">@LocalizerSTOR["STORPerMachine"]</MudTh>
                         </MudTr>
                     </thead>
                     <tbody>
@@ -400,15 +433,27 @@ else
 
 
                                                  @* Steps *@
-                                                <MudTd colspan="1" class="@(GetStepClass(sections, rowIndex))">
-                                                    @(GetStepSection(distribution, sections[rowIndex]).IsMachineOperation ? GetStepSection(distribution, sections[rowIndex]).Step : "")
+                                                <MudTd colspan="1" class="@(GetStepClass(sections, rowIndex))" style="width: 175px !important;">
+                                                    @if(GetOperationSequence((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!).IsOperationPersonRequired ?? false){
+                                                            @GetOperationSequence((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!).OperationPersonText?.ToUpper()
+                                                        }
                                                 </MudTd>
-                                                <MudTd colspan="2" class="@(GetStepClass(sections, rowIndex))">
-                                                    @(!GetStepSection(distribution, sections[rowIndex]).IsMachineOperation ? GetStepSection(distribution, sections[rowIndex]).Step : "")
+                                                <MudTd colspan="2" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))" style="vertical-align: top; padding: 0px 8px;border-left: none !important; width: 175px !important;">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                            <tbody>
+                                                                @foreach(var Operation in GetOperationMachines((int)sections[rowIndex].SectionId!)){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: middle; padding: 4px 0px;">
+                                                                        @Operation.Operation.ToUpper()
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            </tbody>
+                                                    </table>
                                                 </MudTd>
 
 
-                                            <MudTd colspan="5" class="@("syntable__c syntable__c--ctr" + GetStepClass(sections, rowIndex))" style="vertical-align: middle;">
+                                            <MudTd colspan="5" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))" style="vertical-align: top; padding: 0px 8px;">
                                                     <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
                                                             <tbody>
                                                                 @foreach(var Condition in GetEstablishedCondition((int)sections[rowIndex].SectionId!)){
@@ -416,7 +461,7 @@ else
                                                                     <td style="border: none !important; vertical-align: middle; padding: 4px 16px;">
                                                                         <div style="display: flex; align-items: center; gap: 0.25rem;">
                                                                             <MudIcon Icon="@Icons.Material.Filled.Adjust" Color="Color.Primary" Size="Size.Small"/>
-                                                                            <div>@Condition.Condition</div>
+                                                                            <div Style="font-size: 0.675rem;">@Condition.Condition.ToUpper()</div>
                                                                         </div>
                                                                     </td>
                                                                 </tr>
@@ -427,25 +472,25 @@ else
                                                 <MudTd colspan="4" class="@("syntable__c syntable__c--ctr syntable__c--conChildTable" + GetStepClass(sections, rowIndex))">
                                                     <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
                                                         <tbody>
-                                                            @foreach(var (criticalPoint, index) in GetCriticalPoints(sections[rowIndex]).Select((value,i)=>(value,i))){
+                                                            @foreach(var (Insurance, index) in GetInsuranceFeatures((int)sections[rowIndex].SectionId!).Select((value,i)=>(value,i))){
                                                             <tr>
-                                                                <td style="border: none !important; vertical-align: top; padding: 4px 16px;">@(index+1) .- @criticalPoint</td>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 16px; font-size: 0.675rem;">@(index+1) .- @Insurance.Insurance.ToUpper()</td>
                                                             </tr>
                                                             }
                                                         </tbody>
                                                     </table>
                                                 </MudTd>
                                                 @if (rowIndex == 0){
-                                                    <MudTd colspan="2" rowspan="@sections.Count" class="@("syntable__c syntable__c--ctr " + GetStepClass(sections, rowIndex))">
+                                                    <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr ">
                                                         <div style="display: grid; place-items: center;">
                                                             <div style="width: 165px;">
-                                                                <MudText Typo="Typo.h4">@GetDifficultyLevel(distribution)</MudText>
+                                                                <MudText Typo="Typo.h5">@GetDifficultyLevel(distribution)</MudText>
                                                             </div>
                                                         </div>
                                                     </MudTd>
 
                                                     <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
-                                                    <MudText Typo="Typo.h5">@GetTrainingTime(distribution) Dias</MudText>
+                                                    <MudText Typo="Typo.h6">@GetTrainingTime(distribution) Dias</MudText>
                                                     </MudTd>
                                                     <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: top;">
                                                         <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">

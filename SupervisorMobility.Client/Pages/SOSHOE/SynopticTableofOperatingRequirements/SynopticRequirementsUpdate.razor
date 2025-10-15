@@ -44,6 +44,25 @@
         height: 100%;
     }
 
+    .syntable.med table * tr > th {
+        line-height: 0.675rem;
+        font-size: 0.675rem;
+    }
+
+    .syntable.med table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .syntable.med table * tr > td {
+        font-size: 0.675rem;
+    }
+
+    .syntable.med .mud-table-container {
+        height: 490px;
+    }
+
     .syntable table tr{
         transition: 300ms ease-in-out all;
     }
@@ -59,10 +78,10 @@
     .syntable__c--ctr_conditions .InputText{
         opacity: 0;
         transition: 300ms ease-in-out all;
-        display: flex; 
+        display: flex;
         justify-content: left;
         align-items: end;
-        gap:0.5rem;
+        gap: 0.5rem;
     }
 
     .syntable__c--ctr_conditions .mud-input-control>.mud-input-control-input-container>div.mud-input.mud-input-text{
@@ -86,7 +105,7 @@
     }
 
     .syntable__hd {
-        background: #0b8ff40d;
+        background: #f2fbff;
         color: #333;
         font-weight: 600 !important;
         text-transform: uppercase;
@@ -115,7 +134,7 @@
 
     /* Celdas especiales */
     .syntable__rt {
-        background-color: #0b8ff40d;
+        background-color: #f2fbff;
         color: #333;
         font-weight: 600 !important;
     }
@@ -318,8 +337,8 @@ else
                     }
                 </MudItem>
 
-                 @* Table rows generated for each distribution with sequences, steps, and critical points *@
-                <MudSimpleTable class="syntable">
+                @* Table rows generated for each distribution with sequences, steps, and critical points *@
+                <MudSimpleTable class="syntable med">
                     <thead>
                         <MudTr>
                             <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 60px;">
@@ -328,9 +347,22 @@ else
                                 @LocalizerSTOR["STORProcessName"]</MudTh>
                             <MudTh colspan="1" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 80px;">
                                 @LocalizerSTOR["STORSOSNumber"]</MudTh>
-                            <MudTh colspan="4" class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STOROperations"]
+                            <MudTh colspan="4" class="syntable__hd syntable__hd--ctr" Style="min-width: 300px; padding: 0 !important; width: 330px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; height: 60px; width: 100%;">
+                                    <div style="background: #f2fbff; text-align: center; font-weight: 600; flex: 1; display: flex; align-items: center; justify-content: center;">
+                                        @LocalizerSTOR["STOROperations"]
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; width: 100%; flex: 1;">
+                                        <div style="background: #f2fbff; text-align: center; flex: 1; font-weight: 600; display: flex; align-items: center; justify-content: center; border-top: 1px solid #ddd; border-right: 1px solid #ddd;">
+                                            @LocalizerSTOR["STORPerPerson"]
+                                        </div>
+                                        <div style="background: #f2fbff; text-align: center; flex: 1; font-weight: 600; display: flex; align-items: center; justify-content: center; border-top: 1px solid #ddd;">
+                                            @LocalizerSTOR["STORPerMachine"]
+                                        </div>
+                                    </div>
+                                </div>
                             </MudTh>
-                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 250px;">
+                            <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 150px;">
                                 @LocalizerSTOR["STORConditions"]
                             </MudTh>
                             <MudTh colspan="4" rowspan="2" class="syntable__hd syntable__hd--ctr">
@@ -342,14 +374,10 @@ else
                             <MudTh colspan="2" rowspan="2" class="syntable__hd syntable__hd--ctr">
                                 @LocalizerSTOR["STORLearningTime"]
                             </MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 200px;">
                                 @LocalizerSTOR["STORKnowledge"]</MudTh>
-                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 230px;">
+                            <MudTh colspan="3" rowspan="2" class="syntable__hd syntable__hd--ctr" Style="min-width: 200px;">
                                 @LocalizerSTOR["STORSkills"]</MudTh>
-                        </MudTr>
-                        <MudTr>
-                            <MudTh class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORPerPerson"]</MudTh>
-                            <MudTh class="syntable__hd syntable__hd--ctr">@LocalizerSTOR["STORPerMachine"]</MudTh>
                         </MudTr>
                     </thead>
                     <tbody>
@@ -415,11 +443,47 @@ else
 
 
                                                  @* Steps *@
-                                                <MudTd colspan="1" class="@(GetStepClass(sections, rowIndex))">
-                                                    @(GetStepSection(distribution, sections[rowIndex]).IsMachineOperation ? GetStepSection(distribution, sections[rowIndex]).Step : "")
+                                                <MudTd colspan="1" class="@(GetStepClass(sections, rowIndex))" Style="min-width: 165px; width: 165px;">
+                                                <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                                        @GetOperationSequence((int)distribution.SOSHubId!, (int)sections[rowIndex].SectionId!).OperationPersonText
+                                                    </div>
                                                 </MudTd>
-                                                <MudTd colspan="2" class="@(GetStepClass(sections, rowIndex))">
-                                                    @(!GetStepSection(distribution, sections[rowIndex]).IsMachineOperation ? GetStepSection(distribution, sections[rowIndex]).Step : "")
+                                                <MudTd colspan="2" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))" style="vertical-align: top; padding: 0px 8px; border-left: none !important;">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important;">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 8px 8px 8px;">
+                                                                    <div class="InputText">
+                                                                        <MudTextField Style="font-size: 0.675rem;"
+                                                                                    T="string"
+                                                                                    Value="GetOperationMachine((int)sections[rowIndex].SectionId!)?.InputOperationMachine ?? string.Empty"
+                                                                                    ValueChanged="val => ChangeOperationMachine((int)sections[rowIndex].SectionId!, val)"
+                                                                                    Margin="Margin.Dense" Variant="Variant.Text" Immediate="true" />
+                                                                        <MudIconButton Icon="@Icons.Material.Rounded.Add" OnClick="() => AddOperationMachine((int)sections[rowIndex].SectionId!)" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"/>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            @{
+                                                                var OperationCollect = GetOperationMachine((int)sections[rowIndex].SectionId!);
+
+                                                                @foreach(var Operation in OperationCollect.OperationMachine){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 8px;">
+                                                                        <div style="display: flex; align-items: end; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="()=> RemoveOperationMachine(OperationCollect,Operation.Id,Operation.Operation)"/>
+                                                                            <MudTextField Style="font-size: 0.675rem;"
+                                                                                        T="string"
+                                                                                        Value="Operation.Operation"
+                                                                                        ValueChanged="@(value => OnOperationChanged(Operation, value))"
+                                                                                        Variant="Variant.Text"
+                                                                                        Margin="Margin.Dense"/>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
                                                 </MudTd>
 
 
@@ -429,14 +493,11 @@ else
                                                             <tr>
                                                                 <td style="border: none !important; vertical-align: top; padding: 4px 8px 8px 8px;">
                                                                     <div class="InputText">
-                                                                        <MudTextField
+                                                                        <MudTextField Style="font-size: 0.675rem;"
                                                                                     T="string"
                                                                                     Value="GetEstablishedCondition((int)sections[rowIndex].SectionId!)?.InputEstablishedCondition ?? string.Empty"
                                                                                     ValueChanged="val => ChangeEstablishedCondition((int)sections[rowIndex].SectionId!, val)"
-                                                                                    Margin="Margin.Dense" Variant="Variant.Text" Clearable="true"
-                                                                                    Adornment="Adornment.End"
-                                                                                    AdornmentIcon="@Icons.Material.Rounded.TextFields"
-                                                                                    AdornmentColor="Color.Dark" Immediate="true" />
+                                                                                    Margin="Margin.Dense" Variant="Variant.Text" Immediate="true" />
                                                                         <MudIconButton Icon="@Icons.Material.Rounded.Add" OnClick="() => AddEstablishedCondition((int)sections[rowIndex].SectionId!)" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"/>
                                                                     </div>
                                                                 </td>
@@ -449,7 +510,8 @@ else
                                                                     <td style="border: none !important; vertical-align: top; padding: 4px 8px;">
                                                                         <div style="display: flex; align-items: end; gap: 0.25rem;">
                                                                             <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="()=> RemoveEstablishedCondition(ConditionCollect,Condition.Id,Condition.Condition)"/>
-                                                                            <MudTextField T="string"
+                                                                            <MudTextField Style="font-size: 0.675rem;"
+                                                                                        T="string"
                                                                                         Value="Condition.Condition"
                                                                                         ValueChanged="@(value => OnConditionChanged(Condition, value))"
                                                                                         Variant="Variant.Text"
@@ -462,13 +524,39 @@ else
                                                         </tbody>
                                                     </table>
                                                 </MudTd>
-                                                <MudTd colspan="4" class="@("syntable__c syntable__c--ctr syntable__c--conChildTable" + GetStepClass(sections, rowIndex))">
-                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
+                                                <MudTd colspan="4" class="@("syntable__c syntable__c--ctr syntable__c--ctr_conditions" + GetStepClass(sections, rowIndex))">
+                                                    <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important;">
                                                         <tbody>
-                                                            @foreach(var (criticalPoint, index) in GetCriticalPoints(sections[rowIndex]).Select((value,i)=>(value,i))){
                                                             <tr>
-                                                                <td style="border: none !important; vertical-align: top; padding: 4px 16px;">@(index+1) .- @criticalPoint</td>
+                                                                <td style="border: none !important; vertical-align: top; padding: 4px 8px 8px 8px; width: 150px;">
+                                                                    <div class="InputText">
+                                                                        <MudTextField Style="font-size: 0.675rem;"
+                                                                                    T="string"
+                                                                                    Value="GetInsuranceFeatures((int)sections[rowIndex].SectionId!)?.InputInsuranceFeatures ?? string.Empty"
+                                                                                    ValueChanged="val => ChangeInsuranceFeature((int)sections[rowIndex].SectionId!, val)"
+                                                                                    Margin="Margin.Dense" Variant="Variant.Text" Immediate="true" />
+                                                                        <MudIconButton Icon="@Icons.Material.Rounded.Add" OnClick="() => AddInsuranceFeatures((int)sections[rowIndex].SectionId!)" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small"/>
+                                                                    </div>
+                                                                </td>
                                                             </tr>
+                                                            @{
+                                                                var InsuranceCollect = GetInsuranceFeatures((int)sections[rowIndex].SectionId!);
+
+                                                                @foreach(var Insurance in InsuranceCollect.InsuranceFeatures){
+                                                                <tr>
+                                                                    <td style="border: none !important; vertical-align: top; padding: 4px 8px; width: 150px;">
+                                                                        <div style="display: flex; align-items: end; gap: 0.25rem;">
+                                                                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="()=> RemoveInsuranceFeatures(InsuranceCollect,Insurance.Id,Insurance.Insurance)"/>
+                                                                            <MudTextField Style="font-size: 0.675rem;"
+                                                                                        T="string"
+                                                                                        Value="Insurance.Insurance"
+                                                                                        ValueChanged="@(value => OnInsuranceChanged(Insurance, value))"
+                                                                                        Variant="Variant.Text"
+                                                                                        Margin="Margin.Dense"/>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                }
                                                             }
                                                         </tbody>
                                                     </table>
@@ -476,7 +564,7 @@ else
                                                 @if (rowIndex == 0){
                                                     <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
                                                         <div style="display: grid; place-items: center;">
-                                                            <div style="width: 165px;">
+                                                            <div style="width: 115px; font-size: 0.675rem;">
                                                                 <MudSelect T="DifficultyLevel" Value="@GetDifficultyLevel(distribution)" ValueChanged="@(newLevel => ChangeLevelDistribution(distribution, newLevel))" Label="Select a Level" FitContent="true" Margin=Margin.Dense Variant="Variant.Outlined">
                                                                     @foreach (var level in Enum.GetValues(typeof(DifficultyLevel)).Cast<DifficultyLevel>())
                                                                     {
@@ -488,7 +576,7 @@ else
                                                     </MudTd>
 
                                                     <MudTd colspan="2" rowspan="@sections.Count" class="syntable__c syntable__c--ctr">
-                                                    <MudText Typo="Typo.h5">@GetTrainingTime(distribution) Dias</MudText>
+                                                    <MudText Typo="Typo.h6">@GetTrainingTime(distribution) Dias</MudText>
                                                     </MudTd>
                                                     <MudTd colspan="3" rowspan="@sections.Count" class="syntable__c syntable__c--ctr" style="vertical-align: top;">
                                                         <table class="syntable__c syntable__c--ctr syntable__c--tablechild" style="border: none !important; margin-bottom: 15px;">
@@ -497,6 +585,7 @@ else
                                                                     <td style="border: none !important; vertical-align: top;">
 
                                                                         <MudAutocomplete T="string"
+                                                                                        style="width: 155px; font-size: 0.675rem;"
                                                                                         Value="GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName ?? string.Empty"
                                                                                         ValueChanged="val => SetSelectedKnowledge((int)distribution.SOSHubId!, val)"
                                                                                         Label="Buscar conocimiento"
@@ -516,13 +605,13 @@ else
 
                                                                         @if (IsExistingKnowledge((int)distribution.SOSHubId!))
                                                                         {
-                                                                            <MudButton Color="Color.Primary" @onclick="() => AddSelectedKnowledge((int)distribution.SOSHubId!)">
+                                                                            <MudButton Style="font-size: 0.675rem;" Color="Color.Primary" @onclick="() => AddSelectedKnowledge((int)distribution.SOSHubId!)">
                                                                                 Agregar conocimiento
                                                                             </MudButton>
                                                                         }
                                                                         else if (!string.IsNullOrWhiteSpace(GetKnowledgeDTO((int)distribution.SOSHubId!)?.SelectedKnowledgeName))
                                                                         {
-                                                                            <MudButton Color="Color.Secondary" @onclick="() => OpenAddKnowledgeModal((int)distribution.SOSHubId!)">
+                                                                            <MudButton Style="font-size: 0.675rem;" Color="Color.Secondary" @onclick="() => OpenAddKnowledgeModal((int)distribution.SOSHubId!)">
                                                                                 Crear conocimiento
                                                                             </MudButton>
                                                                         }
@@ -549,6 +638,7 @@ else
                                                                     <td style="border: none !important; vertical-align: top;">
 
                                                                         <MudAutocomplete T="string"
+                                                                                        style="width: 155px; font-size: 0.675rem;"
                                                                                         Value="GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName ?? string.Empty"
                                                                                         ValueChanged="val => SetSelectedSkill((int)distribution.SOSHubId!, val)"
                                                                                         Label="Buscar Habilidad"
@@ -568,13 +658,13 @@ else
 
                                                                         @if (IsExistingSkill((int)distribution.SOSHubId!))
                                                                         {
-                                                                            <MudButton Color="Color.Primary" @onclick="() => AddSelectedSkill((int)distribution.SOSHubId!)">
+                                                                            <MudButton Style="font-size: 0.675rem;" Color="Color.Primary" @onclick="() => AddSelectedSkill((int)distribution.SOSHubId!)">
                                                                                 Agregar Habilidad
                                                                             </MudButton>
                                                                         }
                                                                         else if (!string.IsNullOrWhiteSpace(GetSkillDTO((int)distribution.SOSHubId!)?.SelectedSkillName))
                                                                         {
-                                                                            <MudButton Color="Color.Secondary" @onclick="() => OpenAddSkillModal((int)distribution.SOSHubId!)">
+                                                                            <MudButton Style="font-size: 0.675rem;" Color="Color.Secondary" @onclick="() => OpenAddSkillModal((int)distribution.SOSHubId!)">
                                                                                 Crear Habilidad
                                                                             </MudButton>
                                                                         }

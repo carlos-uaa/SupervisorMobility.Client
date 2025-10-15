@@ -404,29 +404,43 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
                 return new MarkupString(text);
             }
 
-            var normalizedText = Normalize(text);
             var builder = new StringBuilder();
             var currentIndex = 0;
+            var matches = new List<Match>();
 
             foreach (var criticalPoint in criticalPoints)
             {
-                var normalizedCriticalPoint = Normalize(criticalPoint);
-                var match = Regex.Match(normalizedText, Regex.Escape(normalizedCriticalPoint), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-
-                if (match.Success)
-                {
-                    var startIndex = match.Index;
-                    var endIndex = startIndex + criticalPoint.Length;
-
-                    builder.Append(text.Substring(currentIndex, startIndex - currentIndex));
-
-                    builder.Append($"<mark>{text.Substring(startIndex, endIndex - startIndex)}</mark>");
-
-                    currentIndex = endIndex;
-                }
+                var escaped = Regex.Escape(criticalPoint);
+                matches.AddRange(Regex.Matches(text, escaped, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).Cast<Match>());
             }
 
-            builder.Append(text.Substring(currentIndex));
+            // Ordenar por posición en el texto
+            var orderedMatches = matches
+                .OrderBy(m => m.Index)
+                .Aggregate(new List<Match>(), (acc, match) =>
+                {
+                    if (acc.Count == 0 || match.Index >= acc.Last().Index + acc.Last().Length)
+                    {
+                        acc.Add(match);
+                    }
+                    return acc;
+                });
+
+            foreach (var match in orderedMatches)
+            {
+                if (match.Index > currentIndex)
+                {
+                    builder.Append(text.Substring(currentIndex, match.Index - currentIndex));
+                }
+
+                builder.Append($"<mark>{text.Substring(match.Index, match.Length)}</mark>");
+                currentIndex = match.Index + match.Length;
+            }
+
+            if (currentIndex < text.Length)
+            {
+                builder.Append(text.Substring(currentIndex));
+            }
 
             return new MarkupString(builder.ToString());
         }
