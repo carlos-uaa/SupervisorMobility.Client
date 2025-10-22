@@ -54,7 +54,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
         }
         public async Task<List<SOSHub>> GetAllSOSHub(bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeSOSDistribution = false, int userId=0)
         {
-            var response = await _http.GetAsync($"SOS/DataPool?includeAnalysesBkup={includeAnalysesBkup}&includeSections={includeSections}&includeImages={includeImages}&includeVideos={includeVideos}&includeCommentaries={includeCommentaries}&includeTools={includeTools}&includeEquipments={includeEquipments}&includeMaterials={includeMaterials}&includeInformation={includeInformation}&includePeople={includePeople}&includeDocuments={includeDocuments}&includeSOSDistribution={includeSOSDistribution}&areaId={userId}");
+            var response = await _http.GetAsync($"SOS/DataPool?includeAnalysesBkup={includeAnalysesBkup}&includeSections={includeSections}&includeImages={includeImages}&includeVideos={includeVideos}&includeCommentaries={includeCommentaries}&includeTools={includeTools}&includeEquipments={includeEquipments}&includeMaterials={includeMaterials}&includeInformation={includeInformation}&includePeople={includePeople}&includeDocuments={includeDocuments}&includeSOSDistribution={includeSOSDistribution}&userId={userId}");
             var content = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
