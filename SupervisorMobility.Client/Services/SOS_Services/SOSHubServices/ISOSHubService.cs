@@ -7,7 +7,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSHubService
     {
         Task<SOSHub> CreateSOScollection(SOSHub SOS_EntityToCreate);
         Task<SOSHub> GetSOSHub(int HubId, bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeModel = false, bool includeCollections = false, bool includePeopleCollections = false, bool includePats = false);
-        Task<List<SOSHub>> GetAllSOSHub(bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeSOSDistribution = false);
+        Task<List<SOSHub>> GetAllSOSHub(bool includeAnalysesBkup = false, bool includeSections = false, bool includeImages = false, bool includeVideos = false, bool includeCommentaries = false, bool includeTools = false, bool includeEquipments = false, bool includeMaterials = false, bool includeInformation = false, bool includePeople = false, bool includeDocuments = false, bool includeSOSDistribution = false, int userId=0);
         Task<SOSHub> UpdateSOSHub(SOSHub SosEntity);
         Task<SOSHub> DeleteSOSHub(int SosEntity_id);
 
