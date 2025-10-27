@@ -577,10 +577,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "First select a Area!";
             }
-            if (distributionId == new int())
-            {
-                return "First select a Distribution!";
-            }
+            //if (distributionId == new int())
+            //{
+            //    return "First select a Distribution!";
+            //}
 
             if (_sosHub.ApproverOwners?.Count <= 0)
             {
@@ -620,7 +620,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.StationId = stationId;
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
-            _sosHub.DistributionId = distributionId;
+            //_sosHub.DistributionId = distributionId;
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
             var temp = new List<CommonDirection>();
