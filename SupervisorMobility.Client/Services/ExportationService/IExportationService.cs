@@ -5,6 +5,7 @@
         Task ExportAnalysisToExcel(int idAnalysis);
         Task ExportSequenceToExcel(int idSequence);
         Task ExportDistributionToExcel(int idDistribution);
+        Task ExportCombinationToExcel(int idCombination);
         Task ExportYearlyPATToExcel(int idPAT);
         Task ExportMonthlyPATToExcel(int idPAT, int month);
         Task ExportHCIToExcel(int idHCI);
