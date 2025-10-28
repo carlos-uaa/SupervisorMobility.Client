@@ -165,14 +165,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             await SetUserInfo();
 
-            if (_sosHub.Folio.Contains("-L-"))
-            {
-                productSide = "L";
-            }
-            else if (_sosHub.Folio.Contains("-R-"))
-            {
-                productSide = "R";
-            }
+            if(!string.IsNullOrEmpty(_sosHub.Folio))
+                if (_sosHub.Folio.Contains("-L-"))
+                    productSide = "L";
+                else if (_sosHub.Folio.Contains("-R-"))
+                    productSide = "R";
 
             ShowLoading = false;
             StateHasChanged();

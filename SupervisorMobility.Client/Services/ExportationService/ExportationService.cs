@@ -69,6 +69,30 @@ namespace SupervisorMobility.Client.Services.ExportationService
             }
         }
 
+        public async Task ExportCombinationToExcel(int idCombination)
+        {
+            try
+            {
+                var response = await _http.GetAsync($"Exportation/Excel/Combination/{idCombination}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    snackbar.Add("Error while exporting, could not download file", Severity.Error);
+                }
+                else
+                {
+                    var filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", string.Empty);
+                    var fileStream = response.Content.ReadAsStreamAsync();
+                    using var streamRef = new DotNetStreamReference(stream: await fileStream);
+                    await _js.InvokeVoidAsync("downloadFileFromStream", filename, streamRef);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($" Error in download of combination: {ex.Message} \n Inner Exception: {ex.InnerException}");
+            }
+        }
+
         public async Task ExportYearlyPATToExcel(int idPAT)
         {
             var response = await _http.GetAsync($"Exportation/Excel/PATYearly/{idPAT}");

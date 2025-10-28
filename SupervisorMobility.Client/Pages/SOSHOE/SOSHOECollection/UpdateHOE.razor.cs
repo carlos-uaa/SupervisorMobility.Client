@@ -541,11 +541,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "First select a Area!";
             }
-            if (distributionId == new int())
-            {
-                return "First select a Distribution!";
-            }
-
 
             if (_sosHub.ApproverOwners.Count == 0)
             {
@@ -564,9 +559,32 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return string.Empty;
         }
 
+        private bool ValidateDraft()
+        {
+            if (RawAnalisis.Count > 0 && !string.IsNullOrEmpty(RawAnalisis.FirstOrDefault().Text))
+            {
+                foreach (var raw in RawAnalisis)
+                {
+                    raw.IsActive = true;
+                    _sosHub.AnalysesBkup.Add(raw);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private async Task SaveProgress()
+        {
+            _sosHub.Status = "In Progress";
+            if (ValidateDraft())
+                await SaveHOE();
+            else
+                Snackbar.Add("You need to add at least an analysis to save the progress", Severity.Warning);
+        }
+
+
         private async Task UpdateSOSHub()
         {
-            UpdateButton = true;
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
@@ -578,6 +596,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 return;
             }
 
+            await SaveHOE();
+        }
+
+        private async Task SaveHOE()
+        {
+            UpdateButton = true;
             //_sosHub.AppliedModelId = productId;
             _sosHub.IsActive = true;
             _sosHub.TrainingTime = cycleId;
@@ -885,7 +909,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             stationId = _sosHub.StationId ?? stationId;
 
-            productSide = _sosHub.Folio.Split('-')[2] ?? productSide;
+            if(!string.IsNullOrEmpty(_sosHub.Folio))
+                productSide = _sosHub.Folio.Split('-')[2] ?? productSide;
 
             cycleId = _sosHub.TrainingTime ?? 0;
             StateHasChanged();

@@ -1,4 +1,5 @@
 using BlazorCameraStreamer;
+using Blazorise.Extensions;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
@@ -577,10 +578,10 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             {
                 return "First select a Area!";
             }
-            if (distributionId == new int())
-            {
-                return "First select a Distribution!";
-            }
+            //if (distributionId == new int())
+            //{
+            //    return "First select a Distribution!";
+            //}
 
             if (_sosHub.ApproverOwners?.Count <= 0)
             {
@@ -600,6 +601,29 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             return string.Empty;
         }
 
+        private bool ValidateDraft()
+        {
+            if (RawAnalisis.Count > 0 && !string.IsNullOrEmpty(RawAnalisis.FirstOrDefault().Text))
+            {
+                foreach (var raw in RawAnalisis)
+                {
+                    raw.IsActive = true;
+                    _sosHub.AnalysesBkup.Add(raw);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private async Task SaveProgress()
+        {
+            _sosHub.Status = "In Progress";
+            if (ValidateDraft())
+                await SaveHOE();
+            else
+                Snackbar.Add("You need to add at least an analysis to save the progress", Severity.Warning);
+        }
+
         private async Task CreateNewSOSHub()
         {
             Snackbar.Clear();
@@ -611,6 +635,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 Snackbar.Add(validationMessage, Severity.Warning);
                 return;
             }
+            await SaveHOE();
+        }
+
+        private async Task SaveHOE()
+        {
             _sosHub.IsActive = true;
             _sosHub.TrainingTime = cycleId;
             _sosHub.CreatedDate = createdDateTime;
@@ -620,7 +649,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             _sosHub.StationId = stationId;
             _sosHub.PlantId = plantId;
             _sosHub.AreaId = areaId;
-            _sosHub.DistributionId = distributionId;
+            //_sosHub.DistributionId = distributionId;
             _sosHub.SafetyEquipment = _equipment.Where(equipment => _equipmentIds.Contains(equipment.EquipmentId)).ToList();
 
             var temp = new List<CommonDirection>();
@@ -657,7 +686,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 foreach (var raw in RawAnalisis)
                 {
                     raw.IsActive = true;
-                   _sosHub.AnalysesBkup.Add(raw);
+                    _sosHub.AnalysesBkup.Add(raw);
                 }
             }
 
@@ -676,7 +705,6 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             }
             else
                 await JSRuntime.InvokeVoidAsync("alert", "Error en los datos!");
-
         }
 
         public async void SetUserInfo()
@@ -1578,6 +1606,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 raw.IsActive = true;
                 _sosHub.AnalysesBkup.Add(raw);
             }
+
+            StateHasChanged();
         }
         
         async void RestoreBakup()
@@ -1606,7 +1636,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             newToadd.Uid = Guid.NewGuid().ToString();
             newToadd.IsActive = true;
             RawAnalisis.Add(newToadd);
-
+            
            
             StateHasChanged();
         }
