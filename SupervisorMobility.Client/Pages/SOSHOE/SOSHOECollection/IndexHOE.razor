@@ -155,16 +155,13 @@ else
                 </MudTd>
             }
             <MudTd DataLabel="Folio">
-                <MudText Align="Align.Center">@context.Folio</MudText>
+                <MudText Align="Align.Center">@(string.IsNullOrEmpty(context.Folio) ? NotApplied : context.Folio)</MudText>
             </MudTd>
             <MudTd DataLabel="ProcessSheet">
-                <MudText Align="Align.Center">@context.ProcessSheet</MudText>
+                <MudText Align="Align.Center">@(string.IsNullOrEmpty(context.ProcessSheet) ? NotApplied : context.ProcessSheet)</MudText>
             </MudTd>
-            @* <MudTd DataLabel="AppliedModelId">
-                <MudText Align="Align.Center">@context.AppliedModelId</MudText>
-            </MudTd> *@
-            <MudTd>
-                <MudText Align="Align.Center">@context.Status</MudText>
+            <MudTd Style="text-align: center;">
+                <MudChip Icon="@GetStatusIcon(context.Status)" Color="GetStatusColor(context.Status)">@context.Status</MudChip>
             </MudTd>
             <MudTd>
                 <MudText Align="Align.Center">
@@ -173,10 +170,12 @@ else
                             <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
                         </ActivatorContent>
                         <ChildContent>
-
                             <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => HoeDetails(context.SOSHubId))" OnTouch="(() => HoeDetails(context.SOSHubId))">Details</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateHoe(context.SOSHubId))" OnTouch="(() => UpdateHoe(context.SOSHubId))">Edit </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.GeneratingTokens" IconColor="Color.Info" @onclick="(() => Generate(context.SOSHubId))" OnTouch="(() => Generate(context.SOSHubId))">Generate</MudMenuItem>
+                            @if(context.Status != "In Progress")
+                            {
+                                <MudMenuItem Icon="@Icons.Material.Filled.GeneratingTokens" IconColor="Color.Info" @onclick="(() => Generate(context.SOSHubId))" OnTouch="(() => Generate(context.SOSHubId))">Generate</MudMenuItem>
+                            }
                             <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteHoe(context.SOSHubId))" OnTouch="(() => DeleteHoe(context.SOSHubId))">Delete </MudMenuItem>
                         </ChildContent>
                     </MudMenu>
@@ -891,6 +890,7 @@ else
     List<Station> _stations { get; set; } = new();
 
     private MudMessageBox _DeleteMessage;
+    private string NotApplied = "N/A";
 
 
     // Initialization
@@ -1419,6 +1419,24 @@ else
         }
     }
     #endregion
+
+    private string GetStatusIcon(string status) => status switch
+    {
+        "Pending" => Icons.Material.Filled.Pending,
+        "Approved" => Icons.Material.Filled.FactCheck,
+        "Rejected" => Icons.Material.Filled.ContentPasteOff,
+        "In Progress" => Icons.Material.Filled.RunningWithErrors,
+        _ => Icons.Material.Filled.Block
+    };
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Pending" => Color.Primary,
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        "In Progress" => Color.Warning,
+        _ => Color.Default
+    };
 
 }
 
