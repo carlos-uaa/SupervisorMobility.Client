@@ -205,7 +205,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
         private async void DownloadExcel()
         {
-            //await Exportation.ExportCombinationToExcel(CombinationId.Value);
+            await Exportation.ExportCombinatationToExcel(CombinationId.Value);
         }
         
         private void UpdateTableValues()
