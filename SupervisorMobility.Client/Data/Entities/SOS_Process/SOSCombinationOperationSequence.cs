@@ -7,10 +7,10 @@
         public int? SectionId { get; set; }
         public string? ProcessName { get; set; }
         public string? PartsPerCycle { get; set; }
-        public string? ManualOperationTime { get; set; }
-        public string? ManualOperationTimeWithMachineInAutomatic { get; set; }
-        public string? AutomaticMachineOperationTime { get; set; }
-        public string? StepsToNextProcess { get; set; }
+        public double? ManualOperationTime { get; set; }
+        public double? ManualOperationTimeWithMachineInAutomatic { get; set; }
+        public double? AutomaticMachineOperationTime { get; set; }
+        public double? StepsToNextProcess { get; set; }
         public bool? IsActive { get; set; }
     }
 }
