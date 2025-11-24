@@ -10,5 +10,6 @@
         Task ExportMonthlyPATToExcel(int idPAT, int month);
         Task ExportHCIToExcel(int idHCI);
         Task ExportFlowToExcel (int idFlow, MultipartFormDataContent content);
+        Task ExportCombinatationToExcel(int combinationId);
     }
 }

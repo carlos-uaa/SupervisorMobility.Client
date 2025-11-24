@@ -41,12 +41,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
         private bool visibleCommentaries = false;
         private bool visibleLogbook = false;
+        /// <summary>
+        /// variable para checar que el valor del id no sea nulo
+        /// </summary>
+        private bool isNull = false;
 
         //Loading
         private IList<string> _sourceMsgLoading = new List<string>();
         private IList<MudBlazor.Color> _Colors = new List<MudBlazor.Color>() { MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info, MudBlazor.Color.Default, MudBlazor.Color.Primary, MudBlazor.Color.Secondary, MudBlazor.Color.Success, MudBlazor.Color.Info };
         public bool ShowLoading = true;
 
+      
 
         private double _CellSize { get; set; } = 0.02;
         private double _CellSize_Slider { get; set; } = 0.02;
@@ -203,9 +208,20 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             visibleLogbook = false;
         }
 
-        private async void DownloadExcel()
+        private async Task DownloadExcel()
         {
-            await Exportation.ExportCombinationToExcel(CombinationId.Value);
+            if (CombinationId.HasValue)
+            {
+                isNull = false;
+                await Exportation.ExportCombinationToExcel(CombinationId.Value);
+                
+            }
+            else
+            {
+                isNull = true;
+                return;
+
+            }
         }
         
         private void UpdateTableValues()
