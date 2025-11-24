@@ -212,8 +212,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         {
             if (CombinationId.HasValue)
             {
-                await Exportation.ExportCombinationToExcel(CombinationId.Value);
                 isNull = false;
+                await Exportation.ExportCombinationToExcel(CombinationId.Value);
+                
             }
             else
             {
