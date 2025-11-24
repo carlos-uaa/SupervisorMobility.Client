@@ -208,7 +208,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             visibleLogbook = false;
         }
 
-        private async void DownloadExcel()
+        private async Task DownloadExcel()
         {
             if (CombinationId.HasValue)
             {
