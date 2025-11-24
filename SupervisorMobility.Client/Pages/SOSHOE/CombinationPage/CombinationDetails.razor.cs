@@ -219,6 +219,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
             else
             {
                 isNull = true;
+                return;
 
             }
         }
