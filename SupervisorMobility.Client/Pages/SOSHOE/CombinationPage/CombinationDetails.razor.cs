@@ -212,7 +212,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
         {
             if (CombinationId.HasValue)
             {
-                await Exportation.ExportCombinatationToExcel(CombinationId.Value);
+                await Exportation.ExportCombinationToExcel(CombinationId.Value);
                 isNull = false;
             }
             else
