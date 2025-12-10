@@ -6,6 +6,8 @@ using System.Linq;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using KellermanSoftware.CompareNetObjects;
+using SupervisorMobility.Client.Data;
+using SupervisorMobility.Client.Data.SPModels;
 
 namespace SupervisorMobility.Client.Services.UserService
 {
@@ -474,6 +476,22 @@ namespace SupervisorMobility.Client.Services.UserService
             }
 
             return false;
+        }
+
+        //users info WFM
+        public async Task<ServiceResponse<WFMInfoSP>> GetPersonalInfoByPersonalNumber(int personalNumber)
+        {
+            var response = await _http.GetAsync($"GetPersonalInfoByPersonalNumber?personalNumber={personalNumber}");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ServiceResponse<WFMInfoSP>>();
+                return result;
+            }
+            else
+            {
+                await _js.InvokeVoidAsync("alert", $"Error getting WFM Info: {response.Content.ReadAsStringAsync().Result}");
+            }
+            return null;
         }
     }
 }

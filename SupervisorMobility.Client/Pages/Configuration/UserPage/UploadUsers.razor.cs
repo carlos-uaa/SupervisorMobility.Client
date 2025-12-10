@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 using System.Net.Http.Headers;
 using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
 namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 {
@@ -189,7 +190,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             StateHasChanged();
         }
 
-        private async void AssignType(int value)
+        private async Task AssignType(int value)
         {
             ShowLoading = true;
             StateHasChanged();
@@ -199,20 +200,27 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 {
                     case 1:
                         _allUsers = await UsersServices.GetUsers(true, false);
+                        await JS.InvokeVoidAsync("console.log", "carga tdos los usuarios");
+                        await JS.InvokeVoidAsync("console.log", _allUsers);
+                        ShowLoading = false;
                         break;
                     case 2:
                         _allUsers = await UsersServices.GetUsersByType(3, true, false);
+                        ShowLoading = false;
                         break;
                     case 3:
                         _allUsers = await UsersServices.GetUsersByType(2, true, false);
+                        ShowLoading = false;
                         break;
                     case 4:
                         _allUsers = await UsersServices.GetUsersByType(2, true, false);
                         _allUsers.AddRange(await UsersServices.GetUsersByType(4, false, false));
+                        ShowLoading = false;
                         break;
                     case 5:
                     case 6:
                         _allUsers = await UsersServices.GetUsersByType(3, true, false);
+                        ShowLoading = false;
                         break;
                 }
 
@@ -225,7 +233,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             }
             finally
             {
-            ShowLoading = false;
+            
             StateHasChanged();
             }
         }
@@ -591,7 +599,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         {
                             DataInDocument.RemoveAt(0);
                             isOkFile = true;
-                            dataToShowInTable = CreateUsersAllArray(DataInDocument);
+                            dataToShowInTable = await CreateUsersAllArray(DataInDocument);
                         }
 
                         break;
@@ -606,7 +614,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         else
                         {
                             DataInDocument.RemoveAt(0);
-                            dataToShowInTable = CreateUsersSSV(DataInDocument);
+                            dataToShowInTable = await CreateUsersSSV(DataInDocument);
                             isOkFile = true;
                         }
 
@@ -691,11 +699,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             StateHasChanged();
         }
 
-        public List<User> CreateUsersAllArray(List<string[]> DataInDocument)
+        public async Task<List<User>> CreateUsersAllArray(List<string[]> DataInDocument)
         {
             List<User> ListtoReturn = new List<User>();
             foreach (string[] row in DataInDocument)
             {
+                await JS.InvokeVoidAsync("console.log", row);
                 bool allEqual = row.All(item => item.Equals("§"));
                 if (allEqual)
                 {
@@ -706,6 +715,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                 try
                 {
+                    await JS.InvokeVoidAsync("console.log", "entre a la creacion del usuario");
                     var ToInsertIntoList = new User();
                     try
                     {
@@ -1009,6 +1019,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
+                                    await JS.InvokeVoidAsync("console.log", ToInsertIntoList);
+                                    await JS.InvokeVoidAsync("console.log", $"Superior Id Raw Value: {row[6]}");
+                                    
                                     ToInsertIntoList.SuperiorId = row[6] != "§" ? int.Parse(row[6]) : int.Parse(row[-403]);
                                     try
                                     {
@@ -1119,23 +1132,48 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.AreaId = row[9] != "§" ? int.Parse(row[9]) : int.Parse(row[-403]);
-                                    try
+                                    if (row[9].Contains(','))
                                     {
-                                        ToInsertIntoList.Area = ToInsertIntoList.Superior?.Areas.ToList().Find(a => a.AreaId == ToInsertIntoList.AreaId);
+                                        string[]? SplitedAreas = row[9] != "§" ? row[9].Split(',') : null;
+                                        if (SplitedAreas != null)
+                                        {
+                                            if (ToInsertIntoList.Areas != null)
+                                            {
+                                                foreach (var item in SplitedAreas)
+                                                {
+                                                    ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                                }
+                                            }
+                                            else
+                                            {
+                                                ToInsertIntoList.Areas = new List<Area>();
+                                                foreach (var item in SplitedAreas)
+                                                {
+                                                    ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                                }
+                                            }
+                                        }
                                     }
-                                    catch (Exception ex)
+                                    else
                                     {
-                                        showTableInUI = false;
-                                        ErrorMessageToDisplay = $"Document Incorrect,Area Id of Superior with Email: {ToInsertIntoList.Email}, The selected area does not belong to the superior's areas";
-                                        isOkFile = false;
-                                        break;
+                                        if (row[9] != "§")
+                                        {
+                                            if (ToInsertIntoList.Areas != null)
+                                            {
+                                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[9])));
+                                            }
+                                            else
+                                            {
+                                                ToInsertIntoList.Areas = new List<Area>();
+                                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[9])));
+                                            }
+                                        }
                                     }
                                 }
                                 catch (Exception ex)
                                 {
                                     showTableInUI = false;
-                                    ErrorMessageToDisplay = $"Document Incomplet, Assigned Area For Supervisor with Email: {ToInsertIntoList.Email}";
+                                    ErrorMessageToDisplay = $"Document Incomplet, Areas For SV with Email{ToInsertIntoList.Email}";
                                     isOkFile = false;
                                     break;
                                 }
@@ -1147,7 +1185,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                 isOkFile = false;
                                 break;
                             }
-
+                            await JS.InvokeVoidAsync("console.log", ToInsertIntoList);
+                            ListtoReturn.Add(ToInsertIntoList);
                             break;
                         case 4:
                             try
@@ -1182,6 +1221,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                     ToInsertIntoList.SuperiorId = row[6] != "§" ? int.Parse(row[6]) : int.Parse(row[-403]);
                                     try
                                     {
+                                       
                                         ToInsertIntoList.Superior = _allUsers.Find(p => p.UserId == ToInsertIntoList.SuperiorId);
                                         if (ToInsertIntoList.Superior != null)
                                         {
@@ -1288,8 +1328,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     {
                         break;
                     }
-
+                    await JS.InvokeVoidAsync("console.log", ToInsertIntoList);
                     ListtoReturn.Add(ToInsertIntoList);
+                   
                 }
                 catch (Exception ex)
                 {
@@ -1303,7 +1344,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             return ListtoReturn;
         }
 
-        public List<User> CreateUsersSSV(List<string[]> DataInDocument)
+        public async Task<List<User>> CreateUsersSSV(List<string[]> DataInDocument)
         {
             List<User> ListtoReturn = new List<User>();
             foreach (string[] row in DataInDocument)
@@ -1449,6 +1490,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     }
 
                     ////////////////////////////
+                    await JS.InvokeVoidAsync("Console.Log", ToInsertIntoList);
                     ListtoReturn.Add(ToInsertIntoList);
                 }
                 catch (Exception ex)
