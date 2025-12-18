@@ -633,6 +633,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                             isOkFile = true;
                             DataInDocument.RemoveAt(0);
                             dataToShowInTable = CreateUsersSupervisors(DataInDocument);
+                            
                             if (uploadtype == 4)
                             {
                                 foreach (User element in dataToShowInTable)
@@ -661,6 +662,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         {
                             isOkFile = true;
                             DataInDocument.RemoveAt(0);
+                            await JS.InvokeVoidAsync("console.log", "Despues de crear los supervisores");
                             dataToShowInTable = CreateUsersOperators(DataInDocument);
                             if (uploadtype == 6)
                             {
