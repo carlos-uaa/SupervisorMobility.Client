@@ -82,6 +82,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         private User MasterUserSuperior = new();
         private Area selectedAreaOfList = new Area();
         private bool ActiveAddArea = true;
+        private bool HaveSuperiors = false;
         List<Area> _areasManager = null;
         //confirmation message edit info
         MudMessageBox mbox { get; set; }
@@ -253,19 +254,36 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             return result == null ? false : true;
         }
 
-        private void UpdateSelectSuperiorContextItem(User ItemContext)
+        private async Task UpdateSelectSuperiorContextItem(User ItemContext)
         {
+            if (ItemContext.Distribution != null)
+            {
+                await JS.InvokeVoidAsync("console.log","que cono?");
+                var areaIdOfDistribution = ItemContext.Distribution?.AreaId;
+                ItemContext.Area = ItemContext.Superior?.Areas?.FirstOrDefault(a => a.AreaId == areaIdOfDistribution);
+                ItemContext.AreaId = ItemContext.Area?.AreaId;
+                
+            }
+            else
+            {
+                ItemContext.Area = ItemContext.Superior?.Area;
+                ItemContext.AreaId = ItemContext.Superior?.AreaId;
+
+            }
+
             ItemContext.SuperiorId = ItemContext.Superior?.UserId;
             ItemContext.PlantId = ItemContext.Superior?.PlantId;
-            ItemContext.AreaId = ItemContext.Superior?.AreaId;
             ItemContext.GroupId = ItemContext.Superior?.GroupId;
             ItemContext.Group = ItemContext.Superior?.Group;
-            ItemContext.Area = ItemContext.Superior?.Area;
             ItemContext.Plant = ItemContext.Superior?.Plant;
+
+            await JS.InvokeVoidAsync("console.log", ItemContext.Plant, ItemContext.PlantId);
+
             if (uploadtype == 5)
             {
                 if (_distributions[(int)ItemContext.PlantId][(int)ItemContext.AreaId].FindIndex(a => a.DistributionId == ItemContext.DistributionId) == -1)
                 {
+                   
                     ItemContext.Distribution = null;
                     ItemContext.DistributionId = null;
                 }
@@ -1805,6 +1823,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     case 3:
                     case 5:
                         UsersUploadResult ResultMassiveUpload = await UsersServices.UploadUsers(dataToShowInTable);
+                        await JS.InvokeVoidAsync("console.log", dataToShowInTable);
                         if (ResultMassiveUpload is not null)
                         {
                             //tiene resultados
