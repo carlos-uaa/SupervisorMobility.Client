@@ -1,0 +1,1441 @@
+﻿@* @page "/soshoe/Hub" *@
+@using System.Runtime.CompilerServices
+
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
+@inject IUserService UsersService
+@inject ISOSHubService SOSHubServices
+@inject IDialogService DialogService
+
+
+
+@inject ISOSAnalysisService SOSAnalysisServices
+@inject ISOSCombinationService SOSCombinationServices
+@inject ISOSDistributionService SOSDistributionServices
+@inject ISOSFlowService SOSFlowServices
+@inject ISOSSequenceService SOSSequenceServices
+@inject IPATService PATServices
+
+<style type="text/css">
+
+    .bounceIn {
+    opacity: 0;
+    animation-delay: 0.5s;
+    animation-duration: 0.5s;
+    animation-name: bounceIn;
+    animation-fill-mode: forwards;
+    }
+
+    .bounceOut {
+    animation-duration: 0.5s;
+    animation-name: bounceOut;
+    animation-fill-mode: forwards;
+    }
+
+    .backInDown {
+    opacity: 0;
+    animation-delay: 0.5s;
+    animation-duration: 0.5s;
+    animation-name: backInDown;
+    animation-fill-mode: forwards;
+    }
+
+    .backOutDown {
+    animation-duration: 0.5s;
+    animation-name: backOutDown;
+    animation-fill-mode: forwards;
+    }
+
+    .rotateIn {
+    opacity: 0;
+    animation-delay: 0.5s;
+    animation-duration: 0.5s;
+    animation-name: rotateIn;
+    animation-fill-mode: forwards;
+    }
+
+    .rotateOut {
+    animation-duration: 0.5s;
+    animation-name: rotateOut;
+    animation-fill-mode: forwards;
+    }
+
+</style>
+
+@*Title*@
+<PageTitle>Supervisor Mobility | @Localizer["HOESOSHubTitle"]</PageTitle>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else if (_Hoes.Count == 0)
+{
+    <MudContainer>
+
+        <MudText Align="Align.Center">
+            <h4>@Localizer["thereAreNoHoeCreated"]</h4>
+            <MudSpacer></MudSpacer>
+            <MudButton Href="/soshoe/Hub/Create">
+                <MudText>@Localizer["newHoe"]</MudText>
+                <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+            </MudButton>
+        </MudText>
+    </MudContainer>
+}
+else
+{
+
+    <MudTable Items="_Hoes" Hover="true" T="SOSHub" SortLabel="Sort By" Height="80vh"
+    RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+    Filter="new Func<SOSHub,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+        <ToolBarContent>
+            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10">
+                <MudItem class="d-flex justify-center align-self-center ">
+                    <MudText Typo="Typo.h6" Class="align-item-center center">@Localizer["jobstructure"]</MudText>
+                </MudItem>
+                <MudItem Class="d-flex">
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+
+                    <MudSpacer />
+                    <MudButton Href="/soshoe/Hub/Create">
+                        <MudText>@Localizer["newHoe"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudButton OnClick="() => Generate(SosHubId)">
+                        <MudText>@Localizer["Generate"]</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.GeneratingTokens" Color="Color.Primary"></MudIcon>
+                    </MudButton>
+                    <MudSpacer />
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+        <HeaderContent>
+            @if (user.UserType == 1)
+            {
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<SOSHub, object>(x=>x?.SOSHubId)">Hoe Id</MudTableSortLabel>
+                </MudTh>
+            }
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSHub, object>(x=>x?.Folio)">Folio</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSHub, object>(x=>x?.ProcessSheet)">ProcessSheet</MudTableSortLabel>
+            </MudTh>
+            @*  <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSHub, object>(x=>x?.AppliedModelId)">AppliedModelId</MudTableSortLabel>
+            </MudTh> *@
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<SOSHub, object>(x=>x?.Status)">Status</MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudText Align="Align.Center">Actions</MudText>
+            </MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            @if (user.UserType == 1)
+            {
+                <MudTd DataLabel="HoeId">
+                    <MudText Align="Align.Center">@context.SOSHubId</MudText>
+                </MudTd>
+            }
+            <MudTd DataLabel="Folio">
+                <MudText Align="Align.Center">@(string.IsNullOrEmpty(context.Folio) ? NotApplied : context.Folio)</MudText>
+            </MudTd>
+            <MudTd DataLabel="ProcessSheet">
+                <MudText Align="Align.Center">@(string.IsNullOrEmpty(context.ProcessSheet) ? NotApplied : context.ProcessSheet)</MudText>
+            </MudTd>
+            <MudTd Style="text-align: center;">
+                <MudChip Icon="@GetStatusIcon(context.Status)" Color="GetStatusColor(context.Status)">@context.Status</MudChip>
+            </MudTd>
+            <MudTd>
+                <MudText Align="Align.Center">
+                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                        <ActivatorContent>
+                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => HoeDetails(context.SOSHubId))" OnTouch="(() => HoeDetails(context.SOSHubId))">Details</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateHoe(context.SOSHubId))" OnTouch="(() => UpdateHoe(context.SOSHubId))">Edit </MudMenuItem>
+                            @if(context.Status != "In Progress")
+                            {
+                                <MudMenuItem Icon="@Icons.Material.Filled.GeneratingTokens" IconColor="Color.Info" @onclick="(() => Generate(context.SOSHubId))" OnTouch="(() => Generate(context.SOSHubId))">Generate</MudMenuItem>
+                            }
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteHoe(context.SOSHubId))" OnTouch="(() => DeleteHoe(context.SOSHubId))">Delete </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
+                </MudText>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+<MudDialog DisableSidePadding="false" @bind-IsVisible="ShowGenerateDialog" Options="dialogResourcesOptions" Style="overflow:hidden">
+    <DialogContent>
+        <MudGrid Style="min-height: 45vh; max-height: 75vh; overflow:auto">
+            <MudItem lg="12" md="12" sm="12" xs="12">
+                <MudExpansionPanels MultiExpansion="true" Style="height:100%">
+                    <MudExpansionPanel Text="" Style="min-width: 100%" IsInitiallyExpanded>
+                        <TitleContent>
+                            <div class="d-flex" style="align-items: center; justify-content:center;">
+                                <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @Localizer["HOE"]
+                                </MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudGrid Spacing="2" Justify="Justify.SpaceEvenly">
+                                <MudItem xs="4">
+                                    <MudButton Class="custom-button-card" Style="--clr:#39FF14" OnClick="@( () => GoToPageGenerate(1))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/analisis-de-los-datos.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Analysis</b></MudText>
+                                                    <MudText Typo="Typo.body2">DocumentoSosAnalisi</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.ManageSearch" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem xs="4">
+                                    <MudButton Class="custom-button-card" Style="--clr:#FF44CC" OnClick="@(() => GoToPageGenerate(2))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/combinacion.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Combination</b></MudText>
+                                                    <MudText Typo="Typo.body2">Descripcion Combination</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.CallMerge" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem xs="4">
+                                    <MudButton Class="custom-button-card" Style="--clr:#0FF0FC" OnClick="@(() => GoToPageGenerate(3))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/reparto-de-beneficios.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Distribution</b></MudText>
+                                                    <MudText Typo="Typo.body2">Documento de Distribucion</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Hub" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem xs="4">
+                                    <MudButton Class="custom-button-card" Style="--clr:#FF3131" OnClick="@(() => GoToPageGenerate(4))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/flujo-de-datos.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Flow</b></MudText>
+                                                    <MudText Typo="Typo.body2">Flow Docuemnt Description</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Air" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem xs="4">
+                                    <MudButton Class="custom-button-card" Style="--clr:#8A2BE2" OnClick="@(() => GoToPageGenerate(5))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/flujo-de-trabajo.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Sequence</b></MudText>
+                                                    <MudText Typo="Typo.body2">Documento de Sequence</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem xs="4">
+                                    <MudButton Class="custom-button-card" Style="--clr:#c4c4c4" OnClick="@(() => GoToPageGenerate(0))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/prueba.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>PAT</b></MudText>
+                                                    <MudText Typo="Typo.body2">@Localizer["patDescription"]</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel IsInitiallyExpanded Style="min-width: 100%">
+                        <ChildContent>
+                            <MudGrid Spacing="2" Justify="Justify.SpaceAround">
+                                <MudItem xs="6" Style="display: flex; justify-content: center;">
+                                    <MudButton Class="custom-button-card" Style="--clr:#39FF14" OnClick="@(() => GoToPageGenerate(6))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/flujo-de-requisitos.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b> Cuadro Sinoptico de Requisitos de Operación</b></MudText>
+                                                    <MudText Typo="Typo.body2"> Cuadro Sinoptico de Requisitos de Operación</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.ManageSearch" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem xs="6" Style="display: flex; justify-content: center;">
+                                    <MudButton Class="custom-button-card" Style="--clr:#39FF14" OnClick="@(() => GoToPageGenerate(7))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/procedimiento.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left">
+                                                        <b>
+                                                            Cuadro Sinoptico de Puntos de Control
+                                                        </b>
+                                                    </MudText>
+                                                    <MudText Typo="Typo.body2">Cuadro Sinoptico de Puntos de Control</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.ManageSearch" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem xs="6" Style="display: flex; justify-content: center;">
+                                    <MudButton Class="custom-button-card" Style="--clr:#39FF14" OnClick="@(() => GoToPageGenerate(8))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/planificacion.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Plan Anual de Adiestramiento Técnico</b></MudText>
+                                                    <MudText Typo="Typo.body2">Plan Anual de Adiestramiento Técnico</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.ManageSearch" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                                <MudItem xs="6" Style="display: flex; justify-content: center;">
+                                    <MudButton Class="custom-button-card" Style="--clr:#39FF14" OnClick="@(() => GoToPageGenerate(9))">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderAvatar>
+                                                    <MudAvatar>
+                                                        <MudImage Src="Images/HojaControl.png" />
+                                                    </MudAvatar>
+                                                </CardHeaderAvatar>
+                                                <CardHeaderContent>
+                                                    <MudText Typo="Typo.h6" Style="text-align:left"><b>Hoja de Control Individual</b></MudText>
+                                                    <MudText Typo="Typo.body2">Hoja de Control Individual</MudText>
+                                                </CardHeaderContent>
+                                                <CardHeaderActions>
+                                                    <MudIcon Icon="@Icons.Material.Filled.ManageSearch" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                </CardHeaderActions>
+                                            </MudCardHeader>
+                                        </MudCard>
+                                        <i></i>
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel IsInitiallyExpanded Style="min-width: 100%" Class="mb-10">
+                        <TitleContent>
+                            <div class="d-flex" style="align-items: center; justify-content:center;">
+                                <MudText Typo="Typo.h6" Style="text-align: center;">
+                                    @Localizer["Documents"]
+                                </MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudTable T="Object" Items="Documents" RowClassFunc="@SelectedRowDocument" @ref="SelectTableEventDocument" OnRowClick="RowClickEventDocument">
+                                <HeaderContent>
+
+                                    <MudTh>
+                                        Doc Type
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Operation Name
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Internal Control Number
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">
+                                            Process Name
+                                        </MudText>
+                                    </MudTh>
+                                    <MudTh>
+                                        <MudText Align="Align.Center">Actions</MudText>
+                                    </MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+
+                                    @if (@context is SOSAnalysis analysis)
+                                    {
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/analisis-de-los-datos.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Analysis</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.ManageSearch" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@analysis.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@analysis.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@analysis.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Details<SOSAnalysis>(analysis.SOSAnalysisId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Update<SOSAnalysis>(analysis.SOSAnalysisId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSAnalysis>(analysis.SOSAnalysisId))" OnTouch="(() => Delete<SOSAnalysis>(analysis.SOSAnalysisId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                    else if (@context is SOSCombination combination)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/combinacion.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Combination</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.CallMerge" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@combination.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@combination.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@combination.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Details<SOSCombination>(combination.SOSCombinationId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Update<SOSCombination>(combination.SOSCombinationId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSCombination>(combination.SOSCombinationId))" OnTouch="(() => Delete<SOSCombination>(combination.SOSCombinationId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                    else if (@context is SOSDistribution distribution)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/reparto-de-beneficios.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Distribution</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.Hub" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@distribution.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@distribution.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@distribution.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Details<SOSDistribution>(distribution.SOSDistributionId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Update<SOSDistribution>(distribution.SOSDistributionId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSDistribution>(distribution.SOSDistributionId))" OnTouch="(() => Delete<SOSDistribution>(distribution.SOSDistributionId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                    else if (@context is SOSFlow flow)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/flujo-de-datos.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Flow</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.Air" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@flow.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@flow.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@flow.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Details<SOSFlow>(flow.SOSFlowId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Update<SOSFlow>(flow.SOSFlowId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSFlow>(flow.SOSFlowId))" OnTouch="(() => Delete<SOSFlow>(flow.SOSFlowId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                    else if (@context is SOSSequence sequence)
+                                    {
+
+                                        <MudTd DataLabel="Id">
+                                            <MudCard Elevation="0" Style="width:min-content">
+                                                <MudCardHeader>
+                                                    <CardHeaderAvatar>
+                                                        <MudAvatar>
+                                                            <MudImage Src="Images/flujo-de-trabajo.png" />
+                                                        </MudAvatar>
+                                                    </CardHeaderAvatar>
+                                                    <CardHeaderContent>
+                                                        <MudText Typo="Typo.h6" Style="text-align:left"><b>Sequence</b></MudText>
+                                                    </CardHeaderContent>
+                                                    <CardHeaderActions>
+                                                        <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                    </CardHeaderActions>
+                                                </MudCardHeader>
+                                            </MudCard>
+                                        </MudTd>
+                                        <MudTd DataLabel="OperationName">
+                                            <MudText Align="Align.Center">@sequence.OperationName</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="InternalControlNumber">
+                                            <MudText Align="Align.Center">@sequence.InternalControlNumber</MudText>
+                                        </MudTd>
+                                        <MudTd DataLabel="ProcessName">
+                                            <MudText Align="Align.Center">@sequence.ProcessName</MudText>
+                                        </MudTd>
+                                        <MudTd>
+                                            <MudText Align="Align.Center">
+                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Details<SOSSequence>(sequence.SOSSequenceId))">Details</MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Update<SOSSequence>(sequence.SOSSequenceId))">Edit </MudMenuItem>
+                                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<SOSSequence>(sequence.SOSSequenceId))" OnTouch="(() => Delete<SOSSequence>(sequence.SOSSequenceId))">Delete </MudMenuItem>
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudText>
+                                        </MudTd>
+                                    }
+                                </RowTemplate>
+                            </MudTable>
+
+                            @if (Documents.Any(d => d is PAT))
+                            {
+                                <MudTable T="Object" Items="Documents.Where(d => d is PAT).ToList()" RowClassFunc="@SelectedRowDocumentPat" @ref="SelectTableEventDocumentPat" OnRowClick="RowClickEventDocumentPat">
+                                    <HeaderContent>
+
+                                        <MudTh>
+                                            Doc Type
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudText Align="Align.Center">
+                                                Aplication Year
+                                            </MudText>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudText Align="Align.Center">
+                                                Supervisors
+                                            </MudText>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudText Align="Align.Center">
+                                                Status
+                                            </MudText>
+                                        </MudTh>
+                                        <MudTh>
+                                            <MudText Align="Align.Center">Actions</MudText>
+                                        </MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+
+                                        @if (context is PAT pat)
+                                        {
+
+                                            <MudTd DataLabel="Id">
+                                                <MudCard Elevation="0" Style="width:min-content">
+                                                    <MudCardHeader>
+                                                        <CardHeaderAvatar>
+                                                            <MudAvatar>
+                                                                <MudImage Src="Images/flujo-de-trabajo.png" />
+                                                            </MudAvatar>
+                                                        </CardHeaderAvatar>
+                                                        <CardHeaderContent>
+                                                            <MudText Typo="Typo.h6" Style="text-align:left"><b>PAT</b></MudText>
+                                                        </CardHeaderContent>
+                                                        <CardHeaderActions>
+                                                            <MudIcon Icon="@Icons.Material.Filled.Earbuds" Color="MudBlazor.Color.Primary"></MudIcon>
+                                                        </CardHeaderActions>
+                                                    </MudCardHeader>
+                                                </MudCard>
+                                            </MudTd>
+                                            <MudTd DataLabel="Year">
+                                                <MudText Align="Align.Center">@pat.AplicationYear</MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="Supervisors">
+                                                <MudText Align="Align.Center">
+                                                    <MudText>@string.Join(" / ", pat.Supervisors?.Select(s => s.Name))</MudText>
+                                                </MudText>
+                                            </MudTd>
+                                            <MudTd DataLabel="PatStatus">
+                                                <MudText Align="Align.Center">
+                                                    @switch (pat.Status)
+                                                    {
+                                                        case 1:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.PlaylistPlay" Color="Color.Warning" Size="Size.Small" Style="cursor:pointer">@Localizer["new"]</MudChip>
+                                                            break;
+                                                        case 2:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["inProgress"]</MudChip>
+                                                            break;
+                                                        case 3:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Style="cursor:pointer">@Localizer["late"]</MudChip>
+                                                            break;
+                                                        case 4:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Style="cursor:pointer">@Localizer["underReview"]</MudChip>
+                                                            break;
+                                                        case 5:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Style="cursor:pointer">@Localizer["rejected"]</MudChip>
+                                                            break;
+                                                        case 6:
+                                                            <MudChip Variant="Variant.Text" Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Style="cursor:pointer">@Localizer["finished"]</MudChip>
+                                                            break;
+                                                    }
+                                                </MudText>
+                                            </MudTd>
+                                            <MudTd>
+                                                <MudText Align="Align.Center">
+                                                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                        <ActivatorContent>
+                                                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
+                                                        </ActivatorContent>
+                                                        <ChildContent>
+                                                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => Details<PAT>(pat.PATid))" OnTouch="(() => Details<PAT>(pat.PATid))">Details</MudMenuItem>
+                                                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => Update<PAT>(pat.PATid))" OnTouch="(() => Update<PAT>(pat.PATid))">Edit </MudMenuItem>
+                                                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => Delete<PAT>(pat.PATid))" OnTouch="(() => Delete<PAT>(pat.PATid))">Delete </MudMenuItem>
+                                                        </ChildContent>
+                                                    </MudMenu>
+                                                </MudText>
+                                            </MudTd>
+                                        }
+                                    </RowTemplate>
+                                </MudTable>
+                            }
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+</MudDialog>
+
+<MudMessageBox @ref="_DeleteMessage" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Hoe?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteAnalysis" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Analysis?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteCombination" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Combination?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteDistribution" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Distribution?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteFlow" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Flow?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeleteSequence" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Sequence?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="_DeletePat" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Are you sure you want to <b>delete</b> this Pat?
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Class="ml-4" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
+    </YesButton>
+</MudMessageBox>
+
+
+@code {
+    // Breadcrumb links
+    private List<BreadcrumbItem> _links = new List<BreadcrumbItem>();
+
+    // Objects
+    public List<SOSHub> _Hoes { get; set; } = new();
+    public SOSHub _SelectedHoe { get; set; } = new();
+    public List<Object> Documents { get; set; } = new List<Object>();
+
+    //User
+    private string json = string.Empty;
+    public User user = new();
+    public bool logged = false;
+
+    //Side Dialog
+    private string SideName = string.Empty;
+    private int SosHubId = 0;
+    public bool ShowSideDialog = false;
+    //Loading
+    private IList<string> _sourceMsgLoading = new List<string>();
+    private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
+    public bool ShowLoading = true;
+    public bool ShowDialogLoading = true;
+
+    //Generation
+    private DialogOptions dialogResourcesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+    public bool ShowGenerateDialog = false;
+    private int selectedIndexPageGenerate = 0;
+
+    public int SOSHubId { get; set; }
+
+    public SOSHub _sosHub { get; set; }
+    public PAT _pat { get; set; } = new();
+    List<Station> _stations { get; set; } = new();
+
+    private MudMessageBox _DeleteMessage;
+    private string NotApplied = "N/A";
+
+
+    // Initialization
+    protected async override Task OnInitializedAsync()
+    {
+        await GetUserAsync();
+        if(user.UserId == 0)
+        {
+            _Hoes = await SOSHubServices.GetAllSOSHub();
+        }
+        else
+        {
+            _Hoes = await SOSHubServices.GetAllSOSHub(userId:user.UserId);
+        }
+
+
+
+
+        
+        logged = await HasPropertyAsync();
+        if (!logged)
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Add($"Error You have to log in", Severity.Error);
+            NavigationManager.NavigateTo($"/");
+        }
+
+
+
+        _links = new List<BreadcrumbItem>
+             {
+                 new BreadcrumbItem(text: Localizer["homeSOSHOE"], href: "/soshoe"),
+                 new BreadcrumbItem(text: Localizer["HOESOSHubTitle"], href: "/soshoe/Hub", disabled: true)
+                        };
+        BreadcrumbService.UpdateBreadcrumbs(_links);
+        ShowLoading = false;
+    }
+
+    //Local storage user
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            user = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    private string searchString = "";
+
+    private bool FilterFunc(SOSHub element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        // if (element.HoeId.ToString().Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        // if (element.HoeCode.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+        // if (element.HoeName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //     return true;
+
+        return false;
+    }
+
+    private int selectedRowNumber = -1;
+    private MudTable<SOSHub> SelectTableEvent;
+
+    private void RowClickEvent(TableRowClickEventArgs<SOSHub> args)
+    {
+        if (selectedRowNumber == SelectTableEvent.Items.ToList().IndexOf(args.Item))
+        {
+            HoeDetails(args.Item.SOSHubId);
+        }
+        else
+        {
+            SelectTableEvent.SelectedItem = args.Item;
+            selectedRowNumber = SelectTableEvent.Items.ToList().IndexOf(args.Item);
+        }
+    }
+
+    private string SelectedRowClassFunc(SOSHub element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            SosHubId = element.SOSHubId;
+            return "selected"; // Mantener la fila seleccionada
+        }
+        else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
+        {
+            SosHubId = element.SOSHubId;
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    private async Task<AsyncVoidMethodBuilder> FindSelectedHoe(int sosHuBiD)
+    {
+        Documents.Clear();
+        _SelectedHoe = await SOSHubServices.GetSOSHub(sosHuBiD, includeModel: true, includeEquipments: true, includeTools: true, includeMaterials: true, includeCollections: true, includePeopleCollections: true, includeDocuments: true, includePats: true);
+
+        if (_SelectedHoe.SOSAnalysis?.Count() > 0)
+            foreach (var analysis in _SelectedHoe.SOSAnalysis)
+            {
+                Documents.Add(analysis);
+            }
+
+        if (_SelectedHoe.SOSCombination?.Count() > 0)
+            foreach (var combination in _SelectedHoe.SOSCombination)
+            {
+                Documents.Add(combination);
+            }
+
+        if (_SelectedHoe.SOSDistribution?.Count() > 0)
+            foreach (var distribution in _SelectedHoe.SOSDistribution)
+            {
+                Documents.Add(distribution);
+            }
+
+        if (_SelectedHoe.SOSFlow?.Count() > 0)
+            foreach (var flow in _SelectedHoe.SOSFlow)
+            {
+                Documents.Add(flow);
+            }
+
+        if (_SelectedHoe.SOSSequence?.Count() > 0)
+            foreach (var sequence in _SelectedHoe.SOSSequence)
+            {
+                Documents.Add(sequence);
+            }
+
+        if (_SelectedHoe.PATs?.Count() > 0)
+            foreach (var pat in _SelectedHoe.PATs)
+            {
+                Documents.Add(pat);
+            }
+
+        return new AsyncVoidMethodBuilder();
+    }
+
+    void HoeDetails(int HoeId)
+    {
+        NavigationManager.NavigateTo($"/soshoe/Hub/Details/{HoeId}");
+    }
+
+    // Delete Hoe
+    async Task DeleteHoe(int HoeId)
+    {
+        bool? result = await _DeleteMessage.Show();
+        var confirm = result is null ? "Canceled" : "Deleted!";
+        StateHasChanged();
+
+        if (confirm == "Deleted!")
+        {
+            _Hoes.RemoveAll(Hoe => Hoe.SOSHubId == HoeId);
+            await SOSHubServices.DeleteSOSHub(HoeId);
+        }
+    }
+
+    // Update Hoe
+    void UpdateHoe(int HoeId)
+    {
+        NavigationManager.NavigateTo($"/soshoe/Hub/Update/{HoeId}");
+    }
+
+    private async Task<AsyncVoidMethodBuilder> Generate(int hoeId = 0)
+    {
+        if (hoeId == 0 && SosHubId == 0)
+        {
+            bool? result = await DialogService.ShowMessageBox("Warning", "Selecciona un elemento de la tabla!", yesText: "Ok!");
+            var state = result == null ? "Canceled" : "Deleted!";
+        }
+        else
+        {
+            SosHubId = hoeId != 0 ? hoeId : SosHubId;
+            await FindSelectedHoe(SosHubId);
+            selectedIndexPageGenerate = 0;
+            ShowGenerateDialog = true;
+        }
+
+        return new AsyncVoidMethodBuilder();
+    }
+
+    private DialogOptions dialogPagesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+    public async void GoToPageGenerate(int indexPage)
+    {
+        // ShowGenerateDialog = false;
+
+        // var dialog = await DialogService.ShowAsync<GeneralComponents.GenerateComponent>("", parameters, dialogPagesOptions);
+        // var result = await dialog.Result;
+
+        // if(!result.Canceled)
+        // {
+        //     var willReturn = result.Data as string;
+        //     ShowGenerateDialog = willReturn == "Reopen";
+        //     selectedIndexPageGenerate = 0;
+        //     StateHasChanged();
+        // }
+
+        selectedIndexPageGenerate = indexPage;
+        ShowGenerateDialog = false;
+
+        var parameters = new DialogParameters { { "selectedIndexPageGenerate", indexPage }, { "user", user }, { "SOSHubId", SosHubId } };
+
+
+
+        var dialog = await DialogService.ShowAsync<GeneralComponents.GenerateComponent>("", parameters, dialogPagesOptions);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var willReturn = result.Data as string;
+            ShowGenerateDialog = willReturn == "Reopen";
+            selectedIndexPageGenerate = 0;
+            StateHasChanged();
+        }
+    }
+
+
+
+    #region DocumentsFunctionsSecction
+    public void Details<T>(int id) where T : class
+    {
+        if (typeof(T) == typeof(SOSAnalysis))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{id}");
+        }
+        else if (typeof(T) == typeof(SOSCombination))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Combination/Details/{id}");
+        }
+        else if (typeof(T) == typeof(SOSDistribution))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{id}");
+        }
+        else if (typeof(T) == typeof(SOSFlow))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Flow/Details/{id}");
+        }
+        else if (typeof(T) == typeof(SOSSequence))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{id}");
+        }
+        else if (typeof(T) == typeof(PAT))
+        {
+            NavigationManager.NavigateTo($"/PAT/{id}");
+        }
+        // Añadir más casos según sea necesario
+    }
+
+    public void Update<T>(int id) where T : class
+    {
+        if (typeof(T) == typeof(SOSAnalysis))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Analysis/Update/{id}");
+        }
+        else if (typeof(T) == typeof(SOSCombination))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Combination/Update/{id}");
+        }
+        else if (typeof(T) == typeof(SOSDistribution))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Distribution/Update/{id}");
+        }
+        else if (typeof(T) == typeof(SOSFlow))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Flow/Update/{id}");
+        }
+        else if (typeof(T) == typeof(SOSSequence))
+        {
+            NavigationManager.NavigateTo($"/soshoe/Sequence/Update/{id}");
+        }
+        else if (typeof(T) == typeof(PAT))
+        {
+            NavigationManager.NavigateTo($"/PAT/Update/{id}");
+        }
+        // Añadir más casos según sea necesario
+    }
+
+    MudMessageBox _DeleteAnalysis;
+    private MudMessageBox _DeleteCombination;
+    private MudMessageBox _DeleteDistribution;
+    private MudMessageBox _DeleteFlow;
+    private MudMessageBox _DeleteSequence;
+    private MudMessageBox _DeletePat;
+
+    public async void Delete<T>(int id) where T : class
+    {
+        if (typeof(T) == typeof(SOSAnalysis))
+        {
+            bool? result = await _DeleteAnalysis.Show();
+            var confirm = result is null ? "Canceled" : "Deleted!";
+            StateHasChanged();
+
+            if (confirm == "Deleted!")
+            {
+                _SelectedHoe.SOSAnalysis.RemoveAll(Analysis => Analysis.SOSAnalysisId == id);
+                await SOSAnalysisServices.DeleteSOSAnalysis(id);
+            }
+        }
+        else if (typeof(T) == typeof(SOSCombination))
+        {
+            bool? result = await _DeleteCombination.Show();
+            var confirm = result is null ? "Canceled" : "Deleted!";
+            StateHasChanged();
+
+            if (confirm == "Deleted!")
+            {
+                _SelectedHoe.SOSCombination.RemoveAll(combination => combination.SOSCombinationId == id);
+                await SOSAnalysisServices.DeleteSOSAnalysis(id);
+            }
+        }
+        else if (typeof(T) == typeof(SOSDistribution))
+        {
+            bool? result = await _DeleteDistribution.Show();
+            var confirm = result is null ? "Canceled" : "Deleted!";
+            StateHasChanged();
+
+            if (confirm == "Deleted!")
+            {
+                _SelectedHoe.SOSDistribution.RemoveAll(distribution => distribution.SOSDistributionId == id);
+                await SOSDistributionServices.DeleteSOSDistribution(id);
+            }
+        }
+        else if (typeof(T) == typeof(SOSFlow))
+        {
+            bool? result = await _DeleteFlow.Show();
+            var confirm = result is null ? "Canceled" : "Deleted!";
+            StateHasChanged();
+
+            if (confirm == "Deleted!")
+            {
+                _SelectedHoe.SOSFlow.RemoveAll(flow => flow.SOSFlowId == id);
+                await SOSFlowServices.DeleteSOSFlow(id);
+            }
+        }
+        else if (typeof(T) == typeof(SOSSequence))
+        {
+            bool? result = await _DeleteAnalysis.Show();
+            var confirm = result is null ? "Canceled" : "Deleted!";
+            StateHasChanged();
+
+            if (confirm == "Deleted!")
+            {
+                _SelectedHoe.SOSSequence.RemoveAll(Sequence => Sequence.SOSSequenceId == id);
+                await SOSSequenceServices.DeleteSOSSequence(id);
+            }
+        }
+        else if (typeof(T) == typeof(PAT))
+        {
+            bool? result = await _DeletePat.Show();
+            var confirm = result is null ? "Canceled" : "Deleted!";
+            StateHasChanged();
+
+            if (confirm == "Deleted!")
+            {
+
+                bool res = await PATServices.DeletePat(id);
+                if (res)
+                {
+                    _sosHub.PATs.RemoveAll(pat => pat.PATid == id);
+
+                    Documents.RemoveAll(doc => doc is PAT pat && pat.PATid == id);
+                    Snackbar.Clear();
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                    Snackbar.Add($"{Localizer["succesRemovePat"]}", Severity.Info);
+                }
+            }
+        }
+
+
+    }
+
+    private int SosDocId = -1;
+    private MudTable<Object> SelectTableEventDocument;
+    private int selectedRowNumberPat = -1;
+    private MudTable<Object> SelectTableEventDocumentPat;
+    private void RowClickEventDocument(TableRowClickEventArgs<object> args)
+    {
+
+        if (selectedRowNumber == SelectTableEventDocument.Items.ToList().IndexOf(args.Item))
+        {
+            //HoeDetails(args.Item.SOSHubId);
+            //aqui va los details
+
+            if (args.Item is SOSAnalysis)
+            {
+                NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{SosDocId}");
+            }
+            else if (args.Item is SOSCombination)
+            {
+                NavigationManager.NavigateTo($"/soshoe/Combination/Details/{SosDocId}");
+            }
+            else if (args.Item is SOSDistribution)
+            {
+                NavigationManager.NavigateTo($"/soshoe/Distribution/Details/{SosDocId}");
+            }
+            else if (args.Item is SOSFlow)
+            {
+                NavigationManager.NavigateTo($"/soshoe/Flow/Details/{SosDocId}");
+            }
+            else if (args.Item is SOSSequence)
+            {
+                NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{SosDocId}");
+            }
+        }
+        else
+        {
+            SelectTableEventDocument.SelectedItem = args.Item;
+            selectedRowNumber = SelectTableEventDocument.Items.ToList().IndexOf(args.Item);
+        }
+    }
+
+    private string SelectedRowDocument(Object element, int rowNumber)
+    {
+        if (selectedRowNumber == rowNumber)
+        {
+            if (element is SOSAnalysis analysis)
+            {
+                SosDocId = analysis.SOSAnalysisId;
+            }
+            else if (element is SOSCombination combination)
+            {
+                SosDocId = combination.SOSCombinationId;
+            }
+            else if (element is SOSDistribution distribution)
+            {
+                SosDocId = distribution.SOSDistributionId;
+            }
+            else if (element is SOSFlow flow)
+            {
+                SosDocId = flow.SOSFlowId;
+            }
+            else if (element is SOSSequence sequence)
+            {
+                SosDocId = sequence.SOSSequenceId;
+            }
+            return "selected"; // Mantener la fila seleccionada
+        }
+        else if (SelectTableEventDocument.SelectedItem != null && SelectTableEventDocument.SelectedItem.Equals(element))
+        {
+            if (element is SOSAnalysis analysis)
+            {
+                SosDocId = analysis.SOSAnalysisId;
+            }
+            else if (element is SOSCombination combination)
+            {
+                SosDocId = combination.SOSCombinationId;
+            }
+            else if (element is SOSDistribution distribution)
+            {
+                SosDocId = distribution.SOSDistributionId;
+            }
+            else if (element is SOSFlow flow)
+            {
+                SosDocId = flow.SOSFlowId;
+            }
+            else if (element is SOSSequence sequence)
+            {
+                SosDocId = sequence.SOSSequenceId;
+            }
+
+            selectedRowNumber = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+    private void RowClickEventDocumentPat(TableRowClickEventArgs<object> args)
+    {
+
+        if (selectedRowNumberPat == SelectTableEventDocumentPat.Items.ToList().IndexOf(args.Item))
+        {
+            if (args.Item is PAT)
+            {
+                NavigationManager.NavigateTo($"/PAT/{SosDocId}");
+            }
+        }
+        else
+        {
+            SelectTableEventDocumentPat.SelectedItem = args.Item;
+            selectedRowNumberPat = SelectTableEventDocumentPat.Items.ToList().IndexOf(args.Item);
+        }
+    }
+
+    private string SelectedRowDocumentPat(Object element, int rowNumber)
+    {
+        if (selectedRowNumberPat == rowNumber)
+        {
+            if (element is PAT pat)
+            {
+                SosDocId = pat.PATid;
+            }
+            return "selected"; // Mantener la fila seleccionada
+        }
+        else if (SelectTableEventDocumentPat.SelectedItem != null && SelectTableEventDocumentPat.SelectedItem.Equals(element))
+        {
+            if (element is PAT pat)
+            {
+                SosDocId = pat.PATid;
+            }
+
+            selectedRowNumberPat = rowNumber;
+            return "selected";
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+    #endregion
+
+    private string GetStatusIcon(string status) => status switch
+    {
+        "Pending" => Icons.Material.Filled.Pending,
+        "Approved" => Icons.Material.Filled.FactCheck,
+        "Rejected" => Icons.Material.Filled.ContentPasteOff,
+        "In Progress" => Icons.Material.Filled.RunningWithErrors,
+        _ => Icons.Material.Filled.Block
+    };
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Pending" => Color.Primary,
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        "In Progress" => Color.Warning,
+        _ => Color.Default
+    };
+
+}
