@@ -1,0 +1,150 @@
+﻿@inject IDialogService DialogService
+@inject IStringLocalizer<Resource> Localizer
+
+<MudGrid Style="min-height: 45vh; max-height: 75vh; overflow:auto">
+    <MudItem lg="12" md="12" sm="12" xs="12">
+        <MudExpansionPanels MultiExpansion="true" Style="height:100%">
+            <MudExpansionPanel Text="" Style="min-width: 100%" IsInitiallyExpanded>
+                <TitleContent>
+                    <div class="d-flex" style="align-items: center; justify-content:center;">
+                        <MudImage ObjectFit="ObjectFit.Cover" Height="25" Src="Images/logo.png" Alt="Evidence" Elevation="25" Class="rounded-lg mr-4" />
+                        <MudText Typo="Typo.h6" Style="text-align: center;">
+                            HOE
+                        </MudText>
+                    </div>
+                </TitleContent>
+                <ChildContent>
+                    <MudGrid Spacing="2" Justify="Justify.SpaceEvenly">
+                        <DocumentCard Xs="4"
+                                      Color="#39FF14"
+                                      ImageSrc="Images/analisis-de-los-datos.png"
+                                      Title="Analysis"
+                                      Description="DocumentoSosAnalisi"
+                                      Icon="@Icons.Material.Filled.ManageSearch"
+                                      OnClick="@(() => GoToPageGenerate(1))" />
+
+                        <DocumentCard Xs="4"
+                                      Color="#FF44CC"
+                                      ImageSrc="Images/combinacion.png"
+                                      Title="Combination"
+                                      Description="Descripcion Combination"
+                                      Icon="@Icons.Material.Filled.CallMerge"
+                                      OnClick="@(() => GoToPageGenerate(2))" />
+
+                        <DocumentCard Xs="4"
+                                      Color="#0FF0FC"
+                                      ImageSrc="Images/reparto-de-beneficios.png"
+                                      Title="Distribution"
+                                      Description="Documento de Distribucion"
+                                      Icon="@Icons.Material.Filled.Hub"
+                                      OnClick="@(() => GoToPageGenerate(3))" />
+
+                        <DocumentCard Xs="4"
+                                      Color="#FF3131"
+                                      ImageSrc="Images/flujo-de-datos.png"
+                                      Title="Flow"
+                                      Description="Flow Document Description"
+                                      Icon="@Icons.Material.Filled.Air"
+                                      OnClick="@(() => GoToPageGenerate(4))" />
+
+                        <DocumentCard Xs="4"
+                                      Color="#8A2BE2"
+                                      ImageSrc="Images/flujo-de-trabajo.png"
+                                      Title="Sequence"
+                                      Description="Documento de Sequence"
+                                      Icon="@Icons.Material.Filled.Earbuds"
+                                      OnClick="@(() => GoToPageGenerate(5))" />
+
+                        <DocumentCard Xs="4"
+                                      Color="#c4c4c4"
+                                      ImageSrc="Images/prueba.png"
+                                      Title="PAT"
+                                      Description="@Localizer["patDescription"]"
+                                      Icon="@Icons.Material.Filled.Earbuds"
+                                      OnClick="@(() => GoToPageGenerate(0))" />
+
+                    </MudGrid>
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded Style="min-width: 100%">
+                <ChildContent>
+                    <MudGrid>
+                        <DocumentCard Xs="6"
+                                      ItemStyle="display:flex; justify-content:center;"
+                                      Color="#39FF14"
+                                      ImageSrc="Images/flujo-de-requisitos.png"
+                                      Title="Cuadro Sinoptico de Requisitos de Operación"
+                                      Description="Cuadro Sinoptico de Requisitos de Operación"
+                                      Icon="@Icons.Material.Filled.ManageSearch"
+                                      OnClick="@(() => GoToPageGenerate(6))" />
+
+                        <DocumentCard Xs="6"
+                                      ItemStyle="display:flex; justify-content:center;"
+                                      Color="#39FF14"
+                                      ImageSrc="Images/procedimiento.png"
+                                      Title="Cuadro Sinoptico de Puntos de Control"
+                                      Description="Cuadro Sinoptico de Puntos de Control"
+                                      Icon="@Icons.Material.Filled.ManageSearch"
+                                      OnClick="@(() => GoToPageGenerate(7))" />
+
+                        <DocumentCard Xs="6"
+                                      ItemStyle="display:flex; justify-content:center;"
+                                      Color="#39FF14"
+                                      ImageSrc="Images/planificacion.png"
+                                      Title="Plan Anual de Adiestramiento Técnico"
+                                      Description="Plan Anual de Adiestramiento Técnico"
+                                      Icon="@Icons.Material.Filled.ManageSearch"
+                                      OnClick="@(() => GoToPageGenerate(8))" />
+
+                        <DocumentCard Xs="6"
+                                      ItemStyle="display:flex; justify-content:center;"
+                                      Color="#39FF14"
+                                      ImageSrc="Images/HojaControl.png"
+                                      Title="Hoja de Control Individual"
+                                      Description="Hoja de Control Individual"
+                                      Icon="@Icons.Material.Filled.ManageSearch"
+                                      OnClick="@(() => GoToPageGenerate(9))" />
+                    </MudGrid>
+
+                </ChildContent>
+            </MudExpansionPanel>
+            <MudExpansionPanel IsInitiallyExpanded Style="min-width: 100%" Class="mb-10">
+                <TitleContent>
+                    <div class="d-flex" style="align-items: center; justify-content:center;">
+                        <MudText Typo="Typo.h6" Style="text-align: center;">
+                            @Localizer["Documents"]
+                        </MudText>
+                    </div>
+                </TitleContent>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudItem>
+</MudGrid>
+
+@code {
+    public User user = new();
+    private int SosHubId = 0;
+    public bool ShowGenerateDialog = false;
+    private int selectedIndexPageGenerate = 0;
+
+    private DialogOptions dialogPagesOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+    public async void GoToPageGenerate(int indexPage)
+    {
+
+        selectedIndexPageGenerate = indexPage;
+        ShowGenerateDialog = false;
+
+        var parameters = new DialogParameters { { "selectedIndexPageGenerate", indexPage }, { "user", user }, { "SOSHubId", SosHubId } };
+
+        var dialog = await DialogService.ShowAsync<GeneralComponents.GenerateComponent>("", parameters, dialogPagesOptions);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var willReturn = result.Data as string;
+            ShowGenerateDialog = willReturn == "Reopen";
+            selectedIndexPageGenerate = 0;
+            StateHasChanged();
+        }
+    }
+}
