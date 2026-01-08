@@ -725,11 +725,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             foreach (string[] row in DataInDocument)
             {
                 await JS.InvokeVoidAsync("console.log", row);
-                bool allEqual = row.All(item => item.Equals("§"));
+                bool allEqual = row.All(item => item.Equals("ï¿½"));
                 if (allEqual)
                 {
-                    // Todos los elementos son iguales a "§"
-                    Console.WriteLine("Todos los elementos son iguales a '§'.");
+                    // Todos los elementos son iguales a "ï¿½"
+                    Console.WriteLine("Todos los elementos son iguales a 'ï¿½'.");
                     break;
                 }
 
@@ -739,7 +739,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     var ToInsertIntoList = new User();
                     try
                     {
-                        ToInsertIntoList.UserType = row[5] != "§" ? int.Parse(row[5]) : -1;
+                        ToInsertIntoList.UserType = row[5] != "ï¿½" ? int.Parse(row[5]) : -1;
                     }
                     catch (Exception ex)
                     {
@@ -759,10 +759,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         case 1:
                             try
                             {
-                                ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+                                ToInsertIntoList.UserId = row[0] != "ï¿½" ? int.Parse(row[0]) : -1;
                                 try
                                 {
-                                    ToInsertIntoList.ObjectId = row[1] != "§" ? row[1] : row[-403];
+                                    ToInsertIntoList.ObjectId = row[1] != "ï¿½" ? row[1] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -774,7 +774,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[-403];
+                                    ToInsertIntoList.Name = row[3] != "ï¿½" ? row[3] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -786,7 +786,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[-403];
+                                    ToInsertIntoList.Email = row[4] != "ï¿½" ? row[4] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -808,10 +808,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         case 2:
                             try
                             {
-                                ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+                                ToInsertIntoList.UserId = row[0] != "ï¿½" ? int.Parse(row[0]) : -1;
                                 try
                                 {
-                                    ToInsertIntoList.ObjectId = row[1] != "§" ? row[1] : row[-403];
+                                    ToInsertIntoList.ObjectId = row[1] != "ï¿½" ? row[1] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -823,7 +823,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[-403];
+                                    ToInsertIntoList.Name = row[3] != "ï¿½" ? row[3] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -835,7 +835,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[-403];
+                                    ToInsertIntoList.Email = row[4] != "ï¿½" ? row[4] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -849,7 +849,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                 {
                                     if (row[7].Contains(','))
                                     {
-                                        string[]? SplitedSubordinates = row[7] != "§" ? row[7].Split(',') : null;
+                                        string[]? SplitedSubordinates = row[7] != "ï¿½" ? row[7].Split(',') : null;
                                         if (SplitedSubordinates != null)
                                         {
                                             if (ToInsertIntoList.Subordinates != null)
@@ -873,7 +873,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                     }
                                     else
                                     {
-                                        if (row[7] != "§")
+                                        if (row[7] != "ï¿½")
                                         {
                                             if (ToInsertIntoList.Subordinates != null)
                                             {
@@ -899,7 +899,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.PlantId = row[8] != "§" ? int.Parse(row[8]) : int.Parse(row[-403]);
+                                    ToInsertIntoList.PlantId = row[8] != "ï¿½" ? int.Parse(row[8]) : int.Parse(row[-403]);
                                     try
                                     {
                                         ToInsertIntoList.Plant = _plants.Find(p => p.PlantId == ToInsertIntoList.PlantId);
@@ -925,7 +925,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                 {
                                     if (row[9].Contains(','))
                                     {
-                                        string[]? SplitedAreas = row[9] != "§" ? row[9].Split(',') : null;
+                                        string[]? SplitedAreas = row[9] != "ï¿½" ? row[9].Split(',') : null;
                                         if (SplitedAreas != null)
                                         {
                                             if (ToInsertIntoList.Areas != null)
@@ -947,7 +947,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                     }
                                     else
                                     {
-                                        if (row[9] != "§")
+                                        if (row[9] != "ï¿½")
                                         {
                                             if (ToInsertIntoList.Areas != null)
                                             {
@@ -971,7 +971,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.GroupId = row[10] != "§" ? int.Parse(row[10]) : int.Parse(row[-403]);
+                                    ToInsertIntoList.GroupId = row[10] != "ï¿½" ? int.Parse(row[10]) : int.Parse(row[-403]);
                                     try
                                     {
                                         ToInsertIntoList.Group = _groups.Find(p => p.GroupId == ToInsertIntoList.GroupId);
@@ -1001,10 +1001,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         case 3:
                             try
                             {
-                                ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+                                ToInsertIntoList.UserId = row[0] != "ï¿½" ? int.Parse(row[0]) : -1;
                                 try
                                 {
-                                    ToInsertIntoList.ObjectId = row[1] != "§" ? row[1] : row[-403];
+                                    ToInsertIntoList.ObjectId = row[1] != "ï¿½" ? row[1] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -1015,7 +1015,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[-403];
+                                    ToInsertIntoList.Name = row[3] != "ï¿½" ? row[3] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -1027,7 +1027,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.Email = row[4] != "§" ? row[4] : row[-403];
+                                    ToInsertIntoList.Email = row[4] != "ï¿½" ? row[4] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -1042,7 +1042,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                     await JS.InvokeVoidAsync("console.log", ToInsertIntoList);
                                     await JS.InvokeVoidAsync("console.log", $"Superior Id Raw Value: {row[6]}");
                                     
-                                    ToInsertIntoList.SuperiorId = row[6] != "§" ? int.Parse(row[6]) : int.Parse(row[-403]);
+                                    ToInsertIntoList.SuperiorId = row[6] != "ï¿½" ? int.Parse(row[6]) : int.Parse(row[-403]);
                                     try
                                     {
                                         ToInsertIntoList.Superior = _allUsers.Find(p => p.UserId == ToInsertIntoList.SuperiorId);
@@ -1102,7 +1102,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                 {
                                     if (row[7].Contains(','))
                                     {
-                                        string[]? SplitedSubordinates = row[7] != "§" ? row[7].Split(',') : null;
+                                        string[]? SplitedSubordinates = row[7] != "ï¿½" ? row[7].Split(',') : null;
                                         if (SplitedSubordinates != null)
                                         {
                                             if (ToInsertIntoList.Subordinates != null)
@@ -1126,7 +1126,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                     }
                                     else
                                     {
-                                        if (row[7] != "§")
+                                        if (row[7] != "ï¿½")
                                         {
                                             if (ToInsertIntoList.Subordinates != null)
                                             {
@@ -1154,7 +1154,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                 {
                                     if (row[9].Contains(','))
                                     {
-                                        string[]? SplitedAreas = row[9] != "§" ? row[9].Split(',') : null;
+                                        string[]? SplitedAreas = row[9] != "ï¿½" ? row[9].Split(',') : null;
                                         if (SplitedAreas != null)
                                         {
                                             if (ToInsertIntoList.Areas != null)
@@ -1176,7 +1176,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                     }
                                     else
                                     {
-                                        if (row[9] != "§")
+                                        if (row[9] != "ï¿½")
                                         {
                                             if (ToInsertIntoList.Areas != null)
                                             {
@@ -1211,10 +1211,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         case 4:
                             try
                             {
-                                ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+                                ToInsertIntoList.UserId = row[0] != "ï¿½" ? int.Parse(row[0]) : -1;
                                 try
                                 {
-                                    ToInsertIntoList.Payroll = row[2] != "§" ? int.Parse(row[2]) : int.Parse(row[-403]);
+                                    ToInsertIntoList.Payroll = row[2] != "ï¿½" ? int.Parse(row[2]) : int.Parse(row[-403]);
                                 }
                                 catch (Exception ex)
                                 {
@@ -1226,7 +1226,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.Name = row[3] != "§" ? row[3] : row[-403];
+                                    ToInsertIntoList.Name = row[3] != "ï¿½" ? row[3] : row[-403];
                                 }
                                 catch (Exception ex)
                                 {
@@ -1238,7 +1238,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.SuperiorId = row[6] != "§" ? int.Parse(row[6]) : int.Parse(row[-403]);
+                                    ToInsertIntoList.SuperiorId = row[6] != "ï¿½" ? int.Parse(row[6]) : int.Parse(row[-403]);
                                     try
                                     {
                                        
@@ -1310,7 +1310,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                 try
                                 {
-                                    ToInsertIntoList.DistributionId = row[11] != "§" ? int.Parse(row[11]) : -1;
+                                    ToInsertIntoList.DistributionId = row[11] != "ï¿½" ? int.Parse(row[11]) : -1;
                                     if (ToInsertIntoList.DistributionId != -1)
                                     {
                                         try
@@ -1373,10 +1373,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 try
                 {
                     var ToInsertIntoList = new User();
-                    ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
+                    ToInsertIntoList.UserId = row[0] != "ï¿½" ? int.Parse(row[0]) : -1;
                     try
                     {
-                        ToInsertIntoList.ObjectId = row[6] != "§" ? row[6] : "";
+                        ToInsertIntoList.ObjectId = row[6] != "ï¿½" ? row[6] : "";
                     }
                     catch (Exception ex)
                     {
@@ -1388,7 +1388,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                     try
                     {
-                        ToInsertIntoList.Name = row[1] != "§" ? row[1] : row[-403];
+                        ToInsertIntoList.Name = row[1] != "ï¿½" ? row[1] : row[-403];
                     }
                     catch (Exception ex)
                     {
@@ -1400,7 +1400,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                     try
                     {
-                        ToInsertIntoList.Email = row[2] != "§" ? row[2] : "";
+                        ToInsertIntoList.Email = row[2] != "ï¿½" ? row[2] : "";
                     }
                     catch (Exception ex)
                     {
@@ -1412,7 +1412,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                     try
                     {
-                        ToInsertIntoList.PlantId = row[3] != "§" ? int.Parse(row[3]) : -1;
+                        ToInsertIntoList.PlantId = row[3] != "ï¿½" ? int.Parse(row[3]) : -1;
                         if (ToInsertIntoList.PlantId != -1)
                         {
                             try
@@ -1441,7 +1441,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     {
                         if (row[5].Contains(','))
                         {
-                            string[]? SplitedAreas = row[5] != "§" ? row[5].Split(',') : null;
+                            string[]? SplitedAreas = row[5] != "ï¿½" ? row[5].Split(',') : null;
                             if (SplitedAreas != null)
                             {
                                 if (ToInsertIntoList.Areas != null)
@@ -1463,7 +1463,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         }
                         else
                         {
-                            if (row[5] != "§")
+                            if (row[5] != "ï¿½")
                             {
                                 if (ToInsertIntoList.Areas != null)
                                 {
@@ -1487,7 +1487,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                     try
                     {
-                        ToInsertIntoList.GroupId = row[4] != "§" ? int.Parse(row[4]) : -1;
+                        ToInsertIntoList.GroupId = row[4] != "ï¿½" ? int.Parse(row[4]) : -1;
                         if (ToInsertIntoList.GroupId != -1)
                         {
                             try
@@ -1510,7 +1510,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     }
 
                     ////////////////////////////
-                    await JS.InvokeVoidAsync("Console.Log", ToInsertIntoList);
+                    await JS.InvokeVoidAsync("console.log", ToInsertIntoList);
                     ListtoReturn.Add(ToInsertIntoList);
                 }
                 catch (Exception ex)
@@ -1536,12 +1536,12 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 try
                 {
                     var ToInsertIntoList = new User();
-                    ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
-                    ToInsertIntoList.Name = row[1] != "§" ? row[1] : "";
-                    ToInsertIntoList.Email = row[2] != "§" ? row[2] : "";
-                    ToInsertIntoList.SuperiorId = row[3] != "§" ? int.Parse(row[3]) : -1;
-                    ToInsertIntoList.AreaId = row[4] != "§" ? int.Parse(row[4]) : -1;
-                    ToInsertIntoList.ObjectId = row[5] != "§" ? row[5] : "";
+                    ToInsertIntoList.UserId = row[0] != "ï¿½" ? int.Parse(row[0]) : -1;
+                    ToInsertIntoList.Name = row[1] != "ï¿½" ? row[1] : "";
+                    ToInsertIntoList.Email = row[2] != "ï¿½" ? row[2] : "";
+                    ToInsertIntoList.SuperiorId = row[3] != "ï¿½" ? int.Parse(row[3]) : -1;
+                    ToInsertIntoList.AreaId = row[4] != "ï¿½" ? int.Parse(row[4]) : -1;
+                    ToInsertIntoList.ObjectId = row[5] != "ï¿½" ? row[5] : "";
                     try
                     {
                         if (ToInsertIntoList.SuperiorId != -1)
@@ -1594,11 +1594,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 //try
                 //{
                 var ToInsertIntoList = new User();
-                ToInsertIntoList.UserId = row[0] != "§" ? int.Parse(row[0]) : -1;
-                ToInsertIntoList.Payroll = row[1] != "§" ? int.Parse(row[1]) : -1;
-                ToInsertIntoList.Name = row[2] != "§" ? row[2] : "";
-                ToInsertIntoList.DistributionId = row[3] != "§" ? int.Parse(row[3]) : -1;
-                ToInsertIntoList.SuperiorId = row[4] != "§" ? int.Parse(row[4]) : -1;
+                ToInsertIntoList.UserId = row[0] != "ï¿½" ? int.Parse(row[0]) : -1;
+                ToInsertIntoList.Payroll = row[1] != "ï¿½" ? int.Parse(row[1]) : -1;
+                ToInsertIntoList.Name = row[2] != "ï¿½" ? row[2] : "";
+                ToInsertIntoList.DistributionId = row[3] != "ï¿½" ? int.Parse(row[3]) : -1;
+                ToInsertIntoList.SuperiorId = row[4] != "ï¿½" ? int.Parse(row[4]) : -1;
                 try
                 {
                     if (ToInsertIntoList.SuperiorId != -1)
@@ -1690,8 +1690,8 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                             RowsInFile.Clear();
                             foreach (IXLCell cell in row.Cells(1, 13))
                             {
-                                string toinsert = "§";
-                                // Verificar si la celda no está vacía antes de obtener su valor
+                                string toinsert = "ï¿½";
+                                // Verificar si la celda no estï¿½ vacï¿½a antes de obtener su valor
                                 if (!cell.IsEmpty())
                                 {
                                     toinsert = cell.Value.ToString();
