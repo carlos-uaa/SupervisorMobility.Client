@@ -778,37 +778,37 @@ else
         _SelectedHoe = await SOSHubServices.GetSOSHub(sosHuBiD, includeModel: true, includeEquipments: true, includeTools: true, includeMaterials: true, includeCollections: true, includePeopleCollections: true, includeDocuments: true, includePats: true);
 
         if (_SelectedHoe.SOSAnalysis?.Count() > 0)
-            foreach (var analysis in _SelectedHoe.SOSAnalysis)
+            foreach (var analysis in _SelectedHoe.SOSAnalysis.Where(a => a.IsActive == true))
             {
                 Documents.Add(analysis);
             }
 
         if (_SelectedHoe.SOSCombination?.Count() > 0)
-            foreach (var combination in _SelectedHoe.SOSCombination)
+            foreach (var combination in _SelectedHoe.SOSCombination.Where(c => c.IsActive == true))
             {
                 Documents.Add(combination);
             }
 
         if (_SelectedHoe.SOSDistribution?.Count() > 0)
-            foreach (var distribution in _SelectedHoe.SOSDistribution)
+            foreach (var distribution in _SelectedHoe.SOSDistribution.Where(d => d.IsActive == true))
             {
                 Documents.Add(distribution);
             }
 
         if (_SelectedHoe.SOSFlow?.Count() > 0)
-            foreach (var flow in _SelectedHoe.SOSFlow)
+            foreach (var flow in _SelectedHoe.SOSFlow.Where(f => f.IsActive == true))
             {
                 Documents.Add(flow);
             }
 
         if (_SelectedHoe.SOSSequence?.Count() > 0)
-            foreach (var sequence in _SelectedHoe.SOSSequence)
+            foreach (var sequence in _SelectedHoe.SOSSequence.Where(s => s.IsActive == true))
             {
                 Documents.Add(sequence);
             }
 
         if (_SelectedHoe.PATs?.Count() > 0)
-            foreach (var pat in _SelectedHoe.PATs)
+            foreach (var pat in _SelectedHoe.PATs.Where(p => p.IsActive == true))
             {
                 Documents.Add(pat);
             }
@@ -972,8 +972,13 @@ else
 
             if (confirm == "Deleted!")
             {
-                _SelectedHoe.SOSAnalysis.RemoveAll(Analysis => Analysis.SOSAnalysisId == id);
-                await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                bool deleted = await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                if (deleted)
+                {
+                    _SelectedHoe.SOSAnalysis.RemoveAll(Analysis => Analysis.SOSAnalysisId == id);
+                    Documents.RemoveAll(doc => doc is SOSAnalysis analysis && analysis.SOSAnalysisId == id);
+                    StateHasChanged();
+                }
             }
         }
         else if (typeof(T) == typeof(SOSCombination))
@@ -984,8 +989,13 @@ else
 
             if (confirm == "Deleted!")
             {
-                _SelectedHoe.SOSCombination.RemoveAll(combination => combination.SOSCombinationId == id);
-                await SOSAnalysisServices.DeleteSOSAnalysis(id);
+                bool deleted = await SOSCombinationServices.DeleteSOSCombination(id);
+                if (deleted)
+                {
+                    _SelectedHoe.SOSCombination.RemoveAll(combination => combination.SOSCombinationId == id);
+                    Documents.RemoveAll(doc => doc is SOSCombination combination && combination.SOSCombinationId == id);
+                    StateHasChanged();
+                }
             }
         }
         else if (typeof(T) == typeof(SOSDistribution))
@@ -996,8 +1006,13 @@ else
 
             if (confirm == "Deleted!")
             {
-                _SelectedHoe.SOSDistribution.RemoveAll(distribution => distribution.SOSDistributionId == id);
-                await SOSDistributionServices.DeleteSOSDistribution(id);
+                bool deleted = await SOSDistributionServices.DeleteSOSDistribution(id);
+                if (deleted)
+                {
+                    _SelectedHoe.SOSDistribution.RemoveAll(distribution => distribution.SOSDistributionId == id);
+                    Documents.RemoveAll(doc => doc is SOSDistribution distribution && distribution.SOSDistributionId == id);
+                    StateHasChanged();
+                }
             }
         }
         else if (typeof(T) == typeof(SOSFlow))
@@ -1008,20 +1023,30 @@ else
 
             if (confirm == "Deleted!")
             {
-                _SelectedHoe.SOSFlow.RemoveAll(flow => flow.SOSFlowId == id);
-                await SOSFlowServices.DeleteSOSFlow(id);
+                bool deleted = await SOSFlowServices.DeleteSOSFlow(id);
+                if (deleted)
+                {
+                    _SelectedHoe.SOSFlow.RemoveAll(flow => flow.SOSFlowId == id);
+                    Documents.RemoveAll(doc => doc is SOSFlow flow && flow.SOSFlowId == id);
+                    StateHasChanged();
+                }
             }
         }
         else if (typeof(T) == typeof(SOSSequence))
         {
-            bool? result = await _DeleteAnalysis.Show();
+            bool? result = await _DeleteSequence.Show();
             var confirm = result is null ? "Canceled" : "Deleted!";
             StateHasChanged();
 
             if (confirm == "Deleted!")
             {
-                _SelectedHoe.SOSSequence.RemoveAll(Sequence => Sequence.SOSSequenceId == id);
-                await SOSSequenceServices.DeleteSOSSequence(id);
+                bool deleted = await SOSSequenceServices.DeleteSOSSequence(id);
+                if (deleted)
+                {
+                    _SelectedHoe.SOSSequence.RemoveAll(Sequence => Sequence.SOSSequenceId == id);
+                    Documents.RemoveAll(doc => doc is SOSSequence sequence && sequence.SOSSequenceId == id);
+                    StateHasChanged();
+                }
             }
         }
         else if (typeof(T) == typeof(PAT))
