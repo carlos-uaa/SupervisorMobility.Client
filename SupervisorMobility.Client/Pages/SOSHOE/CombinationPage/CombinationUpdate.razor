@@ -415,19 +415,19 @@ else
                     }
                     // Parse the times, handling nulls and different decimal separators
                     double manualOperationTime = 0.0;
-                    double.TryParse(operationSequence.ManualOperationTime?.Replace(",", ".") ?? "0", System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out manualOperationTime);
+                    manualOperationTime = operationSequence.ManualOperationTime == null ? 0.0 : (double)operationSequence.ManualOperationTime;
                     manualOperationTime = RoundToThreeDecimals(manualOperationTime);
 
                     double manualWithMachineTime = 0.0;
-                    double.TryParse(operationSequence.ManualOperationTimeWithMachineInAutomatic?.Replace(",", ".") ?? "0", System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out manualWithMachineTime);
+                    manualWithMachineTime = operationSequence.ManualOperationTimeWithMachineInAutomatic == null ? 0.0 : (double)operationSequence.ManualOperationTimeWithMachineInAutomatic;
                     manualWithMachineTime = RoundToThreeDecimals(manualWithMachineTime);
 
                     double automaticMachineTime = 0.0;
-                    double.TryParse(operationSequence.AutomaticMachineOperationTime?.Replace(",", ".") ?? "0", System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out automaticMachineTime);
+                    automaticMachineTime = operationSequence.AutomaticMachineOperationTime == null ? 0.0 : (double)operationSequence.AutomaticMachineOperationTime;
                     automaticMachineTime = RoundToThreeDecimals(automaticMachineTime);
 
                     double steps = 0.0;
-                    double.TryParse(operationSequence.StepsToNextProcess?.Replace(",", ".") ?? "0", System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out steps);
+                    steps = operationSequence.StepsToNextProcess == null ? 0.0 : (double)operationSequence.StepsToNextProcess;
                     steps = RoundToThreeDecimals(steps);
 
                     double StepCurrentFragment = Math.Floor((steps / 2) * 100) / 100;
@@ -441,9 +441,7 @@ else
                     else if (indexOperationSequence > 0)
                     {
                         double previousSteps = 0.0;
-                        double.TryParse(_sosCombination.SOSCombinationOperationSequence.ElementAt(indexOperationSequence - 1).StepsToNextProcess?.Replace(",", ".") ?? "0",
-                        System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out previousSteps);
-                        previousSteps = RoundToThreeDecimals(previousSteps);
+                        previousSteps = _sosCombination.SOSCombinationOperationSequence.ToList()[indexOperationSequence - 1].StepsToNextProcess == null ? 0.0 : (double)_sosCombination.SOSCombinationOperationSequence.ToList()[indexOperationSequence - 1].StepsToNextProcess;
 
                         double previousFragment = Math.Floor((previousSteps / 2) * 100) / 100;
                         StepPrevious = RoundToThreeDecimals(previousSteps - previousFragment);
