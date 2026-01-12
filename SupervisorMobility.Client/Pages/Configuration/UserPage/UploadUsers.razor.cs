@@ -145,7 +145,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 }
 
                 _groups = await GroupServices.GetGroups();
-                //_allUsers = await UsersServices.GetUsers(true, false);
+                _allUsers = await UsersServices.GetUsers(true, true);
                 selectedSSVOfList = null;
                 selectedSupervisorOfList = null;
             }
@@ -1341,6 +1341,55 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                                 showTableInUI = false;
                             }
 
+                            //AREAS COLLECTION
+                            try
+                            {
+                                if (row[10].Contains(','))
+                                {
+                                    string[]? SplitedAreas = row[10] != "�" ? row[10].Split(',') : null;
+                                    if (SplitedAreas != null)
+                                    {
+                                        if (ToInsertIntoList.Areas != null)
+                                        {
+                                            foreach (var item in SplitedAreas)
+                                            {
+                                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ToInsertIntoList.Areas = new List<Area>();
+                                            foreach (var item in SplitedAreas)
+                                            {
+                                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (row[10] != "�" && row[10] != "")
+                                    {
+                                        if (ToInsertIntoList.Areas != null)
+                                        {
+                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[10])));
+                                        }
+                                        else
+                                        {
+                                            ToInsertIntoList.Areas = new List<Area>();
+                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[10])));
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                showTableInUI = false;
+                                ErrorMessageToDisplay = $"Document Incomplet, Areas For Operator with Name {ToInsertIntoList.Name}";
+                                isOkFile = false;
+                                break;
+                            }
+
                             break;
                     }
 
@@ -1537,10 +1586,10 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 {
                     var ToInsertIntoList = new User();
                     ToInsertIntoList.UserId = row[0] != "�" ? int.Parse(row[0]) : -1;
+                    ToInsertIntoList.UserType = 3; // Supervisor
                     ToInsertIntoList.Name = row[1] != "�" ? row[1] : "";
                     ToInsertIntoList.Email = row[2] != "�" ? row[2] : "";
                     ToInsertIntoList.SuperiorId = row[3] != "�" ? int.Parse(row[3]) : -1;
-                    ToInsertIntoList.AreaId = row[4] != "�" ? int.Parse(row[4]) : -1;
                     ToInsertIntoList.ObjectId = row[5] != "�" ? row[5] : "";
                     try
                     {
@@ -1562,16 +1611,50 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         Console.WriteLine("Error in try to assign info from supperior");
                     }
 
+                    //AREAS COLLECTION (row[4])
                     try
                     {
-                        if (ToInsertIntoList.AreaId != -1)
+                        if (row[4] != "�" && row[4] != "" && row[4] != "-1")
                         {
-                            ToInsertIntoList.Area = _areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == ToInsertIntoList.AreaId);
+                            if (row[4].Contains(','))
+                            {
+                                string[]? SplitedAreas = row[4].Split(',');
+                                if (SplitedAreas != null)
+                                {
+                                    if (ToInsertIntoList.Areas != null)
+                                    {
+                                        foreach (var item in SplitedAreas)
+                                        {
+                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ToInsertIntoList.Areas = new List<Area>();
+                                        foreach (var item in SplitedAreas)
+                                        {
+                                            ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (ToInsertIntoList.Areas != null)
+                                {
+                                    ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[4])));
+                                }
+                                else
+                                {
+                                    ToInsertIntoList.Areas = new List<Area>();
+                                    ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[4])));
+                                }
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Error in try to assign area");
+                        Console.WriteLine("Error in try to assign areas");
                     }
 
                     ListtoReturn.Add(ToInsertIntoList);
@@ -1595,6 +1678,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 //{
                 var ToInsertIntoList = new User();
                 ToInsertIntoList.UserId = row[0] != "�" ? int.Parse(row[0]) : -1;
+                ToInsertIntoList.UserType = 4; // Operator
                 ToInsertIntoList.Payroll = row[1] != "�" ? int.Parse(row[1]) : -1;
                 ToInsertIntoList.Name = row[2] != "�" ? row[2] : "";
                 ToInsertIntoList.DistributionId = row[3] != "�" ? int.Parse(row[3]) : -1;
@@ -1657,6 +1741,52 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 catch (Exception ex)
                 {
                     Console.WriteLine("Error in try to assign Distribution");
+                }
+
+                //AREAS COLLECTION
+                try
+                {
+                    if (row.Length > 5 && row[5] != null && row[5] != "�" && row[5] != "")
+                    {
+                        if (row[5].Contains(','))
+                        {
+                            string[]? SplitedAreas = row[5].Split(',');
+                            if (SplitedAreas != null)
+                            {
+                                if (ToInsertIntoList.Areas != null)
+                                {
+                                    foreach (var item in SplitedAreas)
+                                    {
+                                        ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                    }
+                                }
+                                else
+                                {
+                                    ToInsertIntoList.Areas = new List<Area>();
+                                    foreach (var item in SplitedAreas)
+                                    {
+                                        ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(item)));
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (ToInsertIntoList.Areas != null)
+                            {
+                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[5])));
+                            }
+                            else
+                            {
+                                ToInsertIntoList.Areas = new List<Area>();
+                                ToInsertIntoList.Areas.Add(_areas[_plants.FindIndex(e => e.PlantId == ToInsertIntoList.PlantId)].Find(a => a.AreaId == int.Parse(row[5])));
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error in try to assign Areas collection");
                 }
 
                 ListtoReturn.Add(ToInsertIntoList);
@@ -1910,7 +2040,50 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         private async void OpenDialog(User ContextItem)
         {
             AreasManagerVisibleDialog = true;
-            _areasManager = new List<Area>(_areas[_plants.FindIndex(e => e.PlantId == ContextItem.PlantId)]);
+            
+            await JS.InvokeVoidAsync("console.log", $"[OpenDialog] UserType: {ContextItem.UserType}, Superior: {ContextItem.Superior?.Name}, SuperiorId: {ContextItem.Superior?.UserId}");
+            await JS.InvokeVoidAsync("console.log", $"[OpenDialog] _allUsers count: {_allUsers?.Count}");
+            
+            // Para Supervisores (UserType 3), cargar SOLO las áreas del superior (SSV)
+            // Para Operadores (UserType 4), cargar SOLO las áreas del superior (Supervisor)
+            // Igual que CreateUsers.razor
+            if ((ContextItem.UserType == 3 || ContextItem.UserType == 4) && ContextItem.Superior != null)
+            {
+                await JS.InvokeVoidAsync("console.log", "[OpenDialog] Entrando a filtro de supervisor/operador");
+                
+                // Buscar el superior en _allUsers para obtener sus áreas completas
+                // porque ContextItem.Superior puede no tener las Areas cargadas
+                var superiorFromList = _allUsers.FirstOrDefault(u => u.UserId == ContextItem.Superior.UserId);
+                
+                await JS.InvokeVoidAsync("console.log", $"[OpenDialog] Superior encontrado: {superiorFromList?.Name}, Areas count: {superiorFromList?.Areas?.Count}");
+                
+                if (superiorFromList?.Areas != null && superiorFromList.Areas.Count > 0)
+                {
+                    await JS.InvokeVoidAsync("console.log", $"[OpenDialog] Usando {superiorFromList.Areas.Count} áreas del superior");
+                    // Usar las áreas del superior encontrado en _allUsers
+                    _areasManager = new List<Area>(superiorFromList.Areas);
+                }
+                else if (ContextItem.Superior.Areas != null && ContextItem.Superior.Areas.Count > 0)
+                {
+                    await JS.InvokeVoidAsync("console.log", "[OpenDialog] Fallback: usando áreas de ContextItem.Superior");
+                    // Fallback: usar las áreas del ContextItem.Superior directamente
+                    _areasManager = new List<Area>(ContextItem.Superior.Areas);
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("console.log", "[OpenDialog] Superior sin áreas, lista vacía");
+                    // Si el superior no tiene áreas, lista vacía
+                    _areasManager = new List<Area>();
+                }
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("console.log", "[OpenDialog] Usando TODAS las áreas de la planta (SSV u otro)");
+                // Para SSV (UserType 2) u otros, cargar todas las áreas de la planta
+                _areasManager = new List<Area>(_areas[_plants.FindIndex(e => e.PlantId == ContextItem.PlantId)]);
+            }
+            
+            // Remover las áreas ya asignadas de la lista de disponibles
             if (ContextItem.Areas?.Count > 0)
             {
                 if (_areasManager?.Count > 0)
