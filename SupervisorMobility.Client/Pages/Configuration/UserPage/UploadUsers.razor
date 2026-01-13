@@ -1085,100 +1085,137 @@
                                 @switch (uploadtype)
                                 {
                                     case 3:
-                                        @if (@context.Superior is null)
-                                        {
-                                            <MudTd DataLabel="@Localizer1["UsersAssinedArea"]">
-                                                <MudText Align="Align.Center">@Localizer1["UsersSelectSuperior"]</MudText>
-                                            </MudTd>
-                                        }
-                                        else
-                                        {
-                                            <MudTd DataLabel="@Localizer1["UsersAssignedArea"]">
-
-                                                @if (@context.Area != null)
+                                        <MudTd DataLabel="@Localizer1["UsersAreasManage"]">
+                                            @if (context.Areas?.Count > 0)
+                                            {
+                                                <MudToolBar>
+                                                    <MudItem Style="text-align: center;">
+                                                        <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                            <ActivatorContent>
+                                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer1["UsersShowAreas"]</MudButton>
+                                                            </ActivatorContent>
+                                                            <ChildContent>
+                                                                @foreach (var area in context.Areas)
+                                                                {
+                                                                    <MudMenuItem>
+                                                                        <MudButton StartIcon="@Icons.Material.Filled.Business" IconColor="Color.Info">@area.Code - @area.Description</MudButton>
+                                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromContextItem(area, context)" OnTouch="() => DeleteAreaFromContextItem(area, context)" />
+                                                                    </MudMenuItem>
+                                                                }
+                                                            </ChildContent>
+                                                        </MudMenu>
+                                                    </MudItem>
+                                                    <MudSpacer />
+                                                    <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
+                                                </MudToolBar>
+                                            }
+                                            else
+                                            {
+                                                @if (@context.Superior is not null)
                                                 {
-                                                    <MudTd DataLabel="Area">
-                                                        <MudItem Class="d-flex justify-content-center align-items-center">
-                                                            <MudTextField Value="@context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedAreaContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                                        </MudItem>
-                                                    </MudTd>
+                                                    <MudToolBar>
+                                                        <MudText Typo="Typo.button">@Localizer1["UsersNoAreas"]</MudText>
+                                                        <MudSpacer />
+                                                        <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
+                                                    </MudToolBar>
                                                 }
                                                 else
                                                 {
-                                                    @if (context.Superior.Areas is not null)
-                                                    {
-                                                        if (context.Superior.Areas.Count > 0)
-                                                        {
-                                                            <MudSelect SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" T="Area" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                                                <MudSelectItem Disabled="true" Value="@context.Area"> @Localizer1["UsersAssignedArea"]</MudSelectItem>
-                                                                @foreach (var item in context.Superior.Areas)
-                                                                {
-                                                                    <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
-                                                                }
-                                                            </MudSelect>
-                                                        }
-                                                        else
-                                                        {
-                                                            <MudText Typo="Typo.button">@Localizer1["UsersNoAreas"]</MudText>
-                                                        }
-                                                    }
+                                                    <MudText Typo="Typo.button" Align="Align.Center">@Localizer1["UsersSelectSuperior"]</MudText>
                                                 }
-
-                                            </MudTd>
-                                        }
+                                            }
+                                        </MudTd>
                                         break;
                                     case 4:
-                                        @if (selectedSSVOfList is null)
-                                        {
-                                            <MudTd DataLabel="@Localizer1["UsersAssignedArea"]">
-                                                <MudText Align="Align.Center">@Localizer1["UsersSelectSuperior"]</MudText>
-                                            </MudTd>
-                                        }
-                                        else
-                                        {
-
-                                            <MudTd DataLabel="@Localizer1["UsersAssignedArea"]">
-                                                @if (selectedSSVOfList.Areas is not null)
+                                        @* Caso 4: Agregar supervisores a un SSV específico *@
+                                        @* Mostrar áreas collection igual que en caso 3 *@
+                                        <MudTd DataLabel="@Localizer1["UsersAreasManage"]">
+                                            @if (context.Areas?.Count > 0)
+                                            {
+                                                <MudToolBar>
+                                                    <MudItem Style="text-align: center;">
+                                                        <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                            <ActivatorContent>
+                                                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer1["UsersShowAreas"]</MudButton>
+                                                            </ActivatorContent>
+                                                            <ChildContent>
+                                                                @foreach (var area in context.Areas)
+                                                                {
+                                                                    <MudMenuItem>
+                                                                        <MudButton StartIcon="@Icons.Material.Filled.Business" IconColor="Color.Info">@area.Code - @area.Description</MudButton>
+                                                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromContextItem(area, context)" OnTouch="() => DeleteAreaFromContextItem(area, context)" />
+                                                                    </MudMenuItem>
+                                                                }
+                                                            </ChildContent>
+                                                        </MudMenu>
+                                                    </MudItem>
+                                                    <MudSpacer />
+                                                    <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
+                                                </MudToolBar>
+                                            }
+                                            else
+                                            {
+                                                @if (selectedSSVOfList is not null)
                                                 {
-                                                    if (selectedSSVOfList.Areas.Count > 0)
-                                                    {
-                                                        <MudSelect T="Area" SelectedValuesChanged="@(() => updateSelectAreaContextItem(context))" Label="Area" Placeholder="Area" @bind-Value="@context.Area" For="@(() => @context.Area)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                                                            <MudSelectItem Disabled="true" Value="@context.Area"> @Localizer1["UsersAssignedArea"]  </MudSelectItem>
-                                                            @foreach (var item in selectedSSVOfList.Areas)
-                                                            {
-                                                                <MudSelectItem Value="item">@($"{item.Code}-{item.Description}") </MudSelectItem>
-                                                            }
-                                                        </MudSelect>
-                                                    }
-                                                    else
-                                                    {
-                                                        <MudText Typo="Typo.button">@Localizer1["UsersNoAreasSSV"]</MudText>
-                                                    }
+                                                    <MudToolBar>
+                                                        <MudText Typo="Typo.button">@Localizer1["UsersNoAreas"]</MudText>
+                                                        <MudSpacer />
+                                                        <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
+                                                    </MudToolBar>
                                                 }
-                                            </MudTd>
-                                        }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.button" Align="Align.Center">@Localizer1["UsersSelectSuperior"]</MudText>
+                                                }
+                                            }
+                                        </MudTd>
                                         break;
                                 }
 
                             }
                             else
                             {
-                                //area asignada al operador por el superior
-
-                                @if (@context.Area != null)
-                                {
-                                    <MudTd DataLabel="Area">
-                                        <MudItem Class="d-flex justify-content-center align-items-center">
-                                            <MudTextField Value="@context.Area?.Description" ReadOnly=true Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" OnAdornmentClick="@(() => RemoveSelectedAreaContextItem(context))" Style="cursor:pointer"></MudTextField>
-                                        </MudItem>
-                                    </MudTd>
-                                }
-                                else
-                                {
-                                    <MudTd DataLabel="Area" Class="mtc">
-                                        <MudText Align="Align.Center" class="marquee">@Localizer1["UsersBySuperior"]</MudText>
-                                    </MudTd>
-                                }
+                                @* Operadores (uploadtype 5 y 6) - Mostrar Areas collection *@
+                                <MudTd DataLabel="@Localizer1["UsersAreasManage"]">
+                                    @if (context.Areas?.Count > 0)
+                                    {
+                                        <MudToolBar>
+                                            <MudItem Style="text-align: center;">
+                                                <MudMenu Dense=true MaxHeight="300" ActivationEvent="@MouseEvent.MouseOver" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                    <ActivatorContent>
+                                                        <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Info" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">@Localizer1["UsersShowAreas"]</MudButton>
+                                                    </ActivatorContent>
+                                                    <ChildContent>
+                                                        @foreach (var area in context.Areas)
+                                                        {
+                                                            <MudMenuItem>
+                                                                <MudButton StartIcon="@Icons.Material.Filled.Business" IconColor="Color.Info">@area.Code - @area.Description</MudButton>
+                                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromContextItem(area, context)" OnTouch="() => DeleteAreaFromContextItem(area, context)" />
+                                                            </MudMenuItem>
+                                                        }
+                                                    </ChildContent>
+                                                </MudMenu>
+                                            </MudItem>
+                                            <MudSpacer />
+                                            <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
+                                        </MudToolBar>
+                                    }
+                                    else
+                                    {
+                                        @if (@context.Superior is not null)
+                                        {
+                                            <MudToolBar>
+                                                <MudText Typo="Typo.button">@Localizer1["UsersNoAreas"]</MudText>
+                                                <MudSpacer />
+                                                <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="(() => OpenDialog(context))" />
+                                            </MudToolBar>
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.button" Align="Align.Center">@Localizer1["UsersSelectSuperior"]</MudText>
+                                        }
+                                    }
+                                </MudTd>
                             }
 
                             @if (uploadtype > 4)

@@ -170,26 +170,6 @@
                         }
                         else if(_user.UserType == 3 && LogedUser.UserType == 1){
                             <MudTextField @bind-Value="plantInfo" Label="@Localizer["UsersLabelPlant"]" ReadOnly="true" Variant="Variant.Outlined" />
-                            if(_user.Superior != null)
-                            {
-                                if(_user.Superior.Areas != null && _user.Superior.Areas.Count > 0){
-                                    <MudSelect T="int" Label="@Localizer["UsersLabelArea"]" Variant="Variant.Outlined" Placeholder="@Localizer["UsersPHArea"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
-                                        <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHArea"]</MudSelectItem>
-                                        @foreach (var type in _user.Superior.Areas)
-                                        {
-                                        <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                }
-                                else
-                                {
-                                    <MudAlert Severity="Severity.Info">
-                                        <MudText Style="font-weight: bold;">@Localizer["UsersNoAreasSSV"]</MudText>
-                                    </MudAlert>
-                                }
-                                
-                            }
-
                             <MudTextField @bind-Value="grupInfo" Label="@Localizer["UsersLabelGroup"]" ReadOnly="true" Variant="Variant.Outlined" />
                         }
                         else if(_user.UserType == 3 && LogedUser.UserType == 2){
@@ -230,22 +210,6 @@
                         else if (_user.UserType == 4)
                         {
                             <MudTextField @bind-Value="plantInfo" Label="@Localizer["UsersLabelPlant"]" ReadOnly="true" Variant="Variant.Outlined" />
-                            if (LogedUser.Areas != null)
-                            {
-                                <MudSelect T="int" Label="@Localizer["stage"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectStage"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxArea" For="@(() => auxArea)" SelectedValuesChanged="ShowDistributionInvokeByAreasSelector">
-                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectStage"]</MudSelectItem>
-                                    @foreach (var type in LogedUser.Areas)
-                                    {
-                                        <MudSelectItem Value="type.AreaId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            }
-                            else
-                            {
-                                <MudAlert Severity="Severity.Info">
-                                    <MudText Style="font-weight: bold;">@Localizer["noStages"].</MudText>
-                                </MudAlert>
-                            }
                             if (_deparments != null)
                             {
                                 <MudSelect T="int" Label="@Localizer["departmentLabel"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectDepartment"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxDepa" For="@(() => auxDepa)">
@@ -290,8 +254,8 @@
                         }
                         @* Areas Managed*@
 
-
-                        @if (_user.UserType == 2)
+                        @* UserType 2 (Senior Supervisor), 3 (Supervisor) y 4 (Operator) pueden gestionar múltiples áreas *@
+                        @if (_user.UserType == 2 || _user.UserType == 3 || _user.UserType == 4)
                         {
                             <MudItem Class="mt-5">
                                 <MudText Typo="Typo.h6">@Localizer["UsersManageAreas"]</MudText>
@@ -519,13 +483,17 @@
                                                             {
                                                                 @if (LogedUser.UserType == 1)
                                                                 {
-                                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                                    var areasText = SS.Areas?.Count > 0 ? string.Join(", ", SS.Areas.Select(a => a.Code)) : "No Areas";
+                                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}") </MudSelectItem>
                                                                 }
                                                                 else if(LogedUser.UserType == 2)
                                                                 {
-                                                                    @if (SS.PlantId == LogedUser.PlantId && LogedUser.Areas?.ToList().FindIndex(s => s.AreaId == SS.AreaId) != -1)
+                                                                    // Verificar si el SSV tiene alguna área en común con el Supervisor
+                                                                    bool hasCommonArea = SS.Areas?.Any(sa => LogedUser.Areas?.Any(la => la.AreaId == sa.AreaId) == true) == true;
+                                                                    @if (SS.PlantId == LogedUser.PlantId && hasCommonArea)
                                                                     {
-                                                                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                                        var areasText = SS.Areas?.Count > 0 ? string.Join(", ", SS.Areas.Select(a => a.Code)) : "No Areas";
+                                                                        <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}") </MudSelectItem>
                                                                     }
                                                                 }
                                                             }
@@ -838,13 +806,17 @@
                                                         {
                                                             @if (LogedUser.UserType == 1)
                                                             {
-                                                                <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                                var areasText = SS.Areas?.Count > 0 ? string.Join(", ", SS.Areas.Select(a => a.Code)) : "No Areas";
+                                                                <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}") </MudSelectItem>
                                                             }
                                                             else
                                                             {
-                                                                @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
+                                                                // Verificar si hay áreas en común entre _user y SS
+                                                                bool hasCommonArea = SS.Areas?.Any(sa => _user.Areas?.Any(ua => ua.AreaId == sa.AreaId) == true) == true;
+                                                                @if (hasCommonArea)
                                                                 {
-                                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                                                                    var areasText = SS.Areas?.Count > 0 ? string.Join(", ", SS.Areas.Select(a => a.Code)) : "No Areas";
+                                                                    <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}") </MudSelectItem>
                                                                 }
                                                             }
                                                         }
@@ -1067,11 +1039,17 @@
         _user.DistributionId = 0;
         Operators.Clear();
 
-
+        // Filtrar operadores que tengan el área en su colección Areas o en AreaId (compatibilidad)
         foreach (User item in _allUsers)
         {
-            if (item.AreaId == auxArea && item.PlantId == auxPlant && item.UserType == 4 && item.GroupId == auxGroup)
-                Operators.Add(item);
+            if (item.UserType == 4 && item.PlantId == auxPlant && item.GroupId == auxGroup)
+            {
+                // Verificar si tiene el área en Areas collection o en AreaId
+                bool hasArea = (item.Areas != null && item.Areas.Any(a => a.AreaId == auxArea)) || 
+                               item.AreaId == auxArea;
+                if (hasArea)
+                    Operators.Add(item);
+            }
         }
 
         if (auxPlant != 0 && auxArea != 0)
@@ -1158,8 +1136,14 @@
 
                     plantInfo = _user.Superior?.Plant?.Description;
                     grupInfo = _user.Superior?.Group?.Description;
-
-
+                    
+                    // Supervisor usará Areas collection, no AreaId singular
+                    // Cargar áreas del SSV logueado
+                    if(LogedUser.Areas != null && LogedUser.Areas.Count > 0) {
+                        _areasManager = LogedUser.Areas.ToList();
+                    } else if(auxPlant != 0) {
+                        _areasManager = await AreaServices.GetAreas(auxPlant);
+                    }
 
                 }
                 else
@@ -1171,25 +1155,25 @@
                 break;
             case 4:
                 if(LogedUser.UserType == 3){
-                    auxPlant = (int)LogedUser.PlantId;
-                    auxArea = (int)LogedUser.AreaId;
-                    auxGroup = (int)LogedUser.GroupId;
-
                     _user.SuperiorId = LogedUser.UserId;
                     _user.Superior = LogedUser;
                     superior = true;
 
                     _user.PlantId = _user.Superior?.PlantId;
-                    _user.AreaId = _user.Superior?.AreaId;
                     _user.GroupId = _user.Superior?.GroupId;
 
-                    plantInfo = _user.Superior?.Plant?.Description;
-                    areaInfo = _user.Superior?.Area?.Description;
-                    grupInfo = _user.Superior?.Group?.Description;
+                    auxPlant = (int)_user.Superior?.PlantId;
+                    auxGroup = (int)_user.Superior?.GroupId;
 
-                    if (auxPlant != 0 && auxArea != 0)
-                    {
-                        _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
+                    plantInfo = _user.Superior?.Plant?.Description;
+                    grupInfo = _user.Superior?.Group?.Description;
+                    
+                    // Operator usará Areas collection del Supervisor
+                    // Cargar áreas del SV logueado
+                    if(LogedUser.Areas != null && LogedUser.Areas.Count > 0) {
+                        _areasManager = LogedUser.Areas.ToList();
+                    } else if(auxPlant != 0) {
+                        _areasManager = await AreaServices.GetAreas(auxPlant);
                     }
                 }
                 else{
@@ -1229,27 +1213,40 @@
 
                 plantInfo = _user.Superior?.Plant?.Description;
                 grupInfo = _user.Superior?.Group?.Description;
+                
+                // Cargar áreas disponibles basadas en el superior (SSV)
+                if(auxPlant != 0) {
+                    _areasManager?.Clear();
+                    if(_user.Superior.Areas != null && _user.Superior.Areas.Count > 0) {
+                        // Usar las áreas del superior
+                        _areasManager = _user.Superior.Areas.ToList();
+                    } else {
+                        // Si el superior no tiene áreas, cargar todas de la planta
+                        _areasManager = await AreaServices.GetAreas(auxPlant);
+                    }
+                }
 
                 break;
             case 4: 
                 _user.PlantId =  _user.Superior?.PlantId;
-                //agrega el area
-                _user.AreaId = _user.Superior?.AreaId;
                 _user.GroupId =  _user.Superior?.GroupId;
 
                 auxPlant =  (int)_user.Superior?.PlantId;
-                //agrega el area
-                auxArea = (int)_user.Superior?.AreaId;
                 auxGroup = (int)_user.Superior?.GroupId;
 
                 plantInfo = _user.Superior?.Plant?.Description;
-                //agrega el area
-                areaInfo = _user.Superior?.Area?.Description;
                 grupInfo = _user.Superior?.Group?.Description;
-
-                if (auxPlant != 0 && auxArea != 0)
-                {
-                    _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
+                
+                // Cargar áreas disponibles basadas en el superior (Supervisor)
+                if(auxPlant != 0) {
+                    _areasManager?.Clear();
+                    if(_user.Superior.Areas != null && _user.Superior.Areas.Count > 0) {
+                        // Usar las áreas del superior
+                        _areasManager = _user.Superior.Areas.ToList();
+                    } else {
+                        // Si el superior no tiene áreas, cargar todas de la planta
+                        _areasManager = await AreaServices.GetAreas(auxPlant);
+                    }
                 }
                 break;
         }
@@ -1398,13 +1395,15 @@
 
     private async void CreateUser()
     {
-        if(_user.UserType == 3 && auxArea == 0){
+        // Validar que UserType 2 (SSV), 3 (SV) y 4 (Operator) tengan áreas asignadas
+        if((_user.UserType == 2 || _user.UserType == 3 || _user.UserType == 4) && (_user.Areas == null || _user.Areas.Count == 0)){
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
             Snackbar.Add($"{Localizer["UsersFirstArea"]}!", Severity.Warning);
             return;
         }
-        else if(_user.UserType == 4)
+        
+        if(_user.UserType == 4)
         {
             if(_user.Payroll.ToString() == null || _user.Payroll.ToString() == ""){
                 Snackbar.Clear();
@@ -1419,13 +1418,6 @@
                 Snackbar.Add($"{@Localizer["UsersFirstSuperior"]}", Severity.Warning);
                 return;
             }
-            //if (auxDistribution == 0)
-            //{
-            //    Snackbar.Clear();
-            //    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-            //    Snackbar.Add($"First Select a distribution", Severity.Warning);
-            //    return;
-            //}
         }
 
         _user.IsActive = true;
@@ -1433,7 +1425,7 @@
         _user.LastUpdated = DateTime.Now;
 
         _user.PlantId = auxPlant;
-        _user.AreaId = auxArea;
+        // UserType 2 (SSV), 3 (Supervisor) y 4 (Operator) usan Areas collection a través de UserAreas
         _user.DepartmentId = auxDepa;
         _user.DistributionId = auxDistribution;
         _user.GroupId = auxGroup;
