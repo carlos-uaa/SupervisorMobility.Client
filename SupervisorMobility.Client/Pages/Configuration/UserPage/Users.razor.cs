@@ -42,13 +42,22 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             {
                 if (loggedUser.UserType == 1)
                 {
-                    _users.AddRange(await UsersServices.GetUsersByType(1, false, false));
-                    _users.AddRange(await UsersServices.GetUsersByType(5, true, false));
-                    _users.AddRange(await UsersServices.GetUsersByType(6, true, false));
-                    _users.AddRange(await UsersServices.GetUsersByType(7, true, false));
-                    _users.AddRange(await UsersServices.GetUsersByType(2, true, false));
-                    _users.AddRange(await UsersServices.GetUsersByType(3, true, false));
-                    _users.AddRange(await UsersServices.GetUsersByType(4, true, false));
+                    var tasks = new[]
+                    {
+                        UsersServices.GetUsersByType(1, false, false),
+                        UsersServices.GetUsersByType(5, true, false),
+                        UsersServices.GetUsersByType(6, true, false),
+                        UsersServices.GetUsersByType(7, true, false),
+                        UsersServices.GetUsersByType(2, true, false),
+                        UsersServices.GetUsersByType(3, true, false),
+                        UsersServices.GetUsersByType(4, true, false)
+                    };
+                    
+                    var results = await Task.WhenAll(tasks);
+                    foreach (var result in results)
+                    {
+                        _users.AddRange(result);
+                    }
                 }
                 else
                 {
@@ -240,7 +249,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 double simility = partesBusqueda.Select(part => element.Name.ToLower().JaccardDistance(part)).Average();
 
 
-                // Puedes ajustar el umbral de similitud según tus necesidades
+                // Puedes ajustar el umbral de similitud segï¿½n tus necesidades
                 if (simility > 0.95)
                 {
                     Console.WriteLine($"{element.Name} = {simility}");
@@ -302,7 +311,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             }
             else if (SelectTableEvent.SelectedItem != null && SelectTableEvent.SelectedItem.Equals(element))
             {
-                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el índice filtrado
+                selectedRowNumber = visibleItems.IndexOf(element);  // Usa el ï¿½ndice filtrado
                 return "selected";
             }
             else
