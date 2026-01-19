@@ -1,0 +1,538 @@
+﻿@inject IStringLocalizer<Resource1> Localizer
+@inject IAreaService AreaServices
+@inject IDistributionService DistributionsServices
+@inject IDialogService DialogService
+@using System.ComponentModel.DataAnnotations
+
+<MudGrid>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" HelperText="E.g. user@compasdcpcs.local" /></MudItem>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" /></MudItem>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" /></MudItem>
+    <MudItem xs="6">
+        <MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" RequiredError="Email is required!"
+                      Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+    </MudItem>
+</MudGrid>
+
+<MudItem Class="mt-5">
+    <MudText Typo="Typo.h6">@Localizer["UsersEmployeInfo"]</MudText>
+</MudItem>
+
+<MudGrid>
+    @*Mud select of Plants *@
+    <MudItem xs="6">
+        <MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
+            <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
+            @foreach (var type in _plants)
+            {
+                <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+
+    @* Mud Select of Groups *@
+    <MudItem xs="6">
+        <MudSelect T="int" Label="@Localizer["UsersLabelGroup"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHGroup"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxGroup" For="@(() => auxGroup)">
+            <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHGroup"]</MudSelectItem>
+            @foreach (var type in _groups)
+            {
+                <MudSelectItem Value="type.GroupId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+
+<MudItem Class="mt-5">
+    <MudText Typo="Typo.h6">@Localizer["UsersManageAreas"]</MudText>
+</MudItem>
+
+@*Selector Ares*@
+@if (_areasManager?.Count > 0 && auxPlant != 0)
+{
+    <MudItem class="d-flex d-flex-column justify-center ma-1">
+        <MudItem Class="d-flex d-flex-row">
+            <MudSelect T="Area" Label="@Localizer["UsersLabelArea"]" SelectedValuesChanged="@OnSelectedAreaToManageFunction" Placeholder="@Localizer["UsersPHArea"]" @bind-Value="@selectedAreaOfList" Style="width: 350px" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem Disabled="true" Value="selectedAreaOfList"> @Localizer["UsersPHArea"] </MudSelectItem>
+                @foreach (var areaItem in _areasManager)
+                {
+                    <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}") </MudSelectItem>
+                }
+            </MudSelect>
+            <MudButton Class="ml-5" Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> @Localizer["UsersAddArea"] </MudButton>
+        </MudItem>
+    </MudItem>
+}
+
+@switch (_user.Areas?.Count)
+{
+    case null:
+        @if (auxPlant == 0)
+        {
+            <MudItem>
+                <MudAlert Severity="Severity.Info">
+                    @Localizer["UsersFirstPlant"]
+                </MudAlert>
+            </MudItem>
+        }
+        else
+        {
+            @if (_areasManager?.Count > 0)
+            {
+                <MudItem class="d-flex flex-column justify-center">
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersFirstArea"]
+                    </MudAlert>
+                </MudItem>
+            }
+            else
+            {
+                <MudItem class="d-flex flex-column justify-center">
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersPlantNoAreas"]
+                    </MudAlert>
+                </MudItem>
+            }
+        }
+        break;
+    case 0:
+        @if (auxPlant == 0)
+        {
+            <MudItem class="d-flex flex-column justify-center justify-align-center">
+                <MudAlert Severity="Severity.Info">
+                    @Localizer["UsersFirstPlant"]
+                </MudAlert>
+            </MudItem>
+        }
+        else
+        {
+            @if (_areasManager?.Count > 0)
+            {
+                <MudItem class="d-flex flex-column justify-center">
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersFirstAddArea"]
+                    </MudAlert>
+                </MudItem>
+            }
+            else
+            {
+                <MudItem class="d-flex flex-column justify-center">
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersPlantNoAreas"]
+                    </MudAlert>
+                </MudItem>
+            }
+        }
+        break;
+    default:
+        @if (_user.Areas is not null && _user.Areas?.ToList().Count > 0)
+        {
+            <MudItem class="d-flex flex-column justify-center ma-1">
+                <MudItem class="d-flex d-flex-column justify-center" Style="overflow-x: auto; padding: 12px;">
+                    @foreach (var itemArea in _user.Areas)
+                    {
+                        <MudCard Elevation="4" Class="mr-5" Style="width: 300px; min-width: 250px; border-radius: 15px; background-color: #f9faf9 !important;">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.subtitle1"><b>@Localizer["UsersAreaId"]:</b> @itemArea.AreaId</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromUserList(itemArea)" />
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <div class="font-weight-bold"><b>@Localizer["UsersCode"]:</b> @itemArea.Code</div>
+                                <div class="font-weight-light"><b>@Localizer["UsersDescription"]:</b> @itemArea.Description</div>
+                            </MudCardContent>
+                            <MudCardActions></MudCardActions>
+                        </MudCard>
+                    }
+                </MudItem>
+            </MudItem>
+        }
+
+        break;
+}
+
+@*Subordinados *@
+<MudItem Class="d-flex flex-column justify-center">
+    <MudItem class="d-flex d-flex-column justify-center">
+        <MudText Typo="Typo.h6"> @Localizer["UsersSubordinates"] </MudText>
+    </MudItem>
+
+    @*Seccion de Selector Subordinados *@
+    <MudItem class="d-flex d-flex-column justify-center ma-1">
+        <MudItem Class="d-flex d-flex-row">
+            @if (Supervisors?.Count > 0 && _user.Areas?.Count > 0)
+            {
+                <MudSelect T="User" Label="@Localizer["UsersSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSupervisorOfList" For="@(() => selectedSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> @Localizer["UsersPHSubordinate"]</MudSelectItem>
+                    @foreach (var SS in Supervisors)
+                    {
+                        @if (LogedUser.UserType == 1)
+                        {
+                            var areasText = SS.Areas?.Count > 0 ? string.Join(", ", SS.Areas.Select(a => a.Code)) : "No Areas";
+                            <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}") </MudSelectItem>
+                        }
+                        else
+                        {
+                            // Verificar si hay áreas en común entre _user y SS
+                            bool hasCommonArea = SS.Areas?.Any(sa => _user.Areas?.Any(ua => ua.AreaId == sa.AreaId) == true) == true;
+                            @if (hasCommonArea)
+                            {
+                                var areasText = SS.Areas?.Count > 0 ? string.Join(", ", SS.Areas.Select(a => a.Code)) : "No Areas";
+                                <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}") </MudSelectItem>
+                            }
+                        }
+                    }
+                </MudSelect>
+                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisorToSubordinateList(selectedSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add subordinate </MudButton>
+            }
+        </MudItem>
+    </MudItem>
+
+    @switch (_user.Subordinates?.Count)
+    {
+        case null:
+
+            @if (auxPlant == 0 && _user.UserType > 2)
+            {
+                <MudItem class="d-flex flex-column justify-center">
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersFirstSuperior"]
+                    </MudAlert>
+                </MudItem>
+            }
+            else
+            {
+                @if (Supervisors?.Count > 0)
+                {
+                    @if (_user.Areas?.Count > 0)
+                    {
+                        <MudItem class="d-flex flex-column justify-center">
+                            <MudAlert Severity="Severity.Info">
+                                @Localizer["UsersFirstSubordinate"]
+                            </MudAlert>
+                        </MudItem>
+                    }
+                    else
+                    {
+                        <MudItem class="d-flex flex-column justify-center">
+                            <MudAlert Severity="Severity.Info">
+                                @Localizer["UsersFirstAddArea"]
+                            </MudAlert>
+                        </MudItem>
+                    }
+                }
+                else
+                {
+                    <MudItem class="d-flex flex-column justify-center">
+                        <MudAlert Severity="Severity.Info">
+                            @Localizer["UsersPlantNoSV"]
+                        </MudAlert>
+                    </MudItem>
+                }
+            }
+            break;
+        case 0:
+            @if (auxPlant == 0 && _user.UserType > 2)
+            {
+                <MudItem class="d-flex flex-column justify-center justify-align-center">
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersFirstSuperior"]
+                    </MudAlert>
+                </MudItem>
+            }
+            else
+            {
+                @if (Supervisors?.Count > 0)
+                {
+                    @if (_user.Areas?.Count > 0)
+                    {
+                        <MudItem class="d-flex flex-column justify-center">
+                            <MudAlert Severity="Severity.Info">
+                                @Localizer["UsersFirstSubordinate"]
+                            </MudAlert>
+                        </MudItem>
+                    }
+                    else
+                    {
+                        <MudItem class="d-flex flex-column justify-center">
+                            <MudAlert Severity="Severity.Info">
+                                @Localizer["UsersFirstAddArea"]
+                            </MudAlert>
+                        </MudItem>
+                    }
+                }
+                else
+                {
+                    <MudItem class="d-flex flex-column justify-center">
+                        <MudAlert Severity="Severity.Info">
+                            @Localizer["UsersPlantNoSV"]
+                        </MudAlert>
+                    </MudItem>
+                }
+            }
+            break;
+        default:
+            @if (_user.Subordinates is not null && _user.Subordinates?.ToList().Count > 0)
+            {
+                <MudItem class="d-flex d-flex-column justify-center" Style="overflow-x: auto; padding: 12px;">
+                    @foreach (var item in _user.Subordinates)
+                    {
+                        <MudCard Elevation="4" Class="mr-5" Style="width: 300px; min-width: 250px; border-radius: 15px; background-color: #f9faf9 !important;">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudChip Icon="@Icons.Material.Filled.Edit" IconColor="Color.Primary" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OpenUpdateAreasDialog(item))">Update Areas</MudChip>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSupervisorFromSubordinateList(item))" />
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <div class="font-weight-bold"> <MudText Typo="Typo.subtitle2"> <b>@Localizer["UsersName"]:</b></MudText> @item.Name </div>
+                                <div class="font-weight-light"><MudText Typo="Typo.subtitle2"> <b>@Localizer["UsersGroup"]:</b></MudText> @item.Group?.Description </div>
+                            </MudCardContent>
+                            <div class="d-flex justify-content-between justify-center">
+                                    <MudPaper Elevation="0">
+                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"> @Localizer["UsersSupervisor"] </MudChip>
+                                    </MudPaper>
+                            </div>
+                        </MudCard>
+                    }
+                </MudItem>
+            }
+            break;
+    }
+</MudItem>
+
+<MudItem Class="ml-auto mt-3">
+    @if (_user.UserType != 0)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="SubmitUser">@Localizer["UsersNew"]</MudButton>
+    }
+    <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+</MudItem>
+
+@code {
+    [Parameter] public User _user { get; set; }
+    [Parameter] public User LogedUser { get; set; }
+    [Parameter] public List<Plant> _plants { get; set; }
+    [Parameter] public List<Group> _groups { get; set; }
+    [Parameter] public List<Distribution> _distributions { get; set; }
+    [Parameter] public List<User> _allUsers { get; set; }
+    [Parameter] public List<User> Managers { get; set; }
+    [Parameter] public List<User> SeniorsSupervisors { get; set; }
+    [Parameter] public List<User> Supervisors { get; set; }
+    [Parameter] public List<User> Operators { get; set; }
+    [Parameter] public List<Area> _areas { get; set; }
+    [Parameter] public List<Area> _areasManager { get; set; }
+    [Parameter] public EventCallback<UserManagmentFormDto> OnUserChanged { get; set; }
+
+    private int auxPlant;
+    private int auxGroup;
+    private int auxArea;
+    private int auxDistribution;
+
+    private bool ActiveAddArea = true; 
+    private bool ActiveAddSubordinated = true;
+
+    private Area selectedAreaOfList = new Area();
+    private User selectedSupervisorOfList = new User();
+
+    public List<UpdateAreasForSuperiorDto> SubordinatesToUpdate = new List<UpdateAreasForSuperiorDto>();
+
+    private async Task SubmitUser()
+    {
+        UserManagmentFormDto userManagmentFormDto = new UserManagmentFormDto
+        {
+            User = _user,
+            Subordinates = SubordinatesToUpdate
+        };
+        await OnUserChanged.InvokeAsync(userManagmentFormDto);
+    }
+
+    private async void ShowAreasInvokeByPlantSelector()
+    {
+        SeniorsSupervisors.Clear();
+        Supervisors.Clear();
+        Operators.Clear();
+
+        //El admin accesa a todo
+        await SegregateAllUsers(_allUsers);
+
+        auxArea = 0;
+        auxDistribution = 0;
+
+        if (auxPlant != 0)
+        {
+            _user.Subordinates?.Clear();
+            _user.Areas?.Clear();
+
+            _areas.Clear();
+            _areasManager?.Clear();
+            _areas = await AreaServices.GetAreas(auxPlant);
+            _areasManager = await AreaServices.GetAreas(auxPlant);
+        }
+
+        if (auxPlant != 0 && auxArea != 0)
+        {
+            ShowDistributionInvokeByAreasSelector();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SegregateAllUsers(List<User> users)
+    {
+        foreach (User item in users)
+        {
+            switch (item.UserType)
+            {
+                case 2:
+                    if (LogedUser.UserType == 1)
+                    {
+                        SeniorsSupervisors.Add(item);
+                    }
+                    else if (item.PlantId == auxPlant)
+                    {
+                        SeniorsSupervisors.Add(item);
+                    }
+                    break;
+                case 3:
+                    Supervisors.Add(item);
+                    break;
+                case 4:
+                    Operators.Add(item);
+                    break;
+                case 5:
+                    Managers.Add(item);
+                    break;
+            }
+        }
+    }
+
+    private async void ShowDistributionInvokeByAreasSelector()
+    {
+        _user.DistributionId = 0;
+        Operators.Clear();
+
+        // Filtrar operadores que tengan el área en su colección Areas o en AreaId (compatibilidad)
+        foreach (User item in _allUsers)
+        {
+            if (item.UserType == 4 && item.PlantId == auxPlant && item.GroupId == auxGroup)
+            {
+                // Verificar si tiene el área en Areas collection o en AreaId
+                bool hasArea = (item.Areas != null && item.Areas.Any(a => a.AreaId == auxArea)) ||
+                               item.AreaId == auxArea;
+                if (hasArea)
+                    Operators.Add(item);
+            }
+        }
+
+        if (auxPlant != 0 && auxArea != 0)
+        {
+            _distributions = await DistributionsServices.GetDistributions(auxPlant, auxArea);
+        }
+        StateHasChanged();
+    }
+
+    private async void OnSelectedAreaToManageFunction()
+    {
+        if (selectedAreaOfList != new Area())
+            ActiveAddArea = false;
+        else
+            ActiveAddArea = true;
+    }
+
+    private void AddAreaToUserList(Area selection)
+    {
+        if (_user.Areas == null)
+            _user.Areas = new List<Area>();
+
+        if (selectedAreaOfList != null && !_user.Areas.Contains(selection))
+        {
+            _user.Areas.Add(selection);
+
+            _areasManager.Remove(selection);
+            //reset value from selector
+            selectedAreaOfList = null;
+            ActiveAddArea = true;
+        }
+        StateHasChanged();
+    }
+
+    private void DeleteAreaFromUserList(Area element)
+    {
+        _user.Areas.Remove(element);
+        _areasManager.Add(element);
+        StateHasChanged();
+    }
+
+    private async Task OpenUpdateAreasDialog(User subordinate)
+    {
+        var result = await DialogService.Show<UpdateAreasDialog>("Update Areas", new DialogParameters
+        {
+            { "Superior", _user },
+            { "Subordinate", subordinate},
+            { "Areas", _user.Areas }
+        }).Result;
+
+        if (!result.Cancelled)
+        {
+            var updatedAreas = result.Data as UpdateAreasForSuperiorDto;
+            if (updatedAreas != null)
+            {
+                // Actualizar las áreas del subordinado
+                SubordinatesToUpdate.Add(updatedAreas);
+                StateHasChanged();
+
+                // Actualizar las áreas del subordinado en la lista de subordinados del usuario
+                var subordinateToUpdate = _user.Subordinates.FirstOrDefault(s => s.UserId == subordinate.UserId);
+                if (subordinateToUpdate != null)
+                {
+                    subordinateToUpdate.Areas = new List<Area>();
+                    foreach (var areaId in updatedAreas.AreaIds)
+                    {
+                        var area = _user.Areas.FirstOrDefault(a => a.AreaId == areaId);
+                        if (area != null)
+                        {
+                            subordinateToUpdate.Areas.Add(area);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void DeleteSupervisorFromSubordinateList(User selection)
+    {
+        _user.Subordinates?.Remove(selection);
+        Supervisors.Add(selection);
+        StateHasChanged();
+    }
+
+    private async void OnSelectedSubordinatedFunction()
+    {
+        if (selectedSupervisorOfList != new User())
+            ActiveAddSubordinated = false;
+        else
+            ActiveAddSubordinated = true;
+    }
+
+    private void AddSupervisorToSubordinateList(User selection)
+    {
+        if (_user.Subordinates == null)
+            _user.Subordinates = new List<User>();
+
+        if (selectedSupervisorOfList != null && !_user.Subordinates.Contains(selection))
+        {
+            _user.Subordinates.Add(selection);
+
+            Supervisors.Remove(selection);
+
+            selectedSupervisorOfList = null;
+            ActiveAddSubordinated = true;
+        }
+        StateHasChanged();
+    }
+}

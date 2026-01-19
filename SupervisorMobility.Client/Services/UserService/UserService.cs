@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using KellermanSoftware.CompareNetObjects;
 using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.SPModels;
+using SupervisorMobility.Client.Data.Entities.Dtos;
 
 namespace SupervisorMobility.Client.Services.UserService
 {
@@ -492,6 +493,28 @@ namespace SupervisorMobility.Client.Services.UserService
                 await _js.InvokeVoidAsync("alert", $"Error getting WFM Info: {response.Content.ReadAsStringAsync().Result}");
             }
             return null;
+        }
+
+        // Udate Subordinate Users Areas
+        public async Task<ServiceResponse<UpdateUsersAreasResult>> UpdateUsersAreas(List<UpdateAreasForSuperiorDto> _usersList)
+        {
+            try
+            {
+                var response = await _http.PutAsJsonAsync($"Users/UpdateUsersAreasForSuperior", _usersList);
+                if (response != null)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateUsersAreasResult>>();
+                    return result;
+                }
+                else
+                {
+                    return new ServiceResponse<UpdateUsersAreasResult> { Success = false, Data = null, Message = $"Error updating users areas: {response.Content.ReadAsStringAsync().Result}" };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<UpdateUsersAreasResult> { Success = false, Data = null, Message = $"Exception updating users areas: {ex.Message}" };
+            }
         }
     }
 }

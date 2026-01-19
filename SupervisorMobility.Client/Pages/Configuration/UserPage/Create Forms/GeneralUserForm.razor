@@ -1,0 +1,25 @@
+﻿@inject IStringLocalizer<Resource1> Localizer
+@using System.ComponentModel.DataAnnotations
+
+<MudGrid>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" HelperText="E.g. user@compasdcpcs.local" /></MudItem>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" /></MudItem>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" /></MudItem>
+    <MudItem xs="6"><MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" RequiredError="Email is required!"
+                  Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" /></MudItem>
+</MudGrid>
+
+<MudItem Class="ml-auto mt-3">
+    @if (_user.UserType != 0)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="SubmitUser">@Localizer["UsersNew"]</MudButton>
+    }
+    <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+</MudItem>
+
+@code {
+    [Parameter] public User _user {get; set; }
+    [Parameter] public EventCallback<User> OnUserChanged { get; set; }
+
+    private async Task SubmitUser() => await OnUserChanged.InvokeAsync(_user);
+}
