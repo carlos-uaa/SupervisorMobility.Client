@@ -32,7 +32,7 @@
 
     @* Mud Select of Groups *@
     <MudItem xs="6">
-        <MudSelect T="int" Label="@Localizer["UsersLabelGroup"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHGroup"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxGroup" For="@(() => auxGroup)">
+        <MudSelect T="int" Label="@Localizer["UsersLabelGroup"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHGroup"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" ValueChanged="SetGroup">
             <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHGroup"]</MudSelectItem>
             @foreach (var type in _groups)
             {
@@ -164,7 +164,7 @@
         <MudItem Class="d-flex d-flex-row">
             @if (Supervisors?.Count > 0 && _user.Areas?.Count > 0)
             {
-                <MudSelect T="User" Label="@Localizer["UsersSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSupervisorOfList" For="@(() => selectedSupervisorOfList)" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                <MudSelect T="User" Label="@Localizer["UsersSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSupervisorOfList" Style="min-width: 350px;" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
                     <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> @Localizer["UsersPHSubordinate"]</MudSelectItem>
                     @foreach (var SS in Supervisors)
                     {
@@ -534,5 +534,19 @@
             ActiveAddSubordinated = true;
         }
         StateHasChanged();
+    }
+
+    private async Task SetGroup(int value)
+    {
+        if(value != 0)
+        {
+            auxGroup = value;
+            _user.GroupId = auxGroup;
+            _user.Group = _groups.FirstOrDefault(g => g.GroupId == auxGroup);
+        }
+        else
+        {
+            auxGroup = 0;
+        }
     }
 }

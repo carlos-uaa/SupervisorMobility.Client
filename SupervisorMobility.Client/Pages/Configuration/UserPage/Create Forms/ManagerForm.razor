@@ -1,0 +1,186 @@
+﻿@inject IStringLocalizer<Resource1> Localizer
+@inject IDistributionService DistributionsServices
+@inject IAreaService AreaServices
+@using System.ComponentModel.DataAnnotations
+
+<MudGrid>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" HelperText="E.g. user@compasdcpcs.local" /></MudItem>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" /></MudItem>
+    <MudItem xs="6"><MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" /></MudItem>
+    <MudItem xs="6">
+        <MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" RequiredError="Email is required!"
+                      Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+    </MudItem>
+</MudGrid>
+
+<MudItem Class="mt-5">
+    <MudText Typo="Typo.h6">@Localizer["UsersEmployeInfo"]</MudText>
+</MudItem>
+
+@*Mud select of Plants for Manager*@
+<MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
+    <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
+    @foreach (var type in _plants)
+    {
+        <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+    }
+</MudSelect>
+
+<MudItem>
+    <MudItem Class="mt-5">
+        <MudText Typo="Typo.h6"> @Localizer["UsersHT"] </MudText>
+    </MudItem>
+
+    @*Subordinados *@
+    <MudItem Class="d-flex flex-column justify-center">
+        <MudItem class="d-flex d-flex-column justify-center">
+            <MudText Typo="Typo.h6"> @Localizer["UsersSubordinates"] </MudText>
+        </MudItem>
+
+        @*Seccion de Selector Subordinados *@
+        <MudItem class="d-flex d-flex-column justify-center ma-1">
+
+            <MudItem Class="d-flex d-flex-row">
+                <MudSelect T="User" Label="@Localizer["UsersSeniorSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSeniorSupervisorOfList" Style="min-width: 350px" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Disabled="true" Value="selectedSeniorSupervisorOfList">@Localizer["UsersPHSubordinate"] </MudSelectItem>
+                    @foreach (var SS in SeniorsSupervisors)
+                    {
+                        @if (LogedUser.UserType == 1)
+                        {
+                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                        }
+                        else
+                        {
+                            @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
+                            {
+                                <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                            }
+                        }
+                    }
+                </MudSelect>
+                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSeniorSupervisorToSubordinateList(selectedSeniorSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary"> Add subordinate </MudButton>
+            </MudItem>
+        </MudItem>
+
+        @if (_user.Subordinates is not null && _user.Subordinates?.ToList().Count > 0)
+        {
+            <MudItem class="d-flex d-flex-column justify-center" Style="overflow-x: auto; padding: 12px;">
+                @foreach (var item in _user.Subordinates)
+                {
+                    <MudCard Elevation="4" Class="mr-5" Style="width: 300px; min-width: 250px; border-radius: 15px; background-color: #f9faf9 !important;">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.subtitle1"></MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <div class="font-weight-bold"> <MudText Typo="Typo.subtitle2"> <b>@Localizer["UsersName"]:</b></MudText> @item.Name </div>
+                            <div class="font-weight-light"><MudText Typo="Typo.subtitle2"> <b>@Localizer["UsersGroup"]:</b></MudText> @item.Group?.Description </div>
+                        </MudCardContent>
+                        <div class="d-flex justify-content-between justify-center">
+                            @switch (item.UserType)
+                            {
+                                case 1:
+                                    <MudPaper Elevation="0">
+                                        <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary"> @Localizer["UsersAdmin"] </MudChip>
+                                    </MudPaper>
+                                    break;
+                                case 2:
+                                    <MudPaper Elevation="0">
+                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"> @Localizer["UsersSeniorSupervisor"] </MudChip>
+                                    </MudPaper>
+                                    break;
+                            }
+                        </div>
+                    </MudCard>
+                }
+            </MudItem>
+        }
+    </MudItem>
+</MudItem>
+
+<MudItem Class="ml-auto mt-3">
+    @if (_user.UserType != 0)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="SubmitUser">@Localizer["UsersNew"]</MudButton>
+    }
+    <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+</MudItem>
+
+@code {
+    [Parameter] public User _user { get; set; }
+    [Parameter] public User LogedUser { get; set; }
+    [Parameter] public List<User> _allUsers { get; set; }
+    [Parameter] public List<Plant> _plants { get; set; }
+    [Parameter] public List<User> SeniorsSupervisors { get; set; } = new List<User>();
+    [Parameter] public EventCallback<UserManagmentFormDto> OnUserChanged { get; set; }
+
+    private int auxPlant = 0;
+    
+    private User selectedSeniorSupervisorOfList = new User();
+    private bool ActiveAddSubordinated = false;
+
+    public List<UpdateAreasForSuperiorDto> SubordinatesToUpdate { get; set; } = new List<UpdateAreasForSuperiorDto>();
+
+    private async Task SubmitUser()
+    {
+        UserManagmentFormDto userManagmentFormDto = new UserManagmentFormDto
+        {
+            User = _user,
+            Subordinates = SubordinatesToUpdate
+        };
+        await OnUserChanged.InvokeAsync(userManagmentFormDto);
+    }
+
+    private async void ShowAreasInvokeByPlantSelector()
+    {
+        SeniorsSupervisors.Clear();
+        
+        await SegregateAllUsers(_allUsers);
+
+        ActiveAddSubordinated = true;
+
+        StateHasChanged();
+    }
+
+    private async Task SegregateAllUsers(List<User> users)
+    {
+        foreach (User item in users)
+        {
+            switch (item.UserType)
+            {
+                case 2:
+                    if (LogedUser.UserType == 1)
+                        SeniorsSupervisors.Add(item);
+                    else if (item.PlantId == auxPlant)
+                        SeniorsSupervisors.Add(item);
+                    break;
+            }
+        }
+    }
+
+    private async void OnSelectedSubordinatedFunction()
+    {
+        if (selectedSeniorSupervisorOfList != new User())
+            ActiveAddSubordinated = false;
+        else
+            ActiveAddSubordinated = true;
+    }
+
+    private void AddSeniorSupervisorToSubordinateList(User selection)
+    {
+        if (_user.Subordinates == null)
+        {
+            _user.Subordinates = new List<User>();
+        }
+
+        if (selectedSeniorSupervisorOfList != null && !_user.Subordinates.Contains(selection))
+        {
+            _user.Subordinates.Add(selection);
+            SeniorsSupervisors.Remove(selection);
+            selectedSeniorSupervisorOfList = null;
+            ActiveAddSubordinated = true;
+        }
+        StateHasChanged();
+    }
+}
