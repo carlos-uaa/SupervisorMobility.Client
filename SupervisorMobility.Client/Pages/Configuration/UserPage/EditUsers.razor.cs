@@ -425,29 +425,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             var auxObjectId = _user.ObjectId;
             var auxName = _user.Name;
             var auxCreateDate = _user.CreatedDate;
-
-            _user = new();
-
-            _user.UserId = auxId;
-            _user.ObjectId = auxObjectId;
-            _user.Name = auxName;
-            _user.CreatedDate = auxCreateDate;
-            _user.IsActive = true;
-
-            // resets de variables
-
-            auxPlant = 0;
-            auxArea = 0;
-            auxGroup = 0;
-            auxDistribution = 0;
-            plantInfo = "";
-            areaInfo = "";
-            grupInfo = "";
-            selectedSeniorSupervisorOfList = new User();
-            selectedSupervisorOfList = new User();
-            selectedOperatorOfList = new User();
-            selectedAreaOfList = new Area();
-
+            var auxPayroll = _user.Payroll;
 
             IsAdmin = userType == 1 && !IsAdmin;
             IsSeniorSupervisor = userType == 2 && !IsSeniorSupervisor;
@@ -458,12 +436,95 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             IsHeadCount = userType == 7 && !IsHeadCount;
             IsRTC = userType == 8 && !IsRTC;
 
-            _user.UserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport && !IsHeadCount && !IsRTC ? 0 : userType;
+            var newUserType = !IsAdmin && !IsSeniorSupervisor && !IsSupervisor && !IsOperator && !IsManager && !IsLineSupport && !IsHeadCount && !IsRTC ? 0 : userType;
+            _user.UserType = newUserType;
 
+            bool restored = false;
+            // Si el tipo de usuario es el original, restauramos la copia
+            if (newUserType != 0 && newUserType == _usercopy.UserType)
+            {
+                try
+                {
+                    // Recargar desde la base de datos para asegurar que las colecciones (√Åreas, Subordinados) est√©n completas
+                    var freshUser = await UsersServices.GetUserAndCollection(auxId);
+                    if (freshUser != null)
+                    {
+                        _user = freshUser;
+                        // Actualizamos la copia para futuros usos
+                        _usercopy = ObjectCloner.ObjectCloner.DeepClone<User>(freshUser);
+                    }
+                    else
+                    {
+                        // Fallback a la copia local si falla la carga
+                        _user = ObjectCloner.ObjectCloner.DeepClone<User>(_usercopy);
+                    }
+                }
+                catch
+                {
+                    _user = ObjectCloner.ObjectCloner.DeepClone<User>(_usercopy);
+                }
 
-            ShowAreasInvokeByPlantSelector();
+                _user.UserId = auxId;
+                _user.ObjectId = auxObjectId;
+                _user.Name = auxName;
+                _user.CreatedDate = auxCreateDate;
+                _user.IsActive = true;
+                _user.Payroll = auxPayroll;
+                _user.UserType = newUserType;
 
-            switch (userType)
+                // Restore aux variables
+                auxPlant = _user.PlantId ?? 0;
+                auxArea = _user.AreaId ?? 0;
+                auxGroup = _user.GroupId ?? 0;
+                auxDistribution = _user.DistributionId ?? 0;
+                auxDepa = _user.DepartmentId ?? 0;
+
+                plantInfo = _user.Plant?.Description ?? (_user.Superior?.Plant?.Description ?? "");
+                areaInfo = _user.Area?.Description ?? (_user.Superior?.Area?.Description ?? "");
+                grupInfo = _user.Group?.Description ?? (_user.Superior?.Group?.Description ?? "");
+                
+                restored = true;
+            }
+            else
+            {
+                _user = new();
+
+                _user.UserId = auxId;
+                _user.ObjectId = auxObjectId;
+                _user.Name = auxName;
+                _user.CreatedDate = auxCreateDate;
+                _user.IsActive = true;
+                _user.Payroll = auxPayroll;
+                _user.UserType = newUserType;
+
+                // resets de variables
+
+                auxPlant = 0;
+                auxArea = 0;
+                auxGroup = 0;
+                auxDistribution = 0;
+                auxDepa = 0;
+                plantInfo = "";
+                areaInfo = "";
+                grupInfo = "";
+                selectedSeniorSupervisorOfList = new User();
+                selectedSupervisorOfList = new User();
+                selectedOperatorOfList = new User();
+                selectedAreaOfList = new Area();
+            }
+
+            // Solo llamamos a la actualizaci√≥n de listas auxiliares si NO hemos restaurado el usuario original.
+            // Si lo restauramos, se supone que ya tiene sus listas cargadas correctamente desde el servicio.
+            // Al llamar a ShowAreasInvokeByPlantSelector() aqu√≠, se estaban limpiando listas como _areasManager
+            // y posiblemente afectando el estado de los componentes hijos que dependen de esas listas limpias 
+            // mientras se inicializan.
+            if (!restored)
+            {
+                ShowAreasInvokeByPlantSelector();
+            }
+
+            if (!restored)
+                switch (userType)
             {
                 case 1: RemoveSuperiorUser(); break;
                 case 2: RemoveSuperiorUser(); break;
@@ -981,7 +1042,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             ReasignUsersOptionsView = false;
 
             optionSuboridinatesReasign = Opcion;
-            // Cambiar la variable y notificar a la tarea que est· esperando
+            // Cambiar la variable y notificar a la tarea que estÔøΩ esperando
 
             TaskComplete.TrySetResult(true);
         }
@@ -991,14 +1052,14 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             ReasignUsersAreaOptionsView = false;
 
             optionAreasReasign = Opcion;
-            // Cambiar la variable y notificar a la tarea que est· esperando
+            // Cambiar la variable y notificar a la tarea que estÔøΩ esperando
 
             TaskComplete.TrySetResult(true);
         }
 
         private Task EsperarCambioVariableAsync()
         {
-            // Devolver la tarea que se completar· cuando la variable cambie
+            // Devolver la tarea que se completarÔøΩ cuando la variable cambie
             return TaskComplete.Task;
         }
 
@@ -1293,7 +1354,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             //Valida si hay un asenso
             if (_usercopy.UserType == 5 && (_user.UserType == 1 || _user.UserType == 6) && _usercopy.Subordinates?.Count > 0)
             {
-                // promociÛn de Tipo 5 Manager a Tipo 1 Admin / Tipo 6 Final Line
+                // promociÔøΩn de Tipo 5 Manager a Tipo 1 Admin / Tipo 6 Final Line
 
                 ReasignUsersOptionsView = true;
                 // Pregunta de Reasignacion
@@ -1302,7 +1363,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             }
             else if (_usercopy.UserType == 2 && _user.UserType == 5 && _usercopy.Subordinates?.Count > 0)
             {
-                //  promociÛn de Tipo 2 SSV a Tipo 5 Manager
+                //  promociÔøΩn de Tipo 2 SSV a Tipo 5 Manager
                 ReasignUsersOptionsView = true;
 
                 // Pregunta de Reasignacion
@@ -1310,7 +1371,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             }
             else if (_usercopy.UserType == 3 && _user.UserType == 2 && _usercopy.Subordinates?.Count > 0)
             {
-                //  promociÛn de Tipo 3 SV a Tipo 2 SV
+                //  promociÔøΩn de Tipo 3 SV a Tipo 2 SV
                 ReasignUsersOptionsView = true;
 
                 // Pregunta de Reasignacion
@@ -1728,7 +1789,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         await JS.InvokeVoidAsync("localStorage.setItem", "user", json);
                     }
                 }
-                await JS.InvokeAsync<string>("alert", "Succesful Update!"); // Alert
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add("Succesful Update!", Severity.Success);
                 NavigationManager.NavigateTo($"/usersmanagement/DetailUser/{_user.UserId}");
             }
             else

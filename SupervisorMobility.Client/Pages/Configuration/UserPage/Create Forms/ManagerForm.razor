@@ -3,108 +3,161 @@
 @inject IAreaService AreaServices
 @using System.ComponentModel.DataAnnotations
 
-<MudGrid>
-    <MudItem xs="6"><MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" HelperText="E.g. user@compasdcpcs.local" /></MudItem>
-    <MudItem xs="6"><MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" /></MudItem>
-    <MudItem xs="6"><MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" /></MudItem>
-    <MudItem xs="6">
-        <MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" RequiredError="Email is required!"
-                      Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+@* Sección: Información Básica *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudItem Class="mb-3">
+        <MudText Typo="Typo.h6" Style="color: #546e7a; font-weight: 500;">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+            Información Básica
+        </MudText>
     </MudItem>
-</MudGrid>
-
-<MudItem Class="mt-5">
-    <MudText Typo="Typo.h6">@Localizer["UsersEmployeInfo"]</MudText>
-</MudItem>
-
-@*Mud select of Plants for Manager*@
-<MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
-    <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
-    @foreach (var type in _plants)
-    {
-        <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-    }
-</MudSelect>
-
-<MudItem>
-    <MudItem Class="mt-5">
-        <MudText Typo="Typo.h6"> @Localizer["UsersHT"] </MudText>
-    </MudItem>
-
-    @*Subordinados *@
-    <MudItem Class="d-flex flex-column justify-center">
-        <MudItem class="d-flex d-flex-column justify-center">
-            <MudText Typo="Typo.h6"> @Localizer["UsersSubordinates"] </MudText>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" 
+                          HelperText="E.g. user@compasdcpcs.local" Variant="Variant.Outlined" />
         </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" 
+                          RequiredError="Email is required!" Variant="Variant.Outlined"
+                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-        @*Seccion de Selector Subordinados *@
-        <MudItem class="d-flex d-flex-column justify-center ma-1">
+@* Sección: Información del Empleado *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudItem Class="mb-3">
+        <MudText Typo="Typo.h6" Style="color: #546e7a; font-weight: 500;">
+            <MudIcon Icon="@Icons.Material.Filled.Work" Class="mr-2" />
+            @Localizer["UsersEmployeInfo"]
+        </MudText>
+    </MudItem>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            @*Mud select of Plants for Manager*@
+            <MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Outlined" 
+                       Placeholder="@Localizer["UsersPHPlant"]" AnchorOrigin="Origin.BottomCenter" 
+                       @bind-Value="@auxPlant" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
+                <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
+                @foreach (var type in _plants)
+                {
+                    <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-            <MudItem Class="d-flex d-flex-row">
-                <MudSelect T="User" Label="@Localizer["UsersSeniorSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSeniorSupervisorOfList" Style="min-width: 350px" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                    <MudSelectItem Disabled="true" Value="selectedSeniorSupervisorOfList">@Localizer["UsersPHSubordinate"] </MudSelectItem>
-                    @foreach (var SS in SeniorsSupervisors)
+@* Sección: Jerarquía *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudItem Class="mb-3">
+        <MudText Typo="Typo.h6" Style="color: #546e7a; font-weight: 500;">
+            <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="mr-2" />
+            Jerarquía
+        </MudText>
+    </MudItem>
+
+    <MudItem Class="mb-4">
+        <MudText Typo="Typo.subtitle2" Style="color: #616161; font-weight: 500;">
+            @Localizer["UsersSubordinates"]
+        </MudText>
+    </MudItem>
+
+    @*Seccion de Selector Subordinados *@
+    <MudGrid Class="mb-3">
+        <MudItem xs="12" md="6">
+            <MudSelect T="User" Label="@Localizer["UsersSeniorSupervisor"]" 
+                       SelectedValuesChanged="OnSelectedSubordinatedFunction" 
+                       Placeholder="@Localizer["UsersPHSubordinate"]" 
+                       @bind-Value="@selectedSeniorSupervisorOfList" 
+                       Variant="Variant.Outlined" 
+                       AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem Disabled="true" Value="selectedSeniorSupervisorOfList">@Localizer["UsersPHSubordinate"] </MudSelectItem>
+                @foreach (var SS in SeniorsSupervisors)
+                {
+                    @if (LogedUser.UserType == 1)
                     {
-                        @if (LogedUser.UserType == 1)
+                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
+                    }
+                    else
+                    {
+                        @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
                         {
                             <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
                         }
-                        else
-                        {
-                            @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
-                            {
-                                <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                            }
-                        }
                     }
-                </MudSelect>
-                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSeniorSupervisorToSubordinateList(selectedSeniorSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary"> Add subordinate </MudButton>
-            </MudItem>
+                }
+            </MudSelect>
         </MudItem>
+        <MudItem xs="12" md="6" Class="d-flex align-center">
+            <MudButton Disabled="@ActiveAddSubordinated" 
+                       OnClick="@(() => AddSeniorSupervisorToSubordinateList(selectedSeniorSupervisorOfList))" 
+                       Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"> 
+                Agregar subordinado 
+            </MudButton>
+        </MudItem>
+    </MudGrid>
 
-        @if (_user.Subordinates is not null && _user.Subordinates?.ToList().Count > 0)
-        {
-            <MudItem class="d-flex d-flex-column justify-center" Style="overflow-x: auto; padding: 12px;">
-                @foreach (var item in _user.Subordinates)
-                {
-                    <MudCard Elevation="4" Class="mr-5" Style="width: 300px; min-width: 250px; border-radius: 15px; background-color: #f9faf9 !important;">
-                        <MudCardHeader>
+    @if (_user.Subordinates is not null && _user.Subordinates?.ToList().Count > 0)
+    {
+        <MudGrid>
+            @foreach (var item in _user.Subordinates)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="1" Style="border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <MudCardHeader Style="background-color: #f5f5f5; padding: 12px;">
                             <CardHeaderContent>
-                                <MudText Typo="Typo.subtitle1"></MudText>
                             </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" 
+                                               OnClick="@(() => DeleteSeniorSupervisorFromSubordinateList(item))" />
+                            </CardHeaderActions>
                         </MudCardHeader>
                         <MudCardContent>
-                            <div class="font-weight-bold"> <MudText Typo="Typo.subtitle2"> <b>@Localizer["UsersName"]:</b></MudText> @item.Name </div>
-                            <div class="font-weight-light"><MudText Typo="Typo.subtitle2"> <b>@Localizer["UsersGroup"]:</b></MudText> @item.Group?.Description </div>
+                            <MudText Typo="Typo.body2" Class="mb-1"><b>@Localizer["UsersName"]:</b> @item.Name</MudText>
+                            <MudText Typo="Typo.body2"><b>@Localizer["UsersGroup"]:</b> @item.Group?.Description</MudText>
                         </MudCardContent>
-                        <div class="d-flex justify-content-between justify-center">
+                        <MudCardActions>
                             @switch (item.UserType)
                             {
                                 case 1:
-                                    <MudPaper Elevation="0">
-                                        <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary"> @Localizer["UsersAdmin"] </MudChip>
-                                    </MudPaper>
+                                    <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" 
+                                             Variant="Variant.Filled" 
+                                             Color="Color.Primary" 
+                                             Size="Size.Small"> 
+                                        @Localizer["UsersAdmin"] 
+                                    </MudChip>
                                     break;
                                 case 2:
-                                    <MudPaper Elevation="0">
-                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"> @Localizer["UsersSeniorSupervisor"] </MudChip>
-                                    </MudPaper>
+                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" 
+                                             Variant="Variant.Filled" 
+                                             Color="Color.Secondary" 
+                                             Size="Size.Small"> 
+                                        @Localizer["UsersSeniorSupervisor"] 
+                                    </MudChip>
                                     break;
                             }
-                        </div>
+                        </MudCardActions>
                     </MudCard>
-                }
-            </MudItem>
-        }
-    </MudItem>
-</MudItem>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudPaper>
 
-<MudItem Class="ml-auto mt-3">
+<MudItem Class="d-flex justify-end mt-3">
     @if (_user.UserType != 0)
     {
-        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="SubmitUser">@Localizer["UsersNew"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitUser">@Localizer["UsersNew"]</MudButton>
     }
-    <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
+    <MudButton Href="/usersmanagement" Variant="Variant.Outlined" Class="ml-4">@Localizer["Cancel"]</MudButton>
 </MudItem>
 
 @code {
@@ -180,6 +233,16 @@
             SeniorsSupervisors.Remove(selection);
             selectedSeniorSupervisorOfList = null;
             ActiveAddSubordinated = true;
+        }
+        StateHasChanged();
+    }
+
+    private void DeleteSeniorSupervisorFromSubordinateList(User subordinate)
+    {
+        if (_user.Subordinates != null && _user.Subordinates.Contains(subordinate))
+        {
+            _user.Subordinates.Remove(subordinate);
+            SeniorsSupervisors.Add(subordinate);
         }
         StateHasChanged();
     }

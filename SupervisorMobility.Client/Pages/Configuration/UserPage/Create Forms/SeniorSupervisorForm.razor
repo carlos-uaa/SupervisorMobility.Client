@@ -4,203 +4,224 @@
 @inject IDialogService DialogService
 @using System.ComponentModel.DataAnnotations
 
-<MudGrid>
-    <MudItem xs="6"><MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" HelperText="E.g. user@compasdcpcs.local" /></MudItem>
-    <MudItem xs="6"><MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" /></MudItem>
-    <MudItem xs="6"><MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" /></MudItem>
-    <MudItem xs="6">
-        <MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" RequiredError="Email is required!"
-                      Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
-    </MudItem>
-</MudGrid>
+@* Sección 1: Información Básica *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudText Typo="Typo.h6" Class="mb-3" Style="color: #546e7a; font-weight: 500;">
+        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+        Información Básica
+    </MudText>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" HelperText="E.g. user@compasdcpcs.local" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" RequiredError="Email is required!"
+                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" Variant="Variant.Outlined" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-<MudItem Class="mt-5">
-    <MudText Typo="Typo.h6">@Localizer["UsersEmployeInfo"]</MudText>
-</MudItem>
-
-<MudGrid>
-    @*Mud select of Plants *@
-    <MudItem xs="6">
-        <MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHPlant"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
-            <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
-            @foreach (var type in _plants)
-            {
-                <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-            }
-        </MudSelect>
-    </MudItem>
-
-    @* Mud Select of Groups *@
-    <MudItem xs="6">
-        <MudSelect T="int" Label="@Localizer["UsersLabelGroup"]" Variant="Variant.Text" Placeholder="@Localizer["UsersPHGroup"]" Class="mt-3" AnchorOrigin="Origin.BottomCenter" ValueChanged="SetGroup">
-            <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHGroup"]</MudSelectItem>
-            @foreach (var type in _groups)
-            {
-                <MudSelectItem Value="type.GroupId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-            }
-        </MudSelect>
-    </MudItem>
-</MudGrid>
-
-<MudItem Class="mt-5">
-    <MudText Typo="Typo.h6">@Localizer["UsersManageAreas"]</MudText>
-</MudItem>
-
-@*Selector Ares*@
-@if (_areasManager?.Count > 0 && auxPlant != 0)
-{
-    <MudItem class="d-flex d-flex-column justify-center ma-1">
-        <MudItem Class="d-flex d-flex-row">
-            <MudSelect T="Area" Label="@Localizer["UsersLabelArea"]" SelectedValuesChanged="@OnSelectedAreaToManageFunction" Placeholder="@Localizer["UsersPHArea"]" @bind-Value="@selectedAreaOfList" Style="width: 350px" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                <MudSelectItem Disabled="true" Value="selectedAreaOfList"> @Localizer["UsersPHArea"] </MudSelectItem>
-                @foreach (var areaItem in _areasManager)
+@* Sección 2: Información del Empleado *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudText Typo="Typo.h6" Class="mb-3" Style="color: #546e7a; font-weight: 500;">
+        <MudIcon Icon="@Icons.Material.Filled.Work" Class="mr-2" />
+        @Localizer["UsersEmployeInfo"]
+    </MudText>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Outlined" Placeholder="@Localizer["UsersPHPlant"]" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
+                <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
+                @foreach (var type in _plants)
                 {
-                    <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}") </MudSelectItem>
+                    <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
                 }
             </MudSelect>
-            <MudButton Class="ml-5" Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> @Localizer["UsersAddArea"] </MudButton>
         </MudItem>
-    </MudItem>
-}
+        <MudItem xs="12" md="6">
+            <MudSelect T="int" Label="@Localizer["UsersLabelGroup"]" Variant="Variant.Outlined" Placeholder="@Localizer["UsersPHGroup"]" AnchorOrigin="Origin.BottomCenter" ValueChanged="SetGroup">
+                <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHGroup"]</MudSelectItem>
+                @foreach (var type in _groups)
+                {
+                    <MudSelectItem Value="type.GroupId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
 
-@switch (_user.Areas?.Count)
-{
-    case null:
-        @if (auxPlant == 0)
-        {
-            <MudItem>
+@* Sección 3: Áreas Manejadas *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudText Typo="Typo.h6" Class="mb-3" Style="color: #546e7a; font-weight: 500;">
+        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="mr-2" />
+        @Localizer["UsersManageAreas"]
+    </MudText>
+
+    @* Selector de Áreas *@
+    @if (_areasManager?.Count > 0 && auxPlant != 0)
+    {
+        <MudGrid Class="mb-3">
+            <MudItem xs="12" md="8">
+                <MudSelect T="Area" Label="@Localizer["UsersLabelArea"]" SelectedValuesChanged="@OnSelectedAreaToManageFunction" 
+                           Placeholder="@Localizer["UsersPHArea"]" @bind-Value="@selectedAreaOfList" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Disabled="true" Value="selectedAreaOfList">@Localizer["UsersPHArea"]</MudSelectItem>
+                    @foreach (var areaItem in _areasManager)
+                    {
+                        <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}")</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex align-center">
+                <MudButton Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
+                           Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" FullWidth="true">
+                    @Localizer["UsersAddArea"]
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    }
+
+    @switch (_user.Areas?.Count)
+    {
+        case null:
+            @if (auxPlant == 0)
+            {
                 <MudAlert Severity="Severity.Info">
                     @Localizer["UsersFirstPlant"]
                 </MudAlert>
-            </MudItem>
-        }
-        else
-        {
-            @if (_areasManager?.Count > 0)
+            }
+            else
             {
-                <MudItem class="d-flex flex-column justify-center">
+                @if (_areasManager?.Count > 0)
+                {
                     <MudAlert Severity="Severity.Info">
                         @Localizer["UsersFirstArea"]
                     </MudAlert>
-                </MudItem>
-            }
-            else
-            {
-                <MudItem class="d-flex flex-column justify-center">
+                }
+                else
+                {
                     <MudAlert Severity="Severity.Info">
                         @Localizer["UsersPlantNoAreas"]
                     </MudAlert>
-                </MudItem>
+                }
             }
-        }
-        break;
-    case 0:
-        @if (auxPlant == 0)
-        {
-            <MudItem class="d-flex flex-column justify-center justify-align-center">
+            break;
+        case 0:
+            @if (auxPlant == 0)
+            {
                 <MudAlert Severity="Severity.Info">
                     @Localizer["UsersFirstPlant"]
                 </MudAlert>
-            </MudItem>
-        }
-        else
-        {
-            @if (_areasManager?.Count > 0)
-            {
-                <MudItem class="d-flex flex-column justify-center">
-                    <MudAlert Severity="Severity.Info">
-                        @Localizer["UsersFirstAddArea"]
-                    </MudAlert>
-                </MudItem>
             }
             else
             {
-                <MudItem class="d-flex flex-column justify-center">
+                @if (_areasManager?.Count > 0)
+                {
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersFirstAddArea"]
+                    </MudAlert>
+                }
+                else
+                {
                     <MudAlert Severity="Severity.Info">
                         @Localizer["UsersPlantNoAreas"]
                     </MudAlert>
-                </MudItem>
+                }
             }
-        }
-        break;
-    default:
-        @if (_user.Areas is not null && _user.Areas?.ToList().Count > 0)
-        {
-            <MudItem class="d-flex flex-column justify-center ma-1">
-                <MudItem class="d-flex d-flex-column justify-center" Style="overflow-x: auto; padding: 12px;">
+            break;
+        default:
+            @if (_user.Areas is not null && _user.Areas?.ToList().Count > 0)
+            {
+                <MudGrid>
                     @foreach (var itemArea in _user.Areas)
                     {
-                        <MudCard Elevation="4" Class="mr-5" Style="width: 300px; min-width: 250px; border-radius: 15px; background-color: #f9faf9 !important;">
-                            <MudCardHeader>
-                                <CardHeaderContent>
-                                    <MudText Typo="Typo.subtitle1"><b>@Localizer["UsersAreaId"]:</b> @itemArea.AreaId</MudText>
-                                </CardHeaderContent>
-                                <CardHeaderActions>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" @onclick="() => DeleteAreaFromUserList(itemArea)" />
-                                </CardHeaderActions>
-                            </MudCardHeader>
-                            <MudCardContent>
-                                <div class="font-weight-bold"><b>@Localizer["UsersCode"]:</b> @itemArea.Code</div>
-                                <div class="font-weight-light"><b>@Localizer["UsersDescription"]:</b> @itemArea.Description</div>
-                            </MudCardContent>
-                            <MudCardActions></MudCardActions>
-                        </MudCard>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="1" Style="border: 1px solid #e0e0e0; border-radius: 8px;">
+                                <MudCardHeader Style="background-color: #f5f5f5; padding: 12px;">
+                                    <CardHeaderContent>
+                                        <MudText Typo="Typo.subtitle2" Style="color: #546e7a; font-weight: 500;">
+                                            <b>@Localizer["UsersAreaId"]:</b> @itemArea.AreaId
+                                        </MudText>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" @onclick="() => DeleteAreaFromUserList(itemArea)" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudText Typo="Typo.body2" Class="mb-1"><b>@Localizer["UsersCode"]:</b> @itemArea.Code</MudText>
+                                    <MudText Typo="Typo.body2"><b>@Localizer["UsersDescription"]:</b> @itemArea.Description</MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
                     }
-                </MudItem>
-            </MudItem>
-        }
+                </MudGrid>
+            }
+            break;
+    }
+</MudPaper>
 
-        break;
-}
+@* Sección 4: Jerarquía *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudText Typo="Typo.h6" Class="mb-3" Style="color: #546e7a; font-weight: 500;">
+        <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="mr-2" />
+        Jerarquía
+    </MudText>
 
-@*Subordinados *@
-<MudItem Class="d-flex flex-column justify-center">
-    <MudItem class="d-flex d-flex-column justify-center">
-        <MudText Typo="Typo.h6"> @Localizer["UsersSubordinates"] </MudText>
+    @* Subsección: Subordinados *@
+    <MudItem Class="mb-4">
+        <MudText Typo="Typo.subtitle2" Style="color: #616161; font-weight: 500;">
+            @Localizer["UsersSubordinates"]
+        </MudText>
     </MudItem>
 
-    @*Seccion de Selector Subordinados *@
-    <MudItem class="d-flex d-flex-column justify-center ma-1">
-        <MudItem Class="d-flex d-flex-row">
-            @if (Supervisors?.Count > 0 && _user.Areas?.Count > 0)
-            {
-                <MudSelect T="User" Label="@Localizer["UsersSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSupervisorOfList" Style="min-width: 350px;" Class="mt-3" Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
-                    <MudSelectItem Disabled="true" Value="selectedSupervisorOfList"> @Localizer["UsersPHSubordinate"]</MudSelectItem>
+    @* Selector de Subordinados *@
+    @if (Supervisors?.Count > 0 && _user.Areas?.Count > 0)
+    {
+        <MudGrid Class="mb-3">
+            <MudItem xs="12" md="8">
+                <MudSelect T="User" Label="@Localizer["UsersSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" 
+                           Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSupervisorOfList" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Disabled="true" Value="selectedSupervisorOfList">@Localizer["UsersPHSubordinate"]</MudSelectItem>
                     @foreach (var SS in Supervisors)
                     {
                         @if (LogedUser.UserType == 1)
                         {
                             var areasText = SS.Areas?.Count > 0 ? string.Join(", ", SS.Areas.Select(a => a.Code)) : "No Areas";
-                            <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}") </MudSelectItem>
+                            <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}")</MudSelectItem>
                         }
                         else
                         {
-                            // Verificar si hay áreas en común entre _user y SS
                             bool hasCommonArea = SS.Areas?.Any(sa => _user.Areas?.Any(ua => ua.AreaId == sa.AreaId) == true) == true;
                             @if (hasCommonArea)
                             {
                                 var areasText = SS.Areas?.Count > 0 ? string.Join(", ", SS.Areas.Select(a => a.Code)) : "No Areas";
-                                <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}") </MudSelectItem>
+                                <MudSelectItem Value="SS">@($"{SS.Name}-{areasText}-{SS.Group?.Description}")</MudSelectItem>
                             }
                         }
                     }
                 </MudSelect>
-                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisorToSubordinateList(selectedSupervisorOfList))" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Large"> Add subordinate </MudButton>
-            }
-        </MudItem>
-    </MudItem>
+            </MudItem>
+            <MudItem xs="12" md="4" Class="d-flex align-center">
+                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisorToSubordinateList(selectedSupervisorOfList))" 
+                           Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" FullWidth="true">
+                    Add subordinate
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    }
 
     @switch (_user.Subordinates?.Count)
     {
         case null:
-
             @if (auxPlant == 0 && _user.UserType > 2)
             {
-                <MudItem class="d-flex flex-column justify-center">
-                    <MudAlert Severity="Severity.Info">
-                        @Localizer["UsersFirstSuperior"]
-                    </MudAlert>
-                </MudItem>
+                <MudAlert Severity="Severity.Info">
+                    @Localizer["UsersFirstSuperior"]
+                </MudAlert>
             }
             else
             {
@@ -208,39 +229,31 @@
                 {
                     @if (_user.Areas?.Count > 0)
                     {
-                        <MudItem class="d-flex flex-column justify-center">
-                            <MudAlert Severity="Severity.Info">
-                                @Localizer["UsersFirstSubordinate"]
-                            </MudAlert>
-                        </MudItem>
+                        <MudAlert Severity="Severity.Info">
+                            @Localizer["UsersFirstSubordinate"]
+                        </MudAlert>
                     }
                     else
                     {
-                        <MudItem class="d-flex flex-column justify-center">
-                            <MudAlert Severity="Severity.Info">
-                                @Localizer["UsersFirstAddArea"]
-                            </MudAlert>
-                        </MudItem>
+                        <MudAlert Severity="Severity.Info">
+                            @Localizer["UsersFirstAddArea"]
+                        </MudAlert>
                     }
                 }
                 else
                 {
-                    <MudItem class="d-flex flex-column justify-center">
-                        <MudAlert Severity="Severity.Info">
-                            @Localizer["UsersPlantNoSV"]
-                        </MudAlert>
-                    </MudItem>
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersPlantNoSV"]
+                    </MudAlert>
                 }
             }
             break;
         case 0:
             @if (auxPlant == 0 && _user.UserType > 2)
             {
-                <MudItem class="d-flex flex-column justify-center justify-align-center">
-                    <MudAlert Severity="Severity.Info">
-                        @Localizer["UsersFirstSuperior"]
-                    </MudAlert>
-                </MudItem>
+                <MudAlert Severity="Severity.Info">
+                    @Localizer["UsersFirstSuperior"]
+                </MudAlert>
             }
             else
             {
@@ -248,70 +261,80 @@
                 {
                     @if (_user.Areas?.Count > 0)
                     {
-                        <MudItem class="d-flex flex-column justify-center">
-                            <MudAlert Severity="Severity.Info">
-                                @Localizer["UsersFirstSubordinate"]
-                            </MudAlert>
-                        </MudItem>
+                        <MudAlert Severity="Severity.Info">
+                            @Localizer["UsersFirstSubordinate"]
+                        </MudAlert>
                     }
                     else
                     {
-                        <MudItem class="d-flex flex-column justify-center">
-                            <MudAlert Severity="Severity.Info">
-                                @Localizer["UsersFirstAddArea"]
-                            </MudAlert>
-                        </MudItem>
+                        <MudAlert Severity="Severity.Info">
+                            @Localizer["UsersFirstAddArea"]
+                        </MudAlert>
                     }
                 }
                 else
                 {
-                    <MudItem class="d-flex flex-column justify-center">
-                        <MudAlert Severity="Severity.Info">
-                            @Localizer["UsersPlantNoSV"]
-                        </MudAlert>
-                    </MudItem>
+                    <MudAlert Severity="Severity.Info">
+                        @Localizer["UsersPlantNoSV"]
+                    </MudAlert>
                 }
             }
             break;
         default:
             @if (_user.Subordinates is not null && _user.Subordinates?.ToList().Count > 0)
             {
-                <MudItem class="d-flex d-flex-column justify-center" Style="overflow-x: auto; padding: 12px;">
+                <MudGrid>
                     @foreach (var item in _user.Subordinates)
                     {
-                        <MudCard Elevation="4" Class="mr-5" Style="width: 300px; min-width: 250px; border-radius: 15px; background-color: #f9faf9 !important;">
-                            <MudCardHeader>
-                                <CardHeaderContent>
-                                    <MudChip Icon="@Icons.Material.Filled.Edit" IconColor="Color.Primary" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OpenUpdateAreasDialog(item))">Update Areas</MudChip>
-                                </CardHeaderContent>
-                                <CardHeaderActions>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteSupervisorFromSubordinateList(item))" />
-                                </CardHeaderActions>
-                            </MudCardHeader>
-                            <MudCardContent>
-                                <div class="font-weight-bold"> <MudText Typo="Typo.subtitle2"> <b>@Localizer["UsersName"]:</b></MudText> @item.Name </div>
-                                <div class="font-weight-light"><MudText Typo="Typo.subtitle2"> <b>@Localizer["UsersGroup"]:</b></MudText> @item.Group?.Description </div>
-                            </MudCardContent>
-                            <div class="d-flex justify-content-between justify-center">
-                                    <MudPaper Elevation="0">
-                                        <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"> @Localizer["UsersSupervisor"] </MudChip>
-                                    </MudPaper>
-                            </div>
-                        </MudCard>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="2" Style="border: 1px solid #e0e0e0; border-radius: 10px; min-height: 170px;">
+                                <MudCardHeader Style="background-color: #f5f5f5; padding: 14px;">
+                                    <CardHeaderContent>
+                                        <MudChip Icon="@Icons.Material.Filled.Edit" IconColor="Color.Primary" Size="Size.Medium"
+                                                 Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OpenUpdateAreasDialog(item))">
+                                            Update Areas
+                                        </MudChip>
+                                    </CardHeaderContent>
+                                    <CardHeaderActions>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="@(() => DeleteSupervisorFromSubordinateList(item))" />
+                                    </CardHeaderActions>
+                                </MudCardHeader>
+                                <MudCardContent Style="padding: 16px;">
+                                    <MudText Typo="Typo.body1" Class="mb-2" Style="font-weight: 500;">
+                                        <b>@Localizer["UsersName"]:</b> @item.Name
+                                    </MudText>
+                                    <MudText Typo="Typo.body2" Style="color: #616161;">
+                                        <b>@Localizer["UsersGroup"]:</b> @item.Group?.Description
+                                    </MudText>
+                                </MudCardContent>
+                                <MudCardActions Class="px-4 pb-3">
+                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Size="Size.Small" Variant="Variant.Filled" Color="Color.Secondary">
+                                        @Localizer["UsersSupervisor"]
+                                    </MudChip>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
                     }
-                </MudItem>
+                </MudGrid>
             }
             break;
     }
-</MudItem>
+</MudPaper>
 
-<MudItem Class="ml-auto mt-3">
-    @if (_user.UserType != 0)
-    {
-        <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="SubmitUser">@Localizer["UsersNew"]</MudButton>
-    }
-    <MudButton Href="/usersmanagement" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
-</MudItem>
+@* Botones de acción *@
+<MudGrid Class="mt-4">
+    <MudItem xs="12" Class="d-flex justify-end gap-3">
+        @if (_user.UserType != 0)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitUser">
+                @Localizer["UsersNew"]
+            </MudButton>
+        }
+        <MudButton Href="/usersmanagement" Variant="Variant.Outlined" Color="Color.Default">
+            @Localizer["Cancel"]
+        </MudButton>
+    </MudItem>
+</MudGrid>
 
 @code {
     [Parameter] public User _user { get; set; }
