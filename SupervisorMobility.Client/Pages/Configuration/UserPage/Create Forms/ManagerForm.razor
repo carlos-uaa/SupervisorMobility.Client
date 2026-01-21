@@ -40,16 +40,16 @@
     </MudItem>
     <MudGrid>
         <MudItem xs="12" md="6">
-            @*Mud select of Plants for Manager*@
-            <MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Outlined" 
-                       Placeholder="@Localizer["UsersPHPlant"]" AnchorOrigin="Origin.BottomCenter" 
-                       @bind-Value="@auxPlant" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
-                <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
-                @foreach (var type in _plants)
-                {
-                    <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-                }
-            </MudSelect>
+            <MudAutocomplete T="Plant"
+                             Label="@Localizer["UsersLabelPlant"]"
+                             Variant="Variant.Outlined"
+                             Placeholder="@Localizer["UsersPHPlant"]"
+                             AnchorOrigin="Origin.BottomCenter"
+                             ValueChanged="ShowAreasInvokeByPlantSelector"
+                             ToStringFunc="@(p => p == null ? string.Empty : $"{p.Code}-{p.Description}")"
+                             SearchFunc="SearchPlants"
+                             Clearable="true"
+                             Dense="true" />
         </MudItem>
     </MudGrid>
 </MudPaper>
@@ -71,29 +71,20 @@
 
     @*Seccion de Selector Subordinados *@
     <MudGrid Class="mb-3">
+        <MudAutocomplete T="User"
+                        Label="@Localizer["UsersSeniorSupervisor"]"
+                        Variant="Variant.Outlined"
+                        Placeholder="@Localizer["UsersPHSubordinate"]"
+                        AnchorOrigin="Origin.BottomCenter"
+                        ValueChanged="OnSelectedSubordinatedFunction"
+                        ToStringFunc="@(u => u == null ? string.Empty : $"{u.Name}-{u.Area?.Description}-{u.Group?.Description}")"
+                        SearchFunc="@(value => Task.FromResult(SeniorsSupervisors.Where(ss => 
+                            ss.Name.Contains(value, StringComparison.OrdinalIgnoreCase) || 
+                            (ss.Area != null && ss.Area.Description.Contains(value, StringComparison.OrdinalIgnoreCase)) || 
+                            (ss.Group != null && ss.Group.Description.Contains(value, StringComparison.OrdinalIgnoreCase)))))"
+                        Clearable="true"
+                        Dense="true" />
         <MudItem xs="12" md="6">
-            <MudSelect T="User" Label="@Localizer["UsersSeniorSupervisor"]" 
-                       SelectedValuesChanged="OnSelectedSubordinatedFunction" 
-                       Placeholder="@Localizer["UsersPHSubordinate"]" 
-                       @bind-Value="@selectedSeniorSupervisorOfList" 
-                       Variant="Variant.Outlined" 
-                       AnchorOrigin="Origin.BottomCenter">
-                <MudSelectItem Disabled="true" Value="selectedSeniorSupervisorOfList">@Localizer["UsersPHSubordinate"] </MudSelectItem>
-                @foreach (var SS in SeniorsSupervisors)
-                {
-                    @if (LogedUser.UserType == 1)
-                    {
-                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                    }
-                    else
-                    {
-                        @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
-                        {
-                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description}") </MudSelectItem>
-                        }
-                    }
-                }
-            </MudSelect>
         </MudItem>
         <MudItem xs="12" md="6" Class="d-flex align-center">
             <MudButton Disabled="@ActiveAddSubordinated" 
@@ -169,9 +160,9 @@
     [Parameter] public EventCallback<UserManagmentFormDto> OnUserChanged { get; set; }
 
     private int auxPlant = 0;
-    
+
     private User selectedSeniorSupervisorOfList = new User();
-    private bool ActiveAddSubordinated = false;
+    private bool ActiveAddSubordinated = true;
 
     public List<UpdateAreasForSuperiorDto> SubordinatesToUpdate { get; set; } = new List<UpdateAreasForSuperiorDto>();
 
@@ -185,13 +176,12 @@
         await OnUserChanged.InvokeAsync(userManagmentFormDto);
     }
 
-    private async void ShowAreasInvokeByPlantSelector()
+    private async void ShowAreasInvokeByPlantSelector(Plant selectedPlant)
     {
         SeniorsSupervisors.Clear();
-        
+        _user.Plant = selectedPlant;
+        _user.PlantId = auxPlant = selectedPlant.PlantId;
         await SegregateAllUsers(_allUsers);
-
-        ActiveAddSubordinated = true;
 
         StateHasChanged();
     }
@@ -212,8 +202,9 @@
         }
     }
 
-    private async void OnSelectedSubordinatedFunction()
+    private async void OnSelectedSubordinatedFunction(User selectedSubordinate)
     {
+        selectedSeniorSupervisorOfList = selectedSubordinate;
         if (selectedSeniorSupervisorOfList != new User())
             ActiveAddSubordinated = false;
         else
@@ -245,5 +236,15 @@
             SeniorsSupervisors.Add(subordinate);
         }
         StateHasChanged();
+    }
+
+    private async Task<IEnumerable<Plant>> SearchPlants(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return _plants;
+
+        return _plants.Where(p =>
+            p.Code.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            p.Description.Contains(value, StringComparison.OrdinalIgnoreCase));
     }
 }

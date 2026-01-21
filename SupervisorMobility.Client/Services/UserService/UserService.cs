@@ -500,7 +500,7 @@ namespace SupervisorMobility.Client.Services.UserService
         {
             try
             {
-                var response = await _http.PutAsJsonAsync($"Users/UpdateUsersAreasForSuperior", _usersList);
+                var response = await _http.PatchAsync($"Users/UpdateUsersAreasForSuperior", JsonContent.Create(_usersList));
                 if (response != null)
                 {
                     var result = await response.Content.ReadFromJsonAsync<ServiceResponse<UpdateUsersAreasResult>>();

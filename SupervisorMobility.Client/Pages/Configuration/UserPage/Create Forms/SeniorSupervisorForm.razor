@@ -35,22 +35,35 @@
     </MudText>
     <MudGrid>
         <MudItem xs="12" md="6">
-            <MudSelect T="int" Label="@Localizer["UsersLabelPlant"]" Variant="Variant.Outlined" Placeholder="@Localizer["UsersPHPlant"]" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxPlant" For="@(() => auxPlant)" SelectedValuesChanged="ShowAreasInvokeByPlantSelector">
-                <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHPlant"]</MudSelectItem>
-                @foreach (var type in _plants)
-                {
-                    <MudSelectItem Value="type.PlantId">@($"{type.Code}-{type.Description}")</MudSelectItem>
-                }
-            </MudSelect>
+            <MudAutocomplete T="Plant"
+                             Label="@Localizer["UsersLabelPlant"]"
+                             Variant="Variant.Outlined"
+                             Placeholder="@Localizer["UsersPHPlant"]"
+                             AnchorOrigin="Origin.BottomCenter"
+                             ValueChanged="ShowAreasInvokeByPlantSelector"
+                             ToStringFunc="@(p => p == null ? string.Empty : $"{p.Code}-{p.Description}")"
+                             SearchFunc="SearchPlants"
+                             Clearable="true"
+                             Dense="true" />
         </MudItem>
         <MudItem xs="12" md="6">
-            <MudSelect T="int" Label="@Localizer["UsersLabelGroup"]" Variant="Variant.Outlined" Placeholder="@Localizer["UsersPHGroup"]" AnchorOrigin="Origin.BottomCenter" ValueChanged="SetGroup">
+            <MudAutocomplete T="Group"
+                             Label="@Localizer["UsersLabelGroup"]"
+                             Variant="Variant.Outlined"
+                             Placeholder="@Localizer["UsersPHGroup"]"
+                             AnchorOrigin="Origin.BottomCenter"
+                             ValueChanged="SetGroup"
+                             ToStringFunc="@(g => g == null ? string.Empty : $"{g.Code}-{g.Description}")"
+                             SearchFunc="SearchGroup"
+                             Clearable="true"
+                             Dense="true" />
+            @* <MudSelect T="int" Label="@Localizer["UsersLabelGroup"]" Variant="Variant.Outlined" Placeholder="@Localizer["UsersPHGroup"]" AnchorOrigin="Origin.BottomCenter" ValueChanged="SetGroup">
                 <MudSelectItem Disabled="true" Value="0">@Localizer["UsersPHGroup"]</MudSelectItem>
                 @foreach (var type in _groups)
                 {
                     <MudSelectItem Value="type.GroupId">@($"{type.Code}-{type.Description}")</MudSelectItem>
                 }
-            </MudSelect>
+            </MudSelect> *@
         </MudItem>
     </MudGrid>
 </MudPaper>
@@ -67,14 +80,13 @@
     {
         <MudGrid Class="mb-3">
             <MudItem xs="12" md="8">
-                <MudSelect T="Area" Label="@Localizer["UsersLabelArea"]" SelectedValuesChanged="@OnSelectedAreaToManageFunction" 
-                           Placeholder="@Localizer["UsersPHArea"]" @bind-Value="@selectedAreaOfList" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                    <MudSelectItem Disabled="true" Value="selectedAreaOfList">@Localizer["UsersPHArea"]</MudSelectItem>
-                    @foreach (var areaItem in _areasManager)
-                    {
-                        <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}")</MudSelectItem>
-                    }
-                </MudSelect>
+                <MudAutocomplete T="Area" Label="@Localizer["UsersLabelArea"]" Placeholder="@Localizer["UsersPHArea"]"
+                                 ValueChanged="OnSelectedAreaToManageFunction"
+                                 ToStringFunc="@(a => a != null ? $"{a.Code}-{a.Description}" : string.Empty)"
+                                 SearchFunc="@(async (string value) => await Task.FromResult(_areasManager
+                                     .Where(a => a.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase) || a.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+                                     .ToList()))"
+                                 Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" />
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
                 <MudButton Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
@@ -183,7 +195,23 @@
     {
         <MudGrid Class="mb-3">
             <MudItem xs="12" md="8">
-                <MudSelect T="User" Label="@Localizer["UsersSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" 
+                <MudAutocomplete T="User" Label="@Localizer["UsersSupervisor"]" Placeholder="@Localizer["UsersPHSubordinate"]"
+                                 ValueChanged="OnSelectedSubordinatedFunction"
+                                 ToStringFunc="@(u => u != null ? $"{u.Name}-{(u.Areas?.Count > 0 ? string.Join(", ", u.Areas.Select(a => a.Code)) : "No Areas")}-{u.Group?.Description}" : string.Empty)"
+                                 SearchFunc="@(async (string value) => await Task.FromResult(Supervisors
+                                     .Where(u => u.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+                                                 (u.Areas != null && u.Areas.Any(a => a.Code.Contains(value, StringComparison.OrdinalIgnoreCase))) ||
+                                                 (u.Group != null && u.Group.Description.Contains(value, StringComparison.OrdinalIgnoreCase)))
+                                     .Where(u =>
+                                     {
+                                         if (LogedUser.UserType == 1)
+                                             return true;
+                                         else
+                                             return u.Areas?.Any(sa => _user.Areas?.Any(ua => ua.AreaId == sa.AreaId) == true) == true;
+                                     })
+                                     .ToList()))"
+                                 Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" />
+                @* <MudSelect T="User" Label="@Localizer["UsersSupervisor"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" 
                            Placeholder="@Localizer["UsersPHSubordinate"]" @bind-Value="@selectedSupervisorOfList" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
                     <MudSelectItem Disabled="true" Value="selectedSupervisorOfList">@Localizer["UsersPHSubordinate"]</MudSelectItem>
                     @foreach (var SS in Supervisors)
@@ -203,7 +231,7 @@
                             }
                         }
                     }
-                </MudSelect>
+                </MudSelect> *@
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
                 <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisorToSubordinateList(selectedSupervisorOfList))" 
@@ -287,7 +315,13 @@
                     @foreach (var item in _user.Subordinates)
                     {
                         <MudItem xs="12" sm="6" md="4">
-                            <MudCard Elevation="2" Style="border: 1px solid #e0e0e0; border-radius: 10px; min-height: 170px;">
+                            <MudCard Elevation="2" Style="border: 1px solid #e0e0e0; border-radius: 10px; min-height: 170px; position: relative;">
+                                @if (NeedToupdate(item))
+                                {
+                                    <div style="position: absolute; top: -8px; left: -8px; z-index: 10;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Large" />
+                                    </div>
+                                }
                                 <MudCardHeader Style="background-color: #f5f5f5; padding: 14px;">
                                     <CardHeaderContent>
                                         <MudChip Icon="@Icons.Material.Filled.Edit" IconColor="Color.Primary" Size="Size.Medium"
@@ -374,8 +408,12 @@
         await OnUserChanged.InvokeAsync(userManagmentFormDto);
     }
 
-    private async void ShowAreasInvokeByPlantSelector()
+    private async void ShowAreasInvokeByPlantSelector(Plant plant)
     {
+        auxPlant = plant.PlantId;
+        _user.Plant = plant;
+        _user.PlantId = auxPlant;
+
         SeniorsSupervisors.Clear();
         Supervisors.Clear();
         Operators.Clear();
@@ -388,6 +426,8 @@
 
         if (auxPlant != 0)
         {
+            _user.PlantId = auxPlant;
+            _user.Plant = _plants.FirstOrDefault(p => p.PlantId == auxPlant);
             _user.Subordinates?.Clear();
             _user.Areas?.Clear();
 
@@ -459,8 +499,9 @@
         StateHasChanged();
     }
 
-    private async void OnSelectedAreaToManageFunction()
+    private async void OnSelectedAreaToManageFunction(Area area)
     {
+        selectedAreaOfList = area;
         if (selectedAreaOfList != new Area())
             ActiveAddArea = false;
         else
@@ -498,7 +539,8 @@
             { "Superior", _user },
             { "Subordinate", subordinate},
             { "Areas", _user.Areas }
-        }).Result;
+        },
+        new DialogOptions { DisableBackdropClick = true }).Result;
 
         if (!result.Cancelled)
         {
@@ -534,8 +576,9 @@
         StateHasChanged();
     }
 
-    private async void OnSelectedSubordinatedFunction()
+    private async void OnSelectedSubordinatedFunction(User subordinate)
     {
+        selectedSupervisorOfList = subordinate;
         if (selectedSupervisorOfList != new User())
             ActiveAddSubordinated = false;
         else
@@ -559,17 +602,46 @@
         StateHasChanged();
     }
 
-    private async Task SetGroup(int value)
+    private async Task SetGroup(Group value)
     {
-        if(value != 0)
+        if(value != null && value.GroupId != 0)
         {
-            auxGroup = value;
+            auxGroup = value.GroupId;
             _user.GroupId = auxGroup;
-            _user.Group = _groups.FirstOrDefault(g => g.GroupId == auxGroup);
+            _user.Group = value;
         }
         else
-        {
             auxGroup = 0;
-        }
     }
+
+    private bool NeedToupdate(User subordinate)
+    {
+        // Validar si las areas del subordinado coinciden con las del superior
+        if (subordinate.Areas != null && subordinate.Areas.Count > 0)
+            return !(subordinate.Areas != null && _user.Areas != null &&
+                              subordinate.Areas.All(sa => _user.Areas.Any(ua => ua.AreaId == sa.AreaId)));
+        else
+            return true;
+    }
+
+    private async Task<IEnumerable<Plant>> SearchPlants(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return _plants;
+
+        return _plants.Where(p =>
+            p.Code.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            p.Description.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task<IEnumerable<Group>> SearchGroup(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return _groups;
+
+        return _groups.Where(g =>
+            g.Code.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            g.Description.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
 }

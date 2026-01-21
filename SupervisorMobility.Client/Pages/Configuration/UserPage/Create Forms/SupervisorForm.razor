@@ -56,14 +56,13 @@
     {
         <MudGrid Class="mb-3">
             <MudItem xs="12" md="8">
-                <MudSelect T="Area" Label="@Localizer["UsersLabelArea"]" SelectedValuesChanged="@OnSelectedAreaToManageFunction" 
-                           Placeholder="@Localizer["UsersPHArea"]" @bind-Value="@selectedAreaOfList" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                    <MudSelectItem Disabled="true" Value="selectedAreaOfList">@Localizer["UsersPHArea"]</MudSelectItem>
-                    @foreach (var areaItem in _areasManager)
-                    {
-                        <MudSelectItem Value="areaItem">@($"{areaItem.Code}-{areaItem.Description}")</MudSelectItem>
-                    }
-                </MudSelect>
+                <MudAutocomplete T="Area" Label="@Localizer["UsersLabelArea"]" Placeholder="@Localizer["UsersPHArea"]" 
+                                 ValueChanged="OnSelectedAreaToManageFunction"
+                                 ToStringFunc="@(a => a != null ? $"{a.Code}-{a.Description}" : string.Empty)" 
+                                 SearchFunc="@(async (string value) => await Task.FromResult(_areasManager
+                                     .Where(a => a.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase) || a.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+                                     .ToList()))"
+                                 Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" />
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
                 <MudButton Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
@@ -194,24 +193,12 @@
 
         @if (SeniorsSupervisors.Count > 0)
         {
-            <MudSelect T="User" Label="SSV" Placeholder="@Localizer["UsersPHSuperior"]" @bind-Value="@_user.Superior" 
-                       SelectedValuesChanged="SetSuperiorToUser" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-4">
-                <MudSelectItem Disabled="true" Value="selectedSeniorSupervisorOfList">@Localizer["UsersPHSuperior"]</MudSelectItem>
-                @foreach (var SS in SeniorsSupervisors)
-                {
-                    @if (LogedUser.UserType == 1)
-                    {
-                        <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Group?.Description}")</MudSelectItem>
-                    }
-                    else
-                    {
-                        @if (SS.PlantId == _user.PlantId && SS.AreaId == _user.AreaId)
-                        {
-                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Group?.Description}")</MudSelectItem>
-                        }
-                    }
-                }
-            </MudSelect>
+            <MudAutocomplete T="User" Label="SSV" Placeholder="@Localizer["UsersPHSuperior"]" ValueChanged="SetSuperiorToUser" 
+                             ToStringFunc="@(u => u != null ? $"{u.Name} - {u.Group?.Description}" : string.Empty)" 
+                             SearchFunc="@(async (string value) => await Task.FromResult(SeniorsSupervisors
+                                 .Where(u => u.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+                                 .ToList()))"
+                             Variant="Variant.Outlined" Class="mb-4" SelectedItemChanged="SetSuperiorToUser"/>
         }
     }
 
@@ -227,24 +214,13 @@
     {
         <MudGrid Class="mb-3">
             <MudItem xs="12" md="8">
-                <MudSelect T="User" Label="@Localizer["UsersOperators"]" SelectedValuesChanged="OnSelectedSubordinatedFunction" 
-                           Placeholder="@Localizer["UsersPHOperator"]" @bind-Value="@selectedOperatorOfList" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter">
-                    <MudSelectItem Disabled="true" Value="selectedOperatorOfList">@Localizer["UsersPHOperator"]</MudSelectItem>
-                    @foreach (var SS in Operators)
-                    {
-                        @if (LogedUser.UserType == 1)
-                        {
-                            <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description} - {SS.Distribution?.Description}")</MudSelectItem>
-                        }
-                        else
-                        {
-                            @if (_user.Areas?.ToList().FindIndex(a => a.AreaId == SS.AreaId) != -1)
-                            {
-                                <MudSelectItem Value="SS">@($"{SS.Name}-{SS.Area?.Description}-{SS.Group?.Description} - {SS.Distribution?.Description}")</MudSelectItem>
-                            }
-                        }
-                    }
-                </MudSelect>
+                <MudAutocomplete T="User" Label="@Localizer["UsersOperators"]" Placeholder="@Localizer["UsersPHOperator"]" 
+                                 ValueChanged="OnSelectedSubordinatedFunction"
+                                 ToStringFunc="@(u => u != null ? $"{u.Name}-{u.Area?.Description}-{u.Group?.Description} - {u.Distribution?.Description}" : string.Empty)" 
+                                 SearchFunc="@(async (string value) => await Task.FromResult(Operators
+                                     .Where(u => u.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+                                     .ToList()))"
+                                 Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" />
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
                 <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddOperatorToSubordinateList(selectedOperatorOfList))" 
@@ -329,9 +305,12 @@
                     {
                         <MudItem xs="12" sm="6" md="4">
                             <MudCard Elevation="2" Style="border: 1px solid #e0e0e0; border-radius: 10px; min-height: 170px; position: relative;">
-                                <div style="position: absolute; top: -8px; left: -8px; z-index: 10;">
-                                    <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Warning" Size="Size.Small" />
-                                </div>
+                                @if(NeedToupdate(item))
+                                {
+                                    <div style="position: absolute; top: -8px; left: -8px; z-index: 10;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Large" />
+                                    </div>                                
+                                }
                                 <MudCardHeader Style="background-color: #f5f5f5; padding: 14px;">
                                     <CardHeaderContent>
                                         <MudChip Icon="@Icons.Material.Filled.Edit" IconColor="Color.Primary" Size="Size.Medium"
@@ -387,16 +366,16 @@
 </MudGrid>
 
 @code {
-        [Parameter] public User _user { get; set; }
-        [Parameter] public User LogedUser { get; set; }
-        [Parameter] public List<Department> _departments { get; set; }
-        [Parameter] public List<Distribution> _distributions { get; set; }
-        [Parameter] public List<User> _allUsers { get; set; }
-        [Parameter] public List<User> SeniorsSupervisors { get; set; }
-        [Parameter] public List<User> Supervisors { get; set; }
-        [Parameter] public List<User> Operators { get; set; }
-        [Parameter] public List<Area> _areasManager { get; set; }
-        [Parameter] public EventCallback<UserManagmentFormDto> OnUserChanged { get; set; }
+    [Parameter] public User _user { get; set; }
+    [Parameter] public User LogedUser { get; set; }
+    [Parameter] public List<Department> _departments { get; set; }
+    [Parameter] public List<Distribution> _distributions { get; set; }
+    [Parameter] public List<User> _allUsers { get; set; }
+    [Parameter] public List<User> SeniorsSupervisors { get; set; }
+    [Parameter] public List<User> Supervisors { get; set; }
+    [Parameter] public List<User> Operators { get; set; }
+    [Parameter] public List<Area> _areasManager { get; set; }
+    [Parameter] public EventCallback<UserManagmentFormDto> OnUserChanged { get; set; }
 
     private string plantInfo;
     private string grupInfo;
@@ -409,8 +388,6 @@
     private Area selectedAreaOfList = new Area();
     private bool ActiveAddArea = true;
 
-    private User selectedSupervisorOfList = new User();
-    private User selectedSeniorSupervisorOfList = new User();
     private User selectedOperatorOfList = new User();
     private bool ActiveAddSubordinated = true;
     private bool superior = false;
@@ -461,8 +438,9 @@
         StateHasChanged();
     }
 
-    private async void OnSelectedAreaToManageFunction()
+    private async void OnSelectedAreaToManageFunction(Area areaSelected)
     {
+        selectedAreaOfList = areaSelected;
         if (selectedAreaOfList != new Area())
             ActiveAddArea = false;
         else
@@ -500,7 +478,8 @@
             { "Superior", _user },
             { "Subordinate", subordinate},
             { "Areas", _user.Areas }
-        }).Result;
+        },
+        new DialogOptions { DisableBackdropClick = true}).Result;
 
         if (!result.Cancelled)
         {
@@ -520,9 +499,7 @@
                     {
                         var area = _user.Areas.FirstOrDefault(a => a.AreaId == areaId);
                         if (area != null)
-                        {
                             subordinateToUpdate.Areas.Add(area);
-                        }
                     }
                 }
             }
@@ -532,17 +509,13 @@
 
     // Funciones del árbol de Jerarquía
     #region Árbol de Jerarquía
-    private async void OnSelectedSubordinatedFunction()
+    private async void OnSelectedSubordinatedFunction(User subordinateSelected)
     {
-        if (selectedSupervisorOfList != new User() || selectedSeniorSupervisorOfList != new User() || selectedOperatorOfList != new User())
-        {
+        selectedOperatorOfList = subordinateSelected;
+        if (selectedOperatorOfList != new User())
             ActiveAddSubordinated = false;
-        }
         else
-        {
             ActiveAddSubordinated = true;
-        }
-
     }
 
     private void RemoveSuperiorUser()
@@ -556,9 +529,10 @@
         StateHasChanged();
     }
 
-    private async Task SetSuperiorToUser()
+    private async Task SetSuperiorToUser(User superiorSelected)
     {
-        _user.SuperiorId = _user.Superior.SuperiorId;
+        _user.Superior = superiorSelected;
+        _user.SuperiorId = superiorSelected.SuperiorId;
         superior = true;
 
 
@@ -609,6 +583,16 @@
             ActiveAddSubordinated = true;
         }
         StateHasChanged();
+    }
+
+    private bool NeedToupdate(User subordinate)
+    {
+        // Validar si las areas del subordinado coinciden con las del superior
+        if (subordinate.Areas != null && subordinate.Areas.Count > 0)
+            return !(subordinate.Areas != null && _user.Areas != null &&
+                              subordinate.Areas.All(sa => _user.Areas.Any(ua => ua.AreaId == sa.AreaId)));
+        else
+            return true;
     }
 
     private void DeleteOperatorFromSubordinateList(User selection)

@@ -8,80 +8,89 @@
         </MudItem>
     </TitleContent>
     <DialogContent>
-        <MudCard Elevation="2" Style="border-radius: 8px; background-color: #f9faf9; margin-top: 15px; width: 400px;">
-            <MudCardHeader>
-                <CardHeaderAvatar>
-                    <MudAvatar Color="Color.Warning">@GetAvatar(Superior.UserType)</MudAvatar>
-                </CardHeaderAvatar>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6"><b>Superior</b></MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText Typo="Typo.subtitle1"><b>Name: </b> @(string.IsNullOrEmpty(Superior.Name) ? "No Name setted yet" : Superior.Name)</MudText>
-                <MudText Typo="Typo.subtitle1"><b>Group: </b> @(string.IsNullOrEmpty(Superior.Group?.Description) ? "No Group setted yet" : Superior.Group?.Description)</MudText>
-            </MudCardContent>
-        </MudCard>
+        <MudItem Style="margin: 0px 10px">
+            <MudCard Elevation="2" Style="border-radius: 8px; background-color: #f9faf9; margin-top: 15px; width: 400px;">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Warning">@GetAvatar(Superior.UserType)</MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6"><b>Superior</b></MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle1"><b>Name: </b> @(string.IsNullOrEmpty(Superior.Name) ? "No Name setted yet" : Superior.Name)</MudText>
+                    <MudText Typo="Typo.subtitle1"><b>Group: </b> @(string.IsNullOrEmpty(Superior.Group?.Description) ? "No Group setted yet" : Superior.Group?.Description)</MudText>
+                </MudCardContent>
+            </MudCard>
 
-        <MudCard Elevation="2" Style="border-radius: 8px; background-color: #f9faf9; margin-top: 15px; width: 400px;">
-            <MudCardHeader>
-                <CardHeaderAvatar>
-                    <MudAvatar Color="Color.Primary">@GetAvatar(Subordinate.UserType)</MudAvatar>
-                </CardHeaderAvatar>
-                <CardHeaderContent>
-                    <MudText Typo="Typo.h6"><b>Subordinate</b></MudText>
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText Typo="Typo.subtitle1"><b>Name: </b> @Subordinate.Name</MudText>
-                <MudText Typo="Typo.subtitle1"><b>Group: </b>@Subordinate.Group?.Description</MudText>
-            </MudCardContent>
-        </MudCard>
+            <MudCard Elevation="2" Style="border-radius: 8px; background-color: #f9faf9; margin-top: 15px; width: 400px;">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Primary">@GetAvatar(Subordinate.UserType)</MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6"><b>Subordinate</b></MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.subtitle1"><b>Name: </b> @Subordinate.Name</MudText>
+                    <MudText Typo="Typo.subtitle1"><b>Group: </b>@Subordinate.Group?.Description</MudText>
+                </MudCardContent>
+            </MudCard>
 
-        <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2"><b>Select Areas to Assign:</b></MudText>
-        <MudItem Class="d-flex">
-            <MudSelect T="int" Label="Areas" @bind-value="areaIdAux" Dense="true" Style="width: 300px;" Disabled="@((Subordinate.UserType == 4 && SubordinateToUpdate.AreaIds.Count > 0))">
-                <MudSelectItem T="int" Value="0" Disabled="true">-- Select an Area --</MudSelectItem>
-                @foreach (var area in Areas)
+            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2"><b>Select Areas to Assign:</b></MudText>
+            <MudItem Class="d-flex">
+                @if (Areas != null && Areas.Count > 0)
                 {
-                    if(SubordinateToUpdate.AreaIds.Contains(area.AreaId))
+                    <MudSelect T="int" Label="Areas" @bind-value="areaIdAux" Dense="true" Style="width: 300px;" Disabled="@((Subordinate.UserType == 4 && SubordinateToUpdate.AreaIds.Count > 0))">
+                        <MudSelectItem T="int" Value="0" Disabled="true">-- Select an Area --</MudSelectItem>
+                        @foreach (var area in Areas)
+                        {
+                            if (SubordinateToUpdate.AreaIds.Contains(area.AreaId))
+                            {
+                                continue;
+                            }
+                            <MudSelectItem T="int" Value="@area.AreaId"><b>@area.Code:</b> @area.Description</MudSelectItem>
+                        }
+                    </MudSelect>
+                    @if (!(Subordinate.UserType == 4 && SubordinateToUpdate.AreaIds.Count > 0))
                     {
-                        continue;
+                        <MudIconButton Color="Color.Secondary" Variant="Variant.Text" Class="mt-2" OnClick="AddAreaToSubordinate" Icon="@Icons.Material.Filled.Add" />
                     }
-                    <MudSelectItem T="int" Value="@area.AreaId"><b>@area.Code:</b> @area.Description</MudSelectItem>
                 }
-            </MudSelect>
-            @if(!(Subordinate.UserType == 4 && SubordinateToUpdate.AreaIds.Count > 0))
-            {
-                <MudIconButton Color="Color.Secondary" Variant="Variant.Text" Class="mt-2" OnClick="AddAreaToSubordinate" Icon="@Icons.Material.Filled.Add" />
-            }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text">The superior does not have any area yet</MudAlert>
+                }
+            </MudItem>
+            <MudItem>
+                @foreach (var areaId in SubordinateToUpdate.AreaIds)
+                {
+                    if (Areas.Any(a => a.AreaId == areaId))
+                    {
+                        var area = Areas.FirstOrDefault(a => a.AreaId == areaId);
+                        if (area != null)
+                        {
+                            <MudChip Variant="Variant.Text" Color="Color.Secondary" CloseIcon="@Icons.Material.Filled.Delete" OnClose="() => { SubordinateToUpdate.AreaIds.Remove(areaId); StateHasChanged(); }"><b>@area.Code: </b> @area.Description</MudChip>
+                        }
+                    }
+                }
+                <br />
+                @foreach (var area in SubordinateToUpdate.AreaIds)
+                {
+                    if (Subordinate.Areas.Any(a => a.AreaId == area) && !Areas.Any(a => a.AreaId == area))
+                    {
+                        var areaToShow = Subordinate.Areas.FirstOrDefault(a => a.AreaId == area);
+                        if (areaToShow != null)
+                        {
+                            <MudChip Variant="Variant.Text" Color="Color.Warning" CloseIcon="@Icons.Material.Filled.Delete" OnClose="() => { SubordinateToUpdate.AreaIds.Remove(area); StateHasChanged(); }"><b>@areaToShow.Code: </b> @areaToShow.Description</MudChip>
+                        }
+                    }
+                }
+            </MudItem>
+            <MudItem><MudChip Color="Color.Info" Variant="Variant.Outlined" Class="mt-2">Total Areas Assigned: @SubordinateToUpdate.AreaIds.Count</MudChip></MudItem>
         </MudItem>
-        <MudItem>
-            @foreach (var areaId in SubordinateToUpdate.AreaIds)
-            {
-                if(Areas.Any(a => a.AreaId == areaId))
-                {
-                    var area = Areas.FirstOrDefault(a => a.AreaId == areaId);
-                    if (area != null)
-                    {
-                        <MudChip Variant="Variant.Text" Color="Color.Secondary" CloseIcon="@Icons.Material.Filled.Delete" OnClose="() => { SubordinateToUpdate.AreaIds.Remove(areaId); StateHasChanged(); }"><b>@area.Code: </b> @area.Description</MudChip>
-                    }
-                }
-            }
-            <br/>
-            @foreach(var area in SubordinateToUpdate.AreaIds)
-            {
-                if(Subordinate.Areas.Any(a => a.AreaId == area) && !Areas.Any(a => a.AreaId == area))
-                {
-                    var areaToShow = Subordinate.Areas.FirstOrDefault(a => a.AreaId == area);
-                    if (areaToShow != null)
-                    {
-                        <MudChip Variant="Variant.Text" Color="Color.Warning" CloseIcon="@Icons.Material.Filled.Delete" OnClose="() => { SubordinateToUpdate.AreaIds.Remove(area); StateHasChanged(); }"><b>@areaToShow.Code: </b> @areaToShow.Description</MudChip>
-                    }
-                }
-            }
-        </MudItem>
-        <MudItem><MudChip Color="Color.Info" Variant="Variant.Outlined" Class="mt-2">Total Areas Assigned: @SubordinateToUpdate.AreaIds.Count</MudChip></MudItem>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Submit</MudButton>
@@ -91,15 +100,28 @@
 
 @code {
     [CascadingParameter] public MudDialogInstance MudDialog { get; set; }
-    [Parameter] public List<Area> Areas { get; set; }
+    [Parameter] public List<Area>? Areas { get; set; }
     [Parameter] public User Superior { get; set; }
     [Parameter] public User Subordinate { get; set; }
 
     private UpdateAreasForSuperiorDto SubordinateToUpdate = new UpdateAreasForSuperiorDto();
     private int areaIdAux = 0;
 
+    private List<Area> _backupAreas = new List<Area>();
+
     protected override async Task OnInitializedAsync()
     {
+        if (Areas == null)
+            Areas = new List<Area>();
+
+        // Crear una copia sin referencia de las areas del Subordinado
+        _backupAreas = Subordinate.Areas != null ? Subordinate.Areas.Select(a => new Area
+        {
+            AreaId = a.AreaId,
+            Code = a.Code,
+            Description = a.Description
+        }).ToList() : new List<Area>();
+
         SubordinateToUpdate = new UpdateAreasForSuperiorDto
         {
             UserId = Subordinate.UserId,
@@ -137,6 +159,16 @@
 
     private void Cancel()
     {
+        // Restaurar las áreas originales desde el backup
+        Subordinate.Areas = _backupAreas
+            .Select(a => new Area
+                {
+                    AreaId = a.AreaId,
+                    Code = a.Code,
+                    Description = a.Description
+                })
+            .ToList();
+
         MudDialog.Cancel();
     }
 

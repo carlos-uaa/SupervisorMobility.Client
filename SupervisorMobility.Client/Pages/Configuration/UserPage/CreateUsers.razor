@@ -65,7 +65,7 @@
                                 <MudSwitch Class="ma-1" Label="@Localizer["lineSupport"]" @bind-Checked="@IsLineSupport" @onclick="@(() => setActiveUser(6))" Color="Color.Info" UnCheckedColor="Color.Dark" />
                                 <MudSwitch Class="ma-1" Label="@Localizer["headCount"]" @bind-Checked="@IsHeadCount" @onclick="@(() => setActiveUser(7))" Color="Color.Info" UnCheckedColor="Color.Dark" />
                             </MudItem>
-                            <MudItem class="d-flex d-flex-column justify-center">
+                            <MudItem class="d-flex d-flex-column justify-center mb-3">
                                 @switch (_user.UserType)
                                 {
                                     case 1:
@@ -707,12 +707,6 @@
         _user.CreatedDate = DateTime.Now;
         _user.LastUpdated = DateTime.Now;
 
-        _user.PlantId = auxPlant;
-        // UserType 2 (SSV), 3 (Supervisor) y 4 (Operator) usan Areas collection a través de UserAreas
-        _user.DepartmentId = auxDepa;
-        _user.DistributionId = auxDistribution;
-        _user.GroupId = auxGroup;
-
         if(_user.Superior != null)
         {
             _user.SuperiorId = _user.Superior.UserId;
@@ -735,43 +729,32 @@
             _hci.UserId = result.UserId;
 
             if (await HCIServices.CreateHCI(_hci))
-            {
                 Snackbar.Add("HCI Created succesfully", Severity.Success);
-            }
             else
-            {
                 Snackbar.Add("Error", Severity.Error);
-            }
             GlobalData.NotifyNotificationsChanged(); // Trigger notification refresh
-            NavigationManager.NavigateTo("/usersmanagement");
-
 
             // Try to update the subordinates areas if user has any Subordinate
             if(_subordinatesToUpdate != null && _subordinatesToUpdate.Count > 0)
             {
+                _subordinatesToUpdate.ForEach(s => s.SuperiorId = result.UserId); // Colocar el ID obtenido del nuevo usuario al ser creado
                 ServiceResponse<UpdateUsersAreasResult> updateResponse = await UserServices.UpdateUsersAreas(_subordinatesToUpdate);
 
                 if(updateResponse.Success)
-                {
                     Snackbar.Add($"{updateResponse.Message}",(updateResponse.Data.Failed == 0 ? Severity.Success : Severity.Warning));
-                }
                 else
-                {
                     Snackbar.Add($"{updateResponse.Message}", Severity.Error);
-                }
 
                 if(updateResponse.Data.Failed > 0 && updateResponse.Data.Errors != null && updateResponse.Data.Errors.Count > 0)
-                {
                     foreach(var failed in updateResponse.Data.Errors)
                     {
-                        Snackbar.Add($"User with ID: {failed.UserId}. {failed.ErrorType}: {failed.ErrorMessage}", Severity.Error);
+                        Snackbar.Add($"User: {_allUsers.FirstOrDefault(u => u.UserId == failed.UserId)}. {failed.ErrorType}: {failed.ErrorMessage}", Severity.Error);
                     }
-                }
             }
+
+            NavigationManager.NavigateTo("/usersmanagement");
         }
         else
-        {
             await JS.InvokeVoidAsync("alert", "Error, on create user please call your admin!"); // Alert
-        }
     }
 }
