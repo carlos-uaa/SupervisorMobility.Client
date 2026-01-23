@@ -12,11 +12,18 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 @inject IStringLocalizer<Resource1> Localizer
 @inject GlobalDataService GlobalData;
 
 @using System.ComponentModel.DataAnnotations
 @using SupervisorMobility.Client.Pages.Configuration.UserPage.Create_Forms
+
+<style>
+    .dialog {
+        backdrop-filter: blur(10px);
+    }
+</style>
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["UsersCreateTitle"]</PageTitle>
@@ -702,6 +709,24 @@
                 return;
             }
         }
+
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+        {
+            { "Title", Localizer["ConfirmationCreation"].Value },
+            { "ContentText", Localizer["UsersCreateConfirmText"].Value },
+            { "ButtonText", Localizer["ConfirmCreate"].Value },
+            { "CancelText", Localizer["Cancel"].Value },
+            { "Color", Color.Success },
+            { "Icon", Icons.Material.Filled.PersonAdd },
+            { "IconColor", Color.Info }
+        };
+        var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["ConfirmationCreation"].Value, dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled)
+               return; // Se cancela la creación
 
         _user.IsActive = true;
         _user.CreatedDate = DateTime.Now;

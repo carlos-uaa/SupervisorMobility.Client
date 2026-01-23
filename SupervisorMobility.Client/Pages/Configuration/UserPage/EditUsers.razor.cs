@@ -1,5 +1,6 @@
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Shared;
 
 namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 {
@@ -1164,15 +1165,28 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
         private async void UpdateUserAsync()
         {
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+        {
+            { "Title", Localizer["ConfirmationEdition"].Value },
+            { "ContentText", Localizer["UsersUpdateConfirmText"].Value },
+            { "ButtonText", Localizer["ConfirmUpdate"].Value },
+            { "CancelText", Localizer["Cancel"].Value },
+            { "Color", Color.Success },
+            { "Icon", Icons.Material.Filled.PersonAdd },
+            { "IconColor", Color.Info }
+        };
+            var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["ConfirmationEdition"].Value, dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            if (dialogResult.Canceled)
+                return; // Se cancela la creación
+
             enableSave = true;
 
             _user.IsActive = true;
             _user.LastUpdated = DateTime.Now;
-
-            _user.PlantId = auxPlant;
-            _user.AreaId = auxArea;
-
-            _user.GroupId = auxGroup;
 
             if (_user.Superior != null)
             {
