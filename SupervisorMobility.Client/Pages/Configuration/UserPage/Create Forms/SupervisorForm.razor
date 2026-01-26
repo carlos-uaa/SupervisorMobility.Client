@@ -57,7 +57,7 @@
         <MudGrid Class="mb-3">
             <MudItem xs="12" md="8">
                 <MudAutocomplete T="Area" Label="@Localizer["UsersLabelArea"]" Placeholder="@Localizer["UsersPHArea"]" 
-                                 ValueChanged="OnSelectedAreaToManageFunction"
+                                 @bind-Value="selectedAreaOfList"
                                  ToStringFunc="@(a => a != null ? $"{a.Code}-{a.Description}" : string.Empty)" 
                                  SearchFunc="@(async (string value) => await Task.FromResult(_areasManager
                                      .Where(a => a.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase) || a.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase))
@@ -65,7 +65,7 @@
                                  Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" />
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudButton Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
+                <MudButton Disabled="@(selectedAreaOfList == null)" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
                            Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" FullWidth="true">
                     @Localizer["UsersAddArea"]
                 </MudButton>
@@ -215,7 +215,7 @@
         <MudGrid Class="mb-3">
             <MudItem xs="12" md="8">
                 <MudAutocomplete T="User" Label="@Localizer["UsersOperators"]" Placeholder="@Localizer["UsersPHOperator"]" 
-                                 ValueChanged="OnSelectedSubordinatedFunction"
+                                 @bind-Value="selectedOperatorOfList"
                                  ToStringFunc="@(u => u != null ? $"{u.Name}-{u.Area?.Description}-{u.Group?.Description} - {u.Distribution?.Description}" : string.Empty)" 
                                  SearchFunc="@(async (string value) => await Task.FromResult(Operators
                                      .Where(u => u.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase))
@@ -223,7 +223,7 @@
                                  Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" />
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddOperatorToSubordinateList(selectedOperatorOfList))" 
+                <MudButton Disabled="@(selectedOperatorOfList == null)" OnClick="@(() => AddOperatorToSubordinateList(selectedOperatorOfList))" 
                            Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" FullWidth="true">
                     Add subordinate
                 </MudButton>
@@ -385,11 +385,8 @@
     private int auxGroup;
     private int auxDistribution;
 
-    private Area selectedAreaOfList = new Area();
-    private bool ActiveAddArea = true;
-
-    private User selectedOperatorOfList = new User();
-    private bool ActiveAddSubordinated = true;
+    private Area selectedAreaOfList = null;
+    private User selectedOperatorOfList = null;
     private bool superior = false;
 
     private List<UpdateAreasForSuperiorDto> SubordinatesToUpdate = new List<UpdateAreasForSuperiorDto>();
@@ -438,15 +435,6 @@
         StateHasChanged();
     }
 
-    private async void OnSelectedAreaToManageFunction(Area areaSelected)
-    {
-        selectedAreaOfList = areaSelected;
-        if (selectedAreaOfList != new Area())
-            ActiveAddArea = false;
-        else
-            ActiveAddArea = true;
-    }
-
     private void AddAreaToUserList(Area selection)
     {
         if (_user.Areas == null)
@@ -455,11 +443,8 @@
         if (selectedAreaOfList != null && !_user.Areas.Contains(selection))
         {
             _user.Areas.Add(selection);
-
             _areasManager.Remove(selection);
-            //reset value from selector
             selectedAreaOfList = null;
-            ActiveAddArea = true;
         }
         StateHasChanged();
     }
@@ -509,15 +494,6 @@
 
     // Funciones del árbol de Jerarquía
     #region Árbol de Jerarquía
-    private async void OnSelectedSubordinatedFunction(User subordinateSelected)
-    {
-        selectedOperatorOfList = subordinateSelected;
-        if (selectedOperatorOfList != new User())
-            ActiveAddSubordinated = false;
-        else
-            ActiveAddSubordinated = true;
-    }
-
     private void RemoveSuperiorUser()
     {
         auxDistribution = 0;
@@ -576,11 +552,8 @@
         if (selectedOperatorOfList != null && !_user.Subordinates.Contains(selection))
         {
             _user.Subordinates.Add(selection);
-
             Operators.Remove(selection);
-
             selectedOperatorOfList = null;
-            ActiveAddSubordinated = true;
         }
         StateHasChanged();
     }

@@ -91,18 +91,21 @@
                                  Variant="Variant.Outlined"
                                  Placeholder="@Localizer["UsersPHArea"]"
                                  AnchorOrigin="Origin.BottomCenter"
-                                 ValueChanged="OnSelectedAreaToManageFunction"
-                                 ToStringFunc="@(x => _areasManager.FirstOrDefault(a => a.AreaId == x.AreaId)?.Description ?? string.Empty)"
-                                 Disabled="AreaSetted"
+                                 @bind-Value="selectedAreaOfList"
+                                 ToStringFunc="@(x => x != null ? $"{x.Code}-{x.Description}" : string.Empty)"
                                  SearchFunc="@(async (string value) =>
                                  {
+                                     if (string.IsNullOrWhiteSpace(value))
+                                         return _areasManager ?? new List<Area>();
+                                     
                                      return _areasManager
-                                         .Where(a => a.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+                                         .Where(a => a.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase) ||
+                                                     a.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase))
                                          .ToList();
                                  })" />
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudButton Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
+                <MudButton Disabled="@(selectedAreaOfList == null)" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
                            Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" FullWidth="true">
                     @Localizer["UsersAddArea"]
                 </MudButton>
@@ -300,11 +303,7 @@
     private int auxPlant;
     private int auxGroup;
 
-    private Area selectedAreaOfList = new Area();
-    private bool ActiveAddArea = true;
-
-    private bool AreaSetted = false;
-
+    private Area selectedAreaOfList = null;
     private User selectedSupervisorOfList = new User();
 
     private void AddAreaToUserList(Area selection)
@@ -315,11 +314,8 @@
         if (selectedAreaOfList != null && !_user.Areas.Contains(selection))
         {
             _user.Areas.Add(selection);
-
             _areasManager.Remove(selection);
-            //reset value from selector
             selectedAreaOfList = null;
-            ActiveAddArea = true;
         }
         StateHasChanged();
     }
@@ -328,18 +324,7 @@
     {
         _user.Areas.Remove(element);
         _areasManager.Add(element);
-        AreaSetted = false;
         StateHasChanged();
-    }
-
-    private async void OnSelectedAreaToManageFunction(Area areaSelected)
-    {
-        selectedAreaOfList = areaSelected;
-        if (selectedAreaOfList != new Area())
-            ActiveAddArea = false;
-        else
-            ActiveAddArea = true;
-        AreaSetted = true;
     }
 
     private void RemoveSuperiorUser()

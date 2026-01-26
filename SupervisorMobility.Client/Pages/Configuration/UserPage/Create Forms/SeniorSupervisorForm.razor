@@ -81,15 +81,14 @@
         <MudGrid Class="mb-3">
             <MudItem xs="12" md="8">
                 <MudAutocomplete T="Area" Label="@Localizer["UsersLabelArea"]" Placeholder="@Localizer["UsersPHArea"]"
-                                 ValueChanged="OnSelectedAreaToManageFunction"
+                                 @bind-Value="selectedAreaOfList"
                                  ToStringFunc="@(a => a != null ? $"{a.Code}-{a.Description}" : string.Empty)"
-                                 SearchFunc="@(async (string value) => await Task.FromResult(_areasManager
-                                     .Where(a => a.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase) || a.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase))
-                                     .ToList()))"
-                                 Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" />
+                                 SearchFunc="SearchAreas"
+                                 Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" 
+                                 ResetValueOnEmptyText="true" />
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudButton Disabled="@ActiveAddArea" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
+                <MudButton Disabled="@(selectedAreaOfList == null)" OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
                            Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" FullWidth="true">
                     @Localizer["UsersAddArea"]
                 </MudButton>
@@ -196,7 +195,7 @@
         <MudGrid Class="mb-3">
             <MudItem xs="12" md="8">
                 <MudAutocomplete T="User" Label="@Localizer["UsersSupervisor"]" Placeholder="@Localizer["UsersPHSubordinate"]"
-                                 ValueChanged="OnSelectedSubordinatedFunction"
+                                 @bind-Value="selectedSupervisorOfList"
                                  ToStringFunc="@(u => u != null ? $"{u.Name}-{(u.Areas?.Count > 0 ? string.Join(", ", u.Areas.Select(a => a.Code)) : "No Areas")}-{u.Group?.Description}" : string.Empty)"
                                  SearchFunc="@(async (string value) => await Task.FromResult(Supervisors
                                      .Where(u => u.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
@@ -234,7 +233,7 @@
                 </MudSelect> *@
             </MudItem>
             <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudButton Disabled="@ActiveAddSubordinated" OnClick="@(() => AddSupervisorToSubordinateList(selectedSupervisorOfList))" 
+                <MudButton Disabled="@(selectedSupervisorOfList == null)" OnClick="@(() => AddSupervisorToSubordinateList(selectedSupervisorOfList))" 
                            Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" FullWidth="true">
                     Add subordinate
                 </MudButton>
@@ -390,11 +389,8 @@
     private int auxArea;
     private int auxDistribution;
 
-    private bool ActiveAddArea = true; 
-    private bool ActiveAddSubordinated = true;
-
-    private Area selectedAreaOfList = new Area();
-    private User selectedSupervisorOfList = new User();
+    private Area selectedAreaOfList = null;
+    private User selectedSupervisorOfList = null;
 
     public List<UpdateAreasForSuperiorDto> SubordinatesToUpdate = new List<UpdateAreasForSuperiorDto>();
 
@@ -499,15 +495,6 @@
         StateHasChanged();
     }
 
-    private async void OnSelectedAreaToManageFunction(Area area)
-    {
-        selectedAreaOfList = area;
-        if (selectedAreaOfList != new Area())
-            ActiveAddArea = false;
-        else
-            ActiveAddArea = true;
-    }
-
     private void AddAreaToUserList(Area selection)
     {
         if (_user.Areas == null)
@@ -516,11 +503,10 @@
         if (selectedAreaOfList != null && !_user.Areas.Contains(selection))
         {
             _user.Areas.Add(selection);
-
             _areasManager.Remove(selection);
-            //reset value from selector
+            
+            // Limpiar el selector para poder añadir más áreas
             selectedAreaOfList = null;
-            ActiveAddArea = true;
         }
         StateHasChanged();
     }
@@ -576,15 +562,6 @@
         StateHasChanged();
     }
 
-    private async void OnSelectedSubordinatedFunction(User subordinate)
-    {
-        selectedSupervisorOfList = subordinate;
-        if (selectedSupervisorOfList != new User())
-            ActiveAddSubordinated = false;
-        else
-            ActiveAddSubordinated = true;
-    }
-
     private void AddSupervisorToSubordinateList(User selection)
     {
         if (_user.Subordinates == null)
@@ -593,11 +570,8 @@
         if (selectedSupervisorOfList != null && !_user.Subordinates.Contains(selection))
         {
             _user.Subordinates.Add(selection);
-
             Supervisors.Remove(selection);
-
             selectedSupervisorOfList = null;
-            ActiveAddSubordinated = true;
         }
         StateHasChanged();
     }
@@ -644,4 +618,16 @@
             g.Description.Contains(value, StringComparison.OrdinalIgnoreCase));
     }
 
+    private async Task<IEnumerable<Area>> SearchAreas(string value)
+    {
+        // Si no hay valor, devolver todas las áreas disponibles
+        if (string.IsNullOrWhiteSpace(value))
+            return _areasManager ?? new List<Area>();
+
+        // Filtrar áreas por código o descripción
+        return _areasManager?.Where(a =>
+            a.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase) ||
+            a.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+            ?? new List<Area>();
+    }
 }
