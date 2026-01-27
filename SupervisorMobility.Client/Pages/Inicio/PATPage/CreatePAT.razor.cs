@@ -146,7 +146,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
                         }
                         else
                         {
-                            _pat.AreaId = (int)user.AreaId;
+                            _pat.AreaId = user.Areas != null && user.Areas.Count > 0 ? user.Areas.FirstOrDefault().AreaId;
                         }
 
                     }

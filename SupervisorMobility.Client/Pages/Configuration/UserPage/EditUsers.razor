@@ -18,6 +18,10 @@
 @using ObjectCloner;
 @using System.ComponentModel.DataAnnotations
 
+<style>
+    .dialog { backdrop-filter: blur(10px); }
+</style>
+
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["UsersEdit"]</PageTitle>
 
@@ -328,8 +332,6 @@ else
                                 <MudAutocomplete ResetValueOnEmptyText Clearable MaxItems="null" T="User" Label="@Localizer["UsersSeniorSupervisor"]" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer["UsersPHSuperior"]}" : $"{e.Name} ({e.Group?.Description})")" For="@(() => _AssignAuxSuperior)" SearchFunc="@SearchSSV" Variant="Variant.Outlined" ShowProgressIndicator="true" ValueChanged="@(item => AssignAuxSuperiorFunction(item))">
                                     <ItemTemplate>
                                         <MudText Typo="Typo.button">@context.Name - @context.Plant?.Description</MudText>
-                                        @if (context.AreaId != 0 || context.AreaId != null)
-                                        {
                                             <div class="font-weight-bold"><b>@Localizer["UsersAssignedArea"]:</b></div>
                                             <div class="d-flex justify-content-between justify-center">
                                                 @if (context.Areas != null && context.Areas.Count > 0)
@@ -339,12 +341,11 @@ else
                                                         <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@area.Code - @area.Description </MudChip>
                                                     }
                                                 }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.button">@Localizer["UsersNoAreasSSV"]</MudText>
+                                                }
                                             </div>
-                                        }
-                                        else
-                                        {
-                                            <MudText Typo="Typo.button">@Localizer["UsersNoAreasSSV"]</MudText>
-                                        }
                                     </ItemTemplate>
                                 </MudAutocomplete>
                             </MudItem>
@@ -364,8 +365,6 @@ else
                                 <MudAutocomplete ResetValueOnEmptyText Clearable MaxItems="null" T="User" Label="@Localizer["UsersSupervisor"]" ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer["UsersPHSupervisor"]}" : $"{e.Name} - {e.Area?.Description} - ({e.Group?.Description})")" For="@(() => _AssignAuxSuperior)" SearchFunc="@SearchSV" Variant="Variant.Outlined" ShowProgressIndicator="true" ValueChanged="@(item => AssignAuxSuperiorFunction(item))">
                                     <ItemTemplate>
                                         <MudText Typo="Typo.button">@context.Name - @context.Plant?.Description</MudText>
-                                        @if (context.AreaId != 0 || context.AreaId != null)
-                                        {
                                             <div class="font-weight-bold"><b>@Localizer["UsersAssignedArea"]:</b></div>
                                             <div class="d-flex justify-content-between justify-center">
                                                 @if (context.Areas != null && context.Areas.Count > 0)
@@ -375,12 +374,11 @@ else
                                                         <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@area.Code - @area.Description </MudChip>
                                                     }
                                                 }
+                                                else
+                                                {
+                                                    <MudText Typo="Typo.button">@Localizer["UsersNoAreasSV"]</MudText>
+                                                }
                                             </div>
-                                        }
-                                        else
-                                        {
-                                            <MudText Typo="Typo.button">@Localizer["UsersNoAreasSV"]</MudText>
-                                        }
                                     </ItemTemplate>
                                 </MudAutocomplete>
                             </MudItem>
@@ -606,9 +604,12 @@ else
                                             {
                                                 <MudText Typo="Typo.body2"><b>@Localizer["UsersPlant"]:</b> @item.Plant?.Description</MudText>
                                             }
-                                            @if (item.AreaId != 0 && item.AreaId != null)
+                                            @if (item.Areas != null && item.Areas.Count > 0)
                                             {
-                                                <MudText Typo="Typo.body2"><b>@Localizer["UsersArea"]:</b> @item.Area?.Description</MudText>
+                                                foreach(var area in item.Areas)
+                                                {
+                                                    <MudText Typo="Typo.body2"><b>@Localizer["UsersArea"]:</b> @item.Area?.Description</MudText>                                                    
+                                                }
                                             }
                                         </MudCardContent>
                                     </MudCard>
@@ -663,9 +664,12 @@ else
                                             {
                                                 <MudText Typo="Typo.body2"><b>@Localizer["UsersPlant"]:</b> @item.Plant?.Description</MudText>
                                             }
-                                            @if (item.AreaId != 0 && item.AreaId != null)
+                                            @if (item.Areas != null && item.Areas.Count > 0)
                                             {
-                                                <MudText Typo="Typo.body2"><b>@Localizer["UsersArea"]:</b> @item.Area?.Description</MudText>
+                                                @foreach(var area in item.Areas)
+                                                {
+                                                    <MudText Typo="Typo.body2"><b>@Localizer["UsersArea"]:</b> @item.Area?.Description</MudText>                                                    
+                                                }
                                             }
                                         </MudCardContent>
                                     </MudCard>

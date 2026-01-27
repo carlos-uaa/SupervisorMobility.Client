@@ -166,7 +166,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     _jobObservation.PlantId = (int)user.PlantId;
 
-                    _jobObservation.AreaId = (int)user.AreaId;
+                    _jobObservation.AreaId = user.Areas != null && user.Areas.Count > 0 ? user.Areas.FirstOrDefault().AreaId : 0;
 
                     _areas = await AreaServices.GetAreas((int)user.PlantId);
                     _areas = _areas.OrderBy(a => a.Description).ToList();
@@ -195,7 +195,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
 
                     foreach (var operatorUser in _operators)
                     {
-                        if (user != null && operatorUser.AreaId == user.AreaId && operatorUser.SuperiorId == user.UserId)
+                        if (user != null && operatorUser.Areas.Any(a => user.Areas.Any(b => b.AreaId == a.AreaId)) && operatorUser.SuperiorId == user.UserId)
                         {
                             operatorUsers.Add(operatorUser);
                         }
@@ -285,7 +285,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 foreach (User sv in _allSupervisors)
                 {
-                    if (sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId)
+                    if (sv.PlantId == _jobObservation.PlantId && sv.Areas.Any(a => a.AreaId == _jobObservation.AreaId))
                     {
                         _supervisors.Add(sv);
                     }
@@ -295,7 +295,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             {
                 foreach (User sv in _allSupervisors)
                 {
-                    if (sv.PlantId == _jobObservation.PlantId && sv.AreaId == _jobObservation.AreaId && sv.SuperiorId == user.UserId)
+                    if (sv.PlantId == _jobObservation.PlantId && sv.Areas.Any(a => a.AreaId == _jobObservation.AreaId) && sv.SuperiorId == user.UserId)
                     {
                         _supervisors.Add(sv);
                     }
@@ -332,7 +332,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationPage
             //operator User
             foreach (var operatorUser in _operators)
             {
-                if (operatorUser.AreaId == _jobObservation.AreaId && operatorUser.SuperiorId == _jobObservation.SupervisorId)
+                if (operatorUser.Areas.Any(a => a.AreaId == _jobObservation.AreaId) && operatorUser.SuperiorId == _jobObservation.SupervisorId)
                 {
                     operatorUsers.Add(operatorUser);
                 }

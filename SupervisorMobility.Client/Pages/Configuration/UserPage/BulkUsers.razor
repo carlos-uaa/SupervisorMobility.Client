@@ -1,16 +1,13 @@
 ﻿@page "/usersmanagement/BulkUsers"
 @using SupervisorMobility.Client.Pages.Configuration.AssyChartPage
 @inject IFileUploadAndDownloadService FileUpDoServices
+@inject IDialogService DialogService
 @inject IStringLocalizer<Resource1> Localizer
+
+<style> .dialog { backdrop-filter: blur(10px); } </style>
+
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["UsersBulk"]</PageTitle>
-@*Breadcrumb links*@
-@*<MudBreadcrumbs Class="mb-10" Items="_links">
-    <ItemTemplate Context="item">
-        <MudButton Href="@item.Href" Variant="Variant.Text" Color="Color.Info" Disabled="item.Disabled">@item.Text</MudButton>
-    </ItemTemplate>
-</MudBreadcrumbs>*@
-
 
 <MudSpacer></MudSpacer>
 <MudGrid id="Bulk">
@@ -27,9 +24,6 @@
         <MudImage Src="Images/bulk.png" Alt="Bulk image" Height="120" Width="120" Class="align-center justify-center"> </MudImage>
     </MudItem>
 </MudGrid>
-
-
-
 
 @code {
     private List<BreadcrumbItem> _links;
@@ -48,6 +42,24 @@
 
     private async Task DoBulkUsers()
     {
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Confirm Bulk" },
+                { "ContentText", "Are you sure you want to bulk all the users?" },
+                { "ButtonText", "Bulk" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.SimCardDownload },
+                { "IconColor", Color.Success }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["ConfirmationDeletion"].Value, dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled)
+            return; // Se cancela la creación
+
         await FileUpDoServices.DownloadFileUsers();
     }
 }

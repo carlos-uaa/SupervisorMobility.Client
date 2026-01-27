@@ -117,7 +117,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
             auxDepa = _user.DepartmentId ?? 0;
             auxPlant = _user.PlantId != null ? (int)_user.PlantId : 0;
-            auxArea = _user.AreaId != null ? (int)_user.AreaId : 0;
+            auxArea = _user.Areas != null && _user.Areas.Count > 0 ? (int)_user.Areas.FirstOrDefault().AreaId : 0;
             auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
             _departments = await DepartmentServices.GetDepartments();
             if (_user.UserType == 4 && _user.DepartmentId != 0 && _user.DepartmentId != null)
@@ -293,7 +293,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 //OPerador
                 case 4:
                     auxPlant = _user.PlantId != null ? (int)_user.PlantId : 0;
-                    auxArea = _user.AreaId != null ? (int)_user.AreaId : 0;
+                    auxArea = _user.Areas != null && _user.Areas.Count > 0 ? _user.Areas.FirstOrDefault().AreaId : 0;
                     auxGroup = _user.GroupId != null ? (int)_user.GroupId : 0;
                     auxDistribution = _user.DistributionId != null ? (int)_user.DistributionId : 0;
 
@@ -475,7 +475,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                 // Restore aux variables
                 auxPlant = _user.PlantId ?? 0;
-                auxArea = _user.AreaId ?? 0;
+                auxArea = _user.Areas != null && _user.Areas.Count > 0 ? _user.Areas.FirstOrDefault().AreaId : 0;
                 auxGroup = _user.GroupId ?? 0;
                 auxDistribution = _user.DistributionId ?? 0;
                 auxDepa = _user.DepartmentId ?? 0;
@@ -556,7 +556,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     if (LogedUser.UserType == 3)
                     {
                         auxPlant = (int)LogedUser.PlantId;
-                        auxArea = (int)LogedUser.AreaId;
+                        auxArea = LogedUser.Areas != null && LogedUser.Areas.Count > 0 ? LogedUser.Areas.FirstOrDefault().AreaId : 0;
                         auxGroup = (int)LogedUser.GroupId;
 
                         _user.SuperiorId = LogedUser.UserId;
@@ -597,6 +597,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         private async void ShowAreas()
         {
             _user.AreaId = 0;
+            _user.Areas?.Clear();
             _areas = await AreaServices.GetAreas((int)_user.PlantId);
         }
 
@@ -860,7 +861,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                     auxPlant = (int)_user.Superior?.PlantId;
                     //agrega el area
-                    auxArea = (int)_user.Superior?.Areas.FirstOrDefault().AreaId;
+                    auxArea = _user.Areas != null && _user.Areas.Count > 0 ? _user.Areas.FirstOrDefault().AreaId : 0;
                     auxGroup = (int)_user.Superior?.GroupId;
 
                     plantInfo = _user.Superior?.Plant?.Description;
@@ -1034,7 +1035,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         {
             ItemContext.AreaId = ItemContext.Area?.AreaId;
             StateHasChanged();
-
         }
 
 
@@ -1168,15 +1168,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
             // Llamar dialogo de confirmacion antes de realizar las acciones
             var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
             var dialogParameters = new DialogParameters
-        {
-            { "Title", Localizer["ConfirmationEdition"].Value },
-            { "ContentText", Localizer["UsersUpdateConfirmText"].Value },
-            { "ButtonText", Localizer["ConfirmUpdate"].Value },
-            { "CancelText", Localizer["Cancel"].Value },
-            { "Color", Color.Success },
-            { "Icon", Icons.Material.Filled.PersonAdd },
-            { "IconColor", Color.Info }
-        };
+            {
+                { "Title", Localizer["ConfirmationEdition"].Value },
+                { "ContentText", Localizer["UsersUpdateConfirmText"].Value },
+                { "ButtonText", Localizer["ConfirmUpdate"].Value },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Success },
+                { "Icon", Icons.Material.Filled.PersonAdd },
+                { "IconColor", Color.Info }
+            };
             var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["ConfirmationEdition"].Value, dialogParameters, dialogOptions);
             var dialogResult = await dialog.Result;
 
@@ -1439,7 +1439,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                         if (_user.UserType == 3)
                         {
-                            user.AreaId = _AssignAuxSuperior.AreaId;
+                            user.Areas.Add(_AssignAuxSuperior.Areas != null && _AssignAuxSuperior.Areas.Count > 0 ? _AssignAuxSuperior.Areas.FirstOrDefault());
                         }
 
                         _ReassignedUsers?.Add(user);
@@ -1497,7 +1497,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                             // TO DO: Cambiar esta asignacion de Area por interaccion para el usuario a elegir el area para cada subordinado
                             if (_user.UserType == 3)
                             {
-                                user.AreaId = _user.AreaId;
+                                user.Areas.Add(_user.Areas != null && _user.Areas.Count > 0 ? _user.Areas.FirstOrDefault() : new Area());
                             }
 
                             if (_user.Subordinates == null)
@@ -1679,7 +1679,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                         // TODO: Reemplazar esta reasignacion por interaccion del usuario para seleecionar que area es para cada usr.
                         foreach (var usr in _ReassignedUsersAreas)
                         {
-                            usr.AreaId = _user.AreaId;
                             if (_user.Subordinates == null)
                             {
                                 _user.Subordinates = new List<User>();
@@ -1699,7 +1698,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                     // TODO: Reemplazar esta reasignacion por interaccion del usuario para seleecionar que area es para cada usr.
                     foreach (var usr in _ReassignedUsersAreas)
                     {
-                        usr.AreaId = _user.AreaId;
                         if (_user.Subordinates == null)
                         {
                             _user.Subordinates = new List<User>();
@@ -1720,14 +1718,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
             if (_ReassignedUsers?.Count > 0)
             {
-                foreach (var usr in _ReassignedUsers)
-                {
-                    if (usr.AreaId == 0 || usr.AreaId == null && usr.Area != null)
-                    {
-                        usr.AreaId = usr.Area.AreaId;
-                    }
-                }
-
                 Console.WriteLine("Reasign Por Upgrade");
                 //reasginacion de subordinados
                 var ResponseReassignUser = await UsersServices.ReassignNewSuperior(_ReassignedUsers, optionSuboridinatesReasign);
@@ -1749,13 +1739,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
             if (_ReassignedUsersAreas?.Count > 0 && optionAreasReasign < 3)
             {
-                foreach (var usr in _ReassignedUsersAreas)
-                {
-                    if (usr.AreaId == 0 || usr.AreaId == null && usr.Area != null)
-                    {
-                        usr.AreaId = usr.Area.AreaId;
-                    }
-                }
                 //reasginacion de subordinados
                 Console.WriteLine("Reasign Por Areas");
 
@@ -1778,14 +1761,6 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
             //Actualizacion de usautio
             if (_user.Subordinates?.Count > 0)
-                foreach (var usr in _user.Subordinates)
-                {
-                    if (usr.AreaId == 0 || usr.AreaId == null && usr.Area != null)
-                    {
-                        usr.AreaId = usr.Area.AreaId;
-                    }
-                    usr.SuperiorId = _user.UserId;
-                }
 
             _user.Department = null;
             _user.DepartmentId = auxDepa;

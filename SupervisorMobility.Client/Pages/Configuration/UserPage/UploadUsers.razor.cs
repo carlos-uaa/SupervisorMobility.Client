@@ -514,7 +514,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         {
             MasterUserSuperior = selectedSupervisorOfList;
             Console.WriteLine($"Entra en funcion updatew supervisor");
-            Console.WriteLine(_distributions[(int)MasterUserSuperior.PlantId][(int)MasterUserSuperior.AreaId]);
+            Console.WriteLine(_distributions[(int)MasterUserSuperior.PlantId][(int)MasterUserSuperior.Areas.FirstOrDefault().AreaId]);
             foreach (User element in dataToShowInTable)
             {
                 element.Superior = selectedSupervisorOfList;
@@ -1260,7 +1260,7 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                                             try
                                             {
-                                                ToInsertIntoList.AreaId = ToInsertIntoList.Superior?.AreaId;
+                                                ToInsertIntoList.AreaId = ToInsertIntoList.Superior?.Areas.FirstOrDefault().AreaId;
                                                 ToInsertIntoList.Area = ToInsertIntoList.Superior?.Area;
                                             }
                                             catch (Exception ex)

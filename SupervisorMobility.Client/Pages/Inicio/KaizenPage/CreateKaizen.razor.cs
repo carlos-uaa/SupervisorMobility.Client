@@ -104,8 +104,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             else if(user.UserType == 3) 
             {
                 plantId = (int)user.PlantId;
-                areaId = (int)user.AreaId;
-
+                areaId = 0;
+                if(user.Areas != null &&  user.Areas.Count > 0)
+                    areaId = user.Areas.FirstOrDefault().AreaId;
                 _areas = await AreaServices.GetAreas((int)user.PlantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();
 
@@ -174,7 +175,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             //operator User
             foreach (var operatorUser in _operators)
             {
-                if (operatorUser.AreaId == areaId && operatorUser.SuperiorId == supervisorId)
+                if (operatorUser.Areas.Any(a => a.AreaId == areaId) && operatorUser.SuperiorId == supervisorId)
                 {
                     operatorUsers.Add(operatorUser);
                 }

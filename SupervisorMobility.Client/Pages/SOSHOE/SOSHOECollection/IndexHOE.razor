@@ -64,6 +64,7 @@
     animation-fill-mode: forwards;
     }
 
+    .dialog { backdrop-filter: blur(10px); }
 </style>
 
 @*Title*@
@@ -824,15 +825,26 @@ else
     // Delete Hoe
     async Task DeleteHoe(int HoeId)
     {
-        bool? result = await _DeleteMessage.Show();
-        var confirm = result is null ? "Canceled" : "Deleted!";
-        StateHasChanged();
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Confirm Delete" },
+                { "ContentText", "Are you sure you want to Delete this HOE?" },
+                { "ButtonText", "Delete!" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["ConfirmationDeletion"].Value, dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
 
-        if (confirm == "Deleted!")
-        {
-            _Hoes.RemoveAll(Hoe => Hoe.SOSHubId == HoeId);
-            await SOSHubServices.DeleteSOSHub(HoeId);
-        }
+        if (dialogResult.Canceled)
+            return; // Se cancela la creación
+
+        _Hoes.RemoveAll(Hoe => Hoe.SOSHubId == HoeId);
+        await SOSHubServices.DeleteSOSHub(HoeId);
     }
 
     // Update Hoe
@@ -850,6 +862,24 @@ else
         }
         else
         {
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Confirm Generate" },
+                { "ContentText", "Are you sure you want to start to generate for this HOE?" },
+                { "ButtonText", "Generate" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.CreateNewFolder },
+                { "IconColor", Color.Success }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["ConfirmationDeletion"].Value, dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            if (dialogResult.Canceled)
+                return new AsyncVoidMethodBuilder(); // Se cancela la creación
+
             SosHubId = hoeId != 0 ? hoeId : SosHubId;
             await FindSelectedHoe(SosHubId);
             selectedIndexPageGenerate = 0;

@@ -182,7 +182,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                     {
 
                         plantId = (int)user.PlantId;
-                        areaId = (int)user.AreaId;
+                        areaId = user.Areas != null && user.Areas.Count > 0 ? user.Areas.FirstOrDefault().AreaId : 0;
                         groupId = (int)user.GroupId;
                         _areas = await AreaServices.GetAreas(plantId);
                         supervisor = user.Name;
@@ -193,7 +193,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                         foreach (var jobobs in _allJobObservations)
                         {
-                            if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+                            if (jobobs.SupervisorId == user.UserId && user.Areas.Any(a => a.AreaId == areaId))
                             {
                                 _jobObservations.Add(jobobs);
                             }
@@ -282,7 +282,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                     foreach (var jobobs in _allJobObservations)
                     {
-                        if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+                        if (jobobs.SupervisorId == user.UserId && user.Areas.Any(a => a.AreaId == areaId))
                         {
                             _jobObservations.Add(jobobs);
                         }
@@ -427,7 +427,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
             {
 
                 plantId = (int)user.PlantId;
-                areaId = (int)user.AreaId;
+                areaId = user.Areas != null && user.Areas.Count > 0 ? user.Areas.FirstOrDefault().AreaId : 0;
                 groupId = (int)user.GroupId;
                 _areas = await AreaServices.GetAreas(plantId);
                 supervisor = user.Name;
@@ -438,7 +438,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                 foreach (var jobobs in _allJobObservations)
                 {
-                    if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+                    if (jobobs.SupervisorId == user.UserId && user.Areas.Any(a => a.AreaId == areaId))
                     {
                         _jobObservations.Add(jobobs);
                     }
@@ -707,7 +707,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                 foreach (User sv in _allSupervisors)
                 {
-                    if (sv.SuperiorId == ssvId && sv.AreaId == areaId)
+                    if (sv.SuperiorId == ssvId && sv.Areas.Any(a => a.AreaId == areaId))
                         _supervisors.Add(sv);
                 }
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
@@ -717,7 +717,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 {
                     foreach (User usr in user.Subordinates)
                     {
-                        if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
+                        if (jobobs.SupervisorId == usr.UserId && usr.Areas.Any(a => a.AreaId == areaId))
                         {
                             _jobObservations.Add(jobobs);
                         }
@@ -785,7 +785,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 {
                     foreach(User usr in SeniorSV.Subordinates)
                     {
-                        if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
+                        if (jobobs.SupervisorId == usr.UserId && usr.Areas.Any(a => a.AreaId == areaId))
                         {
                             _jobObservations.Add(jobobs);
                         }
@@ -793,7 +793,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 }
 
                 _supervisors = _allSSVs.Find(ssv => ssv.UserId == ssvId).Subordinates.ToList();
-                _supervisors = _supervisors.Where(sv => sv.AreaId == areaId).ToList();
+                _supervisors = _supervisors.Where(sv => sv.Areas.Any(a => a.AreaId == areaId)).ToList();
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
 
                 //foreach (User sv in _allSupervisors)
@@ -815,7 +815,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                 }
 
                 _supervisors = _allSSVs.Find(ssv => ssv.UserId == ssvId).Subordinates.ToList();
-                _supervisors = _supervisors.Where(sv => sv.AreaId == areaId).ToList();
+                _supervisors = _supervisors.Where(sv => sv.Areas.Any(a => a.AreaId == areaId)).ToList();
                 _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
 
                 //foreach (User sv in _allSupervisors)
@@ -831,7 +831,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
 
                     foreach(User usr in SeniorSV.Subordinates)
                     {
-                        if (jobobs.SupervisorId == usr.UserId && usr.AreaId == areaId)
+                        if (jobobs.SupervisorId == usr.UserId && usr.Areas.Any(a => a.AreaId == areaId))
                         {
                             _jobObservations.Add(jobobs);
                         }
@@ -1158,7 +1158,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.JobObservationSchedule
                     _jobObservations.Clear();
                     foreach (var jobobs in _allJobObservations)
                     {
-                        if (jobobs.SupervisorId == user.UserId && user.AreaId == areaId)
+                        if (jobobs.SupervisorId == user.UserId && user.Areas.Any(a => a.AreaId == areaId))
                         {
                             _jobObservations.Add(jobobs);
                         }

@@ -112,7 +112,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
 
                         _areas.Add(user.Area);
 
-                        _sosReview.AreaId = (int)user.AreaId;
+                        _sosReview.AreaId = user.Areas != null && user.Areas.Count > 0 ? user.Areas.FirstOrDefault().AreaId : 0;
                         if (_sosReview.Supervisors == null)
                         {
                             _sosReview.Supervisors = new List<User>();
@@ -252,7 +252,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 foreach (User sv in _allSupervisors)
                 {
-                    if (sv.PlantId == _sosReview.PlantId && sv.AreaId == _sosReview.AreaId)
+                    if (sv.PlantId == _sosReview.PlantId && sv.Areas.Any(a => a.AreaId == _sosReview.AreaId))
                     {
                         _Supervisors.Add(sv);
                     }
@@ -262,7 +262,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
             {
                 foreach (User sv in user.Subordinates)
                 {
-                    if (sv.PlantId == _sosReview.PlantId && sv.AreaId == _sosReview.AreaId && sv.UserType == 3)
+                    if (sv.PlantId == _sosReview.PlantId && sv.Areas.Any(a => a.AreaId == _sosReview.AreaId) && sv.UserType == 3)
                     {
                         _sosReview.Supervisors.Add(sv);
                     }

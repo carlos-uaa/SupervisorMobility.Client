@@ -268,12 +268,29 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         //Delete User
         private bool visibleDelete = false;
         public int deleteUserId = 0;
-        private void OpenDeleteDialog(int deleteId)
+        private async Task OpenDeleteDialog(int deleteId)
         {
-            deleteUserId = deleteId;
-            visibleDelete = true;
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", Localizer["ConfirmationDeletion"].Value },
+                { "ContentText", Localizer["UsersDeleteQuestion"].Value },
+                { "ButtonText", Localizer["Delete"].Value },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Error },
+                { "Icon", Icons.Material.Filled.Delete },
+                { "IconColor", Color.Error }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["ConfirmationDeletion"].Value, dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            if (dialogResult.Canceled)
+                return; // Se cancela la creación
+
+            DeleteUser(deleteId);
         }
-        void CloseDeleteModal() => visibleDelete = false;
+
         private DialogOptions dialogDeleteOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
 
         private int selectedRowNumber = -1;
