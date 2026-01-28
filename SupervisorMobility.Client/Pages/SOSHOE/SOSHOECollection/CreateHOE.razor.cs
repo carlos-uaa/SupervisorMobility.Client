@@ -737,7 +737,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (user.UserType == 2)
             {
                 var plantId = (int)user.PlantId;
-                var areaId = (int)user.AreaId;
+                int areaId = 0;
+                if (user.Areas != null && user.Areas.Count > 0)
+                {
+                    areaId = (int)user.Areas.FirstOrDefault().AreaId;
+                }
 
                 _areas = user.Areas?.ToList();
                 _areas = _areas.OrderBy(a => a.Description).ToList();
@@ -758,7 +762,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             else if (user.UserType == 3)
             {
                 var plantId = (int)user.PlantId;
-                var areaId = (int)user.AreaId;
+                int areaId = 0;
+                if (user.Areas != null && user.Areas.Count > 0)
+                {
+                    areaId = (int)user.Areas.FirstOrDefault().AreaId;
+                }
 
                 _areas = await AreaServices.GetAreas(plantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();

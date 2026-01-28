@@ -49,7 +49,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             if (user.UserType == 3)
             {
                 plantId = (int)user.PlantId;
-                areaId = (int)user.AreaId;
+                areaId = user.Areas != null && user.Areas.Count > 0 ? user.Areas.FirstOrDefault().AreaId : 0;
                 _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
             }
             else

@@ -38,8 +38,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
         int operatorId = 0;
         int effectId = 0;
 
-        string costText = "Ahorro de $133.47 por hora por reparación de paneles con marca, se reparan 4 paneles por hora, total de paneles 900.  Total de horas = (900 / 4) = 225 horas   Total de ahorro = (225 * 133.47) = $30.030.75";
-        string laborText = "Costo por modificación de troquel $133.47 por hora, se usaron 18 horas, total: $2,402.46";
+        string costText = "Ahorro de $133.47 por hora por reparaciï¿½n de paneles con marca, se reparan 4 paneles por hora, total de paneles 900.  Total de horas = (900 / 4) = 225 horas   Total de ahorro = (225 * 133.47) = $30.030.75";
+        string laborText = "Costo por modificaciï¿½n de troquel $133.47 por hora, se usaron 18 horas, total: $2,402.46";
         string materialText = "N/A";
         string machineText = "N/A";
 
@@ -104,8 +104,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             else if(user.UserType == 3) 
             {
                 plantId = (int)user.PlantId;
-                areaId = (int)user.AreaId;
-
+                areaId = 0;
+                if(user.Areas != null &&  user.Areas.Count > 0)
+                    areaId = user.Areas.FirstOrDefault().AreaId;
                 _areas = await AreaServices.GetAreas((int)user.PlantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();
 
@@ -174,7 +175,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             //operator User
             foreach (var operatorUser in _operators)
             {
-                if (operatorUser.AreaId == areaId && operatorUser.SuperiorId == supervisorId)
+                if (operatorUser.Areas?.Any(a => a.AreaId == areaId) == true && operatorUser.SuperiorId == supervisorId)
                 {
                     operatorUsers.Add(operatorUser);
                 }
@@ -345,12 +346,12 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                     }
                     else
                     {
-                        Console.WriteLine("Permiso de acceso a la cámara no otorgado.");
+                        Console.WriteLine("Permiso de acceso a la cï¿½mara no otorgado.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+                    Console.WriteLine($"Error al recargar la cï¿½mara: {ex.Message}");
                 }
             }
 
@@ -373,7 +374,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+                Console.WriteLine($"Error al recargar la cï¿½mara: {ex.Message}");
             }
         }
 
@@ -401,7 +402,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al recargar la cámara: {ex.Message}");
+                Console.WriteLine($"Error al recargar la cï¿½mara: {ex.Message}");
             }
         }
 

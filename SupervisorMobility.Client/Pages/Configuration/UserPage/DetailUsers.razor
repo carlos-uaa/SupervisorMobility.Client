@@ -159,22 +159,31 @@
                                                     </MudAlert>
                                                 }
                                             }
-                                            else if (_user.UserType != 5)
-                                            {
-                                                <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersArea"]</MudText>
-
-                                                <MudTooltip @onclick="(() => AreaDetails((int)_user.PlantId, (int)_user.AreaId))" OnTouch="(() => AreaDetails((int)_user.PlantId, (int)_user.AreaId))">
-                                                    <ChildContent>
-                                                        <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@_user.Area.Code - @_user.Area.Description </MudChip>
-
-                                                    </ChildContent>
-                                                    <TooltipContent>
-                                                        <MudText>Go Details</MudText>
-                                                        <MudIcon Icon="@Icons.Material.Filled.ArrowOutward" />
-                                                    </TooltipContent>
-                                                </MudTooltip>
-
-                                            }
+else if (_user.UserType == 3)
+                            {
+                                @if (_user.Areas?.Count > 0)
+                                {
+                                    <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersArea"]</MudText>
+                                    @foreach (var area in _user.Areas)
+                                    {
+                                        <MudTooltip @onclick="(() => AreaDetails((int)_user.PlantId, area.AreaId))" OnTouch="(() => AreaDetails((int)_user.PlantId, area.AreaId))">
+                                            <ChildContent>
+                                                <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Class="pl-5 pr-5">@area.Code - @area.Description </MudChip>
+                                            </ChildContent>
+                                            <TooltipContent>
+                                                <MudText>Go Details</MudText>
+                                                <MudIcon Icon="@Icons.Material.Filled.ArrowOutward" />
+                                            </TooltipContent>
+                                        </MudTooltip>
+                                    }
+                                }
+                                else
+                                {
+                                    <MudAlert Severity="Severity.Info" Class="mt-5">
+                                        @Localizer["UsersNoAreasSSV"]
+                                    </MudAlert>
+                                }
+                            }
 
                                             @if (_user.UserType == 4)
                                             {
@@ -207,7 +216,7 @@
                                                 }
                                                 @if (_user.Areas != null && _user.Areas.Count > 0)
                                                 {
-                                                    <MudText Typo="Typo.h6" Class="mt-5">@Localizer["stage"]</MudText>
+                                                    <MudText Typo="Typo.h6" Class="mt-5">@Localizer["UsersArea"]</MudText>
                                                     @foreach (var area in _user.Areas)
                                                     {
                                                         <MudTooltip @onclick="(() => AreaDetails((int)_user.PlantId, area.AreaId))" OnTouch="(() => AreaDetails((int)_user.PlantId, area.AreaId))">
@@ -329,8 +338,12 @@
                                                             case 3:
                                                                 <MudTooltip @onclick="(() =>  UserDetailsFunc(subordinate.UserId))" OnTouch="(() =>  UserDetailsFunc(subordinate.UserId))">
                                                                     <ChildContent>
-
-                                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">@Localizer["UsersSupervisor"] - @subordinate.Name - @subordinate.Area?.Description</MudChip>
+                                                                        @{
+                                                                            var areasText = subordinate.Areas?.Count > 0 
+                                                                                ? string.Join(", ", subordinate.Areas.Select(a => a.Code))
+                                                                                : "No Areas";
+                                                                        }
+                                                                        <MudChip Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Class="pl-5 pr-5">@Localizer["UsersSupervisor"] - @subordinate.Name - @areasText</MudChip>
                                                                     </ChildContent>
                                                                     <TooltipContent>
                                                                         <MudText>Go Details</MudText>
@@ -429,6 +442,33 @@
                                                                                             <MudMenuItem Icon="@Icons.Material.Filled.Business" IconColor="Color.Info">@area.Code - @area.Description</MudMenuItem>
                                                                                         }
 
+                                                                                    </ChildContent>
+                                                                                </MudMenu>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                                                                    @Localizer["UsersNoAreas"]
+                                                                                </MudAlert>
+                                                                            }
+                                                                        </MudItem>
+                                                                    </MudTd>
+                                                                }
+                                                                else if (context.UserType == 3 || context.UserType == 4)
+                                                                {
+                                                                    <MudTd DataLabel="@Localizer["UsersArea"]">
+                                                                        <MudItem Style="text-align: center;">
+                                                                            @if (context.Areas?.Count > 0)
+                                                                            {
+                                                                                <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                                                                                    <ActivatorContent>
+                                                                                        <MudButton FullWidth=true EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small">@Localizer["UsersShowAreas"]</MudButton>
+                                                                                    </ActivatorContent>
+                                                                                    <ChildContent>
+                                                                                        @foreach (var area in context.Areas)
+                                                                                        {
+                                                                                            <MudMenuItem Icon="@Icons.Material.Filled.Business" IconColor="Color.Info">@area.Code - @area.Description</MudMenuItem>
+                                                                                        }
                                                                                     </ChildContent>
                                                                                 </MudMenu>
                                                                             }
