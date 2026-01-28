@@ -856,7 +856,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 case 4:
                     _user.PlantId = _user.Superior?.PlantId;
                     //agrega el area
-                    _user.Areas.Add(_user.Superior.Areas.FirstOrDefault());
+                    var areaFromSuperior = _user.Superior?.Areas?.FirstOrDefault();
+                    if (areaFromSuperior != null)
+                    {
+                        _user.Areas.Add(areaFromSuperior);
+                    }
                     _user.GroupId = _user.Superior?.GroupId;
 
                     auxPlant = (int)_user.Superior?.PlantId;
@@ -1193,10 +1197,9 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
                 _user.SuperiorId = _user.Superior.UserId;
             }
 
-            if(departmentId != 0)
-            {
-                _user.DepartmentId = departmentId;
-            }
+            // Actualizar DepartmentId con el valor del formulario (departmentId)
+            // Si es 0, se convierte a null para remover el departamento
+            _user.DepartmentId = departmentId != 0 ? departmentId : null;
 
             switch (_user.UserType)
             {
@@ -1439,7 +1442,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
                         if (_user.UserType == 3)
                         {
-                            user.Areas.Add(_AssignAuxSuperior.Areas != null && _AssignAuxSuperior.Areas.Count > 0 ? _AssignAuxSuperior.Areas.FirstOrDefault());
+                            var areaToAdd = _AssignAuxSuperior.Areas != null && _AssignAuxSuperior.Areas.Count > 0 ? _AssignAuxSuperior.Areas.FirstOrDefault() : null;
+                            if (areaToAdd != null)
+                            {
+                                user.Areas.Add(areaToAdd);
+                            }
                         }
 
                         _ReassignedUsers?.Add(user);
@@ -1759,11 +1766,15 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
 
             }
 
-            //Actualizacion de usautio
+            //Actualizacion de usuario
             if (_user.Subordinates?.Count > 0)
+            {
+                // Usuario tiene subordinados
+            }
 
             _user.Department = null;
-            _user.DepartmentId = auxDepa;
+            // DepartmentId ya fue asignado en línea 1202 con el valor de departmentId del formulario
+            // No sobrescribir con auxDepa que es el valor original
 
             var ResponseUpdateUser = await UsersServices.UpdateUser(userId, _user, optionAreasReasign);
 

@@ -514,7 +514,11 @@ namespace SupervisorMobility.Client.Pages.Configuration.UserPage
         {
             MasterUserSuperior = selectedSupervisorOfList;
             Console.WriteLine($"Entra en funcion updatew supervisor");
-            Console.WriteLine(_distributions[(int)MasterUserSuperior.PlantId][(int)MasterUserSuperior.Areas.FirstOrDefault().AreaId]);
+            var supervisorArea = MasterUserSuperior?.Areas?.FirstOrDefault();
+            if (supervisorArea != null)
+            {
+                Console.WriteLine(_distributions[(int)MasterUserSuperior.PlantId][(int)supervisorArea.AreaId]);
+            }
             foreach (User element in dataToShowInTable)
             {
                 element.Superior = selectedSupervisorOfList;

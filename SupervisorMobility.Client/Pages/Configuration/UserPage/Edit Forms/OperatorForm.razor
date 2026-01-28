@@ -26,7 +26,7 @@
         <MudItem xs="12">
             @if (_departments != null)
             {
-                <MudSelect T="int" Label="@Localizer["departmentLabel"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectDepartment"]" AnchorOrigin="Origin.BottomCenter" @bind-Value="@auxDepa">
+                <MudSelect T="int" Label="@Localizer["departmentLabel"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectDepartment"]" AnchorOrigin="Origin.BottomCenter" Value="@auxDepa" ValueChanged="@((int value) => OnDepartmentChangedHandler(value))">
                     <MudSelectItem Disabled="true" Value="0">@Localizer["selectDepartment"]</MudSelectItem>
                     @foreach (var type in _departments)
                     {
@@ -356,6 +356,7 @@
     [Parameter] public int InitialPlantId { get; set; }
     [Parameter] public int InitialAreaId { get; set; }
     [Parameter] public int InitialDepartmentId { get; set; }
+    [Parameter] public EventCallback<int> OnDepartmentChanged { get; set; }
 
     private List<User> Supervisors = new();
     private List<Area> _areas = new();
@@ -498,6 +499,15 @@
         {
             User.Distribution = item;
             User.DistributionId = item.DistributionId;
+        }
+    }
+
+    private async Task OnDepartmentChangedHandler(int value)
+    {
+        auxDepa = value;
+        if (OnDepartmentChanged.HasDelegate)
+        {
+            await OnDepartmentChanged.InvokeAsync(value);
         }
     }
 
