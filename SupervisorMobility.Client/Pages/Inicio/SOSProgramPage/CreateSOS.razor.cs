@@ -98,7 +98,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.SOSProgramPage
                     {
                         _sosReview.PlantId = (int)user.PlantId;
 
-                        _areas = user.Areas.ToList();
+                        _areas = user.Areas?.ToList() ?? new List<Area>();
                         if (_Supervisors == null)
                         {
                             _Supervisors = new List<User>();
