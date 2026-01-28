@@ -189,7 +189,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
                     _operators = _operators.OrderBy(o => o.Name).ToList();
                     foreach (var operatorUser in _operators)
                     {
-                        if (operatorUser.Areas.Any(a => a.AreaId == areaId) && operatorUser.SuperiorId == supervisorId)
+                        if (operatorUser.Areas?.Any(a => a.AreaId == areaId) == true && operatorUser.SuperiorId == supervisorId)
                         {
                             operatorUsers.Add(operatorUser);
                         }
@@ -285,7 +285,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.KaizenPage
             //operator User
             foreach (var operatorUser in _operators)
             {
-                if (operatorUser.Areas.Any(a => a.AreaId == areaId) && operatorUser.SuperiorId == supervisorId)
+                if (operatorUser.Areas?.Any(a => a.AreaId == areaId) == true && operatorUser.SuperiorId == supervisorId)
                 {
                     operatorUsers.Add(operatorUser);
                 }
