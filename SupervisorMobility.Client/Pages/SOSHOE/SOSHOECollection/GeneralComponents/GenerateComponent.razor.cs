@@ -355,8 +355,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                     {
                         //preparamos los datos
                         AvailableSoshubs = await SOSHubServices.GetAllSOSHub();
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)(_sosHub.DistributionId ?? 0));
-                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)(_sosHub.DistributionId ?? 0));
+                        if (_sosHub.DistributionId != null)
+                        {
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        }
+                        else
+                        {
+                            AvailableAnalyses = new List<SOSAnalysis>();
+                            AvailableSequences = new List<SOSSequence>();
+                            // Optionally, show a warning to the user here
+                        }
 
                         loading += 10;
                     }
@@ -1908,9 +1917,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         public void ValidateNextStepDistribution()
         {
-            //if ((_sosDistribution.Sequences == null || _sosDistribution.Sequences.Count() <= 0) && (_sosDistribution.Analyses == null || _sosDistribution.Analyses.Count() <= 0))
-            //    Snackbar.Add("You need to select a Sequence or an Analysis to continue with the Next Step", Severity.Warning);
-            //else
+            if ((_sosDistribution.Sequences == null || !_sosDistribution.Sequences.Any()) && (_sosDistribution.Analyses == null || !_sosDistribution.Analyses.Any()))
+                Snackbar.Add("You need to select a Sequence or an Analysis to continue with the Next Step", Severity.Warning);
+            else
                 selectedIndexPageGenerate = 33;
         }
     }
