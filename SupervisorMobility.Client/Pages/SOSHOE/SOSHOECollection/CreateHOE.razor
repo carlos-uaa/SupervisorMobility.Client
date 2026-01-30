@@ -618,7 +618,7 @@
                                                                 </MudChip>
                                                             </MudTd>
                                                             <MudTd>
-                                                                <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.ToolsUsed[index].Quantity" />
+                                                                <MudNumericField Margin="Margin.Dense" @bind-Value="_sosHub.ToolsUsed[index].Quantity" Min="1" />
                                                             </MudTd>
                                                             <MudTd>
                                                                 <MudTooltip Text="Delete Material" Color="Color.Error" Placement="Placement.Right" Arrow="true">
@@ -699,7 +699,7 @@
                                                                 </MudChip>
                                                             </MudTd>
                                                             <MudTd>
-                                                                <MudTextField Margin="Margin.Dense" @bind-Value="_sosHub.MaterialsUsed[index].Quantity" />
+                                                                <MudNumericField Margin="Margin.Dense" @bind-Value="_sosHub.MaterialsUsed[index].Quantity" Min="1" />
                                                             </MudTd>
                                                             <MudTd>
                                                                 <MudTooltip Text="Delete Material" Color="Color.Error" Placement="Placement.Right" Arrow="true">
@@ -729,7 +729,7 @@
                                         <MudText>Plant / Area</MudText>
                                     </td>
                                     <td class="d-flex">
-                                        <MudItem Class="mr-4">
+                                        <MudItem xs="4">
 
                                             @if (user.UserType == 1)
                                             {
@@ -755,7 +755,7 @@
                                                 </MudSelect>
                                             }
                                         </MudItem>
-                                        <MudItem>
+                                        <MudItem xs="4" Class="ml-4">
                                             @if (plantId != 0 && user.UserType == 1)
                                             {
                                                 @*Mud select for Areas for Admin *@
@@ -829,73 +829,75 @@
                                         <MudText> Station / Department / Side</MudText>
                                     </td>
                                     <td class="d-flex">
-                                        <MudItem>
-                                            <MudAutocomplete T="Station"
-                                                             Label=@Localizer["station"]
-                                                             SearchFunc="SearchStations"
-                                                             Placeholder="Buscar Estacion..."
-                                                             ValueChanged="@(station => StationChanged(station) )"
-                                                             TextChanged="@(text => StationTextChanged(text))"
-                                                             OnClearButtonClick="StationDelete"
-                                                             ToStringFunc="@(e=> e.Code == null || e.Code == "" ? $"{Localizer["SelectStation"]}" : $"{e.Code} - {e.Description}")"
-                                                             Variant="Variant.Text"
-                                                             AnchorOrigin="Origin.BottomCenter"
-                                                             AdornmentColor="Color.Primary"
-                                                             ResetValueOnEmptyText
-                                                             CoerceText="false"
-                                                             CoerceValue="true"
-                                                             Clearable
-                                                             ShowProgressIndicator="true"
-                                                             ProgressIndicatorColor="Color.Info"
-                                                             OpenIcon="@Icons.Material.Filled.Work">
-                                            </MudAutocomplete>
+                                        <MudGrid>
+                                            <MudItem xs="3">
+                                                <MudAutocomplete T="Station"
+                                                                 Label=@Localizer["station"]
+                                                                 SearchFunc="SearchStations"
+                                                                 Placeholder="Buscar Estacion..."
+                                                                 ValueChanged="@(station => StationChanged(station) )"
+                                                                 TextChanged="@(text => StationTextChanged(text))"
+                                                                 OnClearButtonClick="StationDelete"
+                                                                 ToStringFunc="@(e=> e.Code == null || e.Code == "" ? $"{Localizer["SelectStation"]}" : $"{e.Code} - {e.Description}")"
+                                                                 Variant="Variant.Text"
+                                                                 AnchorOrigin="Origin.BottomCenter"
+                                                                 AdornmentColor="Color.Primary"
+                                                                 ResetValueOnEmptyText
+                                                                 CoerceText="false"
+                                                                 CoerceValue="true"
+                                                                 Clearable
+                                                                 ShowProgressIndicator="true"
+                                                                 ProgressIndicatorColor="Color.Info"
+                                                                 OpenIcon="@Icons.Material.Filled.Work">
+                                                </MudAutocomplete>
 
 
-                                            @if (!string.IsNullOrWhiteSpace(selectedStationName) && stationId == 0)
-                                            {
-                                                string title = "Station";
-                                                <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
-                                                    Crear Station
-                                                </MudButton>
-                                            }
-
-                                            @*   <MudSelect T="int" Label=@Localizer["station"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="stationId" SelectedValuesChanged="GenerateFolio" FullWidth>
-                                            <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnStation"]</MudSelectItem>
-                                            @foreach (var type in _stations)
-                                            {
-                                            <MudSelectItem Value="type.StationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                                            }
-                                            </MudSelect> *@
-                                        </MudItem>
-
-
-                                        <MudItem Class="ml-4">
-                                            <MudSelect T="int" Label=@Localizer["department"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
-                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectADepartment"]</MudSelectItem>
-                                                @foreach (var type in _departments)
+                                                @if (!string.IsNullOrWhiteSpace(selectedStationName) && stationId == 0)
                                                 {
-                                                    <MudSelectItem Value="type.DepartmentId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    string title = "Station";
+                                                    <MudButton Color="Color.Secondary" @onclick="(() => OpenResourceModal(title))">
+                                                        Crear Station
+                                                    </MudButton>
                                                 }
-                                            </MudSelect>
-                                        </MudItem>
-                                        <MudItem Class="ml-4">
-                                            <MudItem Class="ml-4">
-                                                @if (_sosHub.AppliedModels.Count() > 0)
-                                                {
-                                                    <MudSelect Class="ml-4" T="string" Label="Side" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" SelectedValuesChanged="GenerateFolio" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
-                                                        <MudSelectItem Value="@("L")" />
-                                                        <MudSelectItem Value="@("R")" />
-                                                    </MudSelect>
 
-                                                }
-                                                else
+                                                @*   <MudSelect T="int" Label=@Localizer["station"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="stationId" SelectedValuesChanged="GenerateFolio" FullWidth>
+                                                <MudSelectItem Disabled="true" Value="0">@Localizer["selectAnStation"]</MudSelectItem>
+                                                @foreach (var type in _stations)
                                                 {
-                                                    <MudSelect Class="ml-4" T="string" Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
-                                                        <MudSelectItem Disabled="true" Value="@("")">@Localizer["firstSelectAProduct"]</MudSelectItem>
-                                                    </MudSelect>
+                                                <MudSelectItem Value="type.StationId">@($"{type.Code} - {type.Description}")</MudSelectItem>
                                                 }
+                                                </MudSelect> *@
                                             </MudItem>
-                                        </MudItem>
+
+
+                                            <MudItem xs="6">
+                                                <MudSelect T="int" Label=@Localizer["department"] Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter" @bind-Value="@departmentId">
+                                                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectADepartment"]</MudSelectItem>
+                                                    @foreach (var type in _departments)
+                                                    {
+                                                        <MudSelectItem Value="type.DepartmentId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+                                            <MudItem xs="3">
+                                                <MudItem>
+                                                    @if (_sosHub.AppliedModels.Count() > 0)
+                                                    {
+                                                        <MudSelect T="string" Label="Side" AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" SelectedValuesChanged="GenerateFolio" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
+                                                            <MudSelectItem Value="@("L")" />
+                                                            <MudSelectItem Value="@("R")" />
+                                                        </MudSelect>
+
+                                                    }
+                                                    else
+                                                    {
+                                                        <MudSelect Class="ml-4" T="string" Variant="Variant.Text" Disabled AnchorOrigin="Origin.BottomCenter" @bind-Value="@productSide" OpenIcon="@Icons.Material.Filled.CarRepair" AdornmentColor="Color.Info">
+                                                            <MudSelectItem Disabled="true" Value="@("")">@Localizer["firstSelectAProduct"]</MudSelectItem>
+                                                        </MudSelect>
+                                                    }
+                                                </MudItem>
+                                            </MudItem>
+                                        </MudGrid>
                                     </td>
                                 </tr>
                                 <tr>
@@ -1177,8 +1179,8 @@
                                     <td>
                                         <MudSelect Margin="Margin.Dense" T="string" Variant="Variant.Text" @bind-Value="_sosHub.Status">
                                             <MudSelectItem Value="@("Pending")" />
-                                            <MudSelectItem Value="@("Approved")" />
-                                            <MudSelectItem Value="@("Rejected")" />
+                                            @* <MudSelectItem Value="@("Approved")" />
+                                            <MudSelectItem Value="@("Rejected")" /> *@
                                         </MudSelect>
                                     </td>
                                 </tr>

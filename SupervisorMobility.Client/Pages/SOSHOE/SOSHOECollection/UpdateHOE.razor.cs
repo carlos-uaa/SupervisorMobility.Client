@@ -1845,11 +1845,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
         void CreateBakup()
         {
+            List<string> IDsToDelete = new List<string>();
+
             if (RawAnalisis.Count > 0 && RawAnalisis.Count > RawAnalisisBk.Count)
             {
                 RawAnalisisBk = ObjectCloner.ObjectCloner.DeepClone(RawAnalisis);
                 foreach (var raw in RawAnalisisBk)
                 {
+                    if(string.IsNullOrEmpty(raw.Text) || string.IsNullOrWhiteSpace(raw.Text))
+                    {
+                        IDsToDelete.Add(raw.Uid);
+                        continue;
+                    }
+
                     if (_sosHub.AnalysesBkup.Any(a => a == raw))
                     {
                         _sosHub.AnalysesBkup.Find(a => a == raw).IsActive = true;
@@ -1863,6 +1871,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         analysisBkup.IsActive = true;
                         _sosHub.AnalysesBkup.Add(analysisBkup);
                     }
+                }
+
+                foreach(var id in IDsToDelete)
+                {
+                    var item = RawAnalisis.FirstOrDefault(a => a.Uid == id);
+                        if (item != null)
+                        RawAnalisis.Remove(item);
                 }
             }
         }
