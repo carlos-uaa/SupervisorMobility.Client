@@ -1581,8 +1581,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             // Combina todos los an�lisis: los de RawAnalisis y los de las secciones
             var allAnalyses = new List<AnalysisBkup>();
 
+            List<string> IDsToDelete = new List<string>();
+
             // Agrega los de RawAnalisis
-            allAnalyses.AddRange(RawAnalisis);
+            try
+            {
+                foreach (var analysis in RawAnalisis)
+                {
+                    if (string.IsNullOrEmpty(analysis.Text) || string.IsNullOrWhiteSpace(analysis.Text))
+                    {
+                        IDsToDelete.Add(analysis.Uid);
+                        continue;
+                    }
+
+                    allAnalyses.Add(analysis);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            if (IDsToDelete.Count > 0)
+                foreach (var id in IDsToDelete)
+                {
+                    var analysisToRemove = RawAnalisis.FirstOrDefault(a => a.Uid == id);
+                    if (analysisToRemove != null)
+                        RawAnalisis.Remove(analysisToRemove);
+                    analysisToRemove = allAnalyses.FirstOrDefault(a => a.Uid == id);
+                    if (analysisToRemove != null)
+                        RawAnalisis.Remove(analysisToRemove);
+                }
 
             // Agrega los de las secciones (conservando Uid y Text)
             foreach (var section in _sosHub.Sections)
@@ -1617,6 +1646,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             StateHasChanged();
         }
+        
         
         async void RestoreBakup()
         {
