@@ -1875,7 +1875,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
                 foreach(var id in IDsToDelete)
                 {
-                    RawAnalisis.Remove(RawAnalisis.First(a => a.Uid == id));
+                    var item = RawAnalisis.FirstOrDefault(a => a.Uid == id);
+                        if (item != null)
+                        RawAnalisis.Remove(item);
                 }
             }
         }
