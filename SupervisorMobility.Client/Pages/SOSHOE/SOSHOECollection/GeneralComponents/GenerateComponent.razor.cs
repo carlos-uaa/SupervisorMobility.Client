@@ -443,10 +443,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         //preparamos los datos
                         var FilterSOSHubs = (await SOSHubServices.GetAllSOSHub(includeSOSDistribution: true)).Where(s => s.DistributionId == _sosHub.DistributionId && s.SOSHubId != _sosHub.SOSHubId).ToList();
                         AvailableSoshubs = CleanSOSHubs(FilterSOSHubs);
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)(_sosHub.DistributionId ?? 0));
-                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
-                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)(_sosHub.DistributionId ?? 0));
-                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+                        if (_sosHub.DistributionId != null)
+                        {
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                            Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                            Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+                        }
+                        else
+                        {
+                            AvailableAnalyses = new List<SOSAnalysis>();
+                            AvailableSequences = new List<SOSSequence>();
+                            // Optionally, show a warning to the user here
+                        }
 
                         _SOSSynopticRequirements.CreatedAt = DateTime.Now;
 
