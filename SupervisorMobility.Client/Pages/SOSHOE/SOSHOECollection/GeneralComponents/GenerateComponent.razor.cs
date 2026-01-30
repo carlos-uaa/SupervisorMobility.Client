@@ -355,8 +355,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                     {
                         //preparamos los datos
                         AvailableSoshubs = await SOSHubServices.GetAllSOSHub();
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId!);
-                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)(_sosHub.DistributionId ?? 0));
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)(_sosHub.DistributionId ?? 0));
 
                         loading += 10;
                     }
@@ -434,9 +434,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         //preparamos los datos
                         var FilterSOSHubs = (await SOSHubServices.GetAllSOSHub(includeSOSDistribution: true)).Where(s => s.DistributionId == _sosHub.DistributionId && s.SOSHubId != _sosHub.SOSHubId).ToList();
                         AvailableSoshubs = CleanSOSHubs(FilterSOSHubs);
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId!);
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)(_sosHub.DistributionId ?? 0));
                         Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
-                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)(_sosHub.DistributionId ?? 0));
                         Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
 
                         _SOSSynopticRequirements.CreatedAt = DateTime.Now;
@@ -1908,9 +1908,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         public void ValidateNextStepDistribution()
         {
-            if ((_sosDistribution.Sequences == null || _sosDistribution.Sequences.Count() <= 0) && (_sosDistribution.Analyses == null || _sosDistribution.Analyses.Count() <= 0))
-                Snackbar.Add("You need to select a Sequence or an Analysis to continue with the Next Step", Severity.Warning);
-            else
+            //if ((_sosDistribution.Sequences == null || _sosDistribution.Sequences.Count() <= 0) && (_sosDistribution.Analyses == null || _sosDistribution.Analyses.Count() <= 0))
+            //    Snackbar.Add("You need to select a Sequence or an Analysis to continue with the Next Step", Severity.Warning);
+            //else
                 selectedIndexPageGenerate = 33;
         }
     }
