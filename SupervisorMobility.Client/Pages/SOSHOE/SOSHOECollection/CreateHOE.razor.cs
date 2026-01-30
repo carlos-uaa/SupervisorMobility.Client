@@ -1610,7 +1610,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                         RawAnalisis.Remove(analysisToRemove);
                     analysisToRemove = allAnalyses.FirstOrDefault(a => a.Uid == id);
                     if (analysisToRemove != null)
-                        RawAnalisis.Remove(analysisToRemove);
+                        allAnalyses.Remove(analysisToRemove);
                 }
 
             // Agrega los de las secciones (conservando Uid y Text)
