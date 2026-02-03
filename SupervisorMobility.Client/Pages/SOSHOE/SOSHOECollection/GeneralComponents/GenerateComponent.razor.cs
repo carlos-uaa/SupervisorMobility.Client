@@ -342,9 +342,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
                         loading += 2;
 
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosDistribution.SOSDistributionId);
                         Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
-                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosDistribution.SOSDistributionId);
                         Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
                         //lo redirigimos a la vista dado que ya hay datos
                         selectedIndexPageGenerate = 33;
@@ -362,9 +362,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         }
                         else
                         {
-                            AvailableAnalyses = new List<SOSAnalysis>();
-                            AvailableSequences = new List<SOSSequence>();
-                            // Optionally, show a warning to the user here
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByArea((int)_sosHub.AreaId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByArea((int)_sosHub.AreaId);
                         }
 
                         loading += 10;
@@ -429,11 +428,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         AvailableSoshubs = AvailableSoshubs.Where(s => s.DistributionId == _sosHub.DistributionId).ToList();
                         AvailableSoshubs.RemoveAll(s => s.SOSHubId == _sosHub.SOSHubId);
 
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
-                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
-                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
-                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
-                        //lo redirigimos a la vista dado que ya hay datos
+                        if (_sosHub.DistributionId != null)
+                        {
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        }
+                        else
+                        {
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByArea((int)_sosHub.AreaId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByArea((int)_sosHub.AreaId);
+                        }
+
                         selectedIndexPageGenerate = 66;
 
                         loading += 5;
@@ -446,15 +451,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         if (_sosHub.DistributionId != null)
                         {
                             AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
-                            Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
                             AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
-                            Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
                         }
                         else
                         {
-                            AvailableAnalyses = new List<SOSAnalysis>();
-                            AvailableSequences = new List<SOSSequence>();
-                            // Optionally, show a warning to the user here
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByArea((int)_sosHub.AreaId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByArea((int)_sosHub.AreaId);
                         }
 
                         _SOSSynopticRequirements.CreatedAt = DateTime.Now;
@@ -482,22 +484,32 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
                         loading += 2;
 
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
-                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
-                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
-                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
-                        //lo redirigimos a la vista dado que ya hay datos
+                        if (_sosHub.DistributionId != null)
+                        {
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        }
+                        else
+                        {
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByArea((int)_sosHub.AreaId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByArea((int)_sosHub.AreaId);
+                        }
                         selectedIndexPageGenerate = 66;
 
                         loading += 5;
                     }
                     else
                     {
-                        //preparamos los datos
-                        AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
-                        Console.WriteLine($"Analisis: {AvailableAnalyses.Count()}");
-                        AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
-                        Console.WriteLine($"Sequencias: {AvailableSequences.Count()}");
+                        if (_sosHub.DistributionId != null)
+                        {
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByDistribution((int)_sosHub.DistributionId);
+                        }
+                        else
+                        {
+                            AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByArea((int)_sosHub.AreaId);
+                            AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByArea((int)_sosHub.AreaId);
+                        }
 
                         _sosControlPoints.CreatedAt = DateTime.Now;
 
@@ -1637,12 +1649,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         List<SOSSequence> AvailableSequences = new();
 
         private string searchAnalysis = "";
-        private IEnumerable<SOSAnalysis> FilteredAnalysis =>
+        private List<SOSAnalysis> FilteredAnalysis =>
             AvailableAnalyses.Where(op =>
                 string.IsNullOrEmpty(searchAnalysis) ||
                 (op.InternalControlNumber?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.ProcessName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (op.OperationName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false));
+                (op.OperationName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
 
         private string searchSosHub = "";
         private IEnumerable<SOSHub> FilteredSosHubs =>
@@ -1654,12 +1666,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
 
         private string searchSequence = "";
-        private IEnumerable<SOSSequence> FilteredSequences =>
+        private List<SOSSequence> FilteredSequences =>
             AvailableSequences.Where(op =>
                 string.IsNullOrEmpty(searchSequence) ||
                 (op.InternalControlNumber?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.ProcessName?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (op.OperationName?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false));
+                (op.OperationName?.Contains(searchSequence, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
 
         private Task<IEnumerable<int>> SearchApproverOwners(string searchString)
         {

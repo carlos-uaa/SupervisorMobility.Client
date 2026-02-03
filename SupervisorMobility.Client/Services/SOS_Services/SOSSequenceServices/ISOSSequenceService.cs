@@ -7,6 +7,7 @@ namespace SupervisorMobility.Client.Services.SOS_Services.SOSSequenceServices
         Task<SOSSequence> GetSOSSequence(int SOSSequenceId, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false, bool includeImagesSOS = false);
         Task<List<SOSSequence>> GetAllSOSSequence(bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<List<SOSSequence>> GetAllSOSSequenceByDistribution(int Distribution_Id, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
+        Task<List<SOSSequence>> GetAllSOSSequenceByArea(int Area_Id, bool includeImages = false, bool includeNotes = false, bool includeLogbooks = false, bool includeSpecialCases = false, bool includeSOS = false);
         Task<SOSSequence> UpdateSOSSequence(SOSSequence SosEntity);
         Task<bool> DeleteSOSSequence(int SosEntity_id);
 

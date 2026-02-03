@@ -2,6 +2,7 @@ using BlazorCameraStreamer;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Shared;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -576,10 +577,31 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private async Task SaveProgress()
         {
             _sosHub.Status = "In Progress";
-            if (ValidateDraft())
-                await SaveHOE();
-            else
+            if (!ValidateDraft())
+            {
                 Snackbar.Add("You need to add at least an analysis to save the progress", Severity.Warning);
+                return;
+            }
+
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Save Progress" },
+                { "ContentText", "Area you sure you want to update the Draft? \n The changes can't be reverted" },
+                { "ButtonText", "Save" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Filled.Save },
+                { "IconColor", Color.Secondary }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["Save Progress"].Value, dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            if (dialogResult.Canceled)
+                return;
+
+            await SaveHOE();
         }
 
 
@@ -595,6 +617,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 UpdateButton = false;
                 return;
             }
+
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Update HOE" },
+                { "ContentText", "Area you sure you want to update this HOE? \n The changes can't be reverted" },
+                { "ButtonText", "Update" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Info },
+                { "Icon", @Icons.Material.Filled.SaveAs },
+                { "IconColor", Color.Secondary }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["Update HOE"].Value, dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            if (dialogResult.Canceled)
+                return;
 
             await SaveHOE();
         }
@@ -1883,13 +1923,22 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         }
         async void RestoreBakup()
         {
-            bool? result = await DialogService.ShowMessageBox(
-            "Warning",
-            "Deleting can be clar a sections!",
-            yesText: "Delete!", cancelText: "Cancel");
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Warning" },
+                { "ContentText", "If you perform this action, all previous records will be deletes! \n Area you sure you want to restore the backup?" },
+                { "ButtonText", "Restore" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Filled.Warning },
+                { "IconColor", Color.Warning }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["Warning"].Value, dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
 
-            var state = result == null ? "Canceled" : "Deleted!";
-            if (state == "Deleted!")
+            if (!dialogResult.Canceled)
             {
                 RawAnalisis = ObjectCloner.ObjectCloner.DeepClone(RawAnalisisBk);
                 RawAnalisisBk.Clear();
