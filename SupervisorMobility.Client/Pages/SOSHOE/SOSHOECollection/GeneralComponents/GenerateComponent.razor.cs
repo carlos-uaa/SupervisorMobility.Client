@@ -1692,12 +1692,12 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 (op.OperationName?.Contains(searchAnalysis, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
 
         private string searchSosHub = "";
-        private IEnumerable<SOSHub> FilteredSosHubs =>
+        private List<SOSHub> FilteredSosHubs =>
             AvailableSoshubs.Where(op =>
                 string.IsNullOrEmpty(searchSosHub) ||
                 (op.Folio?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (op.ProcessSheet?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (op.OtherInformation?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false));
+                (op.OtherInformation?.Contains(searchSosHub, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
 
 
         private string searchSequence = "";
