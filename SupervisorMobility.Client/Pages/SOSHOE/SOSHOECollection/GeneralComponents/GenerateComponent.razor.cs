@@ -227,11 +227,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                     {
 
                         _pat = new PAT();
-                        _pat.PlantId = (int)_sosHub.PlantId;
-                        _pat.AreaId = (int)_sosHub.AreaId;
+                        _pat.PlantId = (int)(_sosHub.PlantId ?? 0);
+                        _pat.AreaId = (int)(_sosHub.AreaId ?? 0);
 
-                        _pat.Plant = _plants.Find(p => p.PlantId == _sosHub.PlantId);
-                        _pat.Area = _areas.Find(a => a.AreaId == _sosHub.AreaId);
+                        _pat.Plant = _plants.Find(p => p.PlantId == _pat.PlantId);
+                        _pat.Area = _areas.Find(a => a.AreaId == _pat.AreaId);
                     }
                     loading += 10;
 
@@ -367,6 +367,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         }
 
                         loading += 10;
+
+                        if (!AvailableAnalyses.Any() && !AvailableSequences.Any())
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                            Snackbar.Add("No se encontraron Secuencias ni Análisis para esta Área", Severity.Warning);
+                        }
                     }
                     break;
                 case 4:
@@ -425,7 +432,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         loading += 2;
 
                         AvailableSoshubs = await SOSHubServices.GetAllSOSHub();
-                        AvailableSoshubs = AvailableSoshubs.Where(s => s.DistributionId == _sosHub.DistributionId).ToList();
+                        AvailableSoshubs = AvailableSoshubs.Where(s => s.AreaId == _sosHub.AreaId).ToList();
                         AvailableSoshubs.RemoveAll(s => s.SOSHubId == _sosHub.SOSHubId);
 
                         if (_sosHub.DistributionId != null)
@@ -442,12 +449,26 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         selectedIndexPageGenerate = 66;
 
                         loading += 5;
+
+                        if (!AvailableSoshubs.Any())
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                            Snackbar.Add("Es necesario agregar Colectores", Severity.Warning);
+                        }
                     }
                     else
                     {
                         //preparamos los datos
-                        var FilterSOSHubs = (await SOSHubServices.GetAllSOSHub(includeSOSDistribution: true)).Where(s => s.DistributionId == _sosHub.DistributionId && s.SOSHubId != _sosHub.SOSHubId).ToList();
+                        var FilterSOSHubs = (await SOSHubServices.GetAllSOSHub(includeSOSDistribution: true)).Where(s => s.AreaId == _sosHub.AreaId && s.SOSHubId != _sosHub.SOSHubId).ToList();
                         AvailableSoshubs = CleanSOSHubs(FilterSOSHubs);
+
+                        if (!AvailableSoshubs.Any())
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                            Snackbar.Add("Es necesario agregar Colectores", Severity.Warning);
+                        }
                         if (_sosHub.DistributionId != null)
                         {
                             AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByDistribution((int)_sosHub.DistributionId);
@@ -494,9 +515,16 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                             AvailableAnalyses = await SOSAnalysisServices.GetAllSOSAnalysisByArea((int)_sosHub.AreaId);
                             AvailableSequences = await SOSSequenceServices.GetAllSOSSequenceByArea((int)_sosHub.AreaId);
                         }
-                        selectedIndexPageGenerate = 66;
+                        selectedIndexPageGenerate = 77;
 
                         loading += 5;
+
+                        if (!AvailableAnalyses.Any() && !AvailableSequences.Any())
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                            Snackbar.Add("No se encontraron Secuencias ni Análisis para esta Área", Severity.Warning);
+                        }
                     }
                     else
                     {
@@ -514,6 +542,13 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         _sosControlPoints.CreatedAt = DateTime.Now;
 
                         loading += 10;
+
+                        if (!AvailableAnalyses.Any() && !AvailableSequences.Any())
+                        {
+                            Snackbar.Clear();
+                            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+                            Snackbar.Add("No se encontraron Secuencias ni Análisis para esta Área", Severity.Warning);
+                        }
                     }
                     break;
 
