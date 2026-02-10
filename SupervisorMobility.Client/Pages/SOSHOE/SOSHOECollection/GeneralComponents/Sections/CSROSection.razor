@@ -1,0 +1,160 @@
+﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@inject ISynopticRequirementsService SOSRequirementsService
+@inject ISOSHubService SOSHubService
+@inject IUserService UsersService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+@* FORMULARIO DE CREACIÓN *@
+<MudPaper Elevation="0" Class="pa-4 mb-4" Style="background-color: var(--mud-palette-background-grey);">
+    <MudText Typo="Typo.subtitle2" Class="mb-2">Generar Nuevo Cuadro Sinóptico de Requisitos de Operacion</MudText>
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudAutocomplete T="User"
+                             Label="Seleccionar Revisor"
+                             @bind-Value="_selectedReviewer"
+                             SearchFunc="@SearchUsers"
+                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")"
+                             ResetValueOnEmptyText="true"
+                             AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudAutocomplete T="User"
+                             Label="Seleccionar Aprobador"
+                             @bind-Value="_selectedApprover"
+                             SearchFunc="@SearchUsers"
+                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")"
+                             ResetValueOnEmptyText="true"
+                             AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@* TABLA DE REGISTROS EXISTENTES *@
+<MudTable Items="State.SynopticTableOfOpertingRequirements" Hover="true" Dense="true" Loading="@_isTableLoading">
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+        <MudTh>Fecha Creación</MudTh>
+        <MudTh>Revisor</MudTh>
+        <MudTh>Aprobador</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Acciones</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.SOSSynopticTableofOperatingRequirementsId</MudTd>
+        <MudTd>@context.CreatedAt?.ToShortDateString()</MudTd>
+        <MudTd>@context.Reviewer?.Name</MudTd>
+        <MudTd>@context.Approver?.Name</MudTd>
+        <MudTd>
+            <MudChip Color="@(context.IsActive == true ? Color.Success : Color.Default)" Size="Size.Small">
+                @(context.IsActive == true ? "Activo" : "Inactivo")
+            </MudChip>
+        </MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditRequirement(context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public SOSState State { get; set; }
+    [Parameter] public EventCallback OnNotify { get; set; }
+
+    private bool _isTableLoading = false;
+
+    // Variables para selectores de usuarios
+    private User _selectedReviewer;
+    private User _selectedApprover;
+    private List<User> _allUsers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargamos usuarios para los autocompletes
+        _allUsers = (await UsersService.GetUsers(false, false)).ToList();
+    }
+
+    private async Task<IEnumerable<User>> SearchUsers(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return _allUsers;
+        return _allUsers.Where(x => x.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void EditRequirement(SOSSynopticTableofOperatingRequirements item)
+    {
+        // Redirige a la página donde se agregan los items específicos (EPP, Skills, etc.)
+        NavigationManager.NavigateTo($"/sossynoptic/edit/{item.SOSSynopticTableofOperatingRequirementsId}");
+    }
+
+    public async Task GenerateRequirement()
+    {
+        // 1. Validaciones
+        if (_selectedReviewer == null || _selectedApprover == null)
+        {
+            Snackbar.Add("Debe seleccionar Revisor y Aprobador para el Cuadro Sinóptico", Severity.Warning);
+            return;
+        }
+
+        _isTableLoading = true;
+        try
+        {
+            // 2. Construcción del Objeto Complejo
+            var newSynoptic = new SOSSynopticTableofOperatingRequirements
+                {
+                    SOSHubId = State.Hub.SOSHubId,
+                    CreatedAt = DateTime.Now,
+                    IsActive = true,
+                    ReviewerId = _selectedReviewer.UserId,
+                    ApproverId = _selectedApprover.UserId,
+                    SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>(),
+                    RequirementDifficulties = new List<SOSSynopticTableRequirementOperationDifficulty>(),
+                    SOSSTROKnowledge = new List<SOSSTROKnowledgeHub>(),
+                    SOSSTROSkill = new List<SOSSTROSkillHub>(),
+                    EstablishedConditions = new List<EstablishedConditions>(),
+                    InsuranceFeatures = new List<InsuranceFeatures>(),
+                    OperationMachine = new List<OperationMachine>(),
+                    SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>()
+                };
+
+            // 4. Logbook Inicial
+            newSynoptic.SynopticRequirementsLogbooks.Add(new SOSSynopticRequirementsLogbook
+                {
+                    Date = DateTime.Now,
+                    IsActive = true,
+                    Status = 1, // Nuevo / Borrador
+                    Changes = "Creación Inicial del Cuadro Sinóptico"
+                });
+
+            // 5. Llamada al Servicio
+            var result = await SOSHubService.GenerateSynopticRequirements(State.Hub.SOSHubId, newSynoptic);
+
+            if (result > 0)
+            {
+                // Extraer el nuevo registro para agregarlo a la tabla
+                var csroResponse = await SOSRequirementsService.GetSOSSynopticTableofOperatingRequirements(result);
+                if(csroResponse == null)
+                    Snackbar.Add("Error al obtener el nuevo Cuadro Sinóptico generado", Severity.Error);
+                else
+                    State.SynopticTableOfOpertingRequirements.Add(csroResponse);
+
+                // Limpiar UI
+                _selectedReviewer = null;
+                _selectedApprover = null;
+
+                await OnNotify.InvokeAsync();
+                Snackbar.Add("Cuadro Sinóptico generado exitosamente", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isTableLoading = false;
+        }
+    }
+}

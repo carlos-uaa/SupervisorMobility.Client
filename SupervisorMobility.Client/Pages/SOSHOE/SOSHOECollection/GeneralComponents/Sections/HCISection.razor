@@ -1,0 +1,100 @@
+﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@inject IHCIService HCIsServices
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudText Typo="Typo.h5" Class="mb-4">HCI: Hoja de Control Individual</MudText>
+
+@if (_currentHCI == null)
+{
+    @* Caso: No existe el registro todavía *@
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+        No se ha generado la Hoja de Control Individual para este proceso.
+        Haga clic en el botón de la parte inferior para crear el registro maestro.
+    </MudAlert>
+
+    <MudPaper Class="pa-6 d-flex flex-column align-center" Elevation="0" Style="border: 2px dashed var(--mud-palette-divider);">
+        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Default" />
+        <MudText Typo="Typo.body1" Color="Color.Default">Registro Pendiente</MudText>
+    </MudPaper>
+}
+else
+{
+    @* Caso: El registro ya existe, mostramos el resumen *@
+    <MudCard Elevation="2" Class="border-l-4" Style="border-left: 6px solid var(--mud-palette-primary);">
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption">Número de Control Interno</MudText>
+                    <MudText Typo="Typo.body1"><b>@_currentHCI.User?.Name</b></MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.caption">SOS Hub Folio</MudText>
+                    <MudText Typo="Typo.body1">@_currentHCI.SOSHub?.Folio</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDivider Class="my-2" />
+                    <MudText Typo="Typo.caption">SOS Hub Area</MudText>
+                    <MudText Typo="Typo.body1">@_currentHCI.SOSHub?.Area?.Code - @_currentHCI.SOSHub?.Area?.Description</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       EndIcon="@Icons.Material.Filled.EditNote"
+                       OnClick="GoToFullEditor">
+                Ir a Edición Detallada
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+}
+
+@code {
+    [Parameter] public SOSState State { get; set; }
+    [Parameter] public EventCallback OnNotify { get; set; }
+
+    private HCI? _currentHCI => State.Hci;
+    private bool _isProcessing = false;
+
+    private void GoToFullEditor()
+    {
+        if (_currentHCI != null)
+            NavigationManager.NavigateTo($"/hci/edit/{_currentHCI.HCIId}");
+    }
+
+    public async Task GenerateHCI()
+    {
+        if (_currentHCI != null)
+        {
+            Snackbar.Add("La Hoja de Control Individual ya existe.", Severity.Info);
+            return;
+        }
+
+        _isProcessing = true;
+        try
+        {
+            var newHCI = new HCI
+            {
+                SOSHubId = State.Hub.HciId,
+                IsActive = true
+                // Aquí podrías mapear el UserId del usuario actual si la HCI es por persona
+            };
+
+            var result = await HCIsServices.CreateHCI(newHCI);
+            if (result)
+            {
+                await OnNotify.InvokeAsync();
+                Snackbar.Add("Hoja de Control Individual (HCI) generada.", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+}

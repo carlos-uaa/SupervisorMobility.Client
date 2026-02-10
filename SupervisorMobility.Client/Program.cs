@@ -86,6 +86,7 @@ using SupervisorMobility.Client;
 using AutoMapper;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
+using SupervisorMobility.Client.Data.Entities.Dtos;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -99,6 +100,7 @@ builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<GlobalDataService>();
 builder.Services.AddSingleton<SignatureImageService>();
+builder.Services.AddScoped<SOSState>();
 builder.Services.AddScoped<IBreadcrumbService, BreadcrumbService>();
 builder.Services.AddScoped<ITreeService, TreeService>();
 builder.Services.AddScoped<IPlantService, PlantService>();

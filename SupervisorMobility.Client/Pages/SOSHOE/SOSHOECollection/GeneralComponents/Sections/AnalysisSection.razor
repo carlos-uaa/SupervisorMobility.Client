@@ -1,0 +1,431 @@
+﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@inject ISOSAnalysisService SOSAnalysisServices
+@inject ISOSHubService SOSHubService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IUserService UsersService
+@inject NavigationManager NavigationManager
+
+<style>
+    .list-container { 
+        height: 280px; 
+        overflow-y: auto; 
+        background-color: #fdfdfd; 
+        border: 1px solid #e0e0e0; 
+        border-radius: 8px;
+    }
+
+    /* Estilo para cuando no hay datos */
+    .empty-state-dashed {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: calc(100% - 16px);
+        border: 2px dashed #e0e0e0;
+        margin: 8px;
+        border-radius: 8px;
+        background-color: #fafafa;
+    }
+
+    /* Cards de los items */
+    .item-card { 
+        background: white; 
+        border: 1px solid #f0f0f0; 
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .item-card:hover { 
+        background-color: #f9f9f9;
+        transform: translateX(4px); 
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Bordes laterales de colores */
+    .border-l-primary { border-left: 4px solid var(--mud-palette-primary) !important; }
+    .border-l-secondary { border-left: 4px solid var(--mud-palette-secondary) !important; }
+    .border-l-success { border-left: 4px solid var(--mud-palette-success) !important; }
+
+    .mud-background-gray { background-color: #f8f9fa; }
+    .border-radius-lg { border-radius: 12px; }
+    
+    /* Bordes dinámicos */
+    .border-l-primary { border-left: 4px solid var(--mud-palette-primary) !important; }
+    .border-l-secondary { border-left: 4px solid var(--mud-palette-secondary) !important; }
+    .border-l-success { border-left: 4px solid var(--mud-palette-success) !important; }
+    
+    .bg-white { background-color: white !important; }
+    .mud-input-control>.mud-input-control-input-container { width: 100% !important}
+</style>
+
+<MudGrid Spacing="3" Class="ma-0">
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="pa-5 mud-background-gray border-radius-lg">
+            <div class="d-flex align-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.SettingsSuggest" Color="Color.Primary" Class="mr-2"/>
+                <MudText Typo="Typo.h6" Style="font-weight: 800;">Configuración de Nuevo Análisis</MudText>
+            </div>
+
+            <MudGrid Spacing="2">
+                @* Campos Editables de Identificación *@
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_sosAnalysis.OperationName" 
+                                    Label="Nombre de la operación" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.Dense" 
+                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sosAnalysis.AnalysisLogbooks?.Last().SOSAnalysisLogbookId == 0))"
+                                    Class="bg-white"/>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_sosAnalysis.InternalControlNumber" 
+                                    Label="Número de control interno" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.Dense" 
+                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sosAnalysis.AnalysisLogbooks?.Last().SOSAnalysisLogbookId == 0))"
+                                    Class="bg-white"/>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField @bind-Value="_sosAnalysis.ProcessName" 
+                                    Label="Nombre del proceso" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.Dense" 
+                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sosAnalysis.AnalysisLogbooks?.Last().SOSAnalysisLogbookId == 0))"
+                                    Class="bg-white"/>
+                </MudItem>
+
+                @* Fila Informativa (Read Only) *@
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="GetDate()" Label="Fecha de Registro" Variant="Variant.Filled" ReadOnly="true" 
+                                    Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Event" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="GetRevNumber()" Label="Revisión Actual" Variant="Variant.Filled" ReadOnly="true" 
+                                    Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.History" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudField Label="Status" Variant="Variant.Filled" Margin="Margin.Dense" InnerPadding="false" Class="d-flex align-center" Style="width: 100% !important">
+                        <MudChip Color="Color.Info" Size="Size.Small" Variant="Variant.Text" Icon="@Icons.Material.Filled.FiberNew" Class="ml-2 ma-0">NEW</MudChip>
+                    </MudField>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+    @* --- Columna: Equipo de Seguridad --- *@
+    <MudItem xs="12" md="4">
+        <div class="d-flex align-center mb-2 px-1">
+            <MudIcon Icon="@Icons.Material.Outlined.Shield" Color="Color.Primary" Size="Size.Small" Class="mr-2"/>
+            <MudText Typo="Typo.subtitle2" Style="font-weight:700">Equipo de Seguridad</MudText>
+            <MudSpacer />
+            <MudBadge Content="@(State.Hub.SafetyEquipment?.Count ?? 0)" Color="Color.Primary" Overlap="false" Bordered="true" Class="mr-4" />
+        </div>
+        <div class="list-container pa-2">
+            @if (State.Hub.SafetyEquipment?.Any() == true)
+            {
+                @foreach (var item in State.Hub.SafetyEquipment)
+                {
+                    <MudPaper Elevation="0" Class="item-card pa-3 mb-2 border-l-primary">
+                        <MudText Typo="Typo.body2">@item</MudText>
+                    </MudPaper>
+                }
+            }
+            else
+            {
+                <div class="empty-state-dashed">
+                    <MudIcon Icon="@Icons.Material.Outlined.Shield" Size="Size.Large" Color="Color.Default" Style="opacity: 0.3;"  />
+                    <MudText Typo="Typo.caption" Class="mt-2" Style="opacity: 0.6;">Sin equipo de seguridad registrado</MudText>
+                </div>
+            }
+        </div>
+    </MudItem>
+
+    @* --- Columna: Herramientas --- *@
+    <MudItem xs="12" md="4">
+        <div class="d-flex align-center mb-2 px-1">
+            <MudIcon Icon="@Icons.Material.Outlined.Build" Color="Color.Secondary" Size="Size.Small" Class="mr-2"/>
+            <MudText Typo="Typo.subtitle2" Style="font-weight:700">Herramientas</MudText>
+            <MudSpacer />
+            <MudBadge Content="@(State.Hub.ToolsUsed?.Count ?? 0)" Color="Color.Secondary" Overlap="false" Bordered="true" Class="mr-4" />
+        </div>
+        <div class="list-container pa-2">
+            @if (State.Hub.ToolsUsed?.Any() == true)
+            {
+                @foreach (var item in State.Hub.ToolsUsed)
+                {
+                    <MudPaper Elevation="0" Class="item-card pa-3 mb-2 border-l-secondary">
+                        <MudText Typo="Typo.body2" Class="font-bold">@item.Tool.ToolCode</MudText>
+                    </MudPaper>
+                }
+            }
+            else
+            {
+                <div class="empty-state-dashed">
+                    <MudIcon Icon="@Icons.Material.Outlined.Build" Size="Size.Large" Color="Color.Default" Style="opacity: 0.3;" />
+                    <MudText Typo="Typo.caption" Class="mt-2" Style="opacity: 0.6;">Sin herramientas registradas</MudText>
+                </div>
+            }
+        </div>
+    </MudItem>
+
+    @* --- Columna: Unidades --- *@
+    <MudItem xs="12" md="4">
+        <div class="d-flex align-center mb-2 px-1">
+            <MudIcon Icon="@Icons.Material.Outlined.DirectionsCar" Color="Color.Success" Size="Size.Small" Class="mr-2"/>
+            <MudText Typo="Typo.subtitle2" Style="font-weight:700">Unidades</MudText>
+            <MudSpacer />
+            <MudBadge Content="@(State.Hub.AppliedModels?.Count ?? 0)" Color="Color.Success" Overlap="false" Bordered="true" Class="mr-7" />
+        </div>
+        <div class="list-container pa-2">
+            @if (State.Hub.AppliedModels?.Any() == true)
+            {
+                @foreach (var item in State.Hub.AppliedModels)
+                {
+                    <MudPaper Elevation="0" Class="item-card pa-3 mb-2 border-l-success">
+                        <MudText Typo="Typo.body2"><strong>@item.Code</strong> | @item.Description</MudText>
+                    </MudPaper>
+                }
+            }
+            else
+            {
+                <div class="empty-state-dashed">
+                    <MudIcon Icon="@Icons.Material.Outlined.DirectionsCar" Size="Size.Large" Color="Color.Default" Style="opacity: 0.3;" />
+                    <MudText Typo="Typo.caption" Class="mt-2" Style="opacity: 0.6;">Sin unidades registradas</MudText>
+                </div>
+            }
+        </div>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudDivider Class="my-2" />
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4">
+                <MudNumericField @bind-Value="State.Hub.TrainingTime" Label="Tiempo de aprendizaje (min)" 
+                                Variant="Variant.Outlined" Min="0" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Timer" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchUsers"
+                                ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
+                                AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchUsers"
+                                ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
+                                AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+</MudGrid>
+
+@* Definición de fragmento rápido *@
+@{
+    RenderFragment<EmptyStateFragment> EmptyState = (props) => __builder => {
+        <div class="d-flex flex-column align-center justify-center py-8" style="opacity: 0.5;">
+            <MudIcon Icon="@props.Icon" Size="Size.Large" Class="mb-2" />
+            <MudText Typo="Typo.caption" Align="Align.Center">@props.Text</MudText>
+        </div>
+    };
+}
+
+@code {
+    [Parameter] public SOSState State { get; set; }
+    [Parameter] public EventCallback OnNotify { get; set; }
+
+    private SOSAnalysis _sosAnalysis { get; set; } = new();
+
+    public class EmptyStateFragment : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        [Microsoft.AspNetCore.Components.Parameter] public string Text { get; set; }
+        [Microsoft.AspNetCore.Components.Parameter] public string Icon { get; set; } = Icons.Material.Filled.SearchOff;
+    }
+
+    private string _searchString = "";
+    private bool _isTableLoading = false;
+    private User _selectedReviewer;
+    private User _selectedApprover;
+
+    private List<User> _allUsers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allUsers = (await UsersService.GetUsers(false, false)).ToList();
+        if (State?.Hub?.SOSAnalysis == null || State.Hub.SOSAnalysis.Count == 0)
+            _sosAnalysis = new SOSAnalysis();
+        else
+            _sosAnalysis = State?.Hub?.SOSAnalysis.First();
+    }
+
+    private void EditAnalysis(SOSAnalysis analysis)
+    {
+        NavigationManager.NavigateTo($"/sosanalysis/edit/{analysis.SOSAnalysisId}");
+    }
+
+    private async Task DeleteAnalysis(SOSAnalysis analysis)
+    {
+        var parameters = new DialogParameters { ["ContentText"] = "¿Estás seguro de que deseas eliminar este análisis?" };
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        // Mostramos el cuadro de confirmación
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Confirm Delete" },
+                { "ContentText", "Are you sure you want to Delete this HOE?" },
+                { "ButtonText", "Delete!" },
+                { "CancelText", "Cancel" },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("ConfirmationDeletion", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (!dialogResult.Canceled)
+        {
+            var deleted = await SOSAnalysisServices.DeleteSOSAnalysis(analysis.SOSAnalysisId);
+
+            if (deleted)
+            {
+                // Removemos de la lista del estado global
+                State.Analyses.Remove(analysis);
+                Snackbar.Add("Análisis eliminado correctamente", Severity.Success);
+
+                await OnNotify.InvokeAsync();
+            }
+            else
+                Snackbar.Add("No se pudo eliminar el análisis", Severity.Error);
+        }
+    }
+
+    // Función de búsqueda para MudAutocomplete 
+    private async Task<IEnumerable<User>> SearchUsers(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return _allUsers;
+
+        return _allUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            x.UserId.ToString().Contains(value)
+        );
+    }
+
+    public async Task GenerateAnalysis()
+    {
+        if (_selectedReviewer == null || _selectedApprover == null)
+        {
+            Snackbar.Add("Debe seleccionar Revisor y Aprobador antes de generar.", Severity.Warning);
+            return;
+        }
+
+        _isTableLoading = true;
+        try
+        {
+            // Mapeo exacto a tu entidad SOSAnalysis
+            var newAnalysis = new SOSAnalysis
+            {
+                SOSHubId = State.Hub.SOSHubId,
+                CreatedDate = DateTime.Now,
+                IsActive = true,
+
+                AnalysisLogbooks = new List<SOSAnalysisLogbook>(),
+                Illustrations = new List<FileUpload>(),
+                Notes = new List<Commentary>(),
+                Times = new List<SOSTime>(),
+            };
+
+            var initialLogbook = new SOSAnalysisLogbook
+            {
+                ReviewerId = _selectedReviewer.UserId,
+                ApproverId = _selectedApprover.UserId,
+                Date = DateTime.Now,
+                NoRevision = 1,  // Primera revisión
+                Status = 1,      // Status inicial
+                IsActive = true,
+                Changes = "Initial Analysis Creation"
+            };
+
+            newAnalysis.AnalysisLogbooks.Add(initialLogbook);
+
+            var result = await SOSHubService.GenerateAnalysis(State.Hub.SOSHubId, newAnalysis);
+            if (result > 0)
+            {
+                // Obtener el análisis recién creado
+                var analysisResult = await SOSAnalysisServices.GetSOSAnalysis(result);
+
+                if(analysisResult == null)
+                {
+                    Snackbar.Add("Error al obtener el análisis generado.", Severity.Error);
+                    return;
+                }
+
+                State.Analyses.Insert(0, analysisResult); // Insertar al inicio de la lista
+
+                // Limpiar selectores tras éxito
+                _selectedReviewer = null;
+                _selectedApprover = null;
+
+                await OnNotify.InvokeAsync();
+                Snackbar.Add("Análisis generado y vinculado.", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isTableLoading = false;
+        }
+    }
+
+    private string GetRevNumber()
+    {
+        string number = string.Empty;
+
+        // Validación inicial
+        if (State?.Hub?.SOSAnalysis == null || State.Hub.SOSAnalysis.Count == 0)
+            return "No Analysis";
+
+        if (_sosAnalysis.AnalysisLogbooks == null || !_sosAnalysis.AnalysisLogbooks.Any())
+            return "No Logbooks";
+
+        var lastLogbook = _sosAnalysis.AnalysisLogbooks.Last();
+
+        if (lastLogbook.NoRevision == 0)
+            number = $"New - {_sosAnalysis.AnalysisLogbooks.Count()}";
+        else if (lastLogbook.SOSAnalysisLogbookId == 0)
+            number = $"NewTemporal - {_sosAnalysis.AnalysisLogbooks.Count()}";
+        else if (lastLogbook.Status == 2)
+            number = $"NewRevision - {_sosAnalysis.AnalysisLogbooks.Count()}";
+        else
+            number = $"{lastLogbook.NoRevision}";
+
+        return number;
+    }
+
+    private string GetDate()
+    {
+        string date = string.Empty;
+
+        // Validación inicial
+        if (State?.Hub?.SOSAnalysis == null || State.Hub.SOSAnalysis.Count == 0)
+            return DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
+
+        if (_sosAnalysis.AnalysisLogbooks == null || !_sosAnalysis.AnalysisLogbooks.Any())
+            return DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
+
+        var lastLogbook = _sosAnalysis.AnalysisLogbooks.Last();
+
+        if (lastLogbook.NoRevision == 0)
+            date = DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
+        else if (lastLogbook.SOSAnalysisLogbookId == 0)
+            date = $"NewTemporal - {DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "")}";
+        else if (lastLogbook.Status == 2)
+            date = $"NewRevision - {DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "")}";
+        else
+            date = lastLogbook.Date?.ToString("dd-MMM-yyyy").Replace(".", "");
+
+        return date;
+    }
+}

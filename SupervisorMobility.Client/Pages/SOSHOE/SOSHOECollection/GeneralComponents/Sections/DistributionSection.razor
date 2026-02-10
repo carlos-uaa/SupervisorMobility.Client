@@ -1,0 +1,118 @@
+﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@inject ISOSDistributionService SOSDistributionServices
+@inject ISOSHubService SOSHubServices
+@inject ISnackbar Snackbar
+
+<MudTable Items="State.Distributions" Hover="true" Dense="true" Class="mb-4">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Registros de Distribución</MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+        <MudTh>Fecha</MudTh>
+        <MudTh>Internal Control Number</MudTh>
+        <MudTh>Estado</MudTh>
+        <MudTh>Acciones</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.SOSDistributionId</MudTd>
+        <MudTd>@context.CreatedAt?.ToShortDateString()</MudTd>
+        <MudTd>@context.InternalControlNumber</MudTd>
+        <MudTd>
+            <MudChip Color="@(context.IsActive == true ? Color.Success : Color.Default)" Size="Size.Small">
+                @(context.IsActive == true ? "Completada" : "Pendiente")
+            </MudChip>
+        </MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Comment" Color="Color.Info" OnClick="@(() => ViewComments(context))" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudExpansionPanels>
+    <MudExpansionPanel Text="Nueva Distribución / Comentarios">
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField T="string" Label="Comentario de Distribución" 
+                              @bind-Value="_newComment" 
+                              Lines="3" Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter] public SOSState State { get; set; }
+    [Parameter] public EventCallback OnNotify { get; set; }
+
+    private string _newComment;
+    private bool _isTableLoading = false;
+
+    private void ViewComments(SOSDistribution dist) {
+        // Lógica para abrir modal de comentarios (PatDistributionComment)
+    }
+
+    public async Task GenerateDistribution()
+    {
+        _isTableLoading = true;
+        try
+        {
+            // Creamos el objeto con la estructura exacta de tu entidad
+            var newDist = new SOSDistribution
+            {
+                SOSHubId = State.Hub.SOSHubId,
+                CreatedAt = DateTime.Now,
+                IsActive = true,
+
+                // Inicialización de colecciones obligatorias
+                DistributionLogbooks = new List<SOSDistributionLogbook>(),
+                Illustrations = new List<FileUpload>(),
+                Notes = new List<Commentary>(),
+                Turns = new List<Turn>(),
+                SOSDistributionOperationSequence = new List<SOSDistributionOperationSequence>(),
+
+                // Valores por defecto según tu modelo
+                AplicationModels = "§§§§",
+                AdditionalTime = "§§§§",
+                CycleTime = "§§§§",
+                ApplicationMonth = DateTime.Now
+            };
+
+            // Agregamos el registro inicial al Logbook de distribución
+            newDist.DistributionLogbooks.Add(new SOSDistributionLogbook
+                {
+                    Date = DateTime.Now,
+                    IsActive = true,
+                    Status = 1,
+                    NoRevision = 1
+                });
+
+            // Llamada al servicio
+            var result = await SOSHubServices.GenerateDistribution(State.Hub.SOSHubId, newDist);
+
+            if (result > 0)
+            {
+                //Obtenemos la distribución creada
+                var distributionResponse = await SOSDistributionServices.GetSOSDistribution(result);
+
+                if(distributionResponse == null)
+                    Snackbar.Add("Error al obtener la distribución generada", Severity.Error);
+                else
+                    State.Distributions.Add(distributionResponse);
+
+                _newComment = string.Empty;
+
+                await OnNotify.InvokeAsync();
+                Snackbar.Add("Registro de Distribución generado exitosamente", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al generar distribución: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isTableLoading = false;
+        }
+    }
+}
