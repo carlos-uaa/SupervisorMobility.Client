@@ -1,160 +1,255 @@
 ﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
 @inject ISynopticRequirementsService SOSRequirementsService
 @inject ISOSHubService SOSHubService
-@inject IUserService UsersService
+@inject IUserService UsersServices
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject IStringLocalizer<Resource> Localizer
 
-@* FORMULARIO DE CREACIÓN *@
-<MudPaper Elevation="0" Class="pa-4 mb-4" Style="background-color: var(--mud-palette-background-grey);">
-    <MudText Typo="Typo.subtitle2" Class="mb-2">Generar Nuevo Cuadro Sinóptico de Requisitos de Operacion</MudText>
-    <MudGrid>
-        <MudItem xs="12" sm="6">
-            <MudAutocomplete T="User"
-                             Label="Seleccionar Revisor"
-                             @bind-Value="_selectedReviewer"
-                             SearchFunc="@SearchUsers"
-                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")"
-                             ResetValueOnEmptyText="true"
-                             AdornmentIcon="@Icons.Material.Filled.PersonSearch"
-                             Variant="Variant.Outlined"
-                             Margin="Margin.Dense" />
-        </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudAutocomplete T="User"
-                             Label="Seleccionar Aprobador"
-                             @bind-Value="_selectedApprover"
-                             SearchFunc="@SearchUsers"
-                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")"
-                             ResetValueOnEmptyText="true"
-                             AdornmentIcon="@Icons.Material.Filled.PersonSearch"
-                             Variant="Variant.Outlined"
-                             Margin="Margin.Dense" />
-        </MudItem>
-    </MudGrid>
-</MudPaper>
+<style>
+    .mud-background-gray { background-color: #f8f9fa; }
+    .border-radius-lg { border-radius: 12px; }
+    .bg-white { background-color: white !important; }
+</style>
 
-@* TABLA DE REGISTROS EXISTENTES *@
-<MudTable Items="State.SynopticTableOfOpertingRequirements" Hover="true" Dense="true" Loading="@_isTableLoading">
-    <HeaderContent>
-        <MudTh>ID</MudTh>
-        <MudTh>Fecha Creación</MudTh>
-        <MudTh>Revisor</MudTh>
-        <MudTh>Aprobador</MudTh>
-        <MudTh>Status</MudTh>
-        <MudTh>Acciones</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd>@context.SOSSynopticTableofOperatingRequirementsId</MudTd>
-        <MudTd>@context.CreatedAt?.ToShortDateString()</MudTd>
-        <MudTd>@context.Reviewer?.Name</MudTd>
-        <MudTd>@context.Approver?.Name</MudTd>
-        <MudTd>
-            <MudChip Color="@(context.IsActive == true ? Color.Success : Color.Default)" Size="Size.Small">
-                @(context.IsActive == true ? "Activo" : "Inactivo")
-            </MudChip>
-        </MudTd>
-        <MudTd>
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditRequirement(context))" />
-        </MudTd>
-    </RowTemplate>
-</MudTable>
+<MudGrid Spacing="3" Class="ma-0">
+    
+    @* HEADER CON INFORMACIÓN GENERAL *@
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="pa-5 mud-background-gray border-radius-lg">
+            <div class="d-flex align-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.TableChart" Color="Color.Primary" Class="mr-2"/>
+                <MudText Typo="Typo.h6" Style="font-weight: 800;">Configuración de Nuevo Cuadro Sinóptico de Requisitos de Operación</MudText>
+            </div>
+
+            <MudGrid Spacing="2">
+                <MudItem xs="12" md="3">
+                    <MudTextField @bind-Value="_SOSSynopticRequirements.ProcessName"
+                                  Label="Nombre del Proceso"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Value="@State.Hub?.Department?.Description"
+                                  Label="Departamento"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Value="@State.Hub?.Plant?.Description"
+                                  Label="Planta"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudDatePicker @bind-Date="_SOSSynopticRequirements.CreatedAt"
+                                   Label="Fecha de Registro"
+                                   Variant="Variant.Filled"
+                                   Margin="Margin.Dense"
+                                   ReadOnly="true"
+                                   Editable="false"
+                                   Style="background-color: #e9ecef;" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+    @* CAMPO HOJA *@
+
+
+    @* SECCIÓN HOJA (Tabla con dos columnas) *@
+    <MudItem xs="12">
+        <div style="border: 1px solid #e0e0e0; border-radius: 4px;">
+            <div style="border-bottom: 1px solid #e0e0e0; padding: 12px; text-align: center; font-weight: bold;">
+                HOJA
+            </div>
+            <div style="display: flex;">
+                <div style="flex: 1; padding: 12px; border-right: 1px solid #e0e0e0; min-height: 60px;"></div>
+                <div style="flex: 1; padding: 12px; min-height: 60px;"></div>
+            </div>
+        </div>
+    </MudItem>
+
+    @* SELECCIÓN DE USUARIOS *@
+    <MudItem xs="12">
+        <MudDivider Class="my-2" />
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Elaboró"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="OwnerSynopticRequirementsId"
+                                 AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchApproverOwners" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Revisó"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="ReviewerSynopticRequirementsId"
+                                 AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchSupervisors" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Aprobó"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="ApproverSynopticRequirementsId"
+                                 AdornmentIcon="@Icons.Material.Filled.VerifiedUser"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchApproverOwners" />
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+
+</MudGrid>
 
 @code {
     [Parameter] public SOSState State { get; set; }
     [Parameter] public EventCallback OnNotify { get; set; }
 
-    private bool _isTableLoading = false;
-
-    // Variables para selectores de usuarios
-    private User _selectedReviewer;
-    private User _selectedApprover;
-    private List<User> _allUsers = new();
+    private SOSSynopticTableofOperatingRequirements _SOSSynopticRequirements = new();
+    private List<User> _supervisors = new();
+    
+    private int OwnerSynopticRequirementsId = 0;
+    private int ReviewerSynopticRequirementsId = 0;
+    private int ApproverSynopticRequirementsId = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        // Cargamos usuarios para los autocompletes
-        _allUsers = (await UsersService.GetUsers(false, false)).ToList();
+        // Cargar supervisores para el autocomplete de REVISO
+        var allUsers = (await UsersServices.GetUsers(false, false)).ToList();
+        _supervisors = allUsers.Where(x => x.UserType == 3).ToList();
+
+        // Si ya existe un registro, cargarlo
+        if (State?.SynopticTableOfOpertingRequirements?.Any() == true)
+        {
+            _SOSSynopticRequirements = State.SynopticTableOfOpertingRequirements.First();
+        }
+        else
+        {
+            _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements
+            {
+                CreatedAt = DateTime.Now
+            };
+        }
     }
 
-    private async Task<IEnumerable<User>> SearchUsers(string value)
+    private Task<IEnumerable<int>> SearchApproverOwners(string searchString)
     {
-        if (string.IsNullOrEmpty(value)) return _allUsers;
-        return _allUsers.Where(x => x.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = State.Hub.ApproverOwners?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+        else
+            result = State.Hub.ApproverOwners?
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
+
+        return Task.FromResult(result);
     }
 
-    private void EditRequirement(SOSSynopticTableofOperatingRequirements item)
+    private Task<IEnumerable<int>> SearchSupervisors(string searchString)
     {
-        // Redirige a la página donde se agregan los items específicos (EPP, Skills, etc.)
-        NavigationManager.NavigateTo($"/sossynoptic/edit/{item.SOSSynopticTableofOperatingRequirementsId}");
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = _supervisors.Select(x => x.UserId);
+        else
+            result = _supervisors
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId);
+
+        return Task.FromResult(result);
     }
 
     public async Task GenerateRequirement()
     {
-        // 1. Validaciones
-        if (_selectedReviewer == null || _selectedApprover == null)
+        // Validaciones
+        if (OwnerSynopticRequirementsId == 0 || ReviewerSynopticRequirementsId == 0 || ApproverSynopticRequirementsId == 0)
         {
-            Snackbar.Add("Debe seleccionar Revisor y Aprobador para el Cuadro Sinóptico", Severity.Warning);
+            Snackbar.Add("Debe seleccionar ELABORO, REVISO y APROBO para el Cuadro Sinóptico", Severity.Warning);
             return;
         }
 
-        _isTableLoading = true;
+        if (string.IsNullOrWhiteSpace(_SOSSynopticRequirements.ProcessName))
+        {
+            Snackbar.Add("Debe ingresar el Nombre del Proceso", Severity.Warning);
+            return;
+        }
+
         try
         {
-            // 2. Construcción del Objeto Complejo
-            var newSynoptic = new SOSSynopticTableofOperatingRequirements
-                {
-                    SOSHubId = State.Hub.SOSHubId,
-                    CreatedAt = DateTime.Now,
-                    IsActive = true,
-                    ReviewerId = _selectedReviewer.UserId,
-                    ApproverId = _selectedApprover.UserId,
-                    SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>(),
-                    RequirementDifficulties = new List<SOSSynopticTableRequirementOperationDifficulty>(),
-                    SOSSTROKnowledge = new List<SOSSTROKnowledgeHub>(),
-                    SOSSTROSkill = new List<SOSSTROSkillHub>(),
-                    EstablishedConditions = new List<EstablishedConditions>(),
-                    InsuranceFeatures = new List<InsuranceFeatures>(),
-                    OperationMachine = new List<OperationMachine>(),
-                    SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>()
-                };
+            // Construcción del objeto completo
+            _SOSSynopticRequirements.SOSHubId = State.Hub.SOSHubId;
+            _SOSSynopticRequirements.CreatedAt = DateTime.Now;
+            _SOSSynopticRequirements.IsActive = true;
+            _SOSSynopticRequirements.CreatorId = OwnerSynopticRequirementsId;
+            _SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+            _SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
 
-            // 4. Logbook Inicial
-            newSynoptic.SynopticRequirementsLogbooks.Add(new SOSSynopticRequirementsLogbook
+            _SOSSynopticRequirements.SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>
+            {
+                new SOSSynopticRequirementsLogbook
                 {
                     Date = DateTime.Now,
                     IsActive = true,
-                    Status = 1, // Nuevo / Borrador
+                    Status = 1,
                     Changes = "Creación Inicial del Cuadro Sinóptico"
-                });
+                }
+            };
 
-            // 5. Llamada al Servicio
-            var result = await SOSHubService.GenerateSynopticRequirements(State.Hub.SOSHubId, newSynoptic);
+            _SOSSynopticRequirements.RequirementDifficulties = new List<SOSSynopticTableRequirementOperationDifficulty>();
+            _SOSSynopticRequirements.SOSSTROKnowledge = new List<SOSSTROKnowledgeHub>();
+            _SOSSynopticRequirements.SOSSTROSkill = new List<SOSSTROSkillHub>();
+            _SOSSynopticRequirements.EstablishedConditions = new List<EstablishedConditions>();
+            _SOSSynopticRequirements.InsuranceFeatures = new List<InsuranceFeatures>();
+            _SOSSynopticRequirements.OperationMachine = new List<OperationMachine>();
+            _SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
+
+            // Llamada al servicio
+            var result = await SOSHubService.GenerateSynopticRequirements(State.Hub.SOSHubId, _SOSSynopticRequirements);
 
             if (result > 0)
             {
-                // Extraer el nuevo registro para agregarlo a la tabla
                 var csroResponse = await SOSRequirementsService.GetSOSSynopticTableofOperatingRequirements(result);
-                if(csroResponse == null)
-                    Snackbar.Add("Error al obtener el nuevo Cuadro Sinóptico generado", Severity.Error);
-                else
+                if (csroResponse != null)
+                {
                     State.SynopticTableOfOpertingRequirements.Add(csroResponse);
-
-                // Limpiar UI
-                _selectedReviewer = null;
-                _selectedApprover = null;
-
-                await OnNotify.InvokeAsync();
-                Snackbar.Add("Cuadro Sinóptico generado exitosamente", Severity.Success);
+                    await OnNotify.InvokeAsync();
+                    Snackbar.Add("Cuadro Sinóptico de Requisitos de Operación generado exitosamente", Severity.Success);
+                }
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _isTableLoading = false;
+            Snackbar.Add($"Error al generar: {ex.Message}", Severity.Error);
         }
     }
 }

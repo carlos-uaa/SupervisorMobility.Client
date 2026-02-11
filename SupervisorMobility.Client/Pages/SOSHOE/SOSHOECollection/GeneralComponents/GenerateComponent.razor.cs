@@ -127,6 +127,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             0 => "PAT Creation",
             1 => "SOS Analysis",
             2 => "Combination",
+            6 => "SOS Cuadro Sinóptico de Requisitos de Operación",
+            66 => "SOS Cuadro Sinóptico de Requisitos de Operación",
+            77 => "SOS Cuadro Sinóptico de Puntos de Control",
             _ => "SOS Process"
         };
 

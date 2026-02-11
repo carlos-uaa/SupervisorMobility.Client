@@ -1,136 +1,250 @@
 ﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
 @inject ISynopticControlPointsService ControlPointsService
 @inject ISOSHubService SOSHubService
-@inject IUserService UsersService
+@inject IUserService UsersServices
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject IStringLocalizer<Resource> Localizer
 
-@* Sección de Creación *@
-<MudPaper Elevation="0" Class="pa-4 mb-4" Style="background-color: var(--mud-palette-background-grey); border-left: 4px solid var(--mud-palette-info);">
-    <MudText Typo="Typo.subtitle1" Color="Color.Info" Class="mb-3"><b>Nuevo Cuadro Sinóptico de Puntos de Control</b></MudText>
-    <MudGrid>
-        <MudItem xs="12" sm="6">
-            <MudAutocomplete T="User" 
-                             Label="Seleccionar Revisor" 
-                             @bind-Value="_selectedReviewer" 
-                             SearchFunc="@SearchUsers"
-                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")"
-                             ResetValueOnEmptyText="true"
-                             Variant="Variant.Outlined" 
-                             Margin="Margin.Dense"
-                             AdornmentIcon="@Icons.Material.Filled.Search" />
-        </MudItem>
-        <MudItem xs="12" sm="6">
-            <MudAutocomplete T="User" 
-                             Label="Seleccionar Aprobador" 
-                             @bind-Value="_selectedApprover" 
-                             SearchFunc="@SearchUsers"
-                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")"
-                             ResetValueOnEmptyText="true"
-                             Variant="Variant.Outlined" 
-                             Margin="Margin.Dense"
-                             AdornmentIcon="@Icons.Material.Filled.Search" />
-        </MudItem>
-    </MudGrid>
-</MudPaper>
+<style>
+    .mud-background-gray { background-color: #f8f9fa; }
+    .border-radius-lg { border-radius: 12px; }
+    .bg-white { background-color: white !important; }
+</style>
 
-@* Listado de Tablas Existentes *@
-<MudTable Items="State.SynopticTableOfControlPoints" Hover="true" Dense="true" Elevation="0" Loading="@_isTableLoading">
-    <HeaderContent>
-        <MudTh>ID</MudTh>
-        <MudTh>Control Interno</MudTh>
-        <MudTh>Fecha</MudTh>
-        <MudTh>Revisor / Aprobador</MudTh>
-        <MudTh>Acciones</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="ID">@context.SOSSynopticTableofControlPointsId</MudTd>
-        <MudTd DataLabel="Control">@context.InternalControlNumber</MudTd>
-        <MudTd DataLabel="Fecha">@context.CreatedAt?.ToShortDateString()</MudTd>
-        <MudTd DataLabel="Responsables">
-            <MudText Typo="Typo.caption">R: @context.Reviewer?.Name</MudText><br />
-            <MudText Typo="Typo.caption">A: @context.Approver?.Name</MudText>
-        </MudTd>
-        <MudTd>
-            <MudTooltip Text="Editar Puntos de Control">
-                <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Info" OnClick="@(() => EditControlPoints(context))" />
-            </MudTooltip>
-        </MudTd>
-    </RowTemplate>
-</MudTable>
+<MudGrid Spacing="3" Class="ma-0">
+    
+    @* HEADER CON INFORMACIÓN GENERAL *@
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="pa-5 mud-background-gray border-radius-lg">
+            <div class="d-flex align-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.ChecklistRtl" Color="Color.Primary" Class="mr-2"/>
+                <MudText Typo="Typo.h6" Style="font-weight: 800;">Configuración de Nuevo Cuadro Sinóptico de Puntos de Control</MudText>
+            </div>
+
+            <MudGrid Spacing="2">
+                @* Primera fila: PROCESO, MODELOS *@
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_sosControlPoints.ProcessName"
+                                  Label="Proceso"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="@(State.SynopticTableOfControlPoints?.Count > 0)" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <div style="padding-top: 8px;">
+                        <MudText Typo="Typo.caption" Style="display: block; margin-bottom: 4px;">Modelos</MudText>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            @if (State.Hub?.AppliedModels?.Count > 0)
+                            {
+                                @foreach (var model in State.Hub.AppliedModels)
+                                {
+                                    <MudChip Color="Color.Secondary" Icon="@Icons.Material.Filled.DirectionsCar" Size="Size.Small">
+                                        @model.Description
+                                    </MudChip>
+                                }
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Style="opacity: 0.6;">Sin modelos asignados</MudText>
+                            }
+                        </div>
+                    </div>
+                </MudItem>
+
+                @* Segunda fila: MES, PLANTA *@
+                <MudItem xs="12" md="6">
+                    <MudDatePicker @bind-Date="_sosControlPoints.CreatedAt"
+                                   Label="Mes"
+                                   Variant="Variant.Filled"
+                                   Margin="Margin.Dense"
+                                   ReadOnly="true"
+                                   Editable="false"
+                                   Style="background-color: #e9ecef;" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Value="@State.Hub?.Plant?.Description"
+                                  Label="Planta"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="true" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+    @* SELECCIÓN DE USUARIOS *@
+    <MudItem xs="12">
+        <MudDivider Class="my-2" />
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Elaboró"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="OwnerControlPointsId"
+                                 AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfControlPoints?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchApproverOwners" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Revisó"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="ReviewerControlPointsId"
+                                 AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfControlPoints?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchSupervisors" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Aprobó"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="ApproverControlPointsId"
+                                 AdornmentIcon="@Icons.Material.Filled.VerifiedUser"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfControlPoints?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchApproverOwners" />
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+
+</MudGrid>
 
 @code {
     [Parameter] public SOSState State { get; set; }
     [Parameter] public EventCallback OnNotify { get; set; }
 
-    private bool _isTableLoading = false;
-    private User _selectedReviewer;
-    private User _selectedApprover;
-    private List<User> _allUsers = new();
+    private SOSSynopticTableofControlPoints _sosControlPoints = new();
+    private List<User> _supervisors = new();
+    
+    private int OwnerControlPointsId = 0;
+    private int ReviewerControlPointsId = 0;
+    private int ApproverControlPointsId = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        _allUsers = (await UsersService.GetUsers(false, false)).ToList();
+        // Cargar supervisores para el autocomplete de REVISO
+        var allUsers = (await UsersServices.GetUsers(false, false)).ToList();
+        _supervisors = allUsers.Where(x => x.UserType == 3).ToList();
+
+        // Si ya existe un registro, cargarlo
+        if (State?.SynopticTableOfControlPoints?.Any() == true)
+        {
+            _sosControlPoints = State.SynopticTableOfControlPoints.First();
+        }
+        else
+        {
+            _sosControlPoints = new SOSSynopticTableofControlPoints
+            {
+                CreatedAt = DateTime.Now
+            };
+        }
     }
 
-    private async Task<IEnumerable<User>> SearchUsers(string value)
+    private Task<IEnumerable<int>> SearchApproverOwners(string searchString)
     {
-        if (string.IsNullOrEmpty(value)) return _allUsers;
-        return _allUsers.Where(x => x.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = State.Hub.ApproverOwners?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+        else
+            result = State.Hub.ApproverOwners?
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
+
+        return Task.FromResult(result);
     }
 
-    private void EditControlPoints(SOSSynopticTableofControlPoints item)
+    private Task<IEnumerable<int>> SearchSupervisors(string searchString)
     {
-        // Navegación al editor específico de puntos de control
-        NavigationManager.NavigateTo($"/soscontrolpoints/edit/{item.SOSSynopticTableofControlPointsId}");
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = _supervisors.Select(x => x.UserId);
+        else
+            result = _supervisors
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId);
+
+        return Task.FromResult(result);
     }
 
     public async Task GenerateControlPoints()
     {
-        if (_selectedReviewer == null || _selectedApprover == null)
+        // Validaciones
+        if (OwnerControlPointsId == 0 || ReviewerControlPointsId == 0 || ApproverControlPointsId == 0)
         {
-            Snackbar.Add("Debe asignar Revisor y Aprobador antes de generar.", Severity.Warning);
+            Snackbar.Add("Debe seleccionar ELABORO, REVISO y APROBO para el Cuadro Sinóptico de Puntos de Control", Severity.Warning);
             return;
         }
 
-        _isTableLoading = true;
+        if (string.IsNullOrWhiteSpace(_sosControlPoints.ProcessName))
+        {
+            Snackbar.Add("Debe ingresar el Nombre del Proceso", Severity.Warning);
+            return;
+        }
+
         try
         {
-            var newTable = new SOSSynopticTableofControlPoints
-            {
-                SOSHubId = State.Hub.SOSHubId,
-                
-                CreatedAt = DateTime.Now,
-                IsActive = true,
-                ReviewerId = _selectedReviewer.UserId,
-                ApproverId = _selectedApprover.UserId,
+            // Construcción del objeto completo
+            _sosControlPoints.SOSHubId = State.Hub.SOSHubId;
+            _sosControlPoints.CreatedAt = DateTime.Now;
+            _sosControlPoints.IsActive = true;
+            _sosControlPoints.CreatorId = OwnerControlPointsId;
+            _sosControlPoints.ReviewerId = ReviewerControlPointsId;
+            _sosControlPoints.ApproverId = ApproverControlPointsId;
 
-                Analyses = new List<SOSAnalysis>(),
-                Sequences = new List<SOSSequence>()
+            _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>
+            {
+                new SOSSynopticPointsLogbook
+                {
+                    Date = DateTime.Now,
+                    IsActive = true,
+                    Status = 1,
+                    Changes = "Creación Inicial del Cuadro Sinóptico de Puntos de Control"
+                }
             };
 
-            var result = await SOSHubService.GenerateSynopticControlPoints(State.Hub.SOSHubId, newTable);
-            
+            _sosControlPoints.Sequences = new List<SOSSequence>();
+            _sosControlPoints.Analyses = new List<SOSAnalysis>();
+
+            // Llamada al servicio
+            var result = await SOSHubService.GenerateSynopticControlPoints(State.Hub.SOSHubId, _sosControlPoints);
+
             if (result > 0)
             {
-                // Extraer el cuadro recien creado
-                var createdTable = await ControlPointsService.GetSOSSynopticTableofControlPoints(result);
-                if(createdTable != null)
-                    State.SynopticTableOfControlPoints.Add(createdTable);
-                _selectedReviewer = null;
-                _selectedApprover = null;
-                
-                await OnNotify.InvokeAsync();
-                Snackbar.Add("Cuadro de Puntos de Control generado exitosamente", Severity.Success);
+                var cspcResponse = await ControlPointsService.GetSOSSynopticTableofControlPoints(result);
+                if (cspcResponse != null)
+                {
+                    State.SynopticTableOfControlPoints.Add(cspcResponse);
+                    await OnNotify.InvokeAsync();
+                    Snackbar.Add("Cuadro Sinóptico de Puntos de Control generado exitosamente", Severity.Success);
+                }
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al generar: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _isTableLoading = false;
         }
     }
 }
