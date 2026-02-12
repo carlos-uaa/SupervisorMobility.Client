@@ -1,4 +1,5 @@
 ﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@using SupervisorMobility.Client.Data.Entities
 @inject ISOSAnalysisService SOSAnalysisServices
 @inject ISOSHubService SOSHubService
 @inject ISnackbar Snackbar
@@ -74,7 +75,7 @@
                                     Label="Nombre de la operación" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sosAnalysis.AnalysisLogbooks?.Last().SOSAnalysisLogbookId == 0))"
+                                    Disabled="@IsAnalysisEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -82,7 +83,7 @@
                                     Label="Número de control interno" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sosAnalysis.AnalysisLogbooks?.Last().SOSAnalysisLogbookId == 0))"
+                                    Disabled="@IsAnalysisEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -90,7 +91,7 @@
                                     Label="Nombre del proceso" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sosAnalysis.AnalysisLogbooks?.Last().SOSAnalysisLogbookId == 0))"
+                                    Disabled="@IsAnalysisEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
 
@@ -126,7 +127,7 @@
                 @foreach (var item in State.Hub.SafetyEquipment)
                 {
                     <MudPaper Elevation="0" Class="item-card pa-3 mb-2 border-l-primary">
-                        <MudText Typo="Typo.body2">@item</MudText>
+                        <MudText Typo="Typo.body2">@item.EquipmentName</MudText>
                     </MudPaper>
                 }
             }
@@ -154,7 +155,8 @@
                 @foreach (var item in State.Hub.ToolsUsed)
                 {
                     <MudPaper Elevation="0" Class="item-card pa-3 mb-2 border-l-secondary">
-                        <MudText Typo="Typo.body2" Class="font-bold">@item.Tool.ToolCode</MudText>
+                        <MudText Typo="Typo.body2" Class="font-bold">@(item.Tool?.ToolCode ?? "N/A")</MudText>
+                        <MudText Typo="Typo.caption">@(item.Tool?.ToolName ?? "")</MudText>
                     </MudPaper>
                 }
             }
@@ -201,17 +203,20 @@
         <MudGrid Spacing="2">
             <MudItem xs="12" md="4">
                 <MudNumericField @bind-Value="State.Hub.TrainingTime" Label="Tiempo de aprendizaje (min)" 
-                                Variant="Variant.Outlined" Min="0" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Timer" />
+                                Variant="Variant.Outlined" Min="0" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Timer"
+                                Disabled="@IsAnalysisEditDisabled()" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchUsers"
+                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchReviewers"
                                 ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
-                                AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                Disabled="@IsAnalysisEditDisabled()" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchUsers"
+                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchApprovers"
                                 ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
-                                AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                Disabled="@IsAnalysisEditDisabled()" />
             </MudItem>
         </MudGrid>
     </MudItem>
@@ -245,14 +250,43 @@
     private User _selectedApprover;
 
     private List<User> _allUsers = new();
+    private List<User> _reviewUsers = new();  // SVs filtered by plant
+    private List<User> _approveUsers = new(); // SSVs filtered by plant
 
     protected override async Task OnInitializedAsync()
     {
         _allUsers = (await UsersService.GetUsers(false, false)).ToList();
-        if (State?.Hub?.SOSAnalysis == null || State.Hub.SOSAnalysis.Count == 0)
-            _sosAnalysis = new SOSAnalysis();
+        
+        // Cargar usuarios de revisor y aprobador basado en PlantId del Hub (lógica del Before)
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            // ReviewerEditors = SVs (tipo 3) de la planta
+            _reviewUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, false);
+            _reviewUsers = _reviewUsers.OrderBy(s => s.Name).ToList();
+
+            // ApproverOwners = SSVs (tipo 2) de la planta  
+            _approveUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
+        }
+        
+        if (State?.Hub?.SOSAnalysis != null && State.Hub.SOSAnalysis.Count > 0)
+        {
+            // Ya existe un análisis, cargar el primero
+            _sosAnalysis = State.Hub.SOSAnalysis.First();
+            
+            // Si tiene logbooks, cargar el último revisor y aprobador para mostrarlos
+            if (_sosAnalysis.AnalysisLogbooks != null && _sosAnalysis.AnalysisLogbooks.Any())
+            {
+                var lastLogbook = _sosAnalysis.AnalysisLogbooks.Last();
+                _selectedReviewer = _allUsers.FirstOrDefault(u => u.UserId == lastLogbook.ReviewerId);
+                _selectedApprover = _allUsers.FirstOrDefault(u => u.UserId == lastLogbook.ApproverId);
+            }
+        }
         else
-            _sosAnalysis = State?.Hub?.SOSAnalysis.First();
+        {
+            // Nuevo análisis - inicializar vacío
+            _sosAnalysis = new SOSAnalysis();
+        }
     }
 
     private void EditAnalysis(SOSAnalysis analysis)
@@ -310,63 +344,173 @@
         );
     }
 
+    private async Task<IEnumerable<User>> SearchReviewers(string value)
+    {
+        // Buscar en SVs filtrados por planta (tipo 3)
+        if (_reviewUsers == null || _reviewUsers.Count == 0)
+            return new List<User>();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return _reviewUsers.Take(20);
+        }
+
+        return _reviewUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            (x.Payroll.HasValue && x.Payroll.Value.ToString().Contains(value)) ||
+            x.UserId.ToString().Contains(value)
+        ).Take(20);
+    }
+
+    private async Task<IEnumerable<User>> SearchApprovers(string value)
+    {
+        // Buscar en SSVs filtrados por planta (tipo 2)
+        if (_approveUsers == null || _approveUsers.Count == 0)
+            return new List<User>();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return _approveUsers.Take(20);
+        }
+
+        return _approveUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            (x.Payroll.HasValue && x.Payroll.Value.ToString().Contains(value)) ||
+            x.UserId.ToString().Contains(value)
+        ).Take(20);
+    }
+
     public async Task GenerateAnalysis()
     {
+        // Validar campos obligatorios
         if (_selectedReviewer == null || _selectedApprover == null)
         {
             Snackbar.Add("Debe seleccionar Revisor y Aprobador antes de generar.", Severity.Warning);
             return;
         }
 
+        if (string.IsNullOrEmpty(_sosAnalysis.ProcessName) || string.IsNullOrEmpty(_sosAnalysis.InternalControlNumber))
+        {
+            Snackbar.Add("Nombre de Proceso y Número de Control Interno son requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrEmpty(_sosAnalysis.OperationName))
+        {
+            Snackbar.Add("Nombre de la Operación es requerido.", Severity.Warning);
+            return;
+        }
+
         _isTableLoading = true;
         try
         {
-            // Mapeo exacto a tu entidad SOSAnalysis
-            var newAnalysis = new SOSAnalysis
+            // Verificar si es creación o revisión
+            if (State?.Hub?.SOSAnalysis != null && State.Hub.SOSAnalysis.Count > 0)
             {
-                SOSHubId = State.Hub.SOSHubId,
-                CreatedDate = DateTime.Now,
-                IsActive = true,
+                // CASO: REVISIÓN - Ya existe un análisis
+                _sosAnalysis = State.Hub.SOSAnalysis.First();
 
-                AnalysisLogbooks = new List<SOSAnalysisLogbook>(),
-                Illustrations = new List<FileUpload>(),
-                Notes = new List<Commentary>(),
-                Times = new List<SOSTime>(),
-            };
-
-            var initialLogbook = new SOSAnalysisLogbook
-            {
-                ReviewerId = _selectedReviewer.UserId,
-                ApproverId = _selectedApprover.UserId,
-                Date = DateTime.Now,
-                NoRevision = 1,  // Primera revisión
-                Status = 1,      // Status inicial
-                IsActive = true,
-                Changes = "Initial Analysis Creation"
-            };
-
-            newAnalysis.AnalysisLogbooks.Add(initialLogbook);
-
-            var result = await SOSHubService.GenerateAnalysis(State.Hub.SOSHubId, newAnalysis);
-            if (result > 0)
-            {
-                // Obtener el análisis recién creado
-                var analysisResult = await SOSAnalysisServices.GetSOSAnalysis(result);
-
-                if(analysisResult == null)
+                // Limpiar logbooks temporales si existen
+                if (_sosAnalysis.AnalysisLogbooks?.First().SOSAnalysisLogbookId == 0)
                 {
-                    Snackbar.Add("Error al obtener el análisis generado.", Severity.Error);
-                    return;
+                    _sosAnalysis.AnalysisLogbooks.Clear();
                 }
 
-                State.Analyses.Insert(0, analysisResult); // Insertar al inicio de la lista
+                // Crear nuevo logbook de revisión
+                var revisionLogbook = new SOSAnalysisLogbook
+                {
+                    NoRevision = _sosAnalysis.AnalysisLogbooks?.Count() ?? 0,
+                    ApproverId = _selectedApprover.UserId,
+                    ReviewerId = _selectedReviewer.UserId,
+                    Date = DateTime.Now,
+                    Status = 1,
+                    IsActive = true
+                };
 
-                // Limpiar selectores tras éxito
-                _selectedReviewer = null;
-                _selectedApprover = null;
+                if (_sosAnalysis.AnalysisLogbooks == null)
+                    _sosAnalysis.AnalysisLogbooks = new List<SOSAnalysisLogbook>();
 
-                await OnNotify.InvokeAsync();
-                Snackbar.Add("Análisis generado y vinculado.", Severity.Success);
+                _sosAnalysis.AnalysisLogbooks.Add(revisionLogbook);
+
+                var result = await SOSHubService.GenerateAnalysis(State.Hub.SOSHubId, _sosAnalysis);
+                
+                if (result != 0)
+                {
+                    Snackbar.Add("Revisión del Análisis generada exitosamente.", Severity.Success);
+                    NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{_sosAnalysis.SOSAnalysisId}");
+                }
+                else
+                {
+                    Snackbar.Add("Error al generar la revisión del Análisis.", Severity.Error);
+                }
+            }
+            else
+            {
+                // CASO: NUEVO ANÁLISIS
+                // Usar el objeto _sosAnalysis que ya tiene los valores del formulario bindeados
+                _sosAnalysis.SOSHubId = State.Hub.SOSHubId;
+                _sosAnalysis.CreatedDate = DateTime.Now;
+                _sosAnalysis.IsActive = true;
+
+                // Crear logbook inicial
+                var initialLogbook = new SOSAnalysisLogbook
+                {
+                    NoRevision = 0,
+                    ReviewerId = _selectedReviewer.UserId,
+                    ApproverId = _selectedApprover.UserId,
+                    Date = DateTime.Now,
+                    Status = 1,
+                    IsActive = true
+                };
+
+                if (_sosAnalysis.AnalysisLogbooks == null)
+                    _sosAnalysis.AnalysisLogbooks = new List<SOSAnalysisLogbook>();
+                
+                _sosAnalysis.AnalysisLogbooks.Add(initialLogbook);
+
+                // Inicializar listas si son null
+                if (_sosAnalysis.Times == null)
+                    _sosAnalysis.Times = new List<SOSTime>();
+                
+                if (_sosAnalysis.Illustrations == null)
+                    _sosAnalysis.Illustrations = new List<FileUpload>();
+                
+                if (_sosAnalysis.Notes == null)
+                    _sosAnalysis.Notes = new List<Commentary>();
+
+                // IMPORTANTE: Crear Times para cada Section del Hub
+                if (State.Hub.Sections != null && State.Hub.Sections.Any())
+                {
+                    foreach (Section section in State.Hub.Sections)
+                    {
+                        var newTime = new SOSTime
+                        {
+                            SectionId = section.SectionId,
+                            IsActive = true,
+                            Time = ""
+                        };
+                        _sosAnalysis.Times.Add(newTime);
+                    }
+                }
+
+                var result = await SOSHubService.GenerateAnalysis(State.Hub.SOSHubId, _sosAnalysis);
+                
+                if (result > 0)
+                {
+                    Snackbar.Add("Análisis generado exitosamente.", Severity.Success);
+                    NavigationManager.NavigateTo($"/soshoe/Analysis/Details/{result}");
+                    
+                    // Limpiar formulario
+                    _sosAnalysis = new SOSAnalysis();
+                    _selectedReviewer = null;
+                    _selectedApprover = null;
+
+                    await OnNotify.InvokeAsync();
+                }
+                else
+                {
+                    Snackbar.Add("Error al generar el Análisis.", Severity.Error);
+                }
             }
         }
         catch (Exception ex)
@@ -390,7 +534,7 @@
         if (_sosAnalysis.AnalysisLogbooks == null || !_sosAnalysis.AnalysisLogbooks.Any())
             return "No Logbooks";
 
-        var lastLogbook = _sosAnalysis.AnalysisLogbooks.Last();
+        var lastLogbook = _sosAnalysis.AnalysisLogbooks.LastOrDefault();
 
         if (lastLogbook.NoRevision == 0)
             number = $"New - {_sosAnalysis.AnalysisLogbooks.Count()}";
@@ -415,7 +559,7 @@
         if (_sosAnalysis.AnalysisLogbooks == null || !_sosAnalysis.AnalysisLogbooks.Any())
             return DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
 
-        var lastLogbook = _sosAnalysis.AnalysisLogbooks.Last();
+        var lastLogbook = _sosAnalysis.AnalysisLogbooks.LastOrDefault();
 
         if (lastLogbook.NoRevision == 0)
             date = DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
@@ -427,5 +571,20 @@
             date = lastLogbook.Date?.ToString("dd-MMM-yyyy").Replace(".", "");
 
         return date;
+    }
+
+    private bool IsAnalysisEditDisabled()
+    {
+        // Si no hay análisis, es editable (nuevo)
+        if (State?.Hub?.SOSAnalysis?.Count == 0)
+            return false;
+
+        // Si hay análisis pero no tiene logbooks, es editable
+        if (_sosAnalysis?.AnalysisLogbooks?.Count == 0)
+            return false;
+
+        // Si hay un logbook guardado (no temporal), es readonly
+        var lastLogbook = _sosAnalysis?.AnalysisLogbooks?.LastOrDefault();
+        return lastLogbook?.SOSAnalysisLogbookId != 0;
     }
 }

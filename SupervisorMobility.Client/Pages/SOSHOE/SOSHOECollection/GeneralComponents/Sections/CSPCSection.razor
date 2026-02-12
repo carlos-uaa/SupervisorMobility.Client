@@ -31,7 +31,7 @@
                                   Label="Proceso"
                                   Variant="Variant.Outlined"
                                   Margin="Margin.Dense"
-                                  ReadOnly="@(State.SynopticTableOfControlPoints?.Count > 0)" />
+                                  Disabled="@IsCSPCEditDisabled()" />
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <div style="padding-top: 8px;">
@@ -81,7 +81,7 @@
         <MudGrid Spacing="2">
             <MudItem xs="12" md="4">
                 <MudAutocomplete T="int"
-                                 Label="Elaboró"
+                                 Label="Elaborador"
                                  Variant="Variant.Outlined"
                                  Margin="Margin.Dense"
                                  @bind-Value="OwnerControlPointsId"
@@ -89,15 +89,15 @@
                                  AdornmentColor="Color.Default"
                                  Clearable
                                  ResetValueOnEmptyText
-                                 ReadOnly="@(State.SynopticTableOfControlPoints?.Count > 0)"
+                                 Disabled="@IsCSPCEditDisabled()"
                                  ShowProgressIndicator="true"
                                  ProgressIndicatorColor="Color.Info"
-                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                 SearchFunc="SearchApproverOwners" />
+                                 ToStringFunc="@(s => _approveUsers?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchOwnerUsers" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudAutocomplete T="int"
-                                 Label="Revisó"
+                                 Label="Revisor Responsable"
                                  Variant="Variant.Outlined"
                                  Margin="Margin.Dense"
                                  @bind-Value="ReviewerControlPointsId"
@@ -105,15 +105,15 @@
                                  AdornmentColor="Color.Default"
                                  Clearable
                                  ResetValueOnEmptyText
-                                 ReadOnly="@(State.SynopticTableOfControlPoints?.Count > 0)"
+                                 Disabled="@IsCSPCEditDisabled()"
                                  ShowProgressIndicator="true"
                                  ProgressIndicatorColor="Color.Info"
-                                 ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                 SearchFunc="SearchSupervisors" />
+                                 ToStringFunc="@(s => _reviewUsers.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchReviewUsers" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudAutocomplete T="int"
-                                 Label="Aprobó"
+                                 Label="Aprobador Final"
                                  Variant="Variant.Outlined"
                                  Margin="Margin.Dense"
                                  @bind-Value="ApproverControlPointsId"
@@ -121,11 +121,11 @@
                                  AdornmentColor="Color.Default"
                                  Clearable
                                  ResetValueOnEmptyText
-                                 ReadOnly="@(State.SynopticTableOfControlPoints?.Count > 0)"
+                                 Disabled="@IsCSPCEditDisabled()"
                                  ShowProgressIndicator="true"
                                  ProgressIndicatorColor="Color.Info"
-                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                 SearchFunc="SearchApproverOwners" />
+                                 ToStringFunc="@(s => _approveUsers?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchApproveUsers" />
             </MudItem>
         </MudGrid>
     </MudItem>
@@ -139,6 +139,8 @@
 
     private SOSSynopticTableofControlPoints _sosControlPoints = new();
     private List<User> _supervisors = new();
+    private List<User> _reviewUsers = new();  // SVs (tipo 3) filtrados por planta
+    private List<User> _approveUsers = new(); // SSVs (tipo 2) filtrados por planta
 
     private int OwnerControlPointsId = 0;
     private int ReviewerControlPointsId = 0;
@@ -146,7 +148,24 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Cargar supervisores para el autocomplete de REVISO
+        // Cargar usuarios filtrados por planta y tipo usando el servicio
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            // _reviewUsers = SVs (tipo 3) de la planta
+            _reviewUsers = await UsersServices.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, true);
+            _reviewUsers = _reviewUsers.OrderBy(s => s.Name).ToList();
+
+            // _approveUsers = SSVs (tipo 2) de la planta  
+            _approveUsers = await UsersServices.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
+        }
+        else
+        {
+            _reviewUsers = new List<User>();
+            _approveUsers = new List<User>();
+        }
+        
+        // También cargar todos los supervisores (para compatibilidad si es necesario)
         var allUsers = (await UsersServices.GetUsers(false, true)).ToList();
         _supervisors = allUsers.Where(x => x.UserType == 3).ToList();
 
@@ -154,9 +173,41 @@
         if (State?.SynopticTableOfControlPoints?.Any() == true)
         {
             _sosControlPoints = State.SynopticTableOfControlPoints.First();
+            
+            
+            Console.WriteLine($"[CSPC OnInit] Loaded CSPC ID={_sosControlPoints.SOSSynopticTableofControlPointsId}");
+            Console.WriteLine($"[CSPC OnInit] ProcessName='{_sosControlPoints.ProcessName}'");
+            Console.WriteLine($"[CSPC OnInit] Analyses={_sosControlPoints.Analyses?.Count() ?? 0}, Sequences={_sosControlPoints.Sequences?.Count() ?? 0}");
+            Console.WriteLine($"[CSPC OnInit] CreatorId={_sosControlPoints.CreatorId}, ReviewerId={_sosControlPoints.ReviewerId}, ApproverId={_sosControlPoints.ApproverId}");
+            
+            // NOTA: No necesitamos cargar manualmente los Analyses/Sequences en AnalysysSequences aquí
+            // GenerateComponent.LoadInitialSelections() ya se encarga de eso cuando abre el diálogo
+            // y OnParametersSetAsync() lo actualiza cuando se cambia de sección
+            
+            // Cargar los usuarios asignados si existen logbooks
+            if (_sosControlPoints.SynopticPointsLogbooks != null && _sosControlPoints.SynopticPointsLogbooks.Any())
+            {
+                var lastLogbook = _sosControlPoints.SynopticPointsLogbooks.LastOrDefault();
+                if (lastLogbook != null)
+                {
+                    ApproverControlPointsId = lastLogbook.ApproverId ?? 0;
+                }
+            }
+            
+            // Cargar CreatorId y ReviewerId desde el documento principal
+            if (_sosControlPoints.CreatorId.HasValue && _sosControlPoints.CreatorId.Value > 0)
+            {
+                OwnerControlPointsId = _sosControlPoints.CreatorId.Value;
+            }
+            
+            if (_sosControlPoints.ReviewerId.HasValue && _sosControlPoints.ReviewerId.Value > 0)
+            {
+                ReviewerControlPointsId = _sosControlPoints.ReviewerId.Value;
+            }
         }
         else
         {
+            Console.WriteLine($"[CSPC OnInit] No existing CSPC found, creating new");
             _sosControlPoints = new SOSSynopticTableofControlPoints
             {
                 CreatedAt = DateTime.Now
@@ -164,30 +215,59 @@
         }
     }
 
-    private Task<IEnumerable<int>> SearchApproverOwners(string searchString)
+    private bool IsCSPCEditDisabled()
+    {
+        // Si no hay registro, es editable (nuevo)
+        if (State?.SynopticTableOfControlPoints?.Count == 0)
+            return false;
+
+        // Si hay un registro pero no tiene logbooks, es editable
+        if (_sosControlPoints?.SynopticPointsLogbooks?.Count == 0)
+            return false;
+
+        // Si hay un logbook guardado (no temporal), es readonly
+        var lastLogbook = _sosControlPoints?.SynopticPointsLogbooks?.LastOrDefault();
+        return lastLogbook?.SOSSynopticPointsLogbookId != 0;
+    }
+
+    private Task<IEnumerable<int>> SearchOwnerUsers(string searchString)
     {
         IEnumerable<int> result;
 
         if (string.IsNullOrEmpty(searchString))
-            result = State.Hub.ApproverOwners?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+            result = _approveUsers?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
         else
-            result = State.Hub.ApproverOwners?
+            result = _approveUsers?
                 .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x.UserId) ?? Enumerable.Empty<int>();
 
         return Task.FromResult(result);
     }
 
-    private Task<IEnumerable<int>> SearchSupervisors(string searchString)
+    private Task<IEnumerable<int>> SearchReviewUsers(string searchString)
     {
         IEnumerable<int> result;
 
         if (string.IsNullOrEmpty(searchString))
-            result = _supervisors.Select(x => x.UserId);
+            result = _reviewUsers?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
         else
-            result = _supervisors
+            result = _reviewUsers?
                 .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                .Select(x => x.UserId);
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
+
+        return Task.FromResult(result);
+    }
+
+    private Task<IEnumerable<int>> SearchApproveUsers(string searchString)
+    {
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = _approveUsers?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+        else
+            result = _approveUsers?
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
 
         return Task.FromResult(result);
     }
@@ -238,6 +318,29 @@
 
             if (_sosControlPoints.SynopticPointsLogbooks != null && _sosControlPoints.SynopticPointsLogbooks.First().SOSSynopticPointsLogbookId == 0)
                 _sosControlPoints.SynopticPointsLogbooks.Clear();
+
+            // Guardar las selecciones de análisis y secuencias desde AnalysysSequences
+            if (AnalysysSequences?.AnalysisSelected != null && AnalysysSequences.AnalysisSelected.Any())
+            {
+                _sosControlPoints.Analyses = AnalysysSequences.AnalysisSelected.ToList();
+                Console.WriteLine($"CSPC Update: Assigned {_sosControlPoints.Analyses.Count()} analyses");
+            }
+            else
+            {
+                _sosControlPoints.Analyses = new List<SOSAnalysis>();
+                Console.WriteLine("CSPC Update: No analyses to assign");
+            }
+
+            if (AnalysysSequences?.SequencesSelected != null && AnalysysSequences.SequencesSelected.Any())
+            {
+                _sosControlPoints.Sequences = AnalysysSequences.SequencesSelected.ToList();
+                Console.WriteLine($"CSPC Update: Assigned {_sosControlPoints.Sequences.Count()} sequences");
+            }
+            else
+            {
+                _sosControlPoints.Sequences = new List<SOSSequence>();
+                Console.WriteLine("CSPC Update: No sequences to assign");
+            }
 
             SOSSynopticPointsLogbook logGenerateSynopticControlPoints = new SOSSynopticPointsLogbook();
 
@@ -296,6 +399,29 @@
                 _sosControlPoints.ReviewerId = ReviewerControlPointsId;
                 _sosControlPoints.ApproverId = ApproverControlPointsId;
                 _sosControlPoints.CreatorId = OwnerControlPointsId;
+
+                // Guardar las selecciones de análisis y secuencias desde AnalysysSequences
+                if (AnalysysSequences?.AnalysisSelected != null && AnalysysSequences.AnalysisSelected.Any())
+                {
+                    _sosControlPoints.Analyses = AnalysysSequences.AnalysisSelected.ToList();
+                    Console.WriteLine($"CSPC: Assigned {_sosControlPoints.Analyses.Count()} analyses");
+                }
+                else
+                {
+                    _sosControlPoints.Analyses = new List<SOSAnalysis>();
+                    Console.WriteLine("CSPC: No analyses to assign");
+                }
+
+                if (AnalysysSequences?.SequencesSelected != null && AnalysysSequences.SequencesSelected.Any())
+                {
+                    _sosControlPoints.Sequences = AnalysysSequences.SequencesSelected.ToList();
+                    Console.WriteLine($"CSPC: Assigned {_sosControlPoints.Sequences.Count()} sequences");
+                }
+                else
+                {
+                    _sosControlPoints.Sequences = new List<SOSSequence>();
+                    Console.WriteLine("CSPC: No sequences to assign");
+                }
 
                 SOSSynopticPointsLogbook logGenerateSynopticControlPoints = new SOSSynopticPointsLogbook();
 

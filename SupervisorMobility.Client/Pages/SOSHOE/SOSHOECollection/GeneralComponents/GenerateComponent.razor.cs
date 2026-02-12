@@ -37,6 +37,36 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
 
         public AnalysisSequencesDto _selections = new AnalysisSequencesDto();
+        private int _lastSelectedIndex = -1;
+
+        // Calculamos el DistributionId dinámicamente, solo para Distribution (cases 3, 33)
+        // Para CSPC (cases 7, 77) siempre devuelve 0 para permitir selecciones
+        private int GetDistributionId()
+        {
+            // Si estamos en CSPC (cases 7 o 77), devolver 0 incluso si Distribution existe
+            if (State?.SelectedIndex == 7 || State?.SelectedIndex == 77)
+                return 0;
+            
+            // Solo para Distribution (cases 3 o 33), devolver el ID si existe
+            if (State?.Hub?.SOSDistribution != null && State.Hub.SOSDistribution.Count > 0)
+            {
+                return State.Hub.SOSDistribution.First().SOSDistributionId;
+            }
+            return 0;
+        }
+
+        // Determina si estamos viendo un CSPC existente (readonly) o creando uno nuevo (editable)
+        private bool IsCSPCReadOnly()
+        {
+            // Si estamos en paso 7 o 77 (CSPC) y ya existe CSPC cargado, es readonly
+            if ((State?.SelectedIndex == 7 || State?.SelectedIndex == 77) &&
+                State?.SynopticTableOfControlPoints != null && 
+                State.SynopticTableOfControlPoints.Count > 0)
+            {
+                return true;
+            }
+            return false;
+        }
 
         protected override async Task OnInitializedAsync()
         {
@@ -46,28 +76,208 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             State.Hub = _sosHub;
             State.SelectedIndex = selectedIndexPageGenerate;
             State.LogedUser = user;
+            _lastSelectedIndex = selectedIndexPageGenerate;
 
             // Aquí llamarías solo a la carga inicial mínima necesaria
             await LoadInitialData();
 
+            // Cargar selecciones iniciales basado en la sección que se abre
+            await LoadInitialSelections();
+
             State.IsLoading = false;
+        }
+
+        private async Task LoadInitialSelections()
+        {
+            
+            if (State.SelectedIndex == 3)
+            {
+                // Entrando directo a SelectAnalisis&Sequences para Distribution
+                if (State?.Hub?.SOSDistribution != null && State.Hub.SOSDistribution.Count > 0)
+                {
+                    var distribution = State.Hub.SOSDistribution.First();
+                    _selections = new AnalysisSequencesDto
+                    {
+                        AnalysisSelected = distribution.Analyses?.ToList() ?? new List<SOSAnalysis>(),
+                        SequencesSelected = distribution.Sequences?.ToList() ?? new List<SOSSequence>()
+                    };
+
+                }
+                else
+                {
+                    _selections = new AnalysisSequencesDto
+                    {
+                        AnalysisSelected = new List<SOSAnalysis>(),
+                        SequencesSelected = new List<SOSSequence>()
+                    };
+
+                }
+            }
+            else if (State.SelectedIndex == 7)
+            {
+                // Entrando directo a SelectAnalisis&Sequences para CSPC
+                // Si ya existe CSPC, cargar sus selecciones desde State.SynopticTableOfControlPoints (misma fuente que usa CSPCSection)
+                if (State?.SynopticTableOfControlPoints != null && State.SynopticTableOfControlPoints.Count > 0)
+                {
+                    var cspc = State.SynopticTableOfControlPoints.First();
+                    _selections = new AnalysisSequencesDto
+                    {
+                        AnalysisSelected = cspc.Analyses?.ToList() ?? new List<SOSAnalysis>(),
+                        SequencesSelected = cspc.Sequences?.ToList() ?? new List<SOSSequence>()
+                    };
+
+                }
+                else
+                {
+                    _selections = new AnalysisSequencesDto
+                    {
+                        AnalysisSelected = new List<SOSAnalysis>(),
+                        SequencesSelected = new List<SOSSequence>()
+                    };
+
+                }
+            }
+            else
+            {
+                // Para otras secciones, inicializar vacío
+                _selections = new AnalysisSequencesDto
+                {
+                    AnalysisSelected = new List<SOSAnalysis>(),
+                    SequencesSelected = new List<SOSSequence>()
+                };
+            }
+        }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            // Detectar cambios en SelectedIndex y resetear estado de selecciones
+            if (State != null && _lastSelectedIndex != State.SelectedIndex)
+            {
+                
+                // Resetear SIEMPRE _selections cuando cambia la sección
+                // Luego cargar datos específicos según la sección
+                
+                if (State.SelectedIndex == 3)
+                {
+                    // Entrando a SelectAnalisis&Sequences paso previo a Distribution
+                    // Si hay Distribution existente, cargar sus datos
+                    if (State?.Hub?.SOSDistribution != null && State.Hub.SOSDistribution.Count > 0)
+                    {
+                        var distribution = State.Hub.SOSDistribution.First();
+                        _selections = new AnalysisSequencesDto
+                        {
+                            AnalysisSelected = distribution.Analyses?.ToList() ?? new List<SOSAnalysis>(),
+                            SequencesSelected = distribution.Sequences?.ToList() ?? new List<SOSSequence>()
+                        };
+
+                    }
+                    else
+                    {
+                        // Nueva Distribution, vaciar selecciones
+                        _selections = new AnalysisSequencesDto
+                        {
+                            AnalysisSelected = new List<SOSAnalysis>(),
+                            SequencesSelected = new List<SOSSequence>()
+                        };
+
+                    }
+                }
+                else if (State.SelectedIndex == 7)
+                {
+                    // Entrando a SelectAnalisis&Sequences paso previo a CSPC
+                    // Si ya existe CSPC, cargar sus selecciones desde State.SynopticTableOfControlPoints (misma fuente que usa CSPCSection)
+                    if (State?.SynopticTableOfControlPoints != null && State.SynopticTableOfControlPoints.Count > 0)
+                    {
+                        var cspc = State.SynopticTableOfControlPoints.First();
+                        _selections = new AnalysisSequencesDto
+                        {
+                            AnalysisSelected = cspc.Analyses?.ToList() ?? new List<SOSAnalysis>(),
+                            SequencesSelected = cspc.Sequences?.ToList() ?? new List<SOSSequence>()
+                        };
+
+                    }
+                    else
+                    {
+                        // Nuevo CSPC, vaciar selecciones
+                        _selections = new AnalysisSequencesDto
+                        {
+                            AnalysisSelected = new List<SOSAnalysis>(),
+                            SequencesSelected = new List<SOSSequence>()
+                        };
+
+                    }
+                }
+                
+                _lastSelectedIndex = State.SelectedIndex;
+                
+                // Forzar actualización del componente para que refleje cambios en _selections
+                StateHasChanged();
+            }
         }
 
         private async Task LoadInitialData()
         {
+            
             try
             {
                 State.IsLoading = true;
-                // 1. Asegurar que tenemos el Hub cargado
-                // Si no viene por parámetro, lo buscamos por ID
-                if (_sosHub == null || _sosHub.SOSHubId == 0)
-                    if (SOSHubId != 0)
-                        State.Hub = await SOSHubService.GetSOSHub(SOSHubId);
+                
+                // 1. Asegurar que tenemos el Hub cargado con todas sus relaciones
+                // Siempre recargamos para asegurar que tenemos Equipment, Tools y Models (Productos)
+                if (SOSHubId != 0)
+                {
+
+                    State.Hub = await SOSHubService.GetSOSHub(SOSHubId, 
+                        includeAnalysesBkup: true, 
+                        includeSections: true, 
+                        includeImages: true, 
+                        includeVideos: true, 
+                        includeCommentaries: true, 
+                        includeTools: true, 
+                        includeEquipments: true, 
+                        includeMaterials: true, 
+                        includeInformation: true, 
+                        includePeople: true, 
+                        includeDocuments: true, 
+                        includeModel: true, 
+                        includeCollections: true, 
+                        includePeopleCollections: true, 
+                        includePats: true);
+                    
+
+                }
+                else if (_sosHub != null)
+                {
+                    // Si _sosHub ya viene, pero sospechamos que le faltan datos, lo recargamos por ID
+                    if (_sosHub.SOSHubId != 0)
+                    {
+                        State.Hub = await SOSHubService.GetSOSHub(_sosHub.SOSHubId, 
+                            includeAnalysesBkup: true, 
+                            includeSections: true, 
+                            includeImages: true, 
+                            includeVideos: true, 
+                            includeCommentaries: true, 
+                            includeTools: true, 
+                            includeEquipments: true, 
+                            includeMaterials: true, 
+                            includeInformation: true, 
+                            includePeople: true, 
+                            includeDocuments: true, 
+                            includeModel: true, 
+                            includeCollections: true, 
+                            includePeopleCollections: true, 
+                            includePats: true);
+                        
+
+                    }
                     else
-                    State.Hub = _sosHub;
+                    {
+
+                        State.Hub = _sosHub;
+                    }
+                }
 
                 // 2. Mapeo de Listas (Relaciones Uno a Muchos)
-                // Esto evita que los componentes hijos trabajen con objetos nulos
                 if (State.Hub != null)
                 {
                     // Usamos ?? new() para asegurar que nunca sean nulas al llegar al componente hijo
@@ -77,6 +287,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                     State.Distributions = State.Hub.SOSDistribution?.ToList() ?? new();
                     State.Flows = State.Hub.SOSFlow?.ToList() ?? new();
                     State.Sequences = State.Hub.SOSSequence?.ToList() ?? new();
+                    State.SynopticTableOfControlPoints = State.Hub.SOSSynopticControlPoints?.ToList() ?? new();
+                    State.SynopticTableOfOpertingRequirements = State.Hub.SOSSynopticOperatingRequirements?.ToList() ?? new();
+
+
+
+                    // Si existe distribución, sus datos se cargarán dinámicamente en OnParametersSetAsync
+                    if (State.Hub.SOSDistribution != null && State.Hub.SOSDistribution.Count > 0)
+                    {
+                        var distribution = State.Hub.SOSDistribution.First();
+
+                    }
 
                     // 3. Carga de HCI (Sigue siendo un objeto único basado en HciId)
                     if (State.Hub.HciId.HasValue && State.Hub.HciId > 0)
@@ -94,6 +315,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 // 5. Sincronizar el índice de navegación inicial
                 State.Dev_env = HostEnvironment.IsDevelopment();
                 State.SelectedIndex = selectedIndexPageGenerate;
+                
             }
             catch (Exception ex)
             {

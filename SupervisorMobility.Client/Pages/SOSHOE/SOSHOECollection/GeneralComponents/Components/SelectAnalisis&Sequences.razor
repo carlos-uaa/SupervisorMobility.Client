@@ -77,7 +77,7 @@ else
                             {
                                 <MudPaper Elevation="1" Class="item-card pa-3 mb-2 border-l-default">
                                     <MudText Typo="Typo.body2">@item.OperationName | @item.InternalControlNumber</MudText>
-                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => AddAnalysis(item))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => AddAnalysis(item))" Disabled="@IsEditDisabled" />
                                 </MudPaper>
                             }
                         </div>
@@ -98,7 +98,7 @@ else
                             {
                                 <MudPaper Elevation="2" Class="item-card pa-3 mb-2 border-l-primary">
                                     <MudText Typo="Typo.body2"><strong>@item.OperationName | @item.InternalControlNumber</strong></MudText>
-                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveAnalysis(item))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveAnalysis(item))" Disabled="@IsEditDisabled" />
                                 </MudPaper>
                             }
                         </div>
@@ -124,7 +124,7 @@ else
                             {
                                 <MudPaper Elevation="1" Class="item-card pa-3 mb-2 border-l-default">
                                     <MudText Typo="Typo.body2">@item.OperationName | @item.InternalControlNumber</MudText>
-                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => AddSequence(item))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => AddSequence(item))" Disabled="@IsEditDisabled" />
                                 </MudPaper>
                             }
                         </div>
@@ -145,7 +145,7 @@ else
                             {
                                 <MudPaper Elevation="2" Class="item-card pa-3 mb-2 border-l-secondary">
                                     <MudText Typo="Typo.body2"><strong>@item.OperationName | @item.InternalControlNumber</strong></MudText>
-                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveSequence(item))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveSequence(item))" Disabled="@IsEditDisabled" />
                                 </MudPaper>
                             }
                         </div>
@@ -160,6 +160,7 @@ else
     [Parameter] public AnalysisSequencesDto Selection { get; set; }
     [Parameter] public int DistributionId { get; set; }
     [Parameter] public int AreaId { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
     [Parameter] public EventCallback<AnalysisSequencesDto> SelectionChanged { get; set; }
 
     private bool _loading = true;
@@ -167,26 +168,64 @@ else
     private List<SOSSequence> _allSequences = new();
 
     private bool HasSelection => Selection.AnalysisSelected.Any() || Selection.SequencesSelected.Any();
+    private bool IsEditDisabled => DistributionId != 0 || IsReadOnly;
 
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
         try
         {
-            if (DistributionId != 0)
-            {
-                _allAnalysis = await AnalysisService.GetAllSOSAnalysisByDistribution(DistributionId);
-                _allSequences = await SequenceService.GetAllSOSSequenceByDistribution(DistributionId);
-            }
-            else
-            {
-                _allAnalysis = await AnalysisService.GetAllSOSAnalysisByArea(AreaId);
-                _allSequences = await SequenceService.GetAllSOSSequenceByArea(AreaId);
-            }
+            // Inicializar listas si son null
+            if (Selection.AnalysisSelected == null)
+                Selection.AnalysisSelected = new List<SOSAnalysis>();
+            if (Selection.SequencesSelected == null)
+                Selection.SequencesSelected = new List<SOSSequence>();
+
+            // ✅ SIEMPRE cargar por área (disponibles), el filtrado posterior elimina los ya seleccionados
+            _allAnalysis = await AnalysisService.GetAllSOSAnalysisByArea(AreaId);
+            _allSequences = await SequenceService.GetAllSOSSequenceByArea(AreaId);
+
+            // Remover de la lista de disponibles los que ya están seleccionados
+            // (caso importante para Distribution que ya tiene datos guardados)
+            await RemoveSelectedFromAvailable();
         }
         finally
         {
             _loading = false;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Reaccionar a cambios en los parámetros (especialmente Selection que viene con two-way binding)
+        // Si Selection cambió pero _allAnalysis/Sequences aún no están inicializados,
+        // cargarlos primero antes de intentar remover seleccionados
+        if ((_allAnalysis == null || _allSequences == null) && Selection != null)
+        {
+            _allAnalysis = await AnalysisService.GetAllSOSAnalysisByArea(AreaId);
+            _allSequences = await SequenceService.GetAllSOSSequenceByArea(AreaId);
+        }
+        
+        if (_allAnalysis != null && _allSequences != null && Selection != null)
+        {
+            // Remover los seleccionados de disponibles
+            await RemoveSelectedFromAvailable();
+        }
+    }
+
+    private async Task RemoveSelectedFromAvailable()
+    {
+        // Remover de la lista de disponibles los que ya están seleccionados
+        if (Selection.AnalysisSelected.Any())
+        {
+            var selectedIds = Selection.AnalysisSelected.Select(a => a.SOSAnalysisId).ToList();
+            _allAnalysis = _allAnalysis.Where(a => !selectedIds.Contains(a.SOSAnalysisId)).ToList();
+        }
+
+        if (Selection.SequencesSelected.Any())
+        {
+            var selectedIds = Selection.SequencesSelected.Select(s => s.SOSSequenceId).ToList();
+            _allSequences = _allSequences.Where(s => !selectedIds.Contains(s.SOSSequenceId)).ToList();
         }
     }
 

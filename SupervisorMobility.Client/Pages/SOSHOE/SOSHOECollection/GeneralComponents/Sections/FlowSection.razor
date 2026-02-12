@@ -27,7 +27,7 @@
                                     Label="Nombre de la operación" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _flow.FlowLogbooks?.Last().SOSFlowLogbookId == 0))"
+                                    Disabled="@IsFlowEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -35,7 +35,7 @@
                                     Label="Número de control interno" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense"
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _flow.FlowLogbooks?.Last().SOSFlowLogbookId == 0))"
+                                    Disabled="@IsFlowEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -43,7 +43,7 @@
                                     Label="Nombre del proceso" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense"
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _flow.FlowLogbooks?.Last().SOSFlowLogbookId == 0))"
+                                    Disabled="@IsFlowEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
 
@@ -63,38 +63,31 @@
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
                                     Class="bg-white"
-                                    Min="1" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Timer"/>
+                                    Min="1" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Timer"
+                                    Disabled="@IsFlowEditDisabled()"/>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    @if (State.Hub.SOSCombination == null || State.Hub.SOSCombination.Count == 0)
-                    {
-                        <MudAutocomplete T="int" @bind-Value="ReviewerHYSDocCombinationId"
-                                            Label="Revisor HyS"
-                                            Variant="Variant.Outlined"
-                                            Margin="Margin.Dense"
-                                            Class="bg-white"
-                                            AdornmentColor="Color.Secondary"
-                                            Clearable
-                                            ResetValueOnEmptyText
-                                            ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
-                                            ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                            SearchFunc="SearchHySReviewer" />
-                    }
-                    else
-                    {
-                        <MudAutocomplete T="int" @bind-Value="ReviewerHYSDocCombinationId"
-                                            Label="Revisor HyS"
-                                            Variant="Variant.Outlined"
-                                            Margin="Margin.Dense"
-                                            Class="bg-white"
-                                            AdornmentColor="Color.Secondary"
-                                            Clearable
-                                            ResetValueOnEmptyText
-                                            ReadOnly
-                                            ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
-                                            ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
-                                            SearchFunc="SearchHySReviewer" />
-                    }
+                    <MudNumericField @bind-Value="_targetTimeValue"
+                                    Label="Tiempo Objetivo" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.Dense"
+                                    Disabled="@IsFlowEditDisabled()"
+                                    Class="bg-white"
+                                    Min="1" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.AccessTime"/>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudAutocomplete T="int" @bind-Value="ReviewerHYSDocCombinationId"
+                                        Label="Revisor HyS"
+                                        Variant="Variant.Outlined"
+                                        Margin="Margin.Dense"
+                                        Class="bg-white"
+                                        AdornmentColor="Color.Secondary"
+                                        Clearable
+                                        ResetValueOnEmptyText
+                                        Disabled="@IsFlowEditDisabled()"
+                                        ShowProgressIndicator="true" ProgressIndicatorColor="Color.Info"
+                                        ToStringFunc="@(s => _supervisors?.FirstOrDefault(x => x.UserId == s)?.Name ?? string.Empty)"
+                                        SearchFunc="SearchHySReviewer" />
                 </MudItem>
 
                 @* Fila Informativa (Read Only) *@
@@ -119,14 +112,16 @@
         <MudDivider Class="my-2" />
         <MudGrid Spacing="2">
             <MudItem xs="12" md="6">
-                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchUsers"
-                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
-                                    AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchReviewers"
+                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})" )" ResetValueOnEmptyText="true"
+                                    AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                    Disabled="@IsFlowEditDisabled()" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchUsers"
-                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
-                                    AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchApprovers"
+                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})" )" ResetValueOnEmptyText="true"
+                                    AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                    Disabled="@IsFlowEditDisabled()" />
             </MudItem>
         </MudGrid>
     </MudItem>
@@ -136,13 +131,16 @@
     [Parameter] public SOSState State { get; set; }
     [Parameter] public EventCallback OnNotify { get; set; }
 
-    private SOSFlow _flow = new SOSFlow();
+    private SOSFlow _flow = new SOSFlow() { FlowLogbooks = new List<SOSFlowLogbook>() };
 
     private List<User> _allUsers { get; set; }
     private List<User> _supervisors { get; set; }
+    private List<User> _reviewUsers = new();  // SVs filtered by plant
+    private List<User> _approveUsers = new(); // SSVs filtered by plant
     private int ReviewerHYSDocCombinationId = 0;
     private User _selectedReviewer;
     private User _selectedApprover;
+    private int? _targetTimeValue;
 
     private User user = new User();
     private string json = string.Empty;
@@ -151,34 +149,70 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Inicializar lista de supervisores vacía primero
+        _supervisors = new List<User>();
+        
         // Obtener el usuario logeado del localStorage
         await GetLoggedUserAsync();
 
         // Obtener todos los Usuarios
         _allUsers = (await UsersService.GetUsers(false, false)).ToList();
 
-        // Cargar supervisores dependiendo del tipo de usuario logueado
-        _supervisors = new List<User>();
-        switch (user.UserType)
+        // Cargar usuarios de revisor y aprobador basado en PlantId del Hub
+        if (State?.Hub?.PlantId.HasValue == true)
         {
-            case 1:
-                _supervisors = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, true);
-                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-                break;
-            case 2:
-                foreach (var sv in user.Subordinates.ToList())
-                {
-                    _supervisors?.Add(sv);
-                }
-                break;
-            case 3:
-                _supervisors?.Add(user);
-                break;
+            // ReviewUsers = SVs (tipo 3) de la planta
+            _reviewUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, false);
+            _reviewUsers = _reviewUsers.OrderBy(s => s.Name).ToList();
+
+            // ApproveUsers = SSVs (tipo 2) de la planta  
+            _approveUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
+        }
+
+        // Cargar supervisores dependiendo del tipo de usuario logueado
+        if (State?.Hub?.PlantId != null)
+        {
+            switch (user.UserType)
+            {
+                case 1:
+                    _supervisors = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, true);
+                    _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+                    break;
+                case 2:
+                    foreach (var sv in user.Subordinates.ToList())
+                    {
+                        _supervisors?.Add(sv);
+                    }
+                    break;
+                case 3:
+                    _supervisors?.Add(user);
+                    break;
+            }
         }
 
         // Inicializar objeto local
         if (State.Hub.SOSFlow != null && State.Hub.SOSFlow.Count > 0)
+        {
             _flow = State.Hub.SOSFlow.First();
+            if (_flow.FlowLogbooks == null)
+                _flow.FlowLogbooks = new List<SOSFlowLogbook>();
+            
+            // Inicializar Tiempo Objetivo
+            if (!string.IsNullOrEmpty(_flow.TargetTime) && int.TryParse(_flow.TargetTime, out int targetTime))
+                _targetTimeValue = targetTime;
+            
+            // Inicializar Revisor y Aprobador si hay logbooks
+            if (_flow.FlowLogbooks?.Any() == true)
+            {
+                var lastLogbook = _flow.FlowLogbooks.Last();
+                _selectedReviewer = _allUsers?.FirstOrDefault(u => u.UserId == lastLogbook.ReviewerId);
+                _selectedApprover = _allUsers?.FirstOrDefault(u => u.UserId == lastLogbook.ApproverId);
+            }
+            
+            // Inicializar ReviewerHSId
+            ReviewerHYSDocCombinationId = _flow.ReviewerHSId ?? 0;
+        }
     }
 
     // Usuario en local storage
@@ -208,31 +242,103 @@
 
     public async Task GenerateFlow()
     {
+        // Validar Revisor y Aprobador
+        if (_selectedReviewer == null || _selectedApprover == null)
+        {
+            Snackbar.Add("Debe seleccionar Revisor Responsable y Aprobador Final", Severity.Warning);
+            return;
+        }
+
         _isTableLoading = true;
+        
         try
         {
-            // Estructura tentativa basada en el patrón de tus otras entidades
-            var newFlow = new SOSFlow
-                {
-                    SOSHubId = State.Hub.SOSHubId,
-                    CreatedAt = DateTime.Now,
-                    IsActive = true,
+            var logFlow = new SOSFlowLogbook();
 
-                    // Inicialización de colecciones estándar en tus modelos
-                    FlowLogbooks = new List<SOSFlowLogbook>(),
-                };
-
-            var result = await SOSHubServices.GenerateFlow(State.Hub.SOSHubId, newFlow);
-            if (result > 0)
+            // PATH: Revisión (Hub ya tiene Flow)
+            if (State?.Hub?.SOSFlow != null && State.Hub.SOSFlow.Count > 0)
             {
-                // Get flow creado
-                var flowResponse = await SOSFlowServices.GetSOSFlow(result);
-                if(flowResponse != null)
-                    State.Flows.Add(flowResponse);
+                _flow = State.Hub.SOSFlow.First();
+
+                // Limpiar logbooks temporales si existen
+                if (_flow.FlowLogbooks?.Any() == true && _flow.FlowLogbooks.First().SOSFlowLogbookId == 0)
+                    _flow.FlowLogbooks.Clear();
+
+                // Actualizar TargetTime si cambió
+                if (_targetTimeValue.HasValue)
+                    _flow.TargetTime = _targetTimeValue.ToString();
+
+                // Crear logbook de revisión
+                logFlow.NoRevision = _flow.FlowLogbooks?.Count() ?? 0;
+                logFlow.ApproverId = _selectedApprover.UserId;
+                logFlow.ReviewerId = _selectedReviewer.UserId;
+                logFlow.Date = DateTime.Now;
+                logFlow.Status = 1;
+                logFlow.IsActive = true;
+
+                _flow.FlowLogbooks.Add(logFlow);
+
+                var result = await SOSHubServices.GenerateFlow(State.Hub.SOSHubId, _flow);
+                if (result > 0)
+                {
+                    NavigationManager.NavigateTo($"/soshoe/Flow/Details/{_flow.SOSFlowId}");
+                }
+            }
+            // PATH: Creación (Nuevo Flow)
+            else
+            {
+                // Validaciones de campos requeridos
+                if (string.IsNullOrEmpty(_flow.ProcessName) || string.IsNullOrEmpty(_flow.InternalControlNumber))
+                {
+                    Snackbar.Add("Debe completar Nombre de Proceso y Número de Control Interno", Severity.Warning);
+                    return;
+                }
+                else if (string.IsNullOrEmpty(_flow.OperationName))
+                {
+                    Snackbar.Add("Debe completar el Nombre de la Operación", Severity.Warning);
+                    return;
+                }
+                else if (!_targetTimeValue.HasValue || _targetTimeValue.Value <= 0)
+                {
+                    Snackbar.Add("Debe completar el Tiempo Objetivo", Severity.Warning);
+                    return;
+                }
+                else if (!State.Hub.CreatedDate.HasValue)
+                {
+                    Snackbar.Add("La Fecha de Creación del Hub es requerida", Severity.Warning);
+                    return;
+                }
                 else
-                    throw new Exception("No se pudo obtener el SOS Flow creado.");
-                await OnNotify.InvokeAsync();
-                Snackbar.Add("SOS Flow generado exitosamente", Severity.Success);
+                {
+                    // Crear logbook inicial
+                    logFlow.NoRevision = 0;
+                    logFlow.ReviewerId = _selectedReviewer.UserId;
+                    logFlow.ApproverId = _selectedApprover.UserId;
+                    logFlow.Date = DateTime.Now;
+                    logFlow.Status = 1;
+                    logFlow.IsActive = true;
+
+                    _flow.FlowLogbooks.Add(logFlow);
+                    _flow.ReviewerHSId = ReviewerHYSDocCombinationId;
+                    _flow.CreatedAt = State.Hub.CreatedDate;
+                    _flow.TargetTime = _targetTimeValue.ToString();
+
+                    var result = await SOSHubServices.GenerateFlow(State.Hub.SOSHubId, _flow);
+                    if (result > 0)
+                    {
+                        var flowResponse = await SOSFlowServices.GetSOSFlow(result);
+                        if (flowResponse != null)
+                        {
+                            State.Flows.Add(flowResponse);
+                            await OnNotify.InvokeAsync();
+                            NavigationManager.NavigateTo($"/soshoe/Flow/Details/{result}");
+                        }
+                        else
+                        {
+                            throw new Exception("No se pudo obtener el SOS Flow creado.");
+                        }
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -247,6 +353,9 @@
 
     private Task<IEnumerable<int>> SearchHySReviewer(string searchString)
     {
+        if (_supervisors == null || !_supervisors.Any())
+            return Task.FromResult(Enumerable.Empty<int>());
+
         IEnumerable<int> result;
 
         if (string.IsNullOrEmpty(searchString))
@@ -274,7 +383,7 @@
         if (_flow.FlowLogbooks == null || !_flow.FlowLogbooks.Any())
             return "No Logbooks";
 
-        var lastLogbook = _flow.FlowLogbooks.Last();
+        var lastLogbook = _flow.FlowLogbooks.LastOrDefault();
 
         if (lastLogbook.NoRevision == 0)
             number = $"New - {_flow.FlowLogbooks.Count()}";
@@ -293,13 +402,13 @@
         string date = string.Empty;
 
         // Validación inicial
-        if (State?.Hub?.SOSCombination == null || State.Hub.SOSCombination.Count == 0)
+        if (State?.Hub?.SOSFlow == null || State.Hub.SOSFlow.Count == 0)
             return DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
 
         if (_flow.FlowLogbooks == null || !_flow.FlowLogbooks.Any())
             return DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
 
-        var lastLogbook = _flow.FlowLogbooks.Last();
+        var lastLogbook = _flow.FlowLogbooks.LastOrDefault();
 
         if (lastLogbook.NoRevision == 0)
             date = DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
@@ -313,7 +422,43 @@
         return date;
     }
 
-    // Función de búsqueda para MudAutocomplete
+    // Búsqueda de Reviewers (SVs filtrados por planta)
+    private async Task<IEnumerable<User>> SearchReviewers(string value)
+    {
+        if (_reviewUsers == null || _reviewUsers.Count == 0)
+            return new List<User>();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return _reviewUsers.Take(20);
+        }
+
+        return _reviewUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            (x.Payroll.HasValue && x.Payroll.Value.ToString().Contains(value)) ||
+            x.UserId.ToString().Contains(value)
+        ).Take(20);
+    }
+
+    // Búsqueda de Approvers (SSVs filtrados por planta)
+    private async Task<IEnumerable<User>> SearchApprovers(string value)
+    {
+        if (_approveUsers == null || _approveUsers.Count == 0)
+            return new List<User>();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return _approveUsers.Take(20);
+        }
+
+        return _approveUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            (x.Payroll.HasValue && x.Payroll.Value.ToString().Contains(value)) ||
+            x.UserId.ToString().Contains(value)
+        ).Take(20);
+    }
+
+    // Función de búsqueda genérica (fallback)
     private async Task<IEnumerable<User>> SearchUsers(string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -323,5 +468,20 @@
             x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
             x.UserType.ToString().Contains(value)
         );
+    }
+
+    private bool IsFlowEditDisabled()
+    {
+        // Si no hay flow, es editable (nuevo)
+        if (State?.Hub?.SOSFlow?.Count == 0)
+            return false;
+
+        // Si hay flow pero no tiene logbooks, es editable
+        if (_flow?.FlowLogbooks?.Count == 0)
+            return false;
+
+        // Si hay un logbook guardado (no temporal), es readonly
+        var lastLogbook = _flow?.FlowLogbooks?.LastOrDefault();
+        return lastLogbook?.SOSFlowLogbookId != 0;
     }
 }

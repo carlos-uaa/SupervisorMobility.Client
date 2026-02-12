@@ -80,7 +80,7 @@
                                     Label="Nombre de la operación" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _distribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0))"
+                                    Disabled="@IsDistributionEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -88,7 +88,7 @@
                                     Label="Número de control interno" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense"
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _distribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0))"
+                                    Disabled="@IsDistributionEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -96,7 +96,7 @@
                                     Label="Nombre del proceso" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _distribution.DistributionLogbooks?.Last().SOSDistributionLogbookId == 0))"
+                                    Disabled="@IsDistributionEditDisabled()"
                                     Class="bg-white"/>
                 </MudItem>
 
@@ -106,6 +106,7 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      Class="bg-white"
+                                     Disabled="@IsDistributionEditDisabled()"
                                      Min="1" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Timer" />
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -123,6 +124,7 @@
                                     Label="Mes"
                                     Variant="Variant.Outlined"
                                     Margin="Margin.Dense"
+                                    Disabled="@IsDistributionEditDisabled()"
                                     Class="bg-white"
                                     Color="Color.Error"
                                     AdornmentColor="Color.Error"
@@ -131,7 +133,7 @@
                 </MudItem>
 
                 <MudItem xs="12" md="4">
-                    @if (State.Hub.SOSDistribution == null || State.Hub.SOSDistribution.Count == 0 || State.Hub.SOSDistribution.Last().DistributionLogbooks?.Last().SOSDistributionLogbookId == 0)
+                    @if (IsDistributionEditDisabled() == false)
                     {
                         <MudTextField @bind-Value="_distribution.TackTime"
                                       Label="Tiempo tacto"
@@ -151,30 +153,30 @@
                     }
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudAutocomplete T="Plant" @bind-Value="selectedPlant"
-                                        Label="Planta"
-                                        SearchFunc="@SearchPlants"
-                                        ToStringFunc="@(p => (p == null || p == new Plant()) ? null : $"{p.Code} - {p.Description}")"
-                                        Variant="Variant.Outlined"
-                                        Margin="Margin.Dense"
-                                        Class="bg-white"
-                                        ResetValueOnEmptyText="true"
-                                        CoerceText="false"
-                                        AdornmentIcon="@Icons.Material.Filled.Factory" 
-                                        AdornmentColor="Color.Tertiary"/>
+                    <MudSelect T="int?" Label="Planta" ReadOnly="true" Variant="Variant.Text" @bind-Value="State.Hub.PlantId" FullWidth
+                                Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.Factory" AdornmentColor="Color.Tertiary"
+                                ToStringFunc="@(p => GetPlantName(p))">
+                        @if (_plants != null)
+                        {
+                            @foreach (var plant in _plants)
+                            {
+                                <MudSelectItem T="int?" Value="@plant.PlantId">@($"{plant.Code} - {plant.Description}")</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
                 </MudItem>
                 <MudItem xs="12" md="4">
-                    <MudAutocomplete T="Department" @bind-Value="selectedDepartment"
-                                        Label="Gerencia"
-                                        SearchFunc="@SearchDepartments"
-                                        ToStringFunc="@(d => d == null ? null : $"{d.Code} - {d.Description}")"
-                                        Variant="Variant.Outlined"
-                                        Margin="Margin.Dense"
-                                        Class="bg-white"
-                                        ResetValueOnEmptyText="true"
-                                        CoerceText="false"
-                                        AdornmentIcon="@Icons.Material.Filled.AccountTree" 
-                                        AdornmentColor="Color.Primary"/>
+                    <MudSelect T="int?" Label="Gerencia" ReadOnly="true" Variant="Variant.Text" @bind-Value="State.Hub.DepartmentId" FullWidth
+                                Margin="Margin.Dense" AdornmentIcon="@Icons.Material.Filled.AccountTree" AdornmentColor="Color.Primary"
+                                ToStringFunc="@(d => GetDepartmentName(d))">
+                        @if (_departments != null)
+                        {
+                            @foreach (var dept in _departments)
+                            {
+                                <MudSelectItem T="int?" Value="@dept.DepartmentId">@($"{dept.Code} - {dept.Description}")</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
                 </MudItem>
 
                 @* Fila Informativa (Read Only) *@
@@ -228,7 +230,7 @@
             <MudIcon Icon="@Icons.Material.Filled.Cyclone" Color="Color.Secondary" Size="Size.Small" Class="mr-2" />
             <MudText Typo="Typo.subtitle2" Style="font-weight:700">Ciclos</MudText>
             <MudSpacer />
-            <MudButton OnClick="AddNewTurn" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Small" Class="mr-7">Ciclo</MudButton>
+            <MudButton OnClick="AddNewTurn" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Secondary" Size="Size.Small" Class="mr-7" Disabled="@IsDistributionEditDisabled()">Ciclo</MudButton>
         </div>
         <div class="list-container pa-2">
             @if (_distribution.Turns?.Any() == true)
@@ -256,6 +258,7 @@
                                                 SearchFunc="@SearchOperators(context.Supervisor)"
                                                 Placeholder="Seleccionar Operador..."
                                                 Variant="Variant.Outlined"
+                                                Disabled="@IsDistributionEditDisabled()"
                                                 Adornment="Adornment.Start"
                                                 AdornmentIcon="@Icons.Material.Outlined.Person"
                                                 AdornmentColor="Color.Secondary"
@@ -271,6 +274,7 @@
                                                 SearchFunc="@SearchSupervisors"
                                                 Placeholder="Seleccionar Supervisor..."
                                                 Variant="Variant.Outlined"
+                                                Disabled="@IsDistributionEditDisabled()"
                                                 Adornment="Adornment.Start"
                                                 AdornmentIcon="@Icons.Material.Outlined.SupervisedUserCircle"
                                                 AdornmentColor="Color.Secondary"
@@ -296,14 +300,12 @@
         <MudDivider Class="my-2" />
         <MudGrid Spacing="2">
             <MudItem xs="12" md="6">
-                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchUsers"
-                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
-                                    AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchReviewers"
+                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"                                    Disabled="@IsDistributionEditDisabled()"                                    AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense" />
             </MudItem>
             <MudItem xs="12" md="6">
-                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchUsers"
-                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
-                                    AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchApprovers"
+                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"                                    Disabled="@IsDistributionEditDisabled()"                                    AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense" />
             </MudItem>
         </MudGrid>
     </MudItem>
@@ -320,10 +322,10 @@
     private User _selectedReviewer;
     private User _selectedApprover;
     private List<User> _supervisors { get; set; }
+    private List<User> _reviewUsers = new();  // SVs filtered by plant
+    private List<User> _approveUsers = new(); // SSVs filtered by plant
     private List<Plant> _plants { get; set; }
-    private Plant selectedPlant { get; set; } = new Plant();
     private List<Department> _departments { get; set; }
-    private Department selectedDepartment { get; set; } = new Department();
 
     private User user = new User();
     private string json = string.Empty;
@@ -337,31 +339,8 @@
         await GetLoggedUserAsync();
 
         _allUsers = (await UsersService.GetUsers(false, true)).ToList();
-        if (State?.Hub?.SOSDistribution == null || State.Hub.SOSDistribution.Count == 0)
-            _distribution = new SOSDistribution();
-        else
-            _distribution = State.Hub.SOSDistribution.First();
-
-        // Cargar supervisores dependiendo del tipo de usuario logueado
-        _supervisors = new List<User>();
-        switch (user.UserType)
-        {
-            case 1:
-                _supervisors = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, true);
-                _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
-                break;
-            case 2:
-                foreach (var sv in user.Subordinates.ToList())
-                {
-                    _supervisors?.Add(sv);
-                }
-                break;
-            case 3:
-                _supervisors?.Add(user);
-                break;
-        }
-
-        // Cargar plantas
+        
+        // Cargar plantas y departamentos primero
         if (_plants == null || !_plants.Any())
         {
             _plants = await PlantService.GetPlants();
@@ -369,10 +348,61 @@
         }
 
         // Cargar departamentos
-        if (_departments == null || !_plants.Any())
+        if (_departments == null || !_departments.Any())
         {
             _departments = await DepartmentService.GetDepartments();
             _departments = _departments.OrderBy(d => d.Description).ToList();
+        }
+
+        // Cargar usuarios de revisor y aprobador basado en PlantId del Hub
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            // ReviewUsers = SVs (tipo 3) de la planta
+            _reviewUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, true);
+            _reviewUsers = _reviewUsers.OrderBy(s => s.Name).ToList();
+
+            // ApproveUsers = SSVs (tipo 2) de la planta  
+            _approveUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
+        }
+
+        // Cargar distribución
+        if (State?.Hub?.SOSDistribution == null || State.Hub.SOSDistribution.Count == 0)
+        {
+            _distribution = new SOSDistribution
+            {
+                SOSHubId = State.Hub.SOSHubId  // ¡CRITICAL FIX: Set SOSHubId!
+            };
+        }
+        else
+        {
+            _distribution = State.Hub.SOSDistribution.First();
+            
+            // Si ya existe una distribución, cargar sus datos asociados
+            if (_distribution.DistributionLogbooks != null && _distribution.DistributionLogbooks.Any())
+            {
+                var lastLogbook = _distribution.DistributionLogbooks.LastOrDefault();
+                if (lastLogbook?.ReviewerId > 0)
+                {
+                    _selectedReviewer = _allUsers.FirstOrDefault(u => u.UserId == lastLogbook.ReviewerId);
+                }
+                if (lastLogbook?.ApproverId > 0)
+                {
+                    _selectedApprover = _allUsers.FirstOrDefault(u => u.UserId == lastLogbook.ApproverId);
+                }
+            }
+        }
+
+        // Cargar usuarios de revisor y aprobador basado en PlantId del Hub
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            // ReviewUsers = SVs (tipo 3) de la planta
+            _reviewUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, true);
+            _reviewUsers = _reviewUsers.OrderBy(s => s.Name).ToList();
+
+            // ApproveUsers = SSVs (tipo 2) de la planta  
+            _approveUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
         }
     }
 
@@ -492,6 +522,33 @@
 
 
 
+                // Guardar análisis y secuencias seleccionadas
+                Console.WriteLine($"AnalysysSequences is null: {AnalysysSequences == null}");
+                Console.WriteLine($"AnalysysSequences.AnalysisSelected count: {AnalysysSequences?.AnalysisSelected?.Count ?? 0}");
+                Console.WriteLine($"AnalysysSequences.SequencesSelected count: {AnalysysSequences?.SequencesSelected?.Count ?? 0}");
+                
+                if (AnalysysSequences?.AnalysisSelected != null && AnalysysSequences.AnalysisSelected.Any())
+                {
+                    _distribution.Analyses = AnalysysSequences.AnalysisSelected.ToList();
+                    Console.WriteLine($"Assigned {_distribution.Analyses.Count} analyses to distribution");
+                }
+                else
+                {
+                    _distribution.Analyses = new List<SOSAnalysis>();
+                    Console.WriteLine("No analyses to assign");
+                }
+
+                if (AnalysysSequences?.SequencesSelected != null && AnalysysSequences.SequencesSelected.Any())
+                {
+                    _distribution.Sequences = AnalysysSequences.SequencesSelected.ToList();
+                    Console.WriteLine($"Assigned {_distribution.Sequences.Count} sequences to distribution");
+                }
+                else
+                {
+                    _distribution.Sequences = new List<SOSSequence>();
+                    Console.WriteLine("No sequences to assign");
+                }
+
                 var Gen_sosDistribution = await SOSHubService.GenerateDistribution(State.Hub.SOSHubId, _distribution);
 
                 Snackbar.Clear();
@@ -566,7 +623,39 @@
                         _distribution.SOSDistributionOperationSequence = new List<SOSDistributionOperationSequence>();
                     }
 
+                    // Guardar análisis y secuencias seleccionadas
+                    Console.WriteLine($"[NEW DIST] AnalysysSequences is null: {AnalysysSequences == null}");
+                    Console.WriteLine($"[NEW DIST] AnalysysSequences.AnalysisSelected count: {AnalysysSequences?.AnalysisSelected?.Count ?? 0}");
+                    Console.WriteLine($"[NEW DIST] AnalysysSequences.SequencesSelected count: {AnalysysSequences?.SequencesSelected?.Count ?? 0}");
+                    Console.WriteLine($"[NEW DIST] About to save distribution to State.Hub.SOSHubId: {State.Hub.SOSHubId}");
+                    Console.WriteLine($"[NEW DIST] _distribution.SOSHubId before save: {_distribution.SOSHubId}");
+                    
+                    if (AnalysysSequences?.AnalysisSelected != null && AnalysysSequences.AnalysisSelected.Any())
+                    {
+                        _distribution.Analyses = AnalysysSequences.AnalysisSelected.ToList();
+                        Console.WriteLine($"[NEW DIST] Assigned {_distribution.Analyses.Count} analyses to distribution");
+                    }
+                    else
+                    {
+                        _distribution.Analyses = new List<SOSAnalysis>();
+                        Console.WriteLine("[NEW DIST] No analyses to assign");
+                    }
+
+                    if (AnalysysSequences?.SequencesSelected != null && AnalysysSequences.SequencesSelected.Any())
+                    {
+                        _distribution.Sequences = AnalysysSequences.SequencesSelected.ToList();
+                        Console.WriteLine($"[NEW DIST] Assigned {_distribution.Sequences.Count} sequences to distribution");
+                    }
+                    else
+                    {
+                        _distribution.Sequences = new List<SOSSequence>();
+                        Console.WriteLine("[NEW DIST] No sequences to assign");
+                    }
+
                     var Gen_sosDistribution = await SOSHubService.GenerateDistribution(State.Hub.SOSHubId, _distribution);
+                    
+                    Console.WriteLine($"[NEW DIST] GenerateDistribution returned ID: {Gen_sosDistribution}");
+                    Console.WriteLine($"[NEW DIST] _distribution.SOSDistributionId after save: {_distribution.SOSDistributionId}");
 
                     Snackbar.Clear();
                     Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -607,7 +696,7 @@
         if (_distribution.DistributionLogbooks == null || !_distribution.DistributionLogbooks.Any())
             return "No Logbooks";
 
-        var lastLogbook = _distribution.DistributionLogbooks.Last();
+        var lastLogbook = _distribution.DistributionLogbooks.LastOrDefault();
 
         if (lastLogbook.NoRevision == 0)
             number = $"New - {_distribution.DistributionLogbooks.Count()}";
@@ -621,6 +710,39 @@
         return number;
     }
 
+    private bool IsDistributionEditDisabled()
+    {
+        // Si no hay distribución, es editable (nuevo)
+        if (State?.Hub?.SOSDistribution?.Count == 0)
+            return false;
+
+        // Si hay una distribución pero no tiene logbooks, es editable
+        if (_distribution?.DistributionLogbooks?.Count == 0)
+            return false;
+
+        // Si hay un logbook guardado (no temporal), es readonly
+        var lastLogbook = _distribution?.DistributionLogbooks?.LastOrDefault();
+        return lastLogbook?.SOSDistributionLogbookId != 0;
+    }
+
+    private string GetPlantName(int? plantId)
+    {
+        if (!plantId.HasValue || _plants == null)
+            return "";
+        
+        var plant = _plants.FirstOrDefault(p => p.PlantId == plantId.Value);
+        return plant != null ? $"{plant.Code} - {plant.Description}" : "";
+    }
+
+    private string GetDepartmentName(int? deptId)
+    {
+        if (!deptId.HasValue || _departments == null)
+            return "";
+        
+        var dept = _departments.FirstOrDefault(d => d.DepartmentId == deptId.Value);
+        return dept != null ? $"{dept.Code} - {dept.Description}" : "";
+    }
+
     private string GetDate()
     {
         string date = string.Empty;
@@ -632,7 +754,7 @@
         if (_distribution.DistributionLogbooks == null || !_distribution.DistributionLogbooks.Any())
             return DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
 
-        var lastLogbook = _distribution.DistributionLogbooks.Last();
+        var lastLogbook = _distribution.DistributionLogbooks.LastOrDefault();
 
         if (lastLogbook.NoRevision == 0)
             date = DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
@@ -656,6 +778,40 @@
             x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
             x.UserType.ToString().Contains(value)
         );
+    }
+
+    private async Task<IEnumerable<User>> SearchReviewers(string value)
+    {
+        // Buscar en SVs filtrados por planta (tipo 3)
+        if (_reviewUsers == null || _reviewUsers.Count == 0)
+            return new List<User>();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return _reviewUsers.Take(20);
+        }
+
+        return _reviewUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            x.UserId.ToString().Contains(value)
+        ).Take(20);
+    }
+
+    private async Task<IEnumerable<User>> SearchApprovers(string value)
+    {
+        // Buscar en SSVs filtrados por planta (tipo 2)
+        if (_approveUsers == null || _approveUsers.Count == 0)
+            return new List<User>();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return _approveUsers.Take(20);
+        }
+
+        return _approveUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            x.UserId.ToString().Contains(value)
+        ).Take(20);
     }
 
     private string GetUserType(int userType) => userType switch

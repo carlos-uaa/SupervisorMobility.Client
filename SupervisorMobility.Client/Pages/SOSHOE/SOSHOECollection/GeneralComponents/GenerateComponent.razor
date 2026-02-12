@@ -40,7 +40,10 @@
                         case 2: <CombinationSection @ref="CombinationSectionRef" State="State" OnNotify="StateHasChanged" />; break;
                         case 3: 
                         case 7:
-                            <SelectAnalisis_Sequences AreaId="36" DistributionId="0" @bind-Selection="_selections" /> break;
+                            <SelectAnalisis_Sequences AreaId="36" 
+                                                      DistributionId="@GetDistributionId()" 
+                                                      IsReadOnly="@IsCSPCReadOnly()"
+                                                      @bind-Selection="_selections" /> break;
                         case 33:
                             <DistributionSection @ref="DistributionSectionRef" State="State" AnalysysSequences="_selections" OnNotify="StateHasChanged" /> break;
                         case 4: <FlowSection @ref="FlowSectionRef" State="State" OnNotify="StateHasChanged" />; break;
@@ -58,8 +61,8 @@
     </DialogContent>
 
     <DialogActions>
-        @* Botón de Atrás (No se muestra en el primer paso) *@
-        @if (State.SelectedIndex > 0)
+        @* Botón de Atrás (Se muestra en todos los pasos) *@
+        @if (State.SelectedIndex >= 0)
         {
             <MudButton Variant="Variant.Text"
                        StartIcon="@Icons.Material.Filled.ArrowBack"
@@ -80,38 +83,44 @@
             case 0:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                            EndIcon="@Icons.Material.Filled.Add"
-                           OnClick="() => PatSectionRef.GeneratePat()">
+                           OnClick="() => PatSectionRef.GeneratePat()"
+                           Disabled="@(State?.Hub?.PATs?.Count > 0)">
                     Generate PAT
                 </MudButton>
                 break;
             case 1:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                            EndIcon="@Icons.Material.Filled.Analytics"
-                           OnClick="() => AnalysisSectionRef.GenerateAnalysis()">
+                           OnClick="() => AnalysisSectionRef.GenerateAnalysis()"
+                           Disabled="@(State?.Hub?.SOSAnalysis?.Count > 0)">
                     Generate Analysis
                 </MudButton>
                 break;
             case 2:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           OnClick="() => CombinationSectionRef.GenerateCombination()">
+                           OnClick="() => CombinationSectionRef.GenerateCombination()"
+                           Disabled="@(State?.Hub?.SOSCombination?.Count > 0)">
                     Generate Combination
                 </MudButton>
                 break;
             case 33:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                            OnClick="() => DistributionSectionRef.GenerateDistribution()">
+                            OnClick="() => DistributionSectionRef.GenerateDistribution()"
+                            Disabled="@(State?.Hub?.SOSDistribution?.Count > 0)">
                     Generate Distribution
                 </MudButton>
                 break;
             case 4:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           OnClick="() => FlowSectionRef.GenerateFlow()">
+                           OnClick="() => FlowSectionRef.GenerateFlow()"
+                           Disabled="@(State?.Hub?.SOSFlow?.Count > 0)">
                     Generate Flow
                 </MudButton>
                 break;
             case 5:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           OnClick="() => SequenceSectionRef.GenerateSequence()">
+                           OnClick="() => SequenceSectionRef.GenerateSequence()"
+                           Disabled="@(State?.Hub?.SOSSequence?.Count > 0)">
                     Generate Sequence
                 </MudButton>
                 break;
@@ -135,7 +144,7 @@
                 break;
         }
 
-        @if (State.SelectedIndex == 3 || State.SelectedIndex == 7)
+        @if ((State.SelectedIndex is not (0 or 1 or 2 or 4 or 5) && State.SelectedIndex < 9) || State.SelectedIndex == 3 || State.SelectedIndex == 7)
         {
             <MudButton Variant="Variant.Filled"
                        Color="Color.Info"

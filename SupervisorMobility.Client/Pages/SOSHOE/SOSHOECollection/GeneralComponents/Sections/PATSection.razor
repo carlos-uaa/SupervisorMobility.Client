@@ -1,6 +1,6 @@
 ﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@using System.Text.Json
 @inject ISOSHubService SOSHubServices
-@inject IPATService PATService
 @inject IUserService UsersService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -90,6 +90,7 @@
                                     DateFormat="yyyy"
                                     Variant="Variant.Outlined"
                                     Margin="Margin.Dense"
+                                    Disabled="@IsPATEditDisabled()"
                                     FixDay="1" FixMonth="1" Class="bg-white" />
                 </MudItem>
             </MudGrid>
@@ -104,15 +105,17 @@
                              Label="Buscar Supervisor"
                              @bind-Value="_userSearch"
                              SearchFunc="@SearchUsers"
-                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({GetUserType(u.UserId)})")"
+                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({GetUserType(u.UserType)})")"
                              Variant="Variant.Outlined"
                              Margin="Margin.Dense"
+                             Disabled="@IsPATEditDisabled()"
                              AdornmentIcon="@Icons.Material.Filled.Search" />
 
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        OnClick="AddSupervisor"
                        StartIcon="@Icons.Material.Filled.Add"
+                       Disabled="@IsPATEditDisabled()"
                        Style="height: 40px;">
                 Añadir
             </MudButton>
@@ -136,11 +139,12 @@
                             <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@user.Name[0]</MudAvatar>
                             <div class="flex-grow-1">
                                 <MudText Typo="Typo.body2" Style="font-weight: 600;">@user.Name</MudText>
-                                <MudText Typo="Typo.caption" Class="mud-text-secondary">Tipo de usuario: @GetUserType(user.UserId)</MudText>
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">Tipo de usuario: @GetUserType(user.UserType)</MudText>
                             </div>
                             <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                            Color="Color.Error"
                                            Size="Size.Small"
+                                           Disabled="@IsPATEditDisabled()"
                                            OnClick="@(() => RemoveSupervisor(user))" />
                         </MudPaper>
                     }
@@ -166,27 +170,54 @@
     private User _userSearch; 
     private List<User> AddedSupervisors = new();
     private List<User> _allUsers = new();
+    private List<User> _supervisors = new();
 
     protected override async Task OnInitializedAsync()
     {
         // Obtener todos los usuarios
         _allUsers = (await UsersService.GetUsers(false, false)).ToList();
 
+        // Load SVs (type 3) and SSVs (type 2) by plant
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            var svs = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, false);
+            var ssvs = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            
+            _supervisors = new List<User>();
+            _supervisors.AddRange(svs);
+            _supervisors.AddRange(ssvs);
+            _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+        }
+        else
+        {
+            // Fallback: Filtrar solo SSV (type 2) y SV (type 3) de todos los usuarios
+            _supervisors = _allUsers
+                .Where(u => u.UserType == 2 || u.UserType == 3)
+                .OrderBy(s => s.Name)
+                .ToList();
+        }
+
         // Inicializar el objeto local
         if (State?.Hub?.PATs == null || State.Hub.PATs.Count == 0)
             _pat = new PAT();
         else
+        {
             _pat = State.Hub.PATs.First();
+            // Cargar los supervisores existentes del PAT
+            if (_pat.Supervisors != null && _pat.Supervisors.Any())
+            {
+                AddedSupervisors = _pat.Supervisors.ToList();
+            }
+        }
     }
 
     private async Task<IEnumerable<User>> SearchUsers(string value)
     {
         if (string.IsNullOrEmpty(value))
-            return _allUsers;
+            return _supervisors;
 
-        return _allUsers.Where(x =>
-            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
-            x.UserType.ToString().Contains(value)
+        return _supervisors.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase)
         );
     }
 
@@ -224,34 +255,43 @@
     {
         try
         {
-            // Creamos el objeto PAT con la información del Hub
-            var newPat = new PAT
+            // Crear el objeto PAT con la información del Hub
+            _pat.SOSHubId = State.Hub.SOSHubId;
+            _pat.PlantId = State.Hub.PlantId.Value;
+            _pat.AreaId = State.Hub.AreaId.Value;
+
+            // Si es creación (nuevo PAT)
+            if (_pat.PATid == 0)
             {
-                SOSHubId = State.Hub.SOSHubId, 
-                PlantId = State.Hub.PlantId.Value,
-                AreaId = State.Hub.AreaId.Value,
+                _pat.Status = 1;
+                _pat.AplicationYear = _pat.AplicationDate.HasValue ? _pat.AplicationDate.Value.Year : DateTime.Now.Year;
+            }
 
-                Status = 1,
+            // Asignar los supervisores seleccionados
+            _pat.Supervisors = AddedSupervisors;
 
-                CreationDate = DateTime.Now,
-                IsActive = true,
+            Console.WriteLine(JsonSerializer.Serialize(_pat));
 
-                PatSubordinates = new List<PatSubordinate>(),
-                Supervisors = new List<User>(),
+            // Llamar a SOSHubServices.GeneratePat() que devuelve el ID
+            var result = await SOSHubServices.GeneratePat(State.Hub.SOSHubId, _pat);
 
-                SaveLeader = "S",
-                AplicationDate = DateTime.Now,
-                AplicationYear = DateTime.Now.Year
-            };
-
-            var response = await PATService.CreatePat(newPat);
-
-            if (response != null)
+            if (result != null)
             {
-                State.Pats.Add(response);
-                Snackbar.Add("PAT Created and linked to SOS Hub successfully", Severity.Success);
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add("New PAT Created", Severity.Success);
 
+                // Actualizar el estado del Hub
                 await OnNotify.InvokeAsync();
+
+                // Navegar al PAT creado
+                NavigationManager.NavigateTo($"/PAT/{result}");
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add("Error generating PAT", Severity.Error);
             }
         }
         catch (Exception ex)
@@ -272,4 +312,14 @@
         8 => "Users RTC",
         _ => "Desconocido"
     };
+
+    private bool IsPATEditDisabled()
+    {
+        // Si no hay PAT, es editable (nuevo)
+        if (State?.Hub?.PATs?.Count == 0)
+            return false;
+
+        // Si hay un PAT guardado, es readonly
+        return true;
+    }
 }

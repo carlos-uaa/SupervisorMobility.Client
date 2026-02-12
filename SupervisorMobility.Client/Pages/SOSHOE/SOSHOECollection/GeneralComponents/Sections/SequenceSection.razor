@@ -1,6 +1,5 @@
 ﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
-@inject ISOSSequenceService SOSSequenceServices
-@inject ISOSHubService SOSHubServices
+@inject ISOSHubService SOSHubService
 @inject ISnackbar Snackbar
 @inject IUserService UsersService
 @inject NavigationManager NavigationManager
@@ -68,7 +67,7 @@
                                     Label="Nombre de la operación"
                                     Variant="Variant.Outlined"
                                     Margin="Margin.Dense"
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sequence.SequenceLogbooks?.Last().SOSSequenceLogbookId == 0))"
+                                    Disabled="@IsSequenceEditDisabled()"
                                     Class="bg-white" />
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -76,7 +75,7 @@
                                     Label="Número de control interno"
                                     Variant="Variant.Outlined"
                                     Margin="Margin.Dense"
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sequence.SequenceLogbooks?.Last().SOSSequenceLogbookId == 0))"
+                                    Disabled="@IsSequenceEditDisabled()"
                                     Class="bg-white" />
                 </MudItem>
                 <MudItem xs="12" md="4">
@@ -84,7 +83,7 @@
                                     Label="Nombre del proceso"
                                     Variant="Variant.Outlined"
                                     Margin="Margin.Dense"
-                                    Disabled="@(!(State.Hub.SOSAnalysis?.Count == 0 || _sequence.SequenceLogbooks?.Last().SOSSequenceLogbookId == 0))"
+                                    Disabled="@IsSequenceEditDisabled()"
                                     Class="bg-white" />
                 </MudItem>
 
@@ -120,7 +119,7 @@
                 @foreach (var item in State.Hub.SafetyEquipment)
                 {
                     <MudPaper Elevation="0" Class="item-card pa-3 mb-2 border-l-primary">
-                        <MudText Typo="Typo.body2">@item</MudText>
+                        <MudText Typo="Typo.body2">@item.EquipmentName</MudText>
                     </MudPaper>
                 }
             }
@@ -195,103 +194,254 @@
         <MudGrid Spacing="2">
             <MudItem xs="12" md="4">
                 <MudNumericField @bind-Value="State.Hub.TrainingTime" Label="Tiempo de aprendizaje (min)"
-                                    Variant="Variant.Outlined" Min="0" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Timer" />
+                                    Variant="Variant.Outlined" Min="0" Margin="Margin.Dense" Disabled="@IsSequenceEditDisabled()"
+                                    Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Timer" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchUsers"
+                <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchReviewers"
                                     ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
-                                    AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                    Disabled="@IsSequenceEditDisabled()" />
             </MudItem>
             <MudItem xs="12" md="4">
-                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchUsers"
+                <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchApprovers"
                                     ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"
-                                    AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                    Disabled="@IsSequenceEditDisabled()" />
             </MudItem>
         </MudGrid>
     </MudItem>
 </MudGrid>
-
-@* Definición de fragmento rápido *@
-@{
-    RenderFragment<EmptyStateFragment> EmptyState = (props) => __builder =>
-    {
-        <div class="d-flex flex-column align-center justify-center py-8" style="opacity: 0.5;">
-            <MudIcon Icon="@props.Icon" Size="Size.Large" Class="mb-2" />
-            <MudText Typo="Typo.caption" Align="Align.Center">@props.Text</MudText>
-        </div>
-    };
-}
 
 @code {
     [Parameter] public SOSState State { get; set; }
     [Parameter] public EventCallback OnNotify { get; set; }
 
     private SOSSequence _sequence = new SOSSequence();
-
-    private User _selectedReviewer, _selectedApprover = new User();
+    private User _selectedReviewer;
+    private User _selectedApprover;
     private List<User> _allUsers = new List<User>();
-
+    private List<User> _reviewUsers = new List<User>();
+    private List<User> _approveUsers = new List<User>();
     private bool _isTableLoading = false;
-
-    public class EmptyStateFragment : Microsoft.AspNetCore.Components.ComponentBase
-    {
-        [Microsoft.AspNetCore.Components.Parameter] public string Text { get; set; }
-        [Microsoft.AspNetCore.Components.Parameter] public string Icon { get; set; } = Icons.Material.Filled.SearchOff;
-    }
 
     protected override async Task OnInitializedAsync()
     {
-        // Obtener a todos los usuarios
         _allUsers = (await UsersService.GetUsers(false, false)).ToList();
 
-        // Inicializar objeto local
-        if (State?.Hub?.SOSSequence == null || State.Hub.SOSSequence.Count == 0)
-            _sequence = new SOSSequence();
+        // Load SVs (type 3) and SSVs (type 2) by plant
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            _reviewUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, false);
+            _reviewUsers = _reviewUsers.OrderBy(s => s.Name).ToList();
+            
+            _approveUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
+        }
+
+        if (State?.Hub?.SOSSequence != null && State.Hub.SOSSequence.Count > 0)
+        {
+            // Ya existe una secuencia, cargar la primera
+            _sequence = State.Hub.SOSSequence.First();
+
+            // Si tiene logbooks, cargar el último revisor y aprobador para mostrarlos
+            if (_sequence.SequenceLogbooks != null && _sequence.SequenceLogbooks.Any())
+            {
+                var lastLogbook = _sequence.SequenceLogbooks.LastOrDefault();
+                _selectedReviewer = _allUsers.FirstOrDefault(u => u.UserId == lastLogbook.ReviewerId);
+                _selectedApprover = _allUsers.FirstOrDefault(u => u.UserId == lastLogbook.ApproverId);
+            }
+        }
         else
-            _sequence = State?.Hub?.SOSSequence.First();
+        {
+            // Nueva secuencia - inicializar vacío
+            _sequence = new SOSSequence();
+        }
     }
 
-    private void EditSequence(SOSSequence sequence)
+    private async Task<IEnumerable<User>> SearchReviewers(string value)
     {
-        NavigationManager.NavigateTo($"/sossequence/edit/{sequence.SOSSequenceId}");
+        if (_reviewUsers == null || _reviewUsers.Count == 0)
+            return new List<User>();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return _reviewUsers.Take(20);
+        }
+
+        return _reviewUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            (x.Payroll.HasValue && x.Payroll.Value.ToString().Contains(value)) ||
+            x.UserId.ToString().Contains(value)
+        ).Take(20);
+    }
+
+    private async Task<IEnumerable<User>> SearchApprovers(string value)
+    {
+        if (_approveUsers == null || _approveUsers.Count == 0)
+            return new List<User>();
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return _approveUsers.Take(20);
+        }
+
+        return _approveUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            (x.Payroll.HasValue && x.Payroll.Value.ToString().Contains(value)) ||
+            x.UserId.ToString().Contains(value)
+        ).Take(20);
+    }
+
+    private async Task<IEnumerable<User>> SearchUsers(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return _allUsers;
+
+        return _allUsers.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            x.UserId.ToString().Contains(value)
+        );
     }
 
     public async Task GenerateSequence()
     {
+        // Validar campos obligatorios
+        if (_selectedReviewer == null || _selectedApprover == null)
+        {
+            Snackbar.Add("Debe seleccionar Revisor y Aprobador antes de generar.", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrEmpty(_sequence.ProcessName) || string.IsNullOrEmpty(_sequence.InternalControlNumber))
+        {
+            Snackbar.Add("Nombre de Proceso y Número de Control Interno son requeridos.", Severity.Warning);
+            return;
+        }
+
+        if (string.IsNullOrEmpty(_sequence.OperationName))
+        {
+            Snackbar.Add("Nombre de la Operación es requerido.", Severity.Warning);
+            return;
+        }
+
         _isTableLoading = true;
         try
         {
-            var newSequence = new SOSSequence
-                {
-                    SOSHubId = State.Hub.SOSHubId,
+            // Verificar si es creación o revisión
+            if (State?.Hub?.SOSSequence != null && State.Hub.SOSSequence.Count > 0)
+            {
+                // CASO: REVISIÓN - Ya existe una secuencia
+                _sequence = State.Hub.SOSSequence.First();
 
-                    SequenceLogbooks = new List<SOSSequenceLogbook>(),
-                    Illustrations = new List<FileUpload>(),
-                    Notes = new List<Commentary>(),
-                };
-
-            // Registro inicial del Logbook
-            newSequence.SequenceLogbooks.Add(new SOSSequenceLogbook
+                // Limpiar logbooks temporales si existen
+                if (_sequence.SequenceLogbooks?.First().SOSSequenceLogbookId == 0)
                 {
+                    _sequence.SequenceLogbooks.Clear();
+                }
+
+                // Crear nuevo logbook de revisión
+                var revisionLogbook = new SOSSequenceLogbook
+                {
+                    NoRevision = _sequence.SequenceLogbooks?.Count() ?? 0,
+                    ApproverId = _selectedApprover.UserId,
+                    ReviewerId = _selectedReviewer.UserId,
                     Date = DateTime.Now,
-                    NoRevision = 1,
                     Status = 1,
                     IsActive = true
-                });
+                };
 
-            var result = await SOSHubServices.GenerateSequence(State.Hub.SOSHubId, newSequence);
+                if (_sequence.SequenceLogbooks == null)
+                    _sequence.SequenceLogbooks = new List<SOSSequenceLogbook>();
 
-            if (result > 0)
-            {
-                // Obtener la secuencia crada para mostrarla en la tabla
-                var createdSequence = await SOSSequenceServices.GetSOSSequence(result);
-                if(createdSequence == null)
-                    Snackbar.Add("Error retrieving the created sequence", Severity.Error);
+                _sequence.SequenceLogbooks.Add(revisionLogbook);
+
+                var result = await SOSHubService.GenerateSequence(State.Hub.SOSHubId, _sequence);
+
+                if (result != 0)
+                {
+                    Snackbar.Add("Revisión de la Secuencia generada exitosamente.", Severity.Success);
+                    NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{_sequence.SOSSequenceId}");
+                }
                 else
-                    State.Sequences.Add(createdSequence);
+                {
+                    Snackbar.Add("Error al generar la revisión de la Secuencia.", Severity.Error);
+                }
+            }
+            else
+            {
+                // CASO: NUEVA SECUENCIA
+                // Usar el objeto _sequence que ya tiene los valores del formulario bindeados
+                _sequence.SOSHubId = State.Hub.SOSHubId;
+                _sequence.CreatedDate = DateTime.Now;
+                _sequence.IsActive = true;
 
-                await OnNotify.InvokeAsync();
-                Snackbar.Add("SOS Sequence generated successfully", Severity.Success);
+                // Crear logbook inicial
+                var initialLogbook = new SOSSequenceLogbook
+                {
+                    NoRevision = 0,
+                    ReviewerId = _selectedReviewer.UserId,
+                    ApproverId = _selectedApprover.UserId,
+                    Date = DateTime.Now,
+                    Status = 1,
+                    IsActive = true
+                };
+
+                if (_sequence.SequenceLogbooks == null)
+                    _sequence.SequenceLogbooks = new List<SOSSequenceLogbook>();
+
+                _sequence.SequenceLogbooks.Add(initialLogbook);
+
+                // Inicializar listas si son null
+                if (_sequence.Times == null)
+                    _sequence.Times = new List<SOSTime>();
+
+                if (_sequence.Illustrations == null)
+                    _sequence.Illustrations = new List<FileUpload>();
+
+                if (_sequence.Notes == null)
+                    _sequence.Notes = new List<Commentary>();
+
+                // IMPORTANTE: Crear Times para cada Section + Analysis del Hub
+                if (State.Hub.Sections != null && State.Hub.Sections.Any())
+                {
+                    foreach (Section section in State.Hub.Sections)
+                    {
+                        if (section.Analyses != null && section.Analyses.Any())
+                        {
+                            foreach (Analysis analysis in section.Analyses)
+                            {
+                                var newTime = new SOSTime
+                                {
+                                    SectionId = section.SectionId,
+                                    AnalysisId = analysis.AnalysisId,
+                                    IsActive = true,
+                                    Time = ""
+                                };
+                                _sequence.Times.Add(newTime);
+                            }
+                        }
+                    }
+                }
+
+                var result = await SOSHubService.GenerateSequence(State.Hub.SOSHubId, _sequence);
+
+                if (result > 0)
+                {
+                    Snackbar.Add("Secuencia generada exitosamente.", Severity.Success);
+                    NavigationManager.NavigateTo($"/soshoe/Sequence/Details/{result}");
+
+                    // Limpiar formulario
+                    _sequence = new SOSSequence();
+                    _selectedReviewer = null;
+                    _selectedApprover = null;
+
+                    await OnNotify.InvokeAsync();
+                }
+                else
+                {
+                    Snackbar.Add("Error al generar la Secuencia.", Severity.Error);
+                }
             }
         }
         catch (Exception ex)
@@ -315,7 +465,7 @@
         if (_sequence.SequenceLogbooks == null || !_sequence.SequenceLogbooks.Any())
             return "No Logbooks";
 
-        var lastLogbook = _sequence.SequenceLogbooks.Last();
+        var lastLogbook = _sequence.SequenceLogbooks.LastOrDefault();
 
         if (lastLogbook.NoRevision == 0)
             number = $"New - {_sequence.SequenceLogbooks.Count()}";
@@ -329,6 +479,21 @@
         return number;
     }
 
+    private bool IsSequenceEditDisabled()
+    {
+        // Si no hay secuencia, es editable (nuevo)
+        if (State?.Hub?.SOSSequence?.Count == 0)
+            return false;
+
+        // Si hay secuencia pero no tiene logbooks, es editable
+        if (_sequence?.SequenceLogbooks?.Count == 0)
+            return false;
+
+        // Si hay un logbook guardado (no temporal), es readonly
+        var lastLogbook = _sequence?.SequenceLogbooks?.LastOrDefault();
+        return lastLogbook?.SOSSequenceLogbookId != 0;
+    }
+
     private string GetDate()
     {
         string date = string.Empty;
@@ -340,7 +505,7 @@
         if (_sequence.SequenceLogbooks == null || !_sequence.SequenceLogbooks.Any())
             return DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
 
-        var lastLogbook = _sequence.SequenceLogbooks.Last();
+        var lastLogbook = _sequence.SequenceLogbooks.LastOrDefault();
 
         if (lastLogbook.NoRevision == 0)
             date = DateTime.Now.ToString("dd-MMM-yyyy").Replace(".", "");
@@ -352,17 +517,5 @@
             date = lastLogbook.Date?.ToString("dd-MMM-yyyy").Replace(".", "");
 
         return date;
-    }
-
-    // Función de búsqueda para MudAutocomplete
-    private async Task<IEnumerable<User>> SearchUsers(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-            return _allUsers;
-
-        return _allUsers.Where(x =>
-            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase) ||
-            x.UserId.ToString().Contains(value)
-        );
     }
 }
