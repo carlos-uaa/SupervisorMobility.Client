@@ -1,0 +1,253 @@
+﻿@inject ISOSAnalysisService AnalysisService
+@inject ISOSSequenceService SequenceService
+
+<style>
+    .list-container::-webkit-scrollbar { width: 6px; }
+    .list-container::-webkit-scrollbar-thumb { background-color: #e0e0e0; border-radius: 10px; }
+
+    .list-container {
+        height: 250px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+        border-radius: 0 0 8px 8px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .header-list {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        font-weight: 700;
+        color: white;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .item-card {
+        background-color: white;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: 0.2s;
+    }
+
+    .item-card:hover { background-color: #f5f5f5; }
+    .border-l-primary { border-left: 4px solid var(--mud-palette-primary) !important; }
+    .border-l-secondary { border-left: 4px solid var(--mud-palette-secondary) !important; }
+    .border-l-default { border-left: 4px solid #bdbdbd !important; }
+
+    .empty-state-dashed {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        opacity: 0.6;
+        margin: 10px;
+    }
+</style>
+
+@if (_loading)
+{
+    <MudStack AlignItems="AlignItems.Center" Class="pa-10">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Typo="Typo.caption">Cargando datos...</MudText>
+    </MudStack>
+}
+else
+{
+     <MudPaper Elevation="0" Class="pa-0" Style="width: 100%; background: transparent;">
+        <MudGrid Spacing="4" Class="pa-2">
+            @* ================= SECCIÓN DE ANÁLISIS ================= *@
+            <MudItem xs="12">
+                <MudText Typo="Typo.h6" Class="mb-3" Color="Color.Primary">Gestión de Análisis</MudText>
+                <MudGrid Spacing="2">
+                    @* Disponibles *@
+                    <MudItem xs="12" md="6">
+                        <div class="header-list mud-theme-primary" style="opacity: 0.8;">
+                            <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Small" Class="mr-2" /> Disponibles
+                        </div>
+                        <div class="list-container pa-2">
+                            <MudAutocomplete T="SOSAnalysis" Label="Filtrar análisis..." SearchFunc="@SearchAnalysis" ValueChanged="@OnAnalysisSelected"
+                                             Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Class="bg-white mb-2" />
+
+                            @foreach (var item in _allAnalysis.Where(a => !Selection.AnalysisSelected.Any(s => s.SOSAnalysisId == a.SOSAnalysisId)))
+                            {
+                                <MudPaper Elevation="1" Class="item-card pa-3 mb-2 border-l-default">
+                                    <MudText Typo="Typo.body2">@item.OperationName | @item.InternalControlNumber</MudText>
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => AddAnalysis(item))" />
+                                </MudPaper>
+                            }
+                        </div>
+                    </MudItem>
+                    @* Seleccionados *@
+                    <MudItem xs="12" md="6">
+                        <div class="header-list mud-theme-primary">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-2" /> Seleccionados (@Selection.AnalysisSelected.Count)
+                        </div>
+                        <div class="list-container pa-2">
+                            @if (!Selection.AnalysisSelected.Any())
+                            {
+                                <div class="empty-state-dashed">
+                                    <MudText Typo="Typo.caption">No hay análisis seleccionados</MudText>
+                                </div>
+                            }
+                            @foreach (var item in Selection.AnalysisSelected)
+                            {
+                                <MudPaper Elevation="2" Class="item-card pa-3 mb-2 border-l-primary">
+                                    <MudText Typo="Typo.body2"><strong>@item.OperationName | @item.InternalControlNumber</strong></MudText>
+                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveAnalysis(item))" />
+                                </MudPaper>
+                            }
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+
+            @* ================= SECCIÓN DE SECUENCIAS ================= *@
+            <MudItem xs="12">
+                <MudDivider Class="mb-1" />
+                <MudText Typo="Typo.h6" Class="mb-3" Color="Color.Secondary">Gestión de Secuencias</MudText>
+                <MudGrid Spacing="2">
+                    @* Disponibles *@
+                    <MudItem xs="12" md="6">
+                        <div class="header-list mud-theme-secondary" style="opacity: 0.8;">
+                            <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Small" Class="mr-2" /> Disponibles
+                        </div>
+                        <div class="list-container pa-2">
+                            <MudAutocomplete T="SOSSequence" Label="Filtrar secuencias..." SearchFunc="@SearchSequences" ValueChanged="@OnSequenceSelected"
+                                             Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Class="bg-white mb-2" />
+
+                            @foreach (var item in _allSequences.Where(a => !Selection.SequencesSelected.Any(s => s.SOSSequenceId == a.SOSSequenceId)))
+                            {
+                                <MudPaper Elevation="1" Class="item-card pa-3 mb-2 border-l-default">
+                                    <MudText Typo="Typo.body2">@item.OperationName | @item.InternalControlNumber</MudText>
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => AddSequence(item))" />
+                                </MudPaper>
+                            }
+                        </div>
+                    </MudItem>
+                    @* Seleccionados *@
+                    <MudItem xs="12" md="6">
+                        <div class="header-list mud-theme-secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-2" /> Seleccionados (@Selection.SequencesSelected.Count)
+                        </div>
+                        <div class="list-container pa-2">
+                            @if (!Selection.SequencesSelected.Any())
+                            {
+                                <div class="empty-state-dashed">
+                                    <MudText Typo="Typo.caption">No hay secuencias seleccionadas</MudText>
+                                </div>
+                            }
+                            @foreach (var item in Selection.SequencesSelected)
+                            {
+                                <MudPaper Elevation="2" Class="item-card pa-3 mb-2 border-l-secondary">
+                                    <MudText Typo="Typo.body2"><strong>@item.OperationName | @item.InternalControlNumber</strong></MudText>
+                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveSequence(item))" />
+                                </MudPaper>
+                            }
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public AnalysisSequencesDto Selection { get; set; }
+    [Parameter] public int DistributionId { get; set; }
+    [Parameter] public int AreaId { get; set; }
+    [Parameter] public EventCallback<AnalysisSequencesDto> SelectionChanged { get; set; }
+
+    private bool _loading = true;
+    private List<SOSAnalysis> _allAnalysis = new();
+    private List<SOSSequence> _allSequences = new();
+
+    private bool HasSelection => Selection.AnalysisSelected.Any() || Selection.SequencesSelected.Any();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        try
+        {
+            if (DistributionId != 0)
+            {
+                _allAnalysis = await AnalysisService.GetAllSOSAnalysisByDistribution(DistributionId);
+                _allSequences = await SequenceService.GetAllSOSSequenceByDistribution(DistributionId);
+            }
+            else
+            {
+                _allAnalysis = await AnalysisService.GetAllSOSAnalysisByArea(AreaId);
+                _allSequences = await SequenceService.GetAllSOSSequenceByArea(AreaId);
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    // Lógica de búsqueda para Autocomplete
+    private async Task<IEnumerable<SOSAnalysis>> SearchAnalysis(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return _allAnalysis;
+        return _allAnalysis.Where(x => x.InternalControlNumber.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task<IEnumerable<SOSSequence>> SearchSequences(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return _allSequences;
+        return _allSequences.Where(x => x.InternalControlNumber.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    // Manejo de selección
+    private void OnAnalysisSelected(SOSAnalysis item)
+    {
+        if (item != null && !Selection.AnalysisSelected.Any(x => x.SOSAnalysisId == item.SOSAnalysisId))
+            Selection.AnalysisSelected.Add(item);
+    }
+
+    private void OnSequenceSelected(SOSSequence item)
+    {
+        if (item != null && !Selection.SequencesSelected.Any(x => x.SOSSequenceId == item.SOSSequenceId))
+            Selection.SequencesSelected.Add(item);
+    }
+
+    // Agregar items a la lista de seleccionados
+    private async Task AddAnalysis(SOSAnalysis item)
+    {
+        Selection.AnalysisSelected.Add(item);
+        _allAnalysis.Remove(item);
+        await SubmitSelection();
+    }
+    private async Task AddSequence(SOSSequence item)
+    {
+        Selection.SequencesSelected.Add(item);
+        _allSequences.Remove(item);
+        await SubmitSelection();
+    }
+
+    // Eliminar de la lista 
+    private void RemoveAnalysis(SOSAnalysis item) 
+    {
+        Selection.AnalysisSelected.Remove(item);
+        _allAnalysis.Add(item);
+    }
+    private void RemoveSequence(SOSSequence item)
+    {
+        Selection.SequencesSelected.Remove(item);
+        _allSequences.Add(item);
+    }
+
+    private async Task SubmitSelection()
+    {
+        await SelectionChanged.InvokeAsync(Selection);
+    }
+
+    // Modelos de ejemplo (Sustituir por los tuyos)
+    public record AnalysisModel(int Id, string Name);
+    public record SequenceModel(int Id, string Name);
+}

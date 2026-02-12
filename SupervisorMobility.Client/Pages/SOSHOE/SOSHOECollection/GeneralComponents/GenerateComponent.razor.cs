@@ -35,6 +35,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
         private CSPCSection CSPCSectionRef;
         private HCISection HCISectionRef;
 
+
+        public AnalysisSequencesDto _selections = new AnalysisSequencesDto();
+
         protected override async Task OnInitializedAsync()
         {
             State.IsLoading = true;
@@ -104,12 +107,19 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         private void GoNext()
         {
-            // Lógica simple de incremento de índice
-            if (State.SelectedIndex < 9)
+            if (_selections == null || 
+                ((_selections.AnalysisSelected != null && _selections.AnalysisSelected.Count <= 0) && 
+                (_selections.SequencesSelected != null && _selections.SequencesSelected.Count <= 0)))
             {
-                State.SelectedIndex++;
-                StateHasChanged();
+                Snackbar.Add("Please select at least one Analysis or Sequence to proceed.", Severity.Warning);
+                return;
             }
+
+            if (State.SelectedIndex < 9)
+                if (State.SelectedIndex == 3)
+                    State.SelectedIndex = 33;
+                else if(State.SelectedIndex == 7)
+                    State.SelectedIndex = 77;
         }
 
         private void GoBack()

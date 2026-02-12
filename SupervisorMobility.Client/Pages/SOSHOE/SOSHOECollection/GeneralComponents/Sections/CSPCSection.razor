@@ -3,6 +3,7 @@
 @inject ISOSHubService SOSHubService
 @inject IUserService UsersServices
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<Resource> Localizer
 
@@ -10,6 +11,7 @@
     .mud-background-gray { background-color: #f8f9fa; }
     .border-radius-lg { border-radius: 12px; }
     .bg-white { background-color: white !important; }
+    .dialog { backdrop-filter: blur(10px); }
 </style>
 
 <MudGrid Spacing="3" Class="ma-0">
@@ -132,11 +134,12 @@
 
 @code {
     [Parameter] public SOSState State { get; set; }
+    [Parameter] public AnalysisSequencesDto AnalysysSequences { get; set; }
     [Parameter] public EventCallback OnNotify { get; set; }
 
     private SOSSynopticTableofControlPoints _sosControlPoints = new();
     private List<User> _supervisors = new();
-    
+
     private int OwnerControlPointsId = 0;
     private int ReviewerControlPointsId = 0;
     private int ApproverControlPointsId = 0;
@@ -144,7 +147,7 @@
     protected override async Task OnInitializedAsync()
     {
         // Cargar supervisores para el autocomplete de REVISO
-        var allUsers = (await UsersServices.GetUsers(false, false)).ToList();
+        var allUsers = (await UsersServices.GetUsers(false, true)).ToList();
         _supervisors = allUsers.Where(x => x.UserType == 3).ToList();
 
         // Si ya existe un registro, cargarlo
@@ -191,60 +194,141 @@
 
     public async Task GenerateControlPoints()
     {
-        // Validaciones
-        if (OwnerControlPointsId == 0 || ReviewerControlPointsId == 0 || ApproverControlPointsId == 0)
+        if (string.IsNullOrEmpty(_sosControlPoints.ProcessName))
         {
-            Snackbar.Add("Debe seleccionar ELABORO, REVISO y APROBO para el Cuadro Sinóptico de Puntos de Control", Severity.Warning);
+            Snackbar.Add("Es necesario agregar el Nombre del proceso", Severity.Warning);
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(_sosControlPoints.ProcessName))
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
         {
-            Snackbar.Add("Debe ingresar el Nombre del Proceso", Severity.Warning);
+            { "Title", "Confirm Create" },
+            { "ContentText", "Are you sure you want to Create this Synoptic Table of Control Points?" },
+            { "ButtonText", "Create!" },
+            { "CancelText", Localizer["Cancel"].Value },
+            { "Color", Color.Success },
+            { "Icon", @Icons.Material.Outlined.Add },
+            { "IconColor", Color.Primary }
+        };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Confirm creation", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled)
             return;
-        }
 
-        try
+        if (State.Hub.SOSSynopticControlPoints != null && State.Hub.SOSSynopticControlPoints.Count > 0)
         {
-            // Construcción del objeto completo
-            _sosControlPoints.SOSHubId = State.Hub.SOSHubId;
-            _sosControlPoints.CreatedAt = DateTime.Now;
-            _sosControlPoints.IsActive = true;
-            _sosControlPoints.CreatorId = OwnerControlPointsId;
-            _sosControlPoints.ReviewerId = ReviewerControlPointsId;
-            _sosControlPoints.ApproverId = ApproverControlPointsId;
-
-            _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>
+            if (ApproverControlPointsId == 0)
             {
-                new SOSSynopticPointsLogbook
-                {
-                    Date = DateTime.Now,
-                    IsActive = true,
-                    Status = 1,
-                    Changes = "Creación Inicial del Cuadro Sinóptico de Puntos de Control"
-                }
-            };
-
-            _sosControlPoints.Sequences = new List<SOSSequence>();
-            _sosControlPoints.Analyses = new List<SOSAnalysis>();
-
-            // Llamada al servicio
-            var result = await SOSHubService.GenerateSynopticControlPoints(State.Hub.SOSHubId, _sosControlPoints);
-
-            if (result > 0)
-            {
-                var cspcResponse = await ControlPointsService.GetSOSSynopticTableofControlPoints(result);
-                if (cspcResponse != null)
-                {
-                    State.SynopticTableOfControlPoints.Add(cspcResponse);
-                    await OnNotify.InvokeAsync();
-                    Snackbar.Add("Cuadro Sinóptico de Puntos de Control generado exitosamente", Severity.Success);
-                }
+                bool? result = await DialogService.ShowMessageBox(
+                   "Warning",
+                   ApproverControlPointsId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
+                   yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+                return;
             }
+
+            var copySequences = _sosControlPoints.Sequences;
+            var copyAnalyses = _sosControlPoints.Analyses;
+
+            _sosControlPoints = State.Hub.SOSSynopticControlPoints.First();
+
+            if (_sosControlPoints.SynopticPointsLogbooks != null && _sosControlPoints.SynopticPointsLogbooks.First().SOSSynopticPointsLogbookId == 0)
+                _sosControlPoints.SynopticPointsLogbooks.Clear();
+
+            SOSSynopticPointsLogbook logGenerateSynopticControlPoints = new SOSSynopticPointsLogbook();
+
+            logGenerateSynopticControlPoints.NoRevision = _sosControlPoints.SynopticPointsLogbooks?.Count();
+            logGenerateSynopticControlPoints.ApproverId = ApproverControlPointsId;
+            logGenerateSynopticControlPoints.Date = System.DateTime.Now;
+            logGenerateSynopticControlPoints.Status = 1;
+            logGenerateSynopticControlPoints.IsActive = true;
+            if (_sosControlPoints.SynopticPointsLogbooks == null)
+                _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>();
+
+            _sosControlPoints.SynopticPointsLogbooks.Add(logGenerateSynopticControlPoints);
+
+
+
+            var Gen_SOSSynopticRequirements = await SOSHubService.GenerateSynopticControlPoints(State.Hub.SOSHubId, _sosControlPoints);
+
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (Gen_SOSSynopticRequirements != 0)
+            {
+                Snackbar.Add($"{Localizer["_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Info);
+                NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{_sosControlPoints.SOSSynopticTableofControlPointsId}");
+                _sosControlPoints = new SOSSynopticTableofControlPoints();
+                //Pregutar si quiere ver el analisis generado
+            }
+            else
+                Snackbar.Add($"{Localizer["Fail_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Error);
+
+            StateHasChanged();
+
         }
-        catch (Exception ex)
+        else
         {
-            Snackbar.Add($"Error al generar: {ex.Message}", Severity.Error);
+            if (string.IsNullOrEmpty(_sosControlPoints.ProcessName) || OwnerControlPointsId == 0)
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                  "Warning",
+                   OwnerControlPointsId == 0 ? "Es necesario el elaborador" : "Es necesario el nombre de processo!",
+                  yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+            }
+            else if (ApproverControlPointsId == 0 || ReviewerControlPointsId == 0)
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                  "Warning",
+                  ApproverControlPointsId == 0 ? "Es necesario el aprovador" : "Es necesario seleccionar el editor!",
+                  yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+            }
+            else
+            {
+                _sosControlPoints.SOSHubId = State.Hub.SOSHubId;
+                _sosControlPoints.ReviewerId = ReviewerControlPointsId;
+                _sosControlPoints.ApproverId = ApproverControlPointsId;
+                _sosControlPoints.CreatorId = OwnerControlPointsId;
+
+                SOSSynopticPointsLogbook logGenerateSynopticControlPoints = new SOSSynopticPointsLogbook();
+
+                logGenerateSynopticControlPoints.NoRevision = 0;
+                logGenerateSynopticControlPoints.ApproverId = ApproverControlPointsId;
+                logGenerateSynopticControlPoints.Date = System.DateTime.Now;
+                logGenerateSynopticControlPoints.Status = 1;
+                logGenerateSynopticControlPoints.IsActive = true;
+                if (_sosControlPoints.SynopticPointsLogbooks == null)
+                    _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>();
+
+                _sosControlPoints.SynopticPointsLogbooks.Add(logGenerateSynopticControlPoints);
+
+
+                if (_sosControlPoints.SOSSynopticRequirementsOperationSequence == null)
+                    _sosControlPoints.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
+
+
+                var Gen_sosControlPoints = await SOSHubService.GenerateSynopticControlPoints(State.Hub.SOSHubId, _sosControlPoints);
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                if (Gen_sosControlPoints != 0)
+                {
+                    Snackbar.Add($"{Localizer["_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Info);
+                    NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{Gen_sosControlPoints}");
+                    _sosControlPoints = new SOSSynopticTableofControlPoints();
+                }
+                else
+                    Snackbar.Add($"{Localizer["Fail_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Error);
+
+                StateHasChanged();
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿@using SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralComponents.Sections
+@using SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralComponents.Components
 @inject Microsoft.Extensions.Localization.IStringLocalizer<GenerateComponent> Localizer
 
 <style>
@@ -38,12 +39,14 @@
                         case 1: <AnalysisSection @ref="AnalysisSectionRef" State="State" OnNotify="StateHasChanged" />; break;
                         case 2: <CombinationSection @ref="CombinationSectionRef" State="State" OnNotify="StateHasChanged" />; break;
                         case 3: 
-                        case 33: <DistributionSection @ref="DistributionSectionRef" State="State" OnNotify="StateHasChanged" />; break;
+                        case 7:
+                            <SelectAnalisis_Sequences AreaId="36" DistributionId="0" @bind-Selection="_selections" /> break;
+                        case 33:
+                            <DistributionSection @ref="DistributionSectionRef" State="State" AnalysysSequences="_selections" OnNotify="StateHasChanged" /> break;
                         case 4: <FlowSection @ref="FlowSectionRef" State="State" OnNotify="StateHasChanged" />; break;
                         case 5: <SequenceSection @ref="SequenceSectionRef" State="State" OnNotify="StateHasChanged" />; break;
-                        case 6: 
-                        case 66: <CSROSection @ref="CSROSectionRef" State="State" OnNotify="StateHasChanged" />; break;
-                        case 7: <CSPCSection @ref="CSPCSectionRef" State="State" OnNotify="StateHasChanged" />; break;
+                        case 6: <CSROSection @ref="CSROSectionRef" State="State" OnNotify="StateHasChanged" />; break;
+                        case 77: <CSPCSection @ref="CSPCSectionRef" State="State" AnalysysSequences="_selections" OnNotify="StateHasChanged" />; break;
                         case 9: <HCISection @ref="HCISectionRef" State="State"OnNotify="StateHasChanged" />; break;
                         default:
                             <MudAlert Severity="Severity.Info">Seleccione un paso válido.</MudAlert>
@@ -94,7 +97,6 @@
                     Generate Combination
                 </MudButton>
                 break;
-            case 3:
             case 33:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                             OnClick="() => DistributionSectionRef.GenerateDistribution()">
@@ -114,13 +116,12 @@
                 </MudButton>
                 break;
             case 6:
-            case 66:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                            OnClick="() => CSROSectionRef.GenerateRequirement()">
                     Generate STRO
                 </MudButton>
                 break;
-            case 7: 
+            case 77: 
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
                            OnClick="() => CSPCSectionRef.GenerateControlPoints()">
                     Generate STCO
@@ -134,7 +135,7 @@
                 break;
         }
 
-        @if (State.SelectedIndex < 9)
+        @if (State.SelectedIndex == 3 || State.SelectedIndex == 7)
         {
             <MudButton Variant="Variant.Filled"
                        Color="Color.Info"
