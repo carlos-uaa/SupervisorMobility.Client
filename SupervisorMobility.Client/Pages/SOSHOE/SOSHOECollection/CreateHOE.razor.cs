@@ -1830,22 +1830,56 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             };
             BaseText = RemoveAsterisks(text);
 
-            // Extraer todos los puntos críticos directamente
-            analysis.CriticalPoints = ExtractCriticalPoints(text);
-            analysis.Reasons = Enumerable.Repeat(string.Empty, analysis.CriticalPoints.Count).ToList();
+            // Extraer puntos críticos y razones ligadas
+            var (criticalPoints, reasons) = ExtractCriticalPointsAndReasons(text);
+
+            analysis.CriticalPoints = criticalPoints;
+            analysis.Reasons = reasons;
 
             return analysis;
         }
 
-        private List<string> ExtractCriticalPoints(string text)
+        private (List<string> CriticalPoints, List<string> Reasons) ExtractCriticalPointsAndReasons(string text)
         {
-            // Esta expresión captura *...* incluso si hay guiones dentro
+            var criticalPoints = new List<string>();
+            var reasons = new List<string>();
+
+            // Capturamos todos los puntos críticos
             var matches = Regex.Matches(text, @"\*(.*?)\*");
-            return matches.Cast<Match>()
-                          .Where(m => m.Success)
-                          .Select(m => m.Groups[1].Value.Trim())
-                          .ToList();
+
+            for (int i = 0; i < matches.Count; i++)
+            {
+                var point = matches[i].Groups[1].Value.Trim();
+                criticalPoints.Add(point);
+
+                // Determinar el segmento de texto después del punto crítico
+                int startIndex = matches[i].Index + matches[i].Length;
+                int endIndex = (i + 1 < matches.Count) ? matches[i + 1].Index : text.Length;
+
+                string segment = text.Substring(startIndex, endIndex - startIndex);
+
+                // Buscar razones entre paréntesis dentro del segmento
+                var reasonMatches = Regex.Matches(segment, @"\((.*?)\)");
+
+                if (reasonMatches.Count > 0)
+                {
+                    // Concatenar todas las razones encontradas con guion
+                    var reasonText = string.Join(" - ",
+                        reasonMatches.Cast<Match>()
+                                     .Select(m => m.Groups[1].Value.Trim()));
+
+                    reasons.Add(reasonText);
+                }
+                else
+                {
+                    // Si no hay razones, agregamos string.Empty
+                    reasons.Add(string.Empty);
+                }
+            }
+
+            return (criticalPoints, reasons);
         }
+
 
         private string RemoveAsterisks(string text)
         {

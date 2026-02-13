@@ -1,0 +1,343 @@
+﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@inject ISynopticRequirementsService SOSRequirementsService
+@inject ISOSHubService SOSHubService
+@inject IUserService UsersServices
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Resource> Localizer
+
+<style>
+    .mud-background-gray { background-color: #f8f9fa; }
+    .border-radius-lg { border-radius: 12px; }
+    .bg-white { background-color: white !important; }
+    .dialog { backdrop-filter: blur(10px); }
+</style>
+
+<MudGrid Spacing="3" Class="ma-0">
+    
+    @* HEADER CON INFORMACIÓN GENERAL *@
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="pa-5 mud-background-gray border-radius-lg">
+            <div class="d-flex align-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.TableChart" Color="Color.Primary" Class="mr-2"/>
+                <MudText Typo="Typo.h6" Style="font-weight: 800;">Configuración de Nuevo Cuadro Sinóptico de Requisitos de Operación</MudText>
+            </div>
+
+            <MudGrid Spacing="2">
+                <MudItem xs="12" md="3">
+                    <MudTextField @bind-Value="_SOSSynopticRequirements.ProcessName"
+                                  Label="Nombre del Proceso"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Value="@State.Hub?.Department?.Description"
+                                  Label="Departamento"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudTextField Value="@State.Hub?.Plant?.Description"
+                                  Label="Planta"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudDatePicker @bind-Date="_SOSSynopticRequirements.CreatedAt"
+                                   Label="Fecha de Registro"
+                                   Variant="Variant.Filled"
+                                   Margin="Margin.Dense"
+                                   ReadOnly="true"
+                                   Editable="false"
+                                   Style="background-color: #e9ecef;" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+    @* CAMPO HOJA *@
+
+
+    @* SECCIÓN HOJA (Tabla con dos columnas) *@
+    <MudItem xs="12">
+        <div style="border: 1px solid #e0e0e0; border-radius: 4px;">
+            <div style="border-bottom: 1px solid #e0e0e0; padding: 12px; text-align: center; font-weight: bold;">
+                HOJA
+            </div>
+            <div style="display: flex;">
+                <div style="flex: 1; padding: 12px; border-right: 1px solid #e0e0e0; min-height: 60px;"></div>
+                <div style="flex: 1; padding: 12px; min-height: 60px;"></div>
+            </div>
+        </div>
+    </MudItem>
+
+    @* SELECCIÓN DE USUARIOS *@
+    <MudItem xs="12">
+        <MudDivider Class="my-2" />
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Elaboró"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="OwnerSynopticRequirementsId"
+                                 AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchApproverOwners" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Revisó"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="ReviewerSynopticRequirementsId"
+                                 AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchSupervisors" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Aprobó"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="ApproverSynopticRequirementsId"
+                                 AdornmentIcon="@Icons.Material.Filled.VerifiedUser"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchApproverOwners" />
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+
+</MudGrid>
+
+@code {
+    [Parameter] public SOSState State { get; set; }
+    [Parameter] public EventCallback OnNotify { get; set; }
+
+    private SOSSynopticTableofOperatingRequirements _SOSSynopticRequirements = new();
+    private List<User> _supervisors = new();
+
+    private int OwnerSynopticRequirementsId = 0;
+    private int ReviewerSynopticRequirementsId = 0;
+    private int ApproverSynopticRequirementsId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargar supervisores para el autocomplete de REVISO
+        var allUsers = (await UsersServices.GetUsers(false, true)).ToList();
+        _supervisors = allUsers.Where(x => x.UserType == 3).ToList();
+
+        // Si ya existe un registro, cargarlo
+        if (State?.SynopticTableOfOpertingRequirements?.Any() == true)
+        {
+            _SOSSynopticRequirements = State.SynopticTableOfOpertingRequirements.First();
+        }
+        else
+        {
+            _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements
+            {
+                CreatedAt = DateTime.Now
+            };
+        }
+    }
+
+    private Task<IEnumerable<int>> SearchApproverOwners(string searchString)
+    {
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = State.Hub.ApproverOwners?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+        else
+            result = State.Hub.ApproverOwners?
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
+
+        return Task.FromResult(result);
+    }
+
+    private Task<IEnumerable<int>> SearchSupervisors(string searchString)
+    {
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = _supervisors.Select(x => x.UserId);
+        else
+            result = _supervisors
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId);
+
+        return Task.FromResult(result);
+    }
+
+    public async Task GenerateRequirement()
+    {
+        if(string.IsNullOrEmpty(_SOSSynopticRequirements.ProcessName))
+        {
+            Snackbar.Add("Es necesario agregar el nombre del proceso", Severity.Warning);
+            return;
+        }
+
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+        {
+            { "Title", "Confirm Create" },
+            { "ContentText", "Are you sure you want to Create this Synoptic Table?" },
+            { "ButtonText", "Create" },
+            { "CancelText", Localizer["Cancel"].Value },
+            { "Color", Color.Success },
+            { "Icon", @Icons.Material.Outlined.Add },
+            { "IconColor", Color.Primary }
+        };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Create STRO", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled)
+            return;
+
+        if (State.Hub.SOSSynopticOperatingRequirements != null && State.Hub.SOSSynopticOperatingRequirements.Count > 0)
+        {
+            //REVISION
+            if (ReviewerSynopticRequirementsId == 0 || ApproverSynopticRequirementsId == 0)
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                   "Warning",
+                   ApproverSynopticRequirementsId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
+                   yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+                return;
+            }
+
+            var copySequences = _SOSSynopticRequirements.Sequences;
+            var copyAnalyses = _SOSSynopticRequirements.Analyses;
+
+            _SOSSynopticRequirements = State.Hub.SOSSynopticOperatingRequirements.First();
+
+            if (_SOSSynopticRequirements.SynopticRequirementsLogbooks != null && _SOSSynopticRequirements.SynopticRequirementsLogbooks.First().SOSSynopticRequirementsLogbookId == 0)
+                _SOSSynopticRequirements.SynopticRequirementsLogbooks.Clear();
+
+            SOSSynopticRequirementsLogbook logSynopticRequirements = new SOSSynopticRequirementsLogbook();
+
+            logSynopticRequirements.NoRevision = _SOSSynopticRequirements.SynopticRequirementsLogbooks?.Count();
+            logSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+            logSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+            logSynopticRequirements.Date = System.DateTime.Now;
+            logSynopticRequirements.Status = 1;
+            logSynopticRequirements.IsActive = true;
+            if (_SOSSynopticRequirements.SynopticRequirementsLogbooks == null)
+                _SOSSynopticRequirements.SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>();
+
+            _SOSSynopticRequirements.SynopticRequirementsLogbooks.Add(logSynopticRequirements);
+
+
+
+            var Gen_SOSSynopticRequirements = await SOSHubService.GenerateSynopticRequirements(State.Hub.SOSHubId, _SOSSynopticRequirements);
+
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (Gen_SOSSynopticRequirements != 0)
+            {
+                Snackbar.Add($"{Localizer["_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Info);
+                NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{_SOSSynopticRequirements.SOSSynopticTableofOperatingRequirementsId}");
+                _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements();
+                //Pregutar si quiere ver el analisis generado
+            }
+            else
+            {
+                Snackbar.Add($"{Localizer["Fail_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Error);
+            }
+
+            StateHasChanged();
+
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(_SOSSynopticRequirements.ProcessName) || OwnerSynopticRequirementsId == 0)
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                  "Warning",
+                   OwnerSynopticRequirementsId == 0 ? "Es necesario el elaborador" : "Es necesario el nombre de processo!",
+                  yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+            }
+            else if (ApproverSynopticRequirementsId == 0 || ReviewerSynopticRequirementsId == 0)
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                  "Warning",
+                  ApproverSynopticRequirementsId == 0 ? "Es necesario el aprovador" : "Es necesario seleccionar el editor!",
+                  yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+            }
+            else
+            {
+                _SOSSynopticRequirements.SOSHubId = State.Hub.SOSHubId;
+
+                _SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                _SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                _SOSSynopticRequirements.CreatorId = OwnerSynopticRequirementsId;
+
+                SOSSynopticRequirementsLogbook logSynopticRequirements = new SOSSynopticRequirementsLogbook();
+
+                logSynopticRequirements.NoRevision = 0;
+                logSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
+                logSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;
+                logSynopticRequirements.Date = System.DateTime.Now;
+                logSynopticRequirements.Status = 1;
+                logSynopticRequirements.IsActive = true;
+                if (_SOSSynopticRequirements.SynopticRequirementsLogbooks == null)
+                    _SOSSynopticRequirements.SynopticRequirementsLogbooks = new List<SOSSynopticRequirementsLogbook>();
+
+                _SOSSynopticRequirements.SynopticRequirementsLogbooks.Add(logSynopticRequirements);
+
+
+                if (_SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence == null)
+                    _SOSSynopticRequirements.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
+
+
+
+                var Gen_SOSSynopticRequirements = await SOSHubService.GenerateSynopticRequirements(State.Hub.SOSHubId, _SOSSynopticRequirements);
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                if (Gen_SOSSynopticRequirements != 0)
+                {
+                    Snackbar.Add($"{Localizer["_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Info);
+                    NavigationManager.NavigateTo($"/soshoe/SynopticRequirements/Details/{Gen_SOSSynopticRequirements}");
+                    _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements();
+                    //Pregutar si quiere ver el analisis generado
+                }
+                else
+                {
+                    Snackbar.Add($"{Localizer["Fail_SOSSynopticRequirementsGeneratedSucces"]}", Severity.Error);
+                }
+
+                StateHasChanged();
+            }
+        }
+    }
+}
