@@ -166,15 +166,13 @@ builder.Services.AddScoped<IMaterialService, MaterialService>();
 
 
 // Connection to API
-var env = builder.HostEnvironment;
-if (env.IsDevelopment())
-{
-    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/"), Timeout = TimeSpan.FromMinutes(15) }); ;
-}
-else
-{
-    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/"), Timeout = TimeSpan.FromMinutes(10) });
-}
+var apiUrl = builder.Configuration["ApiUrl"] ?? "https://localhost:10201/api/";
+builder.Services.AddScoped(sp => new HttpClient 
+{ 
+    BaseAddress = new Uri(apiUrl), 
+    Timeout = TimeSpan.FromMinutes(15) 
+});
+
 
 
 
