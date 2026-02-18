@@ -87,6 +87,7 @@ using AutoMapper;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using SupervisorMobility.Client.Data.Entities.Dtos;
+using SupervisorMobility.Client.Services.UserCoursesService;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -141,6 +142,7 @@ builder.Services.AddScoped<IPartServices, PartServices>();
 builder.Services.AddScoped<IExportationService, ExportationService>();
 builder.Services.AddScoped<ICalendarProductiveService, CalendarProductiveService>();
 builder.Services.AddScoped<IMetricsService, MetricsService>();
+builder.Services.AddScoped<IUserCoursesService, UserCoursesService>();
 
 //For testing video uploads
 builder.Services.AddScoped<ITestService, TestService>();
