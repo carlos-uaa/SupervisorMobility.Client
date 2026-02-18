@@ -226,7 +226,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             IEnumerable<int> SOSHubsId = SOSSynopticRequeriments.SOSHubs!.Select(s => s.SOSHubId);
 
             var distributions = new List<SOSDistribution>();
-            var hubsWithoutDistribution = new List<SOSDistribution>();
+            var hubIdsWithoutDistribution = new List<int>();
 
             StateHasChanged();
 
@@ -237,7 +237,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
                 // NOTE: Separate hubs that have valid distributions from those that don't
                 if (distribution == null || !(distribution.Analyses?.Any() == true || distribution.Sequences?.Any() == true))
                 {
-                    hubsWithoutDistribution.Add(distribution!);
+                    hubIdsWithoutDistribution.Add(HubId);
                 }
                 else
                 {
@@ -250,7 +250,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
             var SOSHubsInSTRO = _sosSynopticRequeriments.SOSHubs!.ToList();
 
             // NOTE: Notify user about hubs without distributions
-            if (hubsWithoutDistribution.Count > 0) ShowMessageNotDistribution(hubsWithoutDistribution);
+            if (hubIdsWithoutDistribution.Count > 0) ShowMessageNotDistribution(hubIdsWithoutDistribution, SOSHubsInSTRO);
             SetDistributionSTRO(distributions, SOSHubsInSTRO);
         }
 
@@ -284,15 +284,17 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofOperatingRequire
         /// Displays a warning message for SOS hubs without associated distributions 
         /// and removes them from the current hub list.
         /// </summary>
-        /// <param name="hubsWithoutDistribution">List of SOS hubs missing distributions.</param>
-        private void ShowMessageNotDistribution(List<SOSDistribution> Distributions)
+        /// <param name="hubIdsWithoutDistribution">List of hub IDs missing distributions.</param>
+        /// <param name="allHubs">List of all SOS hubs.</param>
+        private void ShowMessageNotDistribution(List<int> hubIdsWithoutDistribution, List<SOSHub> allHubs)
         {
-            var distributionList = string.Join(", ", Distributions.SelectMany(s => s.SOSHubs!.Select(a => a.Folio)));
+            var hubsWithoutDist = allHubs.Where(h => hubIdsWithoutDistribution.Contains(h.SOSHubId)).ToList();
+            var folioList = string.Join(", ", hubsWithoutDist.Select(h => h.Folio));
 
             // NOTE: Warning is displayed at the top center of the screen for better visibility
             Snackbar.Clear();
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-            Snackbar.Add($"The following data collectors do not have an associated distribution and were not added: {distributionList}", Severity.Warning);
+            Snackbar.Add($"The following data collectors do not have an associated distribution and were not added: {folioList}", Severity.Warning);
         }
 
         // =================================================== \\

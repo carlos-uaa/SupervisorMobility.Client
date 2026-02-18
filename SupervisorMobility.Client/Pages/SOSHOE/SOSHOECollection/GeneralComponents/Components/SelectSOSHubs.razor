@@ -1,0 +1,240 @@
+@inject ISOSHubService SOSHubService
+
+<style>
+    .list-container::-webkit-scrollbar { width: 6px; }
+    .list-container::-webkit-scrollbar-thumb { background-color: #e0e0e0; border-radius: 10px; }
+
+    .list-container {
+        height: 250px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+        border-radius: 0 0 8px 8px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .header-list {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        font-weight: 700;
+        color: white;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .item-card {
+        background-color: white;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        margin-bottom: 8px;
+        border-left: 4px solid #bdbdbd;
+        transition: 0.2s;
+        cursor: pointer;
+    }
+
+    .item-card:hover { background-color: #f5f5f5; }
+
+    .empty-state-dashed {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        opacity: 0.6;
+        margin: 10px;
+    }
+
+    .toggle-text {
+        flex: 1;
+    }
+
+    .border-l-default { border-left: 4px solid #bdbdbd !important; }
+    .border-l-primary { border-left: 4px solid var(--mud-palette-primary) !important; }
+</style>
+
+@if (_loading)
+{
+    <MudStack AlignItems="AlignItems.Center" Class="pa-10">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Typo="Typo.caption">Cargando datos...</MudText>
+    </MudStack>
+}
+else
+{
+    <MudPaper Elevation="0" Class="pa-0" Style="width: 100%; background: transparent;">
+        <MudGrid Spacing="4" Class="pa-2">
+            @* ================= SECCIÓN DE COLECTORES (SOS HUBS) ================= *@
+            <MudItem xs="12">
+                <MudText Typo="Typo.h6" Class="mb-3" Color="Color.Primary">Gestión de Colectores</MudText>
+                <MudGrid Spacing="2">
+                    @* DISPONIBLES *@
+                    <MudItem xs="12" md="6">
+                        <div class="header-list mud-theme-primary" style="opacity: 0.8;">
+                            <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Small" Class="mr-2" /> Disponibles
+                        </div>
+                        <div class="list-container pa-2">
+                            <MudAutocomplete T="SOSHub" Label="Filtrar colectores..." SearchFunc="@SearchSOSHubs" ValueChanged="@OnSOSHubSelected"
+                                             Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined" Class="bg-white mb-2" ToStringFunc="@(h => h?.ProcessSheet ?? "")" />
+
+                            @foreach (var item in FilteredAvailableHubs)
+                            {
+                                <MudPaper Elevation="1" Class="item-card pa-3 mb-2 border-l-default">
+                                    <div class="toggle-text">
+                                        <MudText Typo="Typo.body2">@item.ProcessSheet | @item.Folio</MudText>
+                                        <MudText Typo="Typo.caption">@item.SOSDistribution?.FirstOrDefault()?.ProcessName</MudText>
+                                    </div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Small" OnClick="@(() => AddSOSHub(item))" Disabled="@IsEditDisabled" />
+                                </MudPaper>
+                            }
+                        </div>
+                    </MudItem>
+                    @* SELECCIONADOS *@
+                    <MudItem xs="12" md="6">
+                        <div class="header-list mud-theme-primary">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" Class="mr-2" /> Seleccionados (@Selection.Count)
+                        </div>
+                        <div class="list-container pa-2">
+                            @if (!Selection.Any())
+                            {
+                                <div class="empty-state-dashed">
+                                    <MudText Typo="Typo.caption">No hay colectores seleccionados</MudText>
+                                </div>
+                            }
+                            @foreach (var item in Selection)
+                            {
+                                <MudPaper Elevation="2" Class="item-card pa-3 mb-2 border-l-primary">
+                                    <div class="toggle-text">
+                                        <MudText Typo="Typo.body2"><strong>@item.ProcessSheet | @item.Folio</strong></MudText>
+                                        <MudText Typo="Typo.caption">@item.SOSDistribution?.FirstOrDefault()?.ProcessName</MudText>
+                                    </div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveSOSHub(item))" Disabled="@IsEditDisabled" />
+                                </MudPaper>
+                            }
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public List<SOSHub> Selection { get; set; } = new();
+    [Parameter] public int SynopticRequirementsId { get; set; }
+    [Parameter] public int AreaId { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
+    [Parameter] public EventCallback<List<SOSHub>> SelectionChanged { get; set; }
+
+    private bool _loading = true;
+    private List<SOSHub> _allSOSHubs = new();
+
+    private List<SOSHub> FilteredAvailableHubs => _allSOSHubs
+        .Where(hub => !Selection.Any(s => s.SOSHubId == hub.SOSHubId))
+        .ToList();
+
+    private bool IsEditDisabled => SynopticRequirementsId != 0 || IsReadOnly;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        try
+        {
+            Console.WriteLine($"[SelectSOSHubs OnInit] Starting. SynopticRequirementsId={SynopticRequirementsId}, AreaId={AreaId}, IsReadOnly={IsReadOnly}");
+            var incomingCount = Selection != null ? Selection.Count : 0;
+            Console.WriteLine($"[SelectSOSHubs OnInit] Selection Count (incoming)={incomingCount}");
+            
+            // Inicializar Selection si es null
+            if (Selection == null)
+                Selection = new List<SOSHub>();
+
+            // Cargar todos los SOSHubs con distribuciones y luego filtrar por área
+            var allHubs = await SOSHubService.GetAllSOSHub(includeSOSDistribution: true);
+            _allSOSHubs = allHubs.Where(h => h.AreaId == AreaId).ToList();
+            
+            Console.WriteLine($"[SelectSOSHubs OnInit] Total SOSHubs cargados del area={_allSOSHubs.Count}");
+            Console.WriteLine($"[SelectSOSHubs OnInit] IsEditDisabled={IsEditDisabled} (SynopticRequirementsId={SynopticRequirementsId} || IsReadOnly={IsReadOnly})");
+            
+            // Remover de la lista de disponibles los que ya están seleccionados
+            await RemoveSelectedFromAvailable();
+            
+            Console.WriteLine($"[SelectSOSHubs OnInit] Después de RemoveSelected: disponibles={_allSOSHubs.Count}, seleccionados={Selection.Count}");
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Reaccionar a cambios en los parámetros
+        if ((_allSOSHubs == null || _allSOSHubs.Count == 0) && Selection != null)
+        {
+            var allHubs = await SOSHubService.GetAllSOSHub(includeSOSDistribution: true);
+            _allSOSHubs = allHubs.Where(h => h.AreaId == AreaId).ToList();
+        }
+        
+        if (_allSOSHubs != null && _allSOSHubs.Count > 0 && Selection != null)
+        {
+            await RemoveSelectedFromAvailable();
+        }
+    }
+
+    private async Task RemoveSelectedFromAvailable()
+    {
+        // Remover de la lista de disponibles los que ya están seleccionados
+        if (Selection.Any())
+        {
+            var selectedIds = Selection.Select(h => h.SOSHubId).ToList();
+            _allSOSHubs = _allSOSHubs.Where(h => !selectedIds.Contains(h.SOSHubId)).ToList();
+        }
+    }
+
+    private Task<IEnumerable<SOSHub>> SearchSOSHubs(string searchString)
+    {
+        IEnumerable<SOSHub> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = _allSOSHubs.Where(h => !Selection.Any(s => s.SOSHubId == h.SOSHubId));
+        else
+            result = _allSOSHubs
+                .Where(h => !Selection.Any(s => s.SOSHubId == h.SOSHubId) &&
+                           ((h.ProcessSheet?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (h.Folio?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                            (h.SOSDistribution?.FirstOrDefault()?.ProcessName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false)))
+                .ToList();
+
+        return Task.FromResult(result);
+    }
+
+    private void OnSOSHubSelected(SOSHub item)
+    {
+        if (item != null && !Selection.Any(x => x.SOSHubId == item.SOSHubId))
+            Selection.Add(item);
+    }
+
+    // Agregar item a la lista de seleccionados
+    private async Task AddSOSHub(SOSHub item)
+    {
+        Selection.Add(item);
+        _allSOSHubs.Remove(item);
+        await SubmitSelection();
+    }
+
+    // Eliminar de la lista
+    private void RemoveSOSHub(SOSHub item)
+    {
+        Selection.Remove(item);
+        _allSOSHubs.Add(item);
+        _ = SubmitSelection();
+    }
+
+    private async Task SubmitSelection()
+    {
+        await SelectionChanged.InvokeAsync(Selection);
+    }
+}

@@ -37,6 +37,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
 
         public AnalysisSequencesDto _selections = new AnalysisSequencesDto();
+        public List<SOSHub> _soSHubSelections = new List<SOSHub>();
         private int _lastSelectedIndex = -1;
 
         // Calculamos el DistributionId dinámicamente, solo para Distribution (cases 3, 33)
@@ -53,6 +54,30 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 return State.Hub.SOSDistribution.First().SOSDistributionId;
             }
             return 0;
+        }
+
+        // Calcula el SynopticRequirementsId dinámicamente, similar a GetDistributionId()
+        private int GetSynopticRequirementsId()
+        {
+            // Si estamos en CSRO (cases 6 o 66), devolver el ID si ya existe
+            if (State?.Hub?.SOSSynopticOperatingRequirements != null && State.Hub.SOSSynopticOperatingRequirements.Count > 0)
+            {
+                return State.Hub.SOSSynopticOperatingRequirements.First().SOSSynopticTableofOperatingRequirementsId;
+            }
+            return 0;
+        }
+
+        // Determina si estamos viendo un CSRO existente (readonly) o creando uno nuevo (editable)
+        private bool IsCSROReadOnly()
+        {
+            // Si estamos en paso 6 o 66 (CSRO) y ya existe CSRO cargado, es readonly
+            if ((State?.SelectedIndex == 6 || State?.SelectedIndex == 66) &&
+                State?.SynopticTableOfOpertingRequirements != null && 
+                State.SynopticTableOfOpertingRequirements.Count > 0)
+            {
+                return true;
+            }
+            return false;
         }
 
         // Determina si estamos viendo un CSPC existente (readonly) o creando uno nuevo (editable)
@@ -89,6 +114,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         private async Task LoadInitialSelections()
         {
+            Console.WriteLine($"[GenerateComponent LoadInitialSelections] SelectedIndex={State.SelectedIndex}");
             
             if (State.SelectedIndex == 3)
             {
@@ -111,6 +137,24 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         SequencesSelected = new List<SOSSequence>()
                     };
 
+                }
+            }
+            else if (State.SelectedIndex == 6)
+            {
+                // Entrando directo a SelectSOSHubs para CSRO
+                var csroCount = State?.SynopticTableOfOpertingRequirements != null ? State.SynopticTableOfOpertingRequirements.Count : 0;
+                Console.WriteLine($"[GenerateComponent LoadInitialSelections] CSRO - SynopticTableOfOpertingRequirements Count={csroCount}");
+                // Si ya existe CSRO, cargar sus selecciones de SOSHubs
+                if (State?.SynopticTableOfOpertingRequirements != null && State.SynopticTableOfOpertingRequirements.Count > 0)
+                {
+                    var csro = State.SynopticTableOfOpertingRequirements.First();
+                    _soSHubSelections = csro.SOSHubs?.ToList() ?? new List<SOSHub>();
+                    Console.WriteLine($"[GenerateComponent LoadInitialSelections] CSRO existente encontrado, SOSHubs cargados={_soSHubSelections.Count}");
+                }
+                else
+                {
+                    _soSHubSelections = new List<SOSHub>();
+                    Console.WriteLine($"[GenerateComponent LoadInitialSelections] CSRO nuevo, _soSHubSelections vacío");
                 }
             }
             else if (State.SelectedIndex == 7)
@@ -180,6 +224,25 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                             SequencesSelected = new List<SOSSequence>()
                         };
 
+                    }
+                }
+                else if (State.SelectedIndex == 6)
+                {
+                    // Entrando a SelectSOSHubs paso previo a CSRO
+                    var csroParamCount = State?.SynopticTableOfOpertingRequirements != null ? State.SynopticTableOfOpertingRequirements.Count : 0;
+                    Console.WriteLine($"[GenerateComponent OnParametersSetAsync] Case 6 - CSRO, SynopticTableOfOpertingRequirements Count={csroParamCount}");
+                    // Si ya existe CSRO, cargar sus selecciones de SOSHubs
+                    if (State?.SynopticTableOfOpertingRequirements != null && State.SynopticTableOfOpertingRequirements.Count > 0)
+                    {
+                        var csro = State.SynopticTableOfOpertingRequirements.First();
+                        _soSHubSelections = csro.SOSHubs?.ToList() ?? new List<SOSHub>();
+                        Console.WriteLine($"[GenerateComponent OnParametersSetAsync] CSRO existente, SOSHubs cargados={_soSHubSelections.Count}");
+                    }
+                    else
+                    {
+                        // Nuevo CSRO, vaciar selecciones
+                        _soSHubSelections = new List<SOSHub>();
+                        Console.WriteLine($"[GenerateComponent OnParametersSetAsync] CSRO nuevo, _soSHubSelections vacío");
                     }
                 }
                 else if (State.SelectedIndex == 7)
@@ -329,6 +392,26 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
 
         private void GoNext()
         {
+            var hubSelCount = _soSHubSelections != null ? _soSHubSelections.Count : 0;
+            var analCount = _selections?.AnalysisSelected != null ? _selections.AnalysisSelected.Count : 0;
+            var seqCount = _selections?.SequencesSelected != null ? _selections.SequencesSelected.Count : 0;
+            Console.WriteLine($"[GenerateComponent GoNext] SelectedIndex={State.SelectedIndex}, _soSHubSelections Count={hubSelCount}, _selections Analysis={analCount}, Sequences={seqCount}");
+
+            // Para CSRO (case 6), validar selección de SOSHubs
+            if (State.SelectedIndex == 6)
+            {
+                if (_soSHubSelections == null || !_soSHubSelections.Any())
+                {
+                    Console.WriteLine($"[GenerateComponent GoNext] CSRO - No hay SOSHubs seleccionados, bloqueando navegación");
+                    Snackbar.Add("Please select at least one Collector (SOSHub) to proceed.", Severity.Warning);
+                    return;
+                }
+                Console.WriteLine($"[GenerateComponent GoNext] CSRO - Navegando de case 6 a case 66 con {_soSHubSelections.Count} SOSHubs");
+                State.SelectedIndex = 66;
+                return;
+            }
+
+            // Para Distribution (case 3) y CSPC (case 7), validar selección de Analysis/Sequences
             if (_selections == null || 
                 ((_selections.AnalysisSelected != null && _selections.AnalysisSelected.Count <= 0) && 
                 (_selections.SequencesSelected != null && _selections.SequencesSelected.Count <= 0)))
