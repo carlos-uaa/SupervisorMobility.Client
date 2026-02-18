@@ -45,6 +45,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         public List<ILURegister> expertise = new();
         public List<HCICategory> categories = new();
         public List<Commentary> comments = new();
+        private List<UserCourse> courses = new();
 
 
         //User
@@ -127,6 +128,15 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                 expertise = _hci.ILUs ?? new();
                 categories = _hci.Categories ?? new();
                 comments = _hci.Commentaries ?? new();
+            }
+
+            if(user != null && !string.IsNullOrEmpty(_hci.User?.Payroll.ToString()))
+            {
+                var coursesResponse = await UserCoursesService.GetUserCoursesAsync(_hci.User?.Payroll.ToString());
+                if (coursesResponse.Success)
+                    courses = coursesResponse.Data;
+                else
+                    Snackbar.Add($"Error loading courses: {coursesResponse.Message}", Severity.Error);
             }
 
             dataloaded = true;
