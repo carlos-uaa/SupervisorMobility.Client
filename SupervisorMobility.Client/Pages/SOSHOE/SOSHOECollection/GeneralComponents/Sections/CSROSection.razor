@@ -58,7 +58,7 @@
             </MudGrid>
         </MudPaper>
     </MudItem>
-
+ 
     @* CAMPO HOJA *@
 
 
@@ -81,7 +81,7 @@
         <MudGrid Spacing="2">
             <MudItem xs="12" md="4">
                 <MudAutocomplete T="int"
-                                 Label="Elaboró"
+                                 Label="Elaborador"
                                  Variant="Variant.Outlined"
                                  Margin="Margin.Dense"
                                  @bind-Value="OwnerSynopticRequirementsId"
@@ -92,12 +92,12 @@
                                  ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
                                  ShowProgressIndicator="true"
                                  ProgressIndicatorColor="Color.Info"
-                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 ToStringFunc="@(s => _approveUsers?.FirstOrDefault(x => x.UserId == s)?.Name)"
                                  SearchFunc="SearchApproverOwners" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudAutocomplete T="int"
-                                 Label="Revisó"
+                                 Label="Revisor Responsable"
                                  Variant="Variant.Outlined"
                                  Margin="Margin.Dense"
                                  @bind-Value="ReviewerSynopticRequirementsId"
@@ -108,12 +108,12 @@
                                  ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
                                  ShowProgressIndicator="true"
                                  ProgressIndicatorColor="Color.Info"
-                                 ToStringFunc="@(s => _supervisors.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 ToStringFunc="@(s => _reviewUsers?.FirstOrDefault(x => x.UserId == s)?.Name)"
                                  SearchFunc="SearchSupervisors" />
             </MudItem>
             <MudItem xs="12" md="4">
                 <MudAutocomplete T="int"
-                                 Label="Aprobó"
+                                 Label="Aprobador Final"
                                  Variant="Variant.Outlined"
                                  Margin="Margin.Dense"
                                  @bind-Value="ApproverSynopticRequirementsId"
@@ -124,7 +124,7 @@
                                  ReadOnly="@(State.SynopticTableOfOpertingRequirements?.Count > 0)"
                                  ShowProgressIndicator="true"
                                  ProgressIndicatorColor="Color.Info"
-                                 ToStringFunc="@(s => State.Hub.ApproverOwners?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 ToStringFunc="@(s => _approveUsers?.FirstOrDefault(x => x.UserId == s)?.Name)"
                                  SearchFunc="SearchApproverOwners" />
             </MudItem>
         </MudGrid>
@@ -134,10 +134,13 @@
 
 @code {
     [Parameter] public SOSState State { get; set; }
+    [Parameter] public List<SOSHub> SOSHubSelection { get; set; }
     [Parameter] public EventCallback OnNotify { get; set; }
 
     private SOSSynopticTableofOperatingRequirements _SOSSynopticRequirements = new();
     private List<User> _supervisors = new();
+    private List<User> _reviewUsers = new();   // SVs (tipo 3) filtrados por planta
+    private List<User> _approveUsers = new();  // SSVs (tipo 2) filtrados por planta
 
     private int OwnerSynopticRequirementsId = 0;
     private int ReviewerSynopticRequirementsId = 0;
@@ -145,7 +148,26 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Cargar supervisores para el autocomplete de REVISO
+        Console.WriteLine($"[CSRO OnInit] Starting. PlantId={State?.Hub?.PlantId}, SynopticTableOfOpertingRequirements Count={(State?.SynopticTableOfOpertingRequirements != null ? State.SynopticTableOfOpertingRequirements.Count : 0)}");
+        
+        // Cargar usuarios filtrados por planta y tipo usando el servicio
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            // _reviewUsers = SVs (tipo 3) de la planta
+            _reviewUsers = await UsersServices.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, true);
+            _reviewUsers = _reviewUsers.OrderBy(s => s.Name).ToList();
+
+            // _approveUsers = SSVs (tipo 2) de la planta
+            _approveUsers = await UsersServices.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
+        }
+        else
+        {
+            _reviewUsers = new List<User>();
+            _approveUsers = new List<User>();
+        }
+        
+        // También cargar todos los supervisores (para compatibilidad si es necesario)
         var allUsers = (await UsersServices.GetUsers(false, true)).ToList();
         _supervisors = allUsers.Where(x => x.UserType == 3).ToList();
 
@@ -153,9 +175,41 @@
         if (State?.SynopticTableOfOpertingRequirements?.Any() == true)
         {
             _SOSSynopticRequirements = State.SynopticTableOfOpertingRequirements.First();
+            
+            var hubCount = _SOSSynopticRequirements.SOSHubs != null ? _SOSSynopticRequirements.SOSHubs.Count() : 0;
+            var logbookCount = _SOSSynopticRequirements.SynopticRequirementsLogbooks != null ? _SOSSynopticRequirements.SynopticRequirementsLogbooks.Count : 0;
+            Console.WriteLine($"[CSRO OnInit] Loaded CSRO ID={_SOSSynopticRequirements.SOSSynopticTableofOperatingRequirementsId}");
+            Console.WriteLine($"[CSRO OnInit] ProcessName='{_SOSSynopticRequirements.ProcessName}'");
+            Console.WriteLine($"[CSRO OnInit] SOSHubs Count={hubCount}");
+            Console.WriteLine($"[CSRO OnInit] CreatorId={_SOSSynopticRequirements.CreatorId}, ReviewerId={_SOSSynopticRequirements.ReviewerId}, ApproverId={_SOSSynopticRequirements.ApproverId}");
+            Console.WriteLine($"[CSRO OnInit] Logbooks Count={logbookCount}");
+            
+            // Cargar los usuarios asignados si existen logbooks
+            if (_SOSSynopticRequirements.SynopticRequirementsLogbooks != null && _SOSSynopticRequirements.SynopticRequirementsLogbooks.Any())
+            {
+                var lastLogbook = _SOSSynopticRequirements.SynopticRequirementsLogbooks.LastOrDefault();
+                if (lastLogbook != null)
+                {
+                    ApproverSynopticRequirementsId = lastLogbook.ApproverId ?? 0;
+                }
+            }
+            
+            // Cargar CreatorId y ReviewerId desde el documento principal
+            if (_SOSSynopticRequirements.CreatorId.HasValue && _SOSSynopticRequirements.CreatorId.Value > 0)
+            {
+                OwnerSynopticRequirementsId = _SOSSynopticRequirements.CreatorId.Value;
+            }
+            
+            if (_SOSSynopticRequirements.ReviewerId.HasValue && _SOSSynopticRequirements.ReviewerId.Value > 0)
+            {
+                ReviewerSynopticRequirementsId = _SOSSynopticRequirements.ReviewerId.Value;
+            }
+            
+            Console.WriteLine($"[CSRO OnInit] Usuarios cargados: Owner={OwnerSynopticRequirementsId}, Reviewer={ReviewerSynopticRequirementsId}, Approver={ApproverSynopticRequirementsId}");
         }
         else
         {
+            Console.WriteLine($"[CSRO OnInit] No existing CSRO found, creating new");
             _SOSSynopticRequirements = new SOSSynopticTableofOperatingRequirements
             {
                 CreatedAt = DateTime.Now
@@ -168,9 +222,9 @@
         IEnumerable<int> result;
 
         if (string.IsNullOrEmpty(searchString))
-            result = State.Hub.ApproverOwners?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+            result = _approveUsers?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
         else
-            result = State.Hub.ApproverOwners?
+            result = _approveUsers?
                 .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
                 .Select(x => x.UserId) ?? Enumerable.Empty<int>();
 
@@ -182,17 +236,24 @@
         IEnumerable<int> result;
 
         if (string.IsNullOrEmpty(searchString))
-            result = _supervisors.Select(x => x.UserId);
+            result = _reviewUsers?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
         else
-            result = _supervisors
+            result = _reviewUsers?
                 .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                .Select(x => x.UserId);
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
 
         return Task.FromResult(result);
     }
 
     public async Task GenerateRequirement()
     {
+        var selCount = SOSHubSelection != null ? SOSHubSelection.Count() : 0;
+        var reqCount = State.Hub?.SOSSynopticOperatingRequirements != null ? State.Hub.SOSSynopticOperatingRequirements.Count : 0;
+        Console.WriteLine($"[CSRO GenerateRequirement] Starting. ProcessName='{_SOSSynopticRequirements.ProcessName}'");
+        Console.WriteLine($"[CSRO GenerateRequirement] SOSHubSelection Count={selCount}");
+        Console.WriteLine($"[CSRO GenerateRequirement] Owner={OwnerSynopticRequirementsId}, Reviewer={ReviewerSynopticRequirementsId}, Approver={ApproverSynopticRequirementsId}");
+        Console.WriteLine($"[CSRO GenerateRequirement] Hub.SOSSynopticOperatingRequirements Count={reqCount}");
+        
         if(string.IsNullOrEmpty(_SOSSynopticRequirements.ProcessName))
         {
             Snackbar.Add("Es necesario agregar el nombre del proceso", Severity.Warning);
@@ -233,8 +294,11 @@
 
             var copySequences = _SOSSynopticRequirements.Sequences;
             var copyAnalyses = _SOSSynopticRequirements.Analyses;
+            var copySOSHubs = SOSHubSelection ?? new List<SOSHub>();
 
             _SOSSynopticRequirements = State.Hub.SOSSynopticOperatingRequirements.First();
+            
+            _SOSSynopticRequirements.SOSHubs = copySOSHubs;
 
             if (_SOSSynopticRequirements.SynopticRequirementsLogbooks != null && _SOSSynopticRequirements.SynopticRequirementsLogbooks.First().SOSSynopticRequirementsLogbookId == 0)
                 _SOSSynopticRequirements.SynopticRequirementsLogbooks.Clear();
@@ -296,6 +360,7 @@
             else
             {
                 _SOSSynopticRequirements.SOSHubId = State.Hub.SOSHubId;
+                _SOSSynopticRequirements.SOSHubs = SOSHubSelection ?? new List<SOSHub>();
 
                 _SOSSynopticRequirements.ReviewerId = ReviewerSynopticRequirementsId;
                 _SOSSynopticRequirements.ApproverId = ApproverSynopticRequirementsId;

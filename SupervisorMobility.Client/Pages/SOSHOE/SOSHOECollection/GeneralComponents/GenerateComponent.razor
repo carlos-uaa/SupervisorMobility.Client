@@ -48,7 +48,12 @@
                             <DistributionSection @ref="DistributionSectionRef" State="State" AnalysysSequences="_selections" OnNotify="StateHasChanged" /> break;
                         case 4: <FlowSection @ref="FlowSectionRef" State="State" OnNotify="StateHasChanged" />; break;
                         case 5: <SequenceSection @ref="SequenceSectionRef" State="State" OnNotify="StateHasChanged" />; break;
-                        case 6: <CSROSection @ref="CSROSectionRef" State="State" OnNotify="StateHasChanged" />; break;
+                        case 6:
+                            <SelectSOSHubs @bind-Selection="_soSHubSelections" 
+                                           SynopticRequirementsId="@GetSynopticRequirementsId()" 
+                                           AreaId="36" 
+                                           IsReadOnly="@IsCSROReadOnly()" /> break;
+                        case 66: <CSROSection @ref="CSROSectionRef" State="State" SOSHubSelection="@_soSHubSelections" OnNotify="StateHasChanged" />; break;
                         case 77: <CSPCSection @ref="CSPCSectionRef" State="State" AnalysysSequences="_selections" OnNotify="StateHasChanged" />; break;
                         case 9: <HCISection @ref="HCISectionRef" State="State"OnNotify="StateHasChanged" />; break;
                         default:
@@ -125,14 +130,18 @@
                 </MudButton>
                 break;
             case 6:
+                break;
+            case 66:
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           OnClick="() => CSROSectionRef.GenerateRequirement()">
+                           OnClick="() => CSROSectionRef.GenerateRequirement()"
+                           Disabled="@(State?.Hub?.SOSSynopticOperatingRequirements?.Count > 0)">
                     Generate STRO
                 </MudButton>
                 break;
             case 77: 
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           OnClick="() => CSPCSectionRef.GenerateControlPoints()">
+                           OnClick="() => CSPCSectionRef.GenerateControlPoints()"
+                           Disabled="@(State?.Hub?.SOSSynopticControlPoints?.Count > 0)">
                     Generate STCO
                 </MudButton>
                 break;
@@ -144,7 +153,7 @@
                 break;
         }
 
-        @if ((State.SelectedIndex is not (0 or 1 or 2 or 4 or 5) && State.SelectedIndex < 9) || State.SelectedIndex == 3 || State.SelectedIndex == 7)
+        @if ((State.SelectedIndex is not (0 or 1 or 2 or 4 or 5) && State.SelectedIndex < 9) || State.SelectedIndex == 3 || State.SelectedIndex == 6 || State.SelectedIndex == 7)
         {
             <MudButton Variant="Variant.Filled"
                        Color="Color.Info"
