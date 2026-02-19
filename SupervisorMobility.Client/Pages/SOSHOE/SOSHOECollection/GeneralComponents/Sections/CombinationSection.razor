@@ -229,7 +229,7 @@
                             </MudChip>
                         </MudTd>
                         <MudTd DataLabel="Operador">
-                            <MudAutocomplete T="User"
+                            <MudAutocomplete T="User" Disabled="@IsCombinationEditDisabled()"
                                                 @bind-Value="context.Operator"
                                                 SearchFunc="@SearchOperators(context.Supervisor)"
                                                 Placeholder="Seleccionar Operador..."
@@ -244,7 +244,7 @@
                         </MudTd>
 
                         <MudTd DataLabel="Supervisor">
-                            <MudAutocomplete T="User"
+                            <MudAutocomplete T="User" Disabled="@IsCombinationEditDisabled()"
                                                 @bind-Value="context.Supervisor"
                                                 SearchFunc="@SearchSupervisors"
                                                 Placeholder="Seleccionar Supervisor..."
@@ -323,7 +323,7 @@
         await GetLoggedUserAsync();
 
         _allUsers = (await UsersService.GetUsers(false, false)).ToList();
-        
+
         // Cargar usuarios de revisor y aprobador basado en PlantId del Hub (lógica del Before)
         if (State?.Hub?.PlantId.HasValue == true)
         {
@@ -335,12 +335,12 @@
             _approveUsers = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
             _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
         }
-        
+
         if (State?.Hub?.SOSCombination != null && State.Hub.SOSCombination.Count > 0)
         {
             // Ya existe una combinación, cargar la primera
             _combination = State.Hub.SOSCombination.First();
-            
+
             // Si tiene logbooks, cargar el último revisor y aprobador para mostrarlos
             if (_combination.CombinationLogbooks != null && _combination.CombinationLogbooks.Any())
             {
@@ -348,7 +348,7 @@
                 _selectedReviewer = _allUsers.FirstOrDefault(u => u.UserId == lastLogbook.ReviewerId);
                 _selectedApprover = _allUsers.FirstOrDefault(u => u.UserId == lastLogbook.ApproverId);
             }
-            
+
             // Cargar ReviewerHS si existe
             if (_combination.ReviewerHSId.HasValue && _combination.ReviewerHSId > 0)
             {
@@ -468,6 +468,22 @@
                     IsActive = true
                 };
 
+                if(_combination.Turns != null)
+                    foreach(var turn in _combination.Turns)
+                    {
+                        turn.OperatorId = turn.Operator?.UserId;
+                        turn.SupervisorId = turn.Supervisor?.UserId;
+                    }
+
+                if(_combination.Turns.Any())
+                    foreach (var turn in _combination.Turns)
+                    {
+                        if(turn.OperatorId == 0 || turn.SupervisorId == 0)
+                        {
+                            Snackbar.Add("Seleccione un Supervisor y operador para cada ciclo, por favor", Severity.Warning);
+                        }
+                    }
+
                 if (_combination.CombinationLogbooks == null)
                     _combination.CombinationLogbooks = new List<SOSCombinationLogbook>();
 
@@ -520,15 +536,21 @@
                 if (_combination.SOSCombinationOperationSequence == null)
                     _combination.SOSCombinationOperationSequence = new List<SOSCombinationOperationSequence>();
 
-                // IMPORTANTE: Asignar Supervisor y Operador a cada Turn si están definidos
-                if (_combination.Turns != null && _combination.Turns.Any())
-                {
+                if (_combination.Turns != null)
                     foreach (var turn in _combination.Turns)
                     {
-                        // Los turnos ya tienen SupervisorId y OperatorId asignados desde el UI
-                        // No es necesario hacer nada adicional aquí, solo validar que existan
+                        turn.OperatorId = turn.Operator?.UserId;
+                        turn.SupervisorId = turn.Supervisor?.UserId;
                     }
-                }
+
+                if (_combination.Turns.Any())
+                    foreach (var turn in _combination.Turns)
+                    {
+                        if (turn.OperatorId == 0 || turn.SupervisorId == 0)
+                        {
+                            Snackbar.Add("Seleccione un Supervisor y operador para cada ciclo, por favor", Severity.Warning);
+                        }
+                    }
 
                 var result = await SOSHubService.GenerateCombination(State.Hub.SOSHubId, _combination);
                 

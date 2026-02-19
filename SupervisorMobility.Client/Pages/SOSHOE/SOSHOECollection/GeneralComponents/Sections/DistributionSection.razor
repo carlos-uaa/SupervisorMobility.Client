@@ -301,11 +301,11 @@
         <MudGrid Spacing="2">
             <MudItem xs="12" md="6">
                 <MudAutocomplete T="User" Label="Revisor Responsable" @bind-Value="_selectedReviewer" SearchFunc="@SearchReviewers"
-                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"                                    Disabled="@IsDistributionEditDisabled()"                                    AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true" Disabled="@IsDistributionEditDisabled()" AdornmentIcon="@Icons.Material.Filled.PersonSearch" Variant="Variant.Outlined" Margin="Margin.Dense" />
             </MudItem>
             <MudItem xs="12" md="6">
                 <MudAutocomplete T="User" Label="Aprobador Final" @bind-Value="_selectedApprover" SearchFunc="@SearchApprovers"
-                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true"                                    Disabled="@IsDistributionEditDisabled()"                                    AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({u.UserId})")" ResetValueOnEmptyText="true" Disabled="@IsDistributionEditDisabled()" AdornmentIcon="@Icons.Material.Filled.VerifiedUser" Variant="Variant.Outlined" Margin="Margin.Dense" />
             </MudItem>
         </MudGrid>
     </MudItem>
@@ -480,6 +480,22 @@
 
             if (dialogResult.Canceled)
                 return; // Se cancela la creación
+
+            if (_distribution.Turns != null)
+                foreach (var turn in _distribution.Turns)
+                {
+                    turn.OperatorId = turn.Operator?.UserId;
+                    turn.SupervisorId = turn.Supervisor?.UserId;
+                }
+
+            if (_distribution.Turns.Any())
+                foreach (var turn in _distribution.Turns)
+                {
+                    if (turn.OperatorId == 0 || turn.SupervisorId == 0)
+                    {
+                        Snackbar.Add("Seleccione un Supervisor y operador para cada ciclo, por favor", Severity.Warning);
+                    }
+                }
 
             if(State.Hub.SOSDistribution != null && State.Hub.SOSDistribution.Count > 0)
             {
