@@ -307,6 +307,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 Documents.Add(sequence);
             }
 
+            if (_sosHub.SOSSynopticOperatingRequirements?.Count() > 0)
+                foreach (var csro in _sosHub.SOSSynopticOperatingRequirements)
+                {
+                    Documents.Add(csro);
+                }
+
+            if (_sosHub.SOSSynopticControlPoints?.Count() > 0)
+                foreach (var cspc in _sosHub.SOSSynopticControlPoints)
+                {
+                    Documents.Add(cspc);
+                }
+
             foreach (var pat in _sosHub.PATs)
             {
                 Documents.Add(pat);

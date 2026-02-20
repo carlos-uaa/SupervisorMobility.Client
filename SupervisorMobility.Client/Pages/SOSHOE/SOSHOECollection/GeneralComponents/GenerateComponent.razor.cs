@@ -127,7 +127,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         AnalysisSelected = distribution.Analyses?.ToList() ?? new List<SOSAnalysis>(),
                         SequencesSelected = distribution.Sequences?.ToList() ?? new List<SOSSequence>()
                     };
-
+                    
+                    // Auto-redirect to details view if Distribution exists
+                    State.SelectedIndex = 33;
                 }
                 else
                 {
@@ -145,12 +147,15 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                 var csroCount = State?.SynopticTableOfOpertingRequirements != null ? State.SynopticTableOfOpertingRequirements.Count : 0;
                 Console.WriteLine($"[GenerateComponent LoadInitialSelections] CSRO - SynopticTableOfOpertingRequirements Count={csroCount}");
                 // Si ya existe CSRO, cargar sus selecciones de SOSHubs
-                if (State?.SynopticTableOfOpertingRequirements != null && State.SynopticTableOfOpertingRequirements.Count > 0)
-                {
-                    var csro = State.SynopticTableOfOpertingRequirements.First();
-                    _soSHubSelections = csro.SOSHubs?.ToList() ?? new List<SOSHub>();
-                    Console.WriteLine($"[GenerateComponent LoadInitialSelections] CSRO existente encontrado, SOSHubs cargados={_soSHubSelections.Count}");
-                }
+                    if (State?.SynopticTableOfOpertingRequirements != null && State.SynopticTableOfOpertingRequirements.Count > 0)
+                    {
+                        var csro = State.SynopticTableOfOpertingRequirements.First();
+                        _soSHubSelections = csro.SOSHubs?.ToList() ?? new List<SOSHub>();
+                        Console.WriteLine($"[GenerateComponent LoadInitialSelections] CSRO existente encontrado, SOSHubs cargados={_soSHubSelections.Count}");
+                        
+                        // Auto-redirect to details view if CSRO exists
+                        State.SelectedIndex = 66;
+                    }
                 else
                 {
                     _soSHubSelections = new List<SOSHub>();
@@ -161,16 +166,18 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
             {
                 // Entrando directo a SelectAnalisis&Sequences para CSPC
                 // Si ya existe CSPC, cargar sus selecciones desde State.SynopticTableOfControlPoints (misma fuente que usa CSPCSection)
-                if (State?.SynopticTableOfControlPoints != null && State.SynopticTableOfControlPoints.Count > 0)
-                {
-                    var cspc = State.SynopticTableOfControlPoints.First();
-                    _selections = new AnalysisSequencesDto
+                    if (State?.SynopticTableOfControlPoints != null && State.SynopticTableOfControlPoints.Count > 0)
                     {
-                        AnalysisSelected = cspc.Analyses?.ToList() ?? new List<SOSAnalysis>(),
-                        SequencesSelected = cspc.Sequences?.ToList() ?? new List<SOSSequence>()
-                    };
-
-                }
+                        var cspc = State.SynopticTableOfControlPoints.First();
+                        _selections = new AnalysisSequencesDto
+                        {
+                            AnalysisSelected = cspc.Analyses?.ToList() ?? new List<SOSAnalysis>(),
+                            SequencesSelected = cspc.Sequences?.ToList() ?? new List<SOSSequence>()
+                        };
+                        
+                        // Auto-redirect to details view if CSPC exists
+                        State.SelectedIndex = 77;
+                    }
                 else
                 {
                     _selections = new AnalysisSequencesDto
@@ -214,6 +221,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                             SequencesSelected = distribution.Sequences?.ToList() ?? new List<SOSSequence>()
                         };
 
+                        // Auto-redirect to details view if Distribution exists
+                        State.SelectedIndex = 33;
                     }
                     else
                     {
@@ -237,6 +246,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                         var csro = State.SynopticTableOfOpertingRequirements.First();
                         _soSHubSelections = csro.SOSHubs?.ToList() ?? new List<SOSHub>();
                         Console.WriteLine($"[GenerateComponent OnParametersSetAsync] CSRO existente, SOSHubs cargados={_soSHubSelections.Count}");
+
+                        // Auto-redirect to details view if CSRO exists
+                        State.SelectedIndex = 66;
                     }
                     else
                     {
@@ -258,6 +270,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection.GeneralCompone
                             SequencesSelected = cspc.Sequences?.ToList() ?? new List<SOSSequence>()
                         };
 
+                        // Auto-redirect to details view if CSPC exists
+                        State.SelectedIndex = 77;
                     }
                     else
                     {
