@@ -1,0 +1,306 @@
+@page "/soshoe/SynopticControlPoints/Update/{SynopticControlPointsId:int}"
+
+@inject IBreadcrumbService BreadcrumbService
+@inject IStringLocalizer<Resource1> Localizer1
+@inject IStringLocalizer<ResourceSTCP> Localizer
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ISynopticControlPointsService SynopticControlPointsService
+@inject IUserService UsersService
+@inject ISOSHubService sosHubService
+
+<style>
+    .synoptic-table table {
+        border-collapse: collapse;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background: white;
+    }
+
+    .synoptic-table th,
+    .synoptic-table td {
+        padding: 10px 8px !important;
+        text-align: left;
+        border: 1px solid #ddd;
+        text-transform: uppercase !important;
+    }
+
+    .synoptic-table thead th {
+        background: #0b8ff40d;
+        color: #333;
+        font-weight: 600 !important;
+        letter-spacing: 0.5px;
+    }
+
+    .center {
+        text-align: center !important;
+    }
+
+    .noBorderTop {
+        border-top: none !important;
+    }
+
+    .noBorderBottom {
+        border-bottom: none !important;
+    }
+
+    .synoptic-table tbody th {
+        background-color: #0b8ff40d;
+        color: #333;
+        font-weight: 600 !important;
+    }
+</style>
+
+@if (ShowLoading)
+{
+    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true"
+                 Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
+        <ItemTemplate>
+            <div class="d-flex flex-column justify-center" style="height:100%">
+                <MudItem class="d-flex flex-column justify-center align-self-center">
+                    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+                </MudItem>
+                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+            </div>
+        </ItemTemplate>
+    </MudCarousel>
+}
+else
+{
+    @* ── Toolbar: navigate back + save ── *@
+    <MudSimpleTable Class="mb-5 calendar-table rounded" Style="overflow-x: auto; float: right" Dense>
+        <thead><tr><th rowspan="2"></th></tr></thead>
+        <tbody>
+            <tr>
+                <td>
+                    <MudItem Style="justify-content: end" Class="ml-auto">
+                        <MudItem Class="d-flex">
+                            <MudChip Variant="Variant.Text" Color="Color.Info" Class="pl-3"
+                                     Icon="@Icons.Material.Filled.Info" IconColor="Color.Info"
+                                     @onclick="(() => HoeDetails((int)_record.SOSHubId!))"
+                                     OnTouch="(() => HoeDetails((int)_record.SOSHubId!))">
+                                @Localizer["GoCollection"]
+                            </MudChip>
+                        </MudItem>
+                    </MudItem>
+                </td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+    <MudText Typo="Typo.h6" Class="mb-4"><b>@Localizer["titleSynopticTableOfControlPoints"] — Edit</b></MudText>
+
+    <MudPaper Elevation="3" Class="pa-4 mb-4">
+        <MudGrid Spacing="3">
+
+            @* Process name *@
+            <MudItem xs="12" md="6">
+                <MudTextField T="string"
+                              Label="@Localizer["SCPProcess"]"
+                              @bind-Value="_record.ProcessName"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+            </MudItem>
+
+            @* Creator *@
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="User"
+                                 Label="@Localizer["SCPPreparedBy"]"
+                                 Value="_record.Creator"
+                                 ValueChanged="u => { _record.Creator = u; _record.CreatorId = u?.UserId; }"
+                                 SearchFunc="SearchUsers"
+                                 ToStringFunc="u => u?.Name ?? string.Empty"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 ResetValueOnEmptyText="false"
+                                 CoerceValue="true"
+                                 ShowProgressIndicator="true"
+                                 AdornmentIcon="@Icons.Material.Filled.Person"
+                                 AdornmentColor="Color.Primary" />
+            </MudItem>
+
+            @* Reviewer *@
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="User"
+                                 Label="@Localizer["SCPReviewedBy"]"
+                                 Value="_record.Reviewer"
+                                 ValueChanged="u => { _record.Reviewer = u; _record.ReviewerId = u?.UserId; }"
+                                 SearchFunc="SearchUsers"
+                                 ToStringFunc="u => u?.Name ?? string.Empty"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 ResetValueOnEmptyText="false"
+                                 CoerceValue="true"
+                                 ShowProgressIndicator="true"
+                                 AdornmentIcon="@Icons.Material.Filled.Person"
+                                 AdornmentColor="Color.Info" />
+            </MudItem>
+
+            @* Approver *@
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="User"
+                                 Label="@Localizer["SCPApprovedBy"]"
+                                 Value="_record.Approver"
+                                 ValueChanged="u => { _record.Approver = u; _record.ApproverId = u?.UserId; }"
+                                 SearchFunc="SearchUsers"
+                                 ToStringFunc="u => u?.Name ?? string.Empty"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 ResetValueOnEmptyText="false"
+                                 CoerceValue="true"
+                                 ShowProgressIndicator="true"
+                                 AdornmentIcon="@Icons.Material.Filled.Person"
+                                 AdornmentColor="Color.Success" />
+            </MudItem>
+
+        </MudGrid>
+    </MudPaper>
+
+    @* ── Preview of synoptic table (read-only) ── *@
+    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Preview</b></MudText>
+    <MudPaper Square="true" Elevation="3" Class="mb-6">
+        <MudSimpleTable Class="synoptic-table">
+            <thead>
+                <MudTr>
+                    <MudTh ColSpan="5" Class="noBorderBottom">@Localizer["SCPProcess"]</MudTh>
+                    <MudTh ColSpan="4" Class="noBorderBottom">@Localizer["SCPModels"]</MudTh>
+                    @if (TryGetLogbookAt(2, out var lb2))
+                    {
+                        <MudTd ColSpan="3" Class="center">@lb2.Approver?.Name</MudTd>
+                        <MudTd ColSpan="1" Class="center">@DateFormat(lb2.Date)</MudTd>
+                        <MudTd ColSpan="4" Class="center">@lb2.Changes</MudTd>
+                        <MudTd ColSpan="2" Class="center">@(lb2.NoRevision == 0 ? "N" : lb2.NoRevision.ToString())</MudTd>
+                    }
+                    else
+                    {
+                        <MudTd ColSpan="3"></MudTd><MudTd ColSpan="1"></MudTd>
+                        <MudTd ColSpan="4"></MudTd><MudTd ColSpan="2"></MudTd>
+                    }
+                </MudTr>
+                <MudTr>
+                    <MudTd ColSpan="5" Class="center noBorderTop">@_record.ProcessName</MudTd>
+                    <MudTd ColSpan="4" Class="center noBorderTop">
+                        @if (_soshub.AppliedModels?.Count > 0)
+                        {
+                            <MudItem Style="display:flex; flex-wrap:wrap;" Class="gap-2">
+                                @foreach (var m in _soshub.AppliedModels)
+                                {
+                                    <MudChip Style="border-radius:4px !important;" T="string"
+                                             Icon="@Icons.Material.Filled.DirectionsCar"
+                                             Color="Color.Primary">@m.Description</MudChip>
+                                }
+                            </MudItem>
+                        }
+                    </MudTd>
+                    @if (TryGetLogbookAt(1, out var lb1))
+                    {
+                        <MudTd ColSpan="3" Class="center">@lb1.Approver?.Name</MudTd>
+                        <MudTd ColSpan="1" Class="center">@DateFormat(lb1.Date)</MudTd>
+                        <MudTd ColSpan="4" Class="center">@lb1.Changes</MudTd>
+                        <MudTd ColSpan="2" Class="center">@(lb1.NoRevision == 0 ? "N" : lb1.NoRevision.ToString())</MudTd>
+                    }
+                    else
+                    {
+                        <MudTd ColSpan="3"></MudTd><MudTd ColSpan="1"></MudTd>
+                        <MudTd ColSpan="4"></MudTd><MudTd ColSpan="2"></MudTd>
+                    }
+                </MudTr>
+                <MudTr>
+                    <MudTh ColSpan="5" Class="noBorderBottom">@Localizer["SCPMonth"]</MudTh>
+                    <MudTh ColSpan="4" Class="noBorderBottom">@Localizer["SCPPlant"]</MudTh>
+                    @if (TryGetLogbookAt(0, out var lb0))
+                    {
+                        <MudTd ColSpan="3" Class="center">@lb0.Approver?.Name</MudTd>
+                        <MudTd ColSpan="1" Class="center">@DateFormat(lb0.Date)</MudTd>
+                        <MudTd ColSpan="4" Class="center">@lb0.Changes</MudTd>
+                        <MudTd ColSpan="2" Class="center">@(lb0.NoRevision == 0 ? "N" : lb0.NoRevision.ToString())</MudTd>
+                    }
+                    else
+                    {
+                        <MudTd ColSpan="3"></MudTd><MudTd ColSpan="1"></MudTd>
+                        <MudTd ColSpan="4"></MudTd><MudTd ColSpan="2"></MudTd>
+                    }
+                </MudTr>
+                <MudTr>
+                    <MudTd ColSpan="5" Class="center noBorderTop">@DateFormatString(_record.CreatedAt)</MudTd>
+                    @if (_soshub.Plant != null)
+                    {
+                        <MudTd ColSpan="4" Class="center noBorderTop">@_soshub.Plant.Description</MudTd>
+                    }
+                    else
+                    {
+                        <MudTd ColSpan="4" Class="center noBorderTop">@Localizer["SCPnotPlant"]</MudTd>
+                    }
+                    <MudTd ColSpan="3" Class="center">@Localizer["SCPApproved"]</MudTd>
+                    <MudTd ColSpan="1" Class="center">@Localizer["SCPDate"]</MudTd>
+                    <MudTd ColSpan="4" Class="center">@Localizer["SCPchange"]</MudTd>
+                    <MudTd ColSpan="2" Class="center">@Localizer["SCPNo"]</MudTd>
+                </MudTr>
+            </thead>
+            <tbody>
+                <MudTr><MudTd ColSpan="18" Style="height:10px;"></MudTd></MudTr>
+                <MudTr>
+                    <MudTh>@Localizer["SCPPreparedBy"]</MudTh>
+                    <MudTd ColSpan="4">@_record.Creator?.Name</MudTd>
+                    <MudTh>@Localizer["SCPReviewedBy"]</MudTh>
+                    <MudTd ColSpan="3">@_record.Reviewer?.Name</MudTd>
+                    <MudTh ColSpan="2">@Localizer["SCPApprovedBy"]</MudTh>
+                    <MudTd ColSpan="8">@_record.Approver?.Name</MudTd>
+                </MudTr>
+                <MudTr><MudTd ColSpan="18" Style="height:10px;"></MudTd></MudTr>
+                <MudTr>
+                    <MudTh RowSpan="2" Class="center">@Localizer["SCPNo"]</MudTh>
+                    <MudTh RowSpan="2" ColSpan="4" Class="center">@Localizer["SCPControlPoints"]</MudTh>
+                    <MudTh RowSpan="2" Class="center">@Localizer["SCPDegreeOfImportance"]</MudTh>
+                    <MudTh ColSpan="6" Class="center">@Localizer["SCPSupervisorConfirmation"]</MudTh>
+                    <MudTh RowSpan="2" ColSpan="7" Class="center">@Localizer["SCPObservations"]</MudTh>
+                </MudTr>
+                <MudTr>
+                    <MudTd Class="center">@Localizer["SCPOperationObservations"]</MudTd>
+                    <MudTd Class="center">@Localizer["SCPOperatorRecord"]</MudTd>
+                    <MudTd Class="center">@Localizer["SCPCheckProdAndCond"]</MudTd>
+                    <MudTd ColSpan="2" Class="center">@Localizer["SCPSupervisorRecord"]</MudTd>
+                </MudTr>
+                @for (int i = 0; i < 20; i++)
+                {
+                    <MudTr>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd ColSpan="4" Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd Class="center"></MudTd>
+                        <MudTd ColSpan="8" Class="center"></MudTd>
+                    </MudTr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+
+    @* ── Save / Cancel buttons ── *@
+    <MudItem Class="d-flex flex-row-reverse gap-4 pb-6">
+        <MudButton Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   Variant="Variant.Filled"
+                   Size="Size.Medium"
+                   OnClick="SaveChanges"
+                   Disabled="_saving">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Save Changes
+        </MudButton>
+        <MudButton Color="Color.Default"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   Variant="Variant.Outlined"
+                   Size="Size.Medium"
+                   OnClick="GoBack">
+            Cancel
+        </MudButton>
+    </MudItem>
+}
