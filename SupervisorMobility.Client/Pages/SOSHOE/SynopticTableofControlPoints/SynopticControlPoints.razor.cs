@@ -104,11 +104,8 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
         #region SynopticRequirements
         private void UpdateSynopticRequirements(int SynopticId)
         {
-
+            NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Update/{SynopticId}");
         }
-
-
-
         #endregion
 
         #region SynopticRequirementsLogbook
