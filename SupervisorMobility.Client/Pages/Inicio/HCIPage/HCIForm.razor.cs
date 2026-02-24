@@ -105,17 +105,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                     _hci.Commentaries = new List<Commentary>();
                     _hci.CareerPaths = new List<UserCareerPath>();
                     if (_hci.User.ILURegisers.Any())
-                    {
                         expertise = _hci.ILUs = _hci.User.ILURegisers.ToList();
-                    }
                     else
-                    {
                         _hci.ILUs = new List<ILURegister>();
-                    }
-                }
-                else
-                {
-                    //redirect or sumthin'
                 }
             }
             else 
@@ -136,7 +128,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                 if (coursesResponse.Success)
                     courses = coursesResponse.Data;
                 else
+                {
                     Snackbar.Add($"Error loading courses: {coursesResponse.Message}", Severity.Error);
+                    courses = new List<UserCourse>();
+                }    
             }
 
             dataloaded = true;

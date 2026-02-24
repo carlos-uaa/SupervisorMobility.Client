@@ -193,11 +193,6 @@
             </MudMenu>
         }
 
-        @*        <MudIconButton Icon="@Icons.Material.Filled.Brightness4"
-        Color="Color.Inherit"
-        Class="nav-button"
-        OnClick="@ThemeToggle" />*@
-
         </MudAppBar>
         <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
             <MudDrawerHeader>
@@ -211,32 +206,6 @@
         </MudContainer>
 
         <span id="marqueeText" class="marquee"></span>
-
-        @*<footer class="footerContainer" id="footer" style="min-width:5vw">
-        <div class="lock">
-        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowUp" Style="font-size: 2rem;" class="icon-unlock" />
-        <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowDown" Style="font-size: 2rem;" class="icon-lock" />
-        </div>
-        <div class="footersep">
-        @if (user.UserType != 0)
-        {
-        <MudText>Hello! @user.Name, @(DateTime.Today.Year)</MudText>
-        }
-        else
-        {
-        <MudText>Welcome to Supervisor Mobility, @(DateTime.Today.Year)</MudText>
-        }
-        <MudList Clickable="true" @onmouseover="@OnMouseOver">
-        <MudListItem Style="color:white" Icon="@Icons.Material.Filled.Info" Text=@Localizer["needHelpNavigating"] Expanded="@_IsHovering" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
-        <NestedList>
-        <MudListItem Style="color:white" Icon="@Icons.Material.Filled.MenuBook" Href="/Help/guides">
-        @Localizer["guides"]
-        </MudListItem>
-        </NestedList>
-        </MudListItem>
-        </MudList>
-        </div>
-        </footer>*@
     </MudMainContent>
 </MudLayout>
 
@@ -788,7 +757,7 @@
                 Info = "#20a8e1",
                 Error = "#FF0000",
                 AppbarBackground = "#20a8e1",
-                Tertiary = "#f5f5f6",
+                Tertiary = "#78967A",
                 Background = "#efefef"
             },
             PaletteDark = new PaletteDark
@@ -827,7 +796,6 @@
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
-
             switch (CultureInfo.CurrentCulture.Name)
             {
                 case "es-ES":
@@ -839,17 +807,12 @@
             }
 
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
-
         }
         else
         {
             languageCheck = !languageCheck;
             StateHasChanged();
         }
-
-
-
-        // Aquí puedes realizar cualquier acción adicional que desees cuando se cambie el estado del mudSwitch
     }
 
     private async Task<bool> OpenMessageConfirmation()
@@ -871,23 +834,12 @@
         }
 
         Dispose();
-
-        //Notificationtimer = new Timer(GetNotifications, null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
-        //attendanceTimer = new Timer(GetAttendance, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
-
         logged = true;
     }
 
     private async void GetNotifications(object state)
     {
-
         await updatenotifications();
-
-    }
-
-    private async void GetAttendance(object state)
-    {
-        //await AttendanceServices.AssignEmployes();
     }
 
     private async Task updatenotifications()
@@ -934,16 +886,13 @@
     public void Dispose()
     {
         if (Notificationtimer != null)
-        {
             Notificationtimer.Dispose();
-        }
 
         if (attendanceTimer != null)
         {
             attendanceTimer.Dispose();
 
         }
-
     }
 
 
@@ -959,8 +908,6 @@
 
         if (userId != null)
         {
-
-            //get user by objectid
             user = await UsersService.GetUserByObjectIdWithCollections(userId);
 
             if (user != null)
@@ -980,15 +927,7 @@
 
             json = JsonSerializer.Serialize<ADuser>(auser);
             await js.InvokeVoidAsync("localStorage.setItem", "ADuser", json);
-
-
-
         }
-
-
-        // Do something with the user
-        //Console.WriteLine($"Current user: {currentUser.Identity?.Name} y su Id es {userId}");
-        //await LocalStorage.SetItemAsync("user", userId);
     }
 
     private async Task BeginLogout()
@@ -1033,29 +972,6 @@
         return hasProperty;
     }
 
-    //private async Task GetSupervisor()
-    //{
-
-    //    await LogOut();
-    //    users = await UsersService.GetUsers();
-    //    user = users.FirstOrDefault()!;
-
-    //    json = JsonSerializer.Serialize<User>(user);
-    //    await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-    //    NavigationManager.NavigateTo($"/", true);
-    //}
-
-    //private async Task GetAdmin()
-    //{
-    //    await LogOut();
-    //    users = await UsersService.GetUsers();
-    //    user = users.LastOrDefault()!;
-
-    //    json = JsonSerializer.Serialize<User>(user);
-    //    await js.InvokeVoidAsync("localStorage.setItem", "user", json);
-    //    NavigationManager.NavigateTo($"/", true);
-    //}
-
     private async Task LogOut()
     {
         if (await HasPropertyAsync())
@@ -1073,20 +989,15 @@
     protected void OnMouseOver(MouseEventArgs mouseEvent)
     {
         if (!_IsHovering)
-        {
             _IsHovering = true;
-            //StateHasChanged();
-        }
     }
 
     protected async void OnMouseOut(MouseEventArgs mouseEvent)
     {
         _IsHovering = false;
         StateHasChanged();
-
     }
 
-    //dialgo
     private void Ok()
     {
         NoifyDialog = false;

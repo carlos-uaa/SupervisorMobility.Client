@@ -41,12 +41,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         protected async override Task OnInitializedAsync()
         {
             if (!TrajectoryTable.Any())
-            {
-                for (int i = 0; i < 5; i++)
-                {
-                    TrajectoryTable.Add( new UserCareerPath { CareerPathNo = i+1 });
-                }
-            }
+                TrajectoryTable.Add( new UserCareerPath { CareerPathNo = 1 });
         }
 
         private void DateChanged(DateTime? range, int index)

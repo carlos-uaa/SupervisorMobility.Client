@@ -1,57 +1,98 @@
 ﻿@inject IDepartmentService DepartmentService
 @inject IStringLocalizer<Resource> Localizer
-<MudSimpleTable Elevation="0">
-    @if(dataloaded){
+
+<MudSimpleTable Elevation="0" Hover="true" Dense="true" Class="mx-2">
+    @if (dataloaded)
+    {
         <thead>
             <tr>
-                <th style="text-align:center">@Localizer["CatOrLvl"]</th>
-                <th style="text-align:center">@Localizer["date"]</th>
-                <th></th>
+                <th style="min-width: 250px;">@Localizer["CatOrLvl"]</th>
+                <th style="width: 200px;" class="text-center">@Localizer["date"]</th>
+                <th style="width: 120px;" class="text-right px-4">@Localizer["Actions"]</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in CategoryTable.Select((value, index) => new { index, value }))
             {
-                if(item.value.IsActive.Value){
+                if (item.value.IsActive ?? false)
+                {
                     <tr>
                         <td>
                             @if (!details)
                             {
-                                <MudSelect T="int" Variant="Variant.Text" Class="mt-3 mr-4" AnchorOrigin="Origin.BottomCenter" Value="item.value.ChosenCategoryDepartmentId" ValueChanged="opt=>OptionChanged(opt, item.index)">
-                                    <MudSelectItem Disabled="true" Value="0">Select a category</MudSelectItem>
+                                <MudSelect T="int"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Dense="true"
+                                           AnchorOrigin="Origin.BottomCenter"
+                                           Value="item.value.ChosenCategoryDepartmentId"
+                                           ValueChanged="opt => OptionChanged(opt, item.index)"
+                                           Class="bg-white">
+                                    <MudSelectItem Value="0" Disabled="true">@Localizer["SelectCategory"]</MudSelectItem>
                                     @foreach (var ctgr in ExistingCategories)
                                     {
                                         <MudSelectItem Value="ctgr.DepartmentId">@($"{ctgr.Code} - {ctgr.Description}")</MudSelectItem>
                                     }
                                 </MudSelect>
-                                @* <MudTextField Value="item.value.Name" ValueChanged="(string? val)=>OptionChanged(val,item.index)" Variant="Variant.Text" FullWidth></MudTextField> *@
                             }
                             else
                             {
-                                if (item.value.ChosenCategoryDepartmentId != 0)
+                                @if (item.value.ChosenCategoryDepartmentId != 0)
                                 {
                                     var tempCategory = ExistingCategories.FirstOrDefault(p => p.DepartmentId == item.value.ChosenCategoryDepartmentId);
-                                    <MudTextField Value="@($"{tempCategory.Code} - {tempCategory.Description}")" Variant="Variant.Text" FullWidth ReadOnly></MudTextField>
+                                    <div class="d-flex align-center py-2">
+                                        <MudIcon Icon="@Icons.Material.Filled.Label" Size="Size.Small" Color="Color.Primary" Class="mr-2" />
+                                        <MudText Typo="Typo.body2" Style="font-weight: 500;">
+                                            @($"{tempCategory?.Code} - {tempCategory?.Description}")
+                                        </MudText>
+                                    </div>
                                 }
                                 else
                                 {
-                                    <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">No categories yet</MudAlert>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="font-italic py-2">
+                                        @Localizer["NoCategories"]
+                                    </MudText>
                                 }
                             }
                         </td>
                         <td>
-                            <MudDatePicker Date="item.value.Date" DateChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details"/>
+                            <MudDatePicker Date="item.value.Date"
+                                           DateChanged="(d) => DateChanged(d, item.index)"
+                                           Clearable="true"
+                                           ReadOnly="@details"
+                                           Variant="@(details ? Variant.Text : Variant.Outlined)"
+                                           Margin="Margin.Dense"
+                                           DisableToolbar="true"
+                                           Class="@(details ? "" : "bg-white")" />
                         </td>
-                        <td style="width:20%">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="()=>Delete(item.index)"></MudIconButton>
-                            @if (item.value.Equals(CategoryTable.LastOrDefault(p => p.IsActive == true)))
-                            {
-                                <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" OnClick="()=>AddHere()"></MudIconButton>
-                            }
+                        <td>
+                            <div class="d-flex justify-end align-center px-2">
+                                @if (!details)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="() => Delete(item.index)" />
+                                }
+
+                                @if (item.value.Equals(CategoryTable.LastOrDefault(p => p.IsActive == true)) && !details)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline"
+                                                   Color="Color.Success"
+                                                   Size="Size.Medium"
+                                                   OnClick="() => AddHere()" />
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
             }
         </tbody>
+    }
+    else
+    {
+        <div class="pa-4 d-flex justify-center">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+        </div>
     }
 </MudSimpleTable>
