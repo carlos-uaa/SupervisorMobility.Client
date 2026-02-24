@@ -1,33 +1,86 @@
 ﻿@inject IStringLocalizer<Resource> Localizer
-<MudSimpleTable Elevation="0">
-    <thead>
-        <tr>
-            <th style="text-align:center">@Localizer["AcquisitionDate"]</th>
-            <th style="text-align:center">@Localizer["name"]</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in QualificationsTable.Select((value, index) => new { index, value }))
+
+<div class="pa-4">
+    <div class="d-flex align-center mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Verified" Color="Color.Primary" Class="mr-2" />
+        <MudText Typo="Typo.h6" Style="font-weight: 600;">@Localizer["QualificationsTitle"]</MudText>
+        <MudSpacer />
+        @if (!QualificationsTable.Any(p => p.IsActive == true))
         {
-            if (item.value.IsActive.Value)
-            {
-                <tr>
-                    <td style="width:30%">
-                        <MudDatePicker Date="item.value.DateEnd" DateChanged="(d)=>DateChanged(d,item.index)" Clearable="true" ReadOnly="@details" />
-                    </td>
-                    <td>
-                        <MudTextField T="string" Value="item.value.Description" ValueChanged="(val)=>TextChanged(val,item.index)" Variant="Variant.Text" FullWidth ReadOnly="@details"></MudTextField>
-                    </td>
-                    <td style="width:10%">
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="()=>Delete(item.index)"></MudIconButton>
-                        @if (item.value.Equals(QualificationsTable.LastOrDefault(p => p.IsActive == true)))
-                        {
-                            <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" OnClick="()=>AddHere()"></MudIconButton>
-                        }
-                    </td>
-                </tr>
-            }
+            <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="()=>AddHere()">
+                @Localizer["AddFirst"]
+            </MudButton>
         }
-    </tbody>
-</MudSimpleTable>
+    </div>
+
+    <MudSimpleTable Elevation="0" Hover="true" Dense="true" Class="mud-width-full">
+        <thead>
+            <tr>
+                <th style="width:220px;">@Localizer["AcquisitionDate"]</th>
+                <th>@Localizer["name"]</th>
+                <th style="width:110px;" class="text-right px-4">@Localizer["Actions"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in QualificationsTable.Select((value, index) => new { index, value }))
+            {
+                if (item.value.IsActive ?? false)
+                {
+                    <tr>
+                        <td>
+                            <MudDatePicker Date="item.value.DateEnd"
+                                           DateChanged="(d)=>DateChanged(d,item.index)"
+                                           Clearable="true"
+                                           ReadOnly="@details"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           IconSize="Size.Small"
+                                           Class="bg-white rounded-lg" />
+                        </td>
+                        <td>
+                            <MudTextField T="string"
+                                          Value="item.value.Description"
+                                          ValueChanged="(val)=>TextChanged(val,item.index)"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          ReadOnly="@details"
+                                          Placeholder="..."
+                                          Class="bg-white rounded-lg" />
+                        </td>
+                        <td>
+                            <div class="d-flex justify-end align-center px-2">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                               Color="Color.Error"
+                                               Size="Size.Small"
+                                               OnClick="()=>Delete(item.index)"
+                                               Title="Eliminar" />
+
+                                @if (item.value.Equals(QualificationsTable.LastOrDefault(p => p.IsActive == true)))
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
+                                                   Color="Color.Success"
+                                                   Size="Size.Medium"
+                                                   OnClick="()=>AddHere()"
+                                                   Title="Agregar nuevo" />
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </MudSimpleTable>
+</div>
+
+<style>
+    /* Suaviza las celdas de la tabla para que los inputs no se sientan apretados */
+    .mud-table-cell {
+        border-bottom: 1px solid var(--mud-palette-lines-default) !important;
+        padding: 8px !important;
+    }
+
+    /* Efecto hover suave en las filas */
+    .mud-table-row:hover {
+        background-color: var(--mud-palette-background-grey) !important;
+    }
+</style>

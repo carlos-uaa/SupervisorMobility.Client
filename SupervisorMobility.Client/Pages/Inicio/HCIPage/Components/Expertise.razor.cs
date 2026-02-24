@@ -25,24 +25,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 
         private List<ILULevel> _LevelsILU { get; set; } = new();
         private ILURegister _newIlu { get; set; } = new();
-
+        private List<ILURegister> _expertiseItems = new List<ILURegister>();
 
         private List<int> _idsAreas { get; set; } = new();
         private List<Area> _ExistAreas { get; set; } = new();
         protected async override Task OnInitializedAsync()
         {
             if (!ExpertiseTable.Any())
-            {
                 for (int i = 0; i < 5; i++)
                 {
                     ExpertiseTable.Add( new());
                 }
-            }
+
             _LevelsILU = await ILUServices.GetLevelsILU();
-
             _idsAreas = ExpertiseTable.Where(e => e.Distribution != null).Select(e => e.Distribution.AreaId).Distinct().ToList();
-
             _ExistAreas = await AreaServices.GetAreasByIds(_idsAreas);
+            _expertiseItems = GetGroupedExpertiseTable();
 
             Task<List<Plant>> plantsTask = null;
             Task<List<Area>> areasTask = null;
@@ -55,10 +53,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             else
             {
                 if (user.UserType == 1 || user.UserType == 5)
-                {
                     plantsTask = PlantServices.GetPlants();
-                }
-
                 if (user.UserType == 2 || user.UserType == 5)
                 {
                     plantId = (int)user.PlantId;
@@ -67,14 +62,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             }
 
             if (plantsTask != null)
-            {
                 _plants = (await plantsTask).OrderBy(p => p.Description).ToList();
-            }
-
             if (areasTask != null)
-            {
                 _areas = (await areasTask).OrderBy(a => a.Description).ToList();
-            }
 
             StateHasChanged();
             await base.OnInitializedAsync();
@@ -86,27 +76,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             ExpertiseTable[index].EndDate = range.End;
             Upd.InvokeAsync((ExpertiseTable[index], index));
         }
-        //private void TextChanged(string val, int idx)
-        //{
-        //    ExpertiseTable[idx].Description = val;
-        //    Upd.InvokeAsync((ExpertiseTable[idx], idx));
-        //}
-        //private void LevelChanged(string val, int idx)
-        //{
-        //    ExpertiseTable[idx].ILULevelId = val;
-        //    Upd.InvokeAsync((ExpertiseTable[idx], idx));
-        //}
+
 
         private void Delete(int index)
         {
-            //KnowledgeTable.RemoveAt(index);
             Del.InvokeAsync(index);
         }
 
         private void AddHere()
         {
             ILURegister newILU = new ILURegister();
-            //KnowledgeTable.Add(niu);
             Add.InvokeAsync(newILU);
         }
 
@@ -248,6 +227,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             };
         }
 
+        private string GetIluImage(int? levelId)
+        {
+            var level = _LevelsILU.FirstOrDefault(x => x.ILULevelId == levelId);
+            if (level == null) return "Images/default.png";
+
+            return level.ILULevelCode switch
+            {
+                "ITrainee" or "I" or "ILeader" or "LTrainee" or "LTraineeLeader" => "Images/I.png",
+                "L" or "LLeader" or "UTrainee" or "ULeaderTrainee" => "Images/L.png",
+                "U" or "ULeader" => "Images/U.png",
+                _ => "Images/default.png"
+            };
+        }
+
         #region Filters
 
         //Filters
@@ -307,25 +300,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             filters = !filters;
             searchString = ""; 
 
-            //idFilter = new();
-            //distributionId = new();
-            //operationFlag = false;
-            //operationId = new();
-            //filterDate = null;
-            //operatorId = new();
-            //statusId = new();
-
-            //SelectTableEvent0.ReloadServerData();
-
             if (color == Color.Info)
-            {
                 color = Color.Default;
-            }
             else
-            {
                 color = Color.Info;
-            }
-
         }
 
 
