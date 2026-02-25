@@ -34,7 +34,9 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
         // ── Domain data ──────────────────────────────────────────────────────────
         private SOSSynopticTableofControlPoints _record = new();
         private SOSHub _soshub = new();
-        private List<User> _allUsers = new();
+        // Listas filtradas igual que en el dialog de creación (CSPCSection)
+        private List<User> _approveUsers = new();  // Tipo 2 (SSV) → Elaborador y Aprobador
+        private List<User> _reviewUsers = new();   // Tipo 3 (SV)  → Revisor
 
         // ════════════════════════════════════════════════════════════════════════
         //  INITIALIZATION
@@ -96,24 +98,40 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SynopticTableofControlPoints
                 .GetSOSHub((int)_record.SOSHubId!, true, true,
                            includePeople: true, includeInformation: true, includeModel: true);
 
-            _allUsers = await UsersService.GetUsers(includeCollections: false, includeSubordinates: false);
+            // Cargar usuarios filtrados por planta y tipo de usuario,
+            // igual que en el dialog de creación (CSPCSection.razor)
+            if (_soshub.PlantId.HasValue)
+            {
+                _approveUsers = await UsersService.GetUsersByUserTypeInPlant(_soshub.PlantId.Value, 2, false, false);
+                _approveUsers = _approveUsers.OrderBy(u => u.Name).ToList();
+
+                _reviewUsers = await UsersService.GetUsersByUserTypeInPlant(_soshub.PlantId.Value, 3, false, true);
+                _reviewUsers = _reviewUsers.OrderBy(u => u.Name).ToList();
+            }
+
+
         }
 
         // ════════════════════════════════════════════════════════════════════════
         //  AUTOCOMPLETE
         // ════════════════════════════════════════════════════════════════════════
 
-        private Task<IEnumerable<User>> SearchUsers(string text)
+        private Task<IEnumerable<User>> SearchCreatorUsers(string text)
+            => SearchInList(_approveUsers, text);
+
+        private Task<IEnumerable<User>> SearchReviewerUsers(string text)
+            => SearchInList(_reviewUsers, text);
+
+        private Task<IEnumerable<User>> SearchApproverUsers(string text)
+            => SearchInList(_approveUsers, text);
+
+        private static Task<IEnumerable<User>> SearchInList(List<User> list, string text)
         {
             if (string.IsNullOrWhiteSpace(text))
-                return Task.FromResult(_allUsers.Take(20));
+                return Task.FromResult<IEnumerable<User>>(list);
 
             var lower = text.ToLowerInvariant();
-            var results = _allUsers
-                .Where(u => u.Name != null && u.Name.ToLowerInvariant().Contains(lower))
-                .Take(20);
-
-            return Task.FromResult(results);
+            return Task.FromResult(list.Where(u => u.Name != null && u.Name.ToLowerInvariant().Contains(lower)));
         }
 
         // ════════════════════════════════════════════════════════════════════════
