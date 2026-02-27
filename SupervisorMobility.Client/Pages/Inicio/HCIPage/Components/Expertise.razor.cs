@@ -31,12 +31,6 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         private List<Area> _ExistAreas { get; set; } = new();
         protected async override Task OnInitializedAsync()
         {
-            if (!ExpertiseTable.Any())
-                for (int i = 0; i < 5; i++)
-                {
-                    ExpertiseTable.Add( new());
-                }
-
             _LevelsILU = await ILUServices.GetLevelsILU();
             _idsAreas = ExpertiseTable.Where(e => e.Distribution != null).Select(e => e.Distribution.AreaId).Distinct().ToList();
             _ExistAreas = await AreaServices.GetAreasByIds(_idsAreas);

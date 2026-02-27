@@ -1,4 +1,10 @@
 ﻿@inject IStringLocalizer<Resource> Localizer
+@inject IAreaService AreaServices
+
+<style>
+    .mud-table-cell .mud-input-control { margin-top: 4px; margin-bottom: 4px; }
+    .mud-input.mud-input-underline:before { display: none; }
+</style>
 
 <MudExpansionPanel Style="min-width: 100%; border-radius: 12px; overflow: hidden;" IsInitiallyExpanded="false" Class="mt-4 elevation-1">
     <TitleContent>
@@ -16,71 +22,43 @@
                     <th>@Localizer["department"]</th>
                     <th>@Localizer["Process"]</th>
                     <th>@Localizer["OperationDescription"]</th>
-                    <th style="width: 120px; text-align: right;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in TrajectoryTable.Select((value, index) => new { index, value }))
+                @foreach (var item in TrajectoryTable)
                 {
-                    if (item.value.IsActive ?? false)
+                    if (item.IsActive ?? false)
                     {
                         <tr>
                             <td class="text-center">
                                 <MudChip Size="Size.Small" Variant="Variant.Text" Color="Color.Default">
-                                    @item.value.CareerPathNo
+                                    @item.CareerPathNo
                                 </MudChip>
                             </td>
                             <td>
-                                <MudDatePicker Date="item.value.ChangeDate"
-                                               DateChanged="(d) => DateChanged(d, item.index)"
+                                <MudDatePicker Date="item.ChangeDate"
                                                Clearable="true"
-                                               ReadOnly="@details"
+                                               ReadOnly
                                                Variant="Variant.Outlined"
                                                Margin="Margin.Dense" />
                             </td>
                             <td>
-                                <MudTextField Value="item.value.Department"
-                                              ValueChanged="(string? val) => TextChanged(val, item.index, 0)"
+                                <MudTextField Value="item.Department"
                                               Variant="Variant.Outlined"
                                               Margin="Margin.Dense"
-                                              ReadOnly="@details" />
+                                              ReadOnly />
                             </td>
                             <td>
-                                <MudTextField Value="item.value.Process"
-                                              ValueChanged="(string? val) => TextChanged(val, item.index, 1)"
+                                <MudTextField Value="item.Process"
                                               Variant="Variant.Outlined"
                                               Margin="Margin.Dense"
-                                              ReadOnly="@details" />
+                                              ReadOnly />
                             </td>
                             <td>
-                                <MudTextField Value="item.value.OperationDescription"
-                                              ValueChanged="(string? val) => TextChanged(val, item.index, 2)"
+                                <MudTextField Value="item.OperationDescription"
                                               Variant="Variant.Outlined"
                                               Margin="Margin.Dense"
-                                              ReadOnly="@details" />
-                            </td>
-                            <td>
-                                <div class="d-flex justify-end align-center">
-                                    <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
-                                                   Color="Color.Error"
-                                                   Size="Size.Small"
-                                                   OnClick="() => Delete(item.index)"
-                                                   Title="Eliminar" />
-
-                                    @if (item.value.Equals(TrajectoryTable.LastOrDefault(p => p.IsActive == true)))
-                                    {
-                                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
-                                                       Color="Color.Primary"
-                                                       Size="Size.Medium"
-                                                       OnClick="() => AddHere()"
-                                                       Title="Agregar fila" />
-                                    }
-                                    else
-                                    {
-                                        @* Espacio reservado para mantener la alineación si no es el último *@
-                                        <div style="width: 48px;"></div>
-                                    }
-                                </div>
+                                              ReadOnly />
                             </td>
                         </tr>
                     }
@@ -89,16 +67,3 @@
         </MudSimpleTable>
     </ChildContent>
 </MudExpansionPanel>
-
-<style>
-    /* Estilo para suavizar los bordes de los inputs dentro de la tabla */
-    .mud-table-cell .mud-input-control {
-        margin-top: 4px;
-        margin-bottom: 4px;
-    }
-
-    /* Eliminar la línea de subrayado si prefieres un look más minimalista */
-    .mud-input.mud-input-underline:before {
-        display: none;
-    }
-</style>

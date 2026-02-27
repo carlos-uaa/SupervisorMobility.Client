@@ -14,7 +14,5 @@ namespace SupervisorMobility.Client.Data.Entities
 
         public string? OperationDescription { get; set; }
         public bool? IsActive { get; set; } = true;
-
-
     }
 }
