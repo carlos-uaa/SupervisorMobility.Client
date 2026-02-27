@@ -22,6 +22,7 @@ using BlazorCameraStreamer;
 using Blazored.SessionStorage;
 using Blazorise.Extensions;
 using SupervisorMobility.Client.Data.Entities;
+using Blazorise.Utilities;
 
 namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
 {
@@ -46,6 +47,8 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         public List<HCICategory> categories = new();
         public List<Commentary> comments = new();
         private List<UserCourse> courses = new();
+
+        private List<Area> _areas = new();
 
 
         //User
@@ -134,7 +137,39 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                 }    
             }
 
+            var areasIds = expertise.Where(e => e.Distribution != null).Select(e => e.Distribution.AreaId).Distinct().ToList();
+            if(areasIds != null && areasIds.Count > 0)
+                _areas = await AreaServices.GetAreasByIds(areasIds);
+
+            GetCareerPath();
+
             dataloaded = true;
+        }
+
+        private void GetCareerPath()
+        {
+            if(expertise == null || expertise.Count == 0)
+                return;
+
+            int careerPathNo = 0;
+
+            foreach (var career in expertise)
+            {
+                careerPathNo++;
+                if (careers.Any(c => c.CareerPathNo == careerPathNo))
+                    continue;
+                careers.Add(
+                    new UserCareerPath
+                    {
+                        CareerPathNo = careerPathNo,
+                        ChangeDate = career.AcquisitionDate,
+                        Department = _areas.FirstOrDefault(a => a.AreaId == career.Distribution?.AreaId)?.Code ?? "",
+                        Process = career.Distribution?.Code ?? "",
+                        OperationDescription = career.Distribution?.Description ?? "",
+                        IsActive = true
+                    }
+                );
+            }
         }
 
         private async void Complete()
@@ -250,13 +285,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         public async void RemoveCareer(int idx)
         {
             if (careers[idx].UserCareerPathId == 0)
-            {
                 careers.RemoveAt(idx);
-            }
             else
-            {
                 careers[idx].IsActive = false;
-            }
             if (!careers.Where(p => p.IsActive == true).Any())
                 careers.Add(new UserCareerPath { CareerPathNo = 1, IsActive = true });
         }
@@ -351,16 +382,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             titles.RemoveAll(p => p.Description.IsNullOrEmpty() && p.HCITransactionId == 0);
 
             careers.RemoveAll(p=>p.OperationDescription.IsNullOrEmpty() && p.UserCareerPathId == 0);
-            //Add expertise validations
-            //for (int i = 0; i < expertise.Count; i++)
-            //{
-            //    if (checkExpertise(expertise[i])) expertise.RemoveAt(i);
-            //}
-            //expertise.RemoveAll(p=>p.Description.IsNullOrEmpty() && p.ID == 0);
             categories.RemoveAll(p=>p.ChosenCategoryDepartmentId == 0 && p.HCICategoryId == 0);
             comments.RemoveAll(p => p.Comment.IsNullOrEmpty() && p.CommentaryId == 0);
         }
-
 
         private async void DownloadExcel()
         {
