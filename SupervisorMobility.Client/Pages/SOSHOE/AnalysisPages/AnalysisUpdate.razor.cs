@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
 using FuzzyString;
 using SupervisorMobility.Client.Pages.Configuration.ProductPage;
+using SupervisorMobility.Client.Shared;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
 {
@@ -576,9 +577,31 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.AnalysisPages
         }
         #endregion
 
+        private async Task<bool> ConfirmUpdate()
+        {
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Confirmation Update" },
+                { "ContentText", "Are you sure you want to update the Analysis information?" },
+                { "ButtonText", "Update!" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.PlayCircle },
+                { "IconColor", Color.Tertiary }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>("Confirmation Update", dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            return !dialogResult.Canceled;
+        }
 
         private async Task UpdateAnalysis()
         {
+            if (!await ConfirmUpdate())
+                return;
+
             Snackbar.Clear();
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();
