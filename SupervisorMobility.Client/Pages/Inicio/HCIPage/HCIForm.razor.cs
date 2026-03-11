@@ -163,6 +163,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                     {
                         CareerPathNo = careerPathNo,
                         ChangeDate = career.AcquisitionDate,
+                        EndDate = career.EndDate,
                         Department = _areas.FirstOrDefault(a => a.AreaId == career.Distribution?.AreaId)?.Code ?? "",
                         Process = career.Distribution?.Code ?? "",
                         OperationDescription = career.Distribution?.Description ?? "",

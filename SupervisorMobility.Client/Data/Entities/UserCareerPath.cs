@@ -8,6 +8,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public int CareerPathNo { get; set; }
 
         public DateTime? ChangeDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         public string Department { get; set; }
         public string Process { get; set; }
