@@ -90,7 +90,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 
         private List<ILURegister> GetGroupedExpertiseTable()
         {
-            var query = ExpertiseTable.Where(e => e.isActive);
+            var query = ExpertiseTable.Where(e => e.isActive && e.EndDate != null);
 
             if (plantId != 0)
             {
@@ -164,13 +164,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                 }
 
                 query = query.Where(e =>
-                    // ID o código
+                    // ID o cï¿½digo
                     e.ILURegisterid.ToString().Contains(term) ||
                     (e.DistributionId?.ToString().Contains(term) ?? false) ||
                     (e.Distribution?.Code?.ToLower().Contains(term) ?? false) ||
                     (e.Distribution?.Description?.ToLower().Contains(term) ?? false) ||
 
-                    // Datos de Área
+                    // Datos de ï¿½rea
                     (e.Distribution != null &&
                     _ExistAreas.Any(a => a.AreaId == e.Distribution.AreaId && ((a.Description?.ToLower().Contains(term) ?? false) || (a.Code?.ToLower().Contains(term) ?? false)))) ||
 
@@ -191,7 +191,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                 );
             }
 
-            // Agrupar por DistributionId y categoría ILU
+            // Agrupar por DistributionId y categorï¿½a ILU
             if(statusId != 0)
             {
                 query = query.Where(e => e.ILULevel.ILULevelId != null && e.ILULevel.ILULevelId == statusId);
