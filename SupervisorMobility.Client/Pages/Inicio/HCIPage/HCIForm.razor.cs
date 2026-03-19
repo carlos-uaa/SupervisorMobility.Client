@@ -47,6 +47,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         public List<HCICategory> categories = new();
         public List<Commentary> comments = new();
         private List<UserCourse> courses = new();
+        public List<LocalUserCourses> newCourses = new();
 
         private List<Area> _areas = new();
 
@@ -107,6 +108,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                     _hci.Categories = new List<HCICategory>();
                     _hci.Commentaries = new List<Commentary>();
                     _hci.CareerPaths = new List<UserCareerPath>();
+                    _hci.Courses = new List<LocalUserCourses>();
                     if (_hci.User.ILURegisers.Any())
                         expertise = _hci.ILUs = _hci.User.ILURegisers.ToList();
                     else
@@ -123,6 +125,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                 expertise = _hci.ILUs ?? new();
                 categories = _hci.Categories ?? new();
                 comments = _hci.Commentaries ?? new();
+                newCourses = _hci.Courses ?? new();
             }
 
             if(user != null && !string.IsNullOrEmpty(_hci.User?.Payroll.ToString()))
@@ -142,6 +145,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                 _areas = await AreaServices.GetAreasByIds(areasIds);
 
             GetCareerPath();
+
 
             dataloaded = true;
         }
@@ -183,30 +187,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             _hci.ILUs = expertise;
             _hci.Categories = categories;
             _hci.Commentaries = comments;
+            _hci.Courses = newCourses;
 
             if (HCIID == null)
             {
                 _hci.ILUs = new();
                 if (await HCIService.CreateHCI(_hci))
-                {
                     Snackbar.Add("Created succesfully", Severity.Success);
-                }
                 else
-                {
                     Snackbar.Add("Error", Severity.Error);
-                }
             }
             else
-            {
                 if(await HCIService.UpdateHCI(_hci))
-                {
                     Snackbar.Add("Updated succesfully", Severity.Success);
-                }
                 else
-                {
                     Snackbar.Add("Error", Severity.Error);
-                }
-            }
+
             NavManager.NavigateTo("/HCI");
         }
 
@@ -390,6 +386,25 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         private async void DownloadExcel()
         {
             await Exportation.ExportHCIToExcel(_hci.HCIId);
+        }
+
+        public async void addCourse(LocalUserCourses course)
+        {
+            if (course == null)
+                return;
+
+            newCourses.Add(course);
+            Snackbar.Add("Course added", Severity.Info);
+            newCourses = newCourses.ToList();
+            StateHasChanged();
+        }
+
+        public async void removeCourse(LocalUserCourses course)
+        {
+            newCourses.Remove(course);
+            Snackbar.Add("Course removed", Severity.Info);
+            newCourses = newCourses.ToList();
+            StateHasChanged();
         }
     }
 }
