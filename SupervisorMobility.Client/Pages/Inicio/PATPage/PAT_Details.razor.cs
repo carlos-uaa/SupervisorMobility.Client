@@ -309,15 +309,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.PATPage
             foreach (var usr in _UserOfArea)
             {
                 if (AllRegistersOfPat.FindIndex(r => r.OperatorId == usr.UserId) != -1)
-                {
                     User_Knolowed.Add(usr.UserId, true);
-                }
                 else
-                {
-                    User_Knolowed.Add(usr.UserId, false);
-
-                }
-
+                    if (!User_Knolowed.ContainsKey(usr.UserId))
+                        User_Knolowed.Add(usr.UserId, false);
 
                 if (!_pat.PatUserRoles.Any(ur => ur.UserId == usr.UserId))
                 {
