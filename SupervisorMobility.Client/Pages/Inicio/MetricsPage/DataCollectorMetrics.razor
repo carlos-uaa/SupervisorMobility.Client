@@ -1,0 +1,122 @@
+﻿@page "/reports/soshoe"
+
+<MudGrid>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 px-4" Style="height:100px;">
+            <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Total Registros</MudText>
+                <MudText Typo="Typo.h5">1,250</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 px-4" Style="height:100px;">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Aprobados</MudText>
+                <MudText Typo="Typo.h5">842</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 px-4" Style="height:100px;">
+            <MudIcon Icon="@Icons.Material.Filled.Pending" Color="Color.Warning" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Pendientes</MudText>
+                <MudText Typo="Typo.h5">310</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 px-4" Style="height:100px;">
+            <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Rechazados</MudText>
+                <MudText Typo="Typo.h5">98</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudGrid Class="mt-4">
+    @* Gráfica de Donut: Estados *@
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4" Style="height:400px;">
+            <MudText Typo="Typo.h6" GutterBottom="true">Estado de Registros</MudText>
+            <MudChart ChartType="ChartType.Donut" Width="300px" Height="300px"
+                      InputData="@estadoData" InputLabels="@estadoLabels">
+                <CustomGraphics>
+                    <text class="donut-inner-text" x="47%" y="35%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="2">Total</text>
+                    <text class="donut-inner-text" x="47%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="5">@estadoData.Sum().ToString()</text>
+                </CustomGraphics>
+            </MudChart>
+        </MudPaper>
+    </MudItem>
+
+    @* Gráfica de Barras: SOS HOE por Distribución *@
+    <MudItem xs="12" md="8">
+        <MudPaper Class="pa-4" Style="height:400px;">
+            <MudText Typo="Typo.h6" GutterBottom="true">SOS HOE por Distribución</MudText>
+            <MudChart ChartType="ChartType.Bar" ChartSeries="@seriesDistribucion"
+                      XAxisLabels="@labelsDistribucion" Width="100%" Height="300px"></MudChart>
+        </MudPaper>
+    </MudItem>
+
+    @* Gráfica de Líneas: SOS HOE por Área *@
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" GutterBottom="true">SOS HOE por Área</MudText>
+            <MudChart ChartType="ChartType.Line" ChartSeries="@seriesArea"
+                      XAxisLabels="@labelsArea" Width="100%" Height="350px"></MudChart>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-4">
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                <MudTabPanel Text="Herramientas">
+                    <MudText Typo="Typo.h6">Herramientas Usadas</MudText>
+                    <MudChart ChartType="ChartType.Bar" ChartSeries="@seriesHerramientas" XAxisLabels="@labelsHerramientas" Width="100%" Height="300px" />
+                </MudTabPanel>
+                <MudTabPanel Text="Materiales">
+                    <MudText Typo="Typo.h6">Uso de Materiales</MudText>
+                    <MudChart ChartType="ChartType.Bar" ChartSeries="@seriesMateriales" XAxisLabels="@labelsMateriales" Width="100%" Height="300px" />
+                </MudTabPanel>
+                <MudTabPanel Text="Equipamiento">
+                    <MudText Typo="Typo.h6">Uso de Equipamiento</MudText>
+                    <MudChart ChartType="ChartType.Bar" ChartSeries="@seriesEquipamiento" XAxisLabels="@labelsEquipamiento" Width="100%" Height="300px" />
+                </MudTabPanel>
+            </MudTabs>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    // Datos de ejemplo para las gráficas
+    private double[] estadoData = { 842, 310, 98, 50 };
+    private string[] estadoLabels = { "Aprobados", "Pendientes", "Rechazados", "En Proceso" };
+
+    private List<ChartSeries> seriesDistribucion = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "SOS HOE", Data = new double[] { 40, 20, 25, 27, 46 } }
+    };
+    private string[] labelsDistribucion = { "Norte", "Sur", "Este", "Oeste", "Central" };
+
+    private List<ChartSeries> seriesArea = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Producción", Data = new double[] { 10, 41, 35, 51, 49, 62 } },
+        new ChartSeries() { Name = "Mantenimiento", Data = new double[] { 5, 15, 22, 28, 30, 45 } }
+    };
+    private string[] labelsArea = { "Ene", "Feb", "Mar", "Abr", "May", "Jun" };
+
+    // Datos para Tabs
+    private List<ChartSeries> seriesHerramientas = new() { new ChartSeries { Name = "Uso", Data = new double[] { 85, 60, 45 } } };
+    private string[] labelsHerramientas = { "Taladro", "Pulidora", "Sierra" };
+
+    private List<ChartSeries> seriesMateriales = new() { new ChartSeries { Name = "Uso", Data = new double[] { 120, 90, 150 } } };
+    private string[] labelsMateriales = { "Acero", "PVC", "Cobre" };
+
+    private List<ChartSeries> seriesEquipamiento = new() { new ChartSeries { Name = "Uso", Data = new double[] { 30, 55, 20 } } };
+    private string[] labelsEquipamiento = { "Montacargas", "Grúa", "Compresor" };
+}

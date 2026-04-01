@@ -11,8 +11,9 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
 {
     public partial class ProblemDefectForm
     {
-        [Parameter]
-        public int? ProblemDefectId { get; set; }
+        [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+        [Parameter] public int? ProblemDefectId { get; set; }
+        [Parameter] public string Type { get; set; }
 
         public ProblemDefect _ProblemDefect{ get; set; } = new ProblemDefect();
 
@@ -45,19 +46,13 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            var currentUrl = NavigationManager.Uri;
-
-            pageType = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? PageType.Details : PageType.Another;
+            pageType = Type.Contains("Details", StringComparison.OrdinalIgnoreCase) ? PageType.Details : PageType.Another;
 
             if (pageType == PageType.Another)
-            {
-                pageType = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? PageType.Create : PageType.Another;
-            }
+                pageType = Type.Contains("Create", StringComparison.OrdinalIgnoreCase) ? PageType.Create : PageType.Another;
 
             if (pageType == PageType.Another)
-            {
-                pageType = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? PageType.Update : PageType.Another;
-            }
+                pageType = Type.Contains("Update", StringComparison.OrdinalIgnoreCase) ? PageType.Update : PageType.Another;
             
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -135,9 +130,11 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
                     base.StateHasChanged();
                 }
             }
+        }
 
-
-
+        private void Cancel()
+        {
+            MudDialog.Cancel();
         }
 
         //Local storage user
@@ -175,16 +172,14 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Create Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/ProblemDefect");
+                        MudDialog.Close(DialogResult.Ok(_ProblemDefect));
 
                     }
                     else
                     {
-                        //suces create
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Create Fail", Severity.Error);
-                        //NavigationManager.NavigateTo($"/");
                     }
 
                     break;
@@ -198,25 +193,21 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Update Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/ProblemDefect");
-                        //NavigationManager.NavigateTo($"/");
+                        MudDialog.Close(DialogResult.Ok(_ProblemDefect));
                     }
                     else
                     {
-                        //suces create
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Update Fail", Severity.Error);
-                        //NavigationManager.NavigateTo($"/");
                     }
                     break;
             }
         }
 
-        void ProblemDefectUpdate(int ProblemDefectsId)
+        private void ChangeToUpdateMode()
         {
-            NavigationManager.NavigateTo($"configurationIS/ProblemDefect/Update/{ProblemDefectsId}", forceLoad: true);
+            pageType = PageType.Update;
         }
-
     }
 }

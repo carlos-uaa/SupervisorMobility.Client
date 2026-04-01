@@ -2,6 +2,7 @@ using BlazorCameraStreamer;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage.Dialogs;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 
@@ -9,8 +10,9 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
 {
     public partial class PartForm
     {
-        [Parameter]
-        public int? PartId { get; set; }
+        [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+        [Parameter] public int? PartId { get; set; }
+        [Parameter] public string Type { get; set; }
 
         public Part _Part{ get; set; } = new Part();
         private List<Product> _products = new List<Product>();
@@ -28,6 +30,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
         private string json = string.Empty;
         public User user = new();
         public bool logged = false;
+        private bool visibleMain = true;
 
         public enum PageType
         {
@@ -44,18 +47,16 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            var currentUrl = NavigationManager.Uri;
-
-            pageType = currentUrl.Contains("Details", StringComparison.OrdinalIgnoreCase) ? PageType.Details : PageType.Another;
+            pageType = Type.Contains("Details", StringComparison.OrdinalIgnoreCase) ? PageType.Details : PageType.Another;
 
             if (pageType == PageType.Another)
             {
-                pageType = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? PageType.Create : PageType.Another;
+                pageType = Type.Contains("Create", StringComparison.OrdinalIgnoreCase) ? PageType.Create : PageType.Another;
             }
 
             if (pageType == PageType.Another)
             {
-                pageType = currentUrl.Contains("Update", StringComparison.OrdinalIgnoreCase) ? PageType.Update : PageType.Another;
+                pageType = Type.Contains("Update", StringComparison.OrdinalIgnoreCase) ? PageType.Update : PageType.Another;
             }
             
 
@@ -150,6 +151,11 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
 
         }
 
+        private void Cancel()
+        {
+            MudDialog.Cancel();
+        }
+
         //Local storage user
         private async Task GetUserAsync()
         {
@@ -186,16 +192,14 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Create Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/Parts");
+                        MudDialog.Close(DialogResult.Ok(_Part));
 
                     }
                     else
                     {
-                        //suces create
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Create Fail", Severity.Error);
-                        //NavigationManager.NavigateTo($"/");
                     }
 
                     break;
@@ -210,16 +214,13 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Update Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/Parts");
-                        //NavigationManager.NavigateTo($"/");
+                        MudDialog.Close(DialogResult.Ok(_Part));
                     }
                     else
                     {
-                        //suces create
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Update Fail", Severity.Error);
-                        //NavigationManager.NavigateTo($"/");
                     }
                     break;
             }
@@ -334,11 +335,6 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
             }
         }
 
-        void PartUpdate(int PartsId)
-        {
-            NavigationManager.NavigateTo($"configurationIS/Parts/Update/{PartsId}", forceLoad: true);
-        }
-
         //Show Evidence 
         private DialogOptions dialogEvidenceOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
         private DialogOptions dialogCameraOptions = new() { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
@@ -395,20 +391,45 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
                 }
             }
         }
-     
+
 
         private void OpenEvidenceDialog(int index, int evidenceIndex)
         {
-            photoIndex = index;
-            selectedEvidence = evidenceIndex;
-            visibleEvidence = true;
+            var parameters = new DialogParameters
+            {
+                { "PartImages", partImages },
+                { "TempCapturedImages", tempCapturedImages },
+                { "PhotoIndex", index },
+                { "SelectedEvidence", evidenceIndex },
+                { "IsCreateMode", pageType == PageType.Create }
+            };
 
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+            DialogService.Show<EvidenceGalleryDialog>("Evidence", parameters, options);
         }
 
-        private void OpenCameraDialog(int index)
+        private async Task OpenCameraDialog(int index)
         {
-            imageIndex = index;
-            visibleCamera = true;
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true, DisableBackdropClick = true };
+
+            // Abrimos el modal
+            var dialog = DialogService.Show<CameraDialog>("Camera", options);
+            var result = await dialog.Result;
+
+            // Si el modal no fue cancelado y trajo datos
+            if (!result.Canceled && result.Data != null)
+            {
+                var newImageData = result.Data.ToString();
+                if (!string.IsNullOrEmpty(newImageData))
+                {
+                    if (pageType == PageType.Create)
+                        partImages.Add(newImageData);
+                    else if (pageType == PageType.Update)
+                        tempCapturedImages.Add(newImageData);
+                }
+                StateHasChanged();
+            }
         }
 
         private async void OnRenderedHandler()
@@ -440,6 +461,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
                 }
             }
             visibleCamera = false;
+            visibleMain = true;
             StateHasChanged();
             Stop();
         }
@@ -454,13 +476,38 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
             ++frameCount;
         }
 
-        private void OpenDeleteDialog(int index, bool isPrev, bool isTemp)
+        private async Task OpenDeleteDialog(int index, bool isPrev, bool isTemp)
         {
-            removeImageIndex = index;
-            isPrevious = isPrev;
-            isTemporal = isTemp;
-            visibleDelete = true;
+            var parameters = new DialogParameters
+            {
+                { "UserName", user.Name }
+            };
+
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, Position = DialogPosition.TopCenter, DisableBackdropClick = true, CloseButton = true };
+
+            var dialog = DialogService.Show<PartsConfirmationDialog>("Delete Confirmation", parameters, options);
+            var result = await dialog.Result;
+
+            // Si el usuario presiona "Confirmar", entra aquí
+            if (!result.Canceled)
+            {
+                if (isTemp)
+                {
+                    if (index < tempCapturedImages.Count)
+                        tempCapturedImages.RemoveAt(index);
+                }
+                else
+                {
+                    if (index < partImages.Count)
+                    {
+                        partImages.RemoveAt(index);
+                        _Part.Sketches = _Part.Sketches.Where((_, i) => i != index).ToList();
+                    }
+                }
+                StateHasChanged();
+            }
         }
+
         private void RemoveImage()
         {
 
@@ -482,6 +529,10 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
             }
             CloseDeleteModal();
         }
-        void CloseDeleteModal() => visibleDelete = false;
+        void CloseDeleteModal()
+        {
+            visibleDelete = false;
+            visibleMain = true;
+        }
     }
 }

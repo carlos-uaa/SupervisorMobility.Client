@@ -1,5 +1,6 @@
 using Microsoft.JSInterop;
 using MudBlazor;
+using SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage;
 
 namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
 {
@@ -97,9 +98,27 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.PartsPage
 
 
         // Create CreateParts
-        void CreateParts()
+        async void CreateParts()
         {
-            NavigationManager.NavigateTo($"configurationIS/Parts/Create");
+            var parameters = new DialogParameters<PartForm>();
+            parameters.Add(x => x.PartId, 0);
+            parameters.Add(x => x.Type, "Create");
+
+            var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true,
+                Position = DialogPosition.Center
+            };
+
+            var dialog = await DialogService.ShowAsync<PartForm>("", parameters, options);
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+                StateHasChanged();
         }
         // Details CreateParts
         void PartsDetails(int PartsId)

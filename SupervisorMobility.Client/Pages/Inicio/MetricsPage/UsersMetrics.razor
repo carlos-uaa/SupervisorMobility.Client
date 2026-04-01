@@ -1,0 +1,204 @@
+﻿@page "/reports/users"
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8">
+    <MudText Typography="Typography.h4" GutterBottom="true">Panel de Control de Usuarios</MudText>
+
+    @* <MudPaper Elevation="2" Class="pa-4 mb-6">
+        <MudGrid Spacing="3" Justify="Justify.Center">
+            <MudItem xs="12" sm="3">
+                <MudSelect T="string" Label="Planta" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                    <MudSelectItem Value="@("Planta A")" />
+                    <MudSelectItem Value="@("Planta B")" />
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudSelect T="string" Label="Departamento" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                    <MudSelectItem Value="@("Producción")" />
+                    <MudSelectItem Value="@("Calidad")" />
+                    <MudSelectItem Value="@("Mantenimiento")" />
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudSelect T="string" Label="Estatus" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                    <MudSelectItem Value="@("Activos")" />
+                    <MudSelectItem Value="@("Inactivos")" />
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="3" Class="d-flex align-end">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">Filtrar</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper> *@
+
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Style="height:100px; border-left: 4px solid var(--mud-palette-primary);">
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Total Headcount</MudText>
+                <MudText Typo="Typo.h4">1,240</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Style="height:100px; border-left: 4px solid var(--mud-palette-info);">
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Operadores sin Superior</MudText>
+                <MudText Typo="Typo.h4">24</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Style="height:100px; border-left: 4px solid var(--mud-palette-success);">
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Supervisores sin sub</MudText>
+                <MudText Typo="Typo.h4">76</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Class="pa-4" Style="height:100px; border-left: 4px solid var(--mud-palette-warning);">
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Usuarios sin Area</MudText>
+                <MudText Typo="Typo.h4">244</MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Distribución por Rol</MudText>
+                <MudChart ChartType="ChartType.Donut" InputData="@donutData" InputLabels="@donutLabels" Width="100%" Height="250px" />
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Headcount por Planta</MudText>
+                <MudChart ChartType="ChartType.Bar" ChartSeries="@series" XAxisLabels="@xaxisLabels" Width="100%" Height="250px" />
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="7">
+            <MudPaper Class="pa-4" Style="height: 450px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-4">Mapa de Ocupación por Área</MudText>
+                <MudGrid Spacing="2">
+                    @foreach (var area in areasMock)
+                    {
+                        <MudItem xs="6" sm="4">
+                            <MudPaper Elevation="0" Class="pa-3 d-flex flex-column align-center justify-center"
+                                      Style="@($"background-color:{GetIntensityColor(area.Count)}; height:100px; border-radius:12px;")">
+                                <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">@area.Name</MudText>
+                                <MudText Typo="Typo.h5">@area.Count</MudText>
+                                <MudText Typo="Typo.caption">Usuarios</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="5">
+            <MudPaper Class="pa-4" Style="height: 450px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-4">Organigrama (Jerarquía)</MudText>
+        
+                @* Forzamos a que trate TreeItems como IEnumerable desde el inicio *@
+                <MudTreeView T="UserNode" Items="TreeItems" Hover="true">
+                    <ItemTemplate Context="item">
+                        <MudTreeViewItem T="UserNode"
+                                         @bind-Expanded="@item.IsExpanded"
+                                         Items="@item.Subordinates"
+                                         Value="@item">
+                            <Content>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@(item.Subordinates != null && item.Subordinates.Any() ? Icons.Material.Filled.Groups : Icons.Material.Filled.Person)"
+                                             Color="@(item.Position == "Admin" ? Color.Primary : Color.Default)"
+                                             Class="mr-2" />
+                                    <div>
+                                        <MudText Typo="Typo.body1">@item.Name</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Position</MudText>
+                                    </div>
+                                </div>
+                            </Content>
+                        </MudTreeViewItem>
+                    </ItemTemplate>
+                </MudTreeView>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    // Datos para la Dona (UserType)
+    private double[] donutData = { 5, 15, 25, 300, 10 };
+    private string[] donutLabels = { "Admin", "SSV", "SV", "OP", "Manager" };
+
+    // Datos para Barras (Headcount por Planta)
+    private List<ChartSeries> series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Personal Activo", Data = new double[] { 400, 320, 520 } },
+    };
+    private string[] xaxisLabels = { "Planta Norte", "Planta Sur", "Planta Bajío" };
+
+    // Lógica de colores para la Matriz
+    private string GetColor(int value) => value switch
+    {
+        >= 90 => "#A5D6A7", // Verde (Experto)
+        >= 60 => "#FFF59D", // Amarillo (Autónomo)
+        _ => "#EF9A9A"      // Rojo (Aprendiz)
+    };
+
+    private List<AreaDensity> areasMock = new()
+    {
+        new ("Ensamble", 120),
+        new ("Calidad", 45),
+        new ("Logística", 80),
+        new ("Mantenimiento", 15),
+        new ("Pintura", 33),
+        new ("Recursos H.", 10),
+        new ("IT", 8),
+        new ("Seguridad", 12)
+    };
+
+    public record AreaDensity(string Name, int Count);
+
+    // Función para dar un tono de color según la cantidad de gente
+    private string GetIntensityColor(int count) => count switch
+    {
+        > 100 => "var(--mud-palette-primary-hover)", // Muy lleno
+        > 50 => "var(--mud-palette-action-default-hover)",
+        > 20 => "var(--mud-palette-background-grey)",
+        _ => "var(--mud-palette-surface)" // Casi vacío
+    };
+
+    public record OperatorMock(string Name, int S1, int S2, int S3, int S4);
+
+    // Jerarquía para Organigrama
+    public class UserNode
+    {
+        public string Name { get; set; }
+        public string Position { get; set; }
+        public bool IsExpanded { get; set; }
+        public HashSet<UserNode> Subordinates { get; set; } = new();
+    }
+
+    // Unificado a List para evitar errores de conversión
+    private HashSet<UserNode> TreeItems { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        // Limpiamos para evitar duplicados en re-renders
+        TreeItems.Clear();
+
+        var boss = new UserNode
+        {
+            Name = "Carlos",
+            Position = "Admin",
+            IsExpanded = true
+        };
+
+        var supervisor = new UserNode
+        {
+            Name = "Ana López",
+            Position = "SSV Producción"
+        };
+
+        supervisor.Subordinates.Add(new UserNode { Name = "Operador 1", Position = "OP" });
+        supervisor.Subordinates.Add(new UserNode { Name = "Operador 2", Position = "OP" });
+
+        boss.Subordinates.Add(supervisor);
+        
+        TreeItems.Add(boss);
+    }
+}

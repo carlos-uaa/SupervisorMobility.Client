@@ -9,6 +9,7 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject ISnackbar Snackbar
 @inject IBreadcrumbService BreadcrumbService
+@inject IDialogService DialogService
 
 @*Title*@
 <PageTitle>Supervisor Mobility | @Localizer["Parts"]</PageTitle>
@@ -16,122 +17,121 @@
 
 @if (ShowLoading)
 {
-    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
-        <ItemTemplate>
-            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
-                <MudItem class="d-flex flex-column justify-center align-self-center">
-                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
-                </MudItem>
-                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
-                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
-            </div>
-        </ItemTemplate>
-    </MudCarousel>
+    @* Loading simplificado y elegante *@
+    <div class="d-flex flex-column align-center justify-center mud-width-full" style="height:400px;">
+        <MudProgressCircular Color="Color.Primary" Style="height:80px;width:80px;" Indeterminate="true" />
+        <MudText Typo="Typo.h6" Color="Color.Primary" Class="mt-4 animate-pulse">Cargando catálogo de partes...</MudText>
+    </div>
 }
-else if (_Parts.Count == 0)
+else if (_Parts == null || _Parts.Count == 0)
 {
-    <MudContainer>
-
-        <MudText Align="Align.Center">
-            <h4>@Localizer["thereAreNoPartsCreated"]</h4>
-            <MudSpacer></MudSpacer>
-            <MudButton @onclick="(() => CreateParts())" OnTouch="(() => CreateParts())">
-                <MudText>@Localizer["createParts"]</MudText>
-                <MudIcon Icon="@Icons.Material.Filled.Add" aria-label="Create Plant" Color="Color.Primary"></MudIcon>
+    @* Empty State con diseño de "Caja" *@
+    <MudContainer MaxWidth="MaxWidth.Small" Class="mt-16">
+        <MudPaper Elevation="3" Class="pa-10 d-flex flex-column align-center justify-center mud-background-gray rounded-xl"
+                  Style="border: 3px dashed var(--mud-palette-divider);">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Color="Color.Default" Style="font-size: 6rem;" Class="mb-4 opacity-50" />
+            <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">@Localizer["thereAreNoPartsCreated"]</MudText>
+            <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Secondary" Class="mb-6">
+                @Localizer["noPartsFound"]
+            </MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                       StartIcon="@Icons.Material.Filled.Add" OnClick="CreateParts" Class="rounded-pill px-8">
+                @Localizer["createParts"]
             </MudButton>
-        </MudText>
+        </MudPaper>
     </MudContainer>
 }
 else
 {
-    <MudTable Items="_Parts" Hover="true" T="Part" SortLabel="Sort By" Height="80vh"
+    @* Tabla Rediseñada *@
+    <MudTable Items="_Parts" Hover="true" T="Part" Height="75vh" FixedHeader="true"
+              Elevation="4" Class="rounded-lg overflow-hidden"
               RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
-              Filter="new Func<Part,bool>(FilterFunc)" Class="styled-table table-striped" FixedHeader=true>
+              Filter="new Func<Part,bool>(FilterFunc)">
+        
         <ToolBarContent>
-            <MudGrid class="d-flex flex-column justify-center align-self-center mb-10 mt-8">
-                <MudItem Class="d-flex">
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchString" Placeholder="Search" Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                    <MudSpacer />
-                    <MudButton @onclick="(() => CreateParts())" OnTouch="(() => CreateParts())">
-                        <MudText>@Localizer1["NewDataPanel"]</MudText>
-                        <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
-                    </MudButton>
-                    <MudSpacer />
-                </MudItem>
-            </MudGrid>
+            <div class="d-flex align-center gap-4 mud-width-full py-3">
+                <div class="d-flex flex-column">
+                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="fw-bold">Gestión de Partes</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Administre el catálogo de componentes</MudText>
+                </div>
+                
+                <MudSpacer />
+                
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="Buscar por nombre o número..."
+                              Clearable="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Style="max-width: 350px; background: var(--mud-palette-background-grey);" />
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="CreateParts"
+                           Class="px-6 py-2 ml-2">
+                    @Localizer1["NewDataPanel"]
+                </MudButton>
+            </div>
         </ToolBarContent>
+
         <HeaderContent>
             @if (user.UserType == 1)
             {
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Part, object>(x=>x?.PartId)">Part Id</MudTableSortLabel>
-                </MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Part, object>(x => x.PartId)">ID</MudTableSortLabel></MudTh>
             }
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<Part, object>(x=>x?.PartName)" InitialDirection="SortDirection.Ascending">Part Name</MudTableSortLabel>
-            </MudTh>
-            <MudTh>
-                <MudTableSortLabel SortBy="new Func<Part, object>(x=>x?.PartNumber)">Part Number</MudTableSortLabel>
-            </MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Part, object>(x => x.PartName)">Nombre de Parte</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Part, object>(x => x.PartNumber)">Número de Parte</MudTableSortLabel></MudTh>
             @if (user.UserType == 1)
             {
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Part, object>(x=>x?.IsActive)">Is Active</MudTableSortLabel>
-                </MudTh>
+                <MudTh Style="text-align:center">Estado</MudTh>
             }
-            <MudTh>
-                <MudText Align="Align.Center">Actions</MudText>
-            </MudTh>
+            <MudTh Style="text-align:right">Acciones</MudTh>
         </HeaderContent>
+
         <RowTemplate>
             @if (user.UserType == 1)
             {
-                <MudTd DataLabel="DataPanelId">
-                    <MudText Align="Align.Center">@context.PartId</MudText>
+                <MudTd DataLabel="ID">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary font-monospace">#@context.PartId</MudText>
                 </MudTd>
             }
-            <MudTd DataLabel="Code">
-                <MudText Align="Align.Center">@context.PartName</MudText>
+            <MudTd DataLabel="Name">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.SettingsInputComponent" Size="Size.Small" Color="Color.Info" Class="mr-2" />
+                    <MudText Typo="Typo.body1" Class="fw-medium">@context.PartName</MudText>
+                </div>
             </MudTd>
-            <MudTd DataLabel="Description">
-                <MudText Align="Align.Center">@context.PartNumber</MudText>
+            <MudTd DataLabel="Number">
+                <MudChip Variant="Variant.Text" Color="Color.Default" Size="Size.Small" Icon="@Icons.Material.Filled.Tag">
+                    @context.PartNumber
+                </MudChip>
             </MudTd>
             @if (user.UserType == 1)
             {
-                <MudTd DataLabel="Status">
-                    @if (context.IsActive == true)
-                    {
-                        <MudText Align="Align.Center">
-                            <MudChip Variant="Variant.Text" Color="Color.Success">Active</MudChip>
-                        </MudText>
-                    }
-                    else
-                    {
-                        <MudText Align="Align.Center">
-                            <MudChip Variant="Variant.Text" Color="Color.Error">Inactive</MudChip>
-                        </MudText>
-                    }
+                <MudTd DataLabel="Status" Style="text-align:center">
+                    <MudChip Size="Size.Small"
+                             Variant="Variant.Filled"
+                             Color="@(context.IsActive == true ? Color.Success : Color.Error)"
+                             Class="px-4">
+                        @(context.IsActive == true ? "Activo" : "Inactivo")
+                    </MudChip>
                 </MudTd>
             }
-            <MudTd>
-                <MudText Align="Align.Center">
-                    <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                        <ActivatorContent>
-                            <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
-                        </ActivatorContent>
-                        <ChildContent>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => PartsDetails(context.PartId))" OnTouch="(() => PartsDetails(context.PartId))">Details</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => PartUpdate(context.PartId))" OnTouch="(() => PartUpdate(context.PartId))">Edit </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => DeleteParts(context.PartId))" OnTouch="(() => DeleteParts(context.PartId))">Delete </MudMenuItem>
-                        </ChildContent>
-                    </MudMenu>
-
-
-                </MudText>
+            <MudTd Style="text-align:right">
+                <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopRight" Dense="true">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Visibility" IconColor="Color.Primary" OnClick="(() => PartsDetails(context.PartId))">Ver Detalles</MudMenuItem>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" OnClick="(() => PartUpdate(context.PartId))">Editar Parte</MudMenuItem>
+                    <MudDivider Class="my-2" />
+                    <MudMenuItem Icon="@Icons.Material.Filled.DeleteForever" IconColor="Color.Error" OnClick="(() => DeleteParts(context.PartId))">Eliminar</MudMenuItem>
+                </MudMenu>
             </MudTd>
-
         </RowTemplate>
+
+        <PagerContent>
+            <MudTablePager InfoFormat="{first_item}-{last_item} de {all_items}" RowsPerPageString="Resultados por página:" />
+        </PagerContent>
     </MudTable>
 }
-

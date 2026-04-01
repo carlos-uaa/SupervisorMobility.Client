@@ -1,0 +1,94 @@
+﻿@inject IStringLocalizer<Resource> Localizer
+
+<MudDialog DisableSidePadding="false">
+    <DialogContent>
+        <MudTabs @bind-ActivePanelIndex="SelectedEvidence" Outlined="true" Rounded="true" Border="true" TabPanelHeaderPosition="TabHeaderPosition.Before"
+                 ApplyEffectsToContainer="true" PanelClass="px-6" Style="max-height: 85vh; min-height: 70vh; width: 100%;">
+            
+            <MudTabPanel @onclick="(() => PhotoIndex = 0)">
+                <TabContent>
+                    <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">Previous Sketches</MudChip>
+                </TabContent>
+                <ChildContent>
+                    <MudPaper Elevation="0">
+                        @if (PartImages.Any())
+                        {
+                            <MudCarousel Class="mud-width-full" Style="height: 75vh" ShowArrows="true" ShowBullets="true" EnableSwipeGesture="true" AutoCycle="false" TData="object" @bind-SelectedIndex="PhotoIndex">
+                                <PreviousButtonTemplate>
+                                    <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="ml-4" Style="cursor:pointer">
+                                        <MudIcon Icon="@Icons.Material.Filled.NavigateBefore" />
+                                    </MudAvatar>
+                                </PreviousButtonTemplate>
+                                <NextButtonTemplate>
+                                    <MudAvatar Color="Color.Dark" Variant="Variant.Filled" Class="mr-4" Style="cursor:pointer">
+                                        <MudIcon Icon="@Icons.Material.Filled.NavigateNext" />
+                                    </MudAvatar>
+                                </NextButtonTemplate>
+                                <ChildContent>
+                                    @foreach (var evidence in PartImages)
+                                    {
+                                        <MudCarouselItem Transition="Transition.Fade">
+                                            <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src="@evidence" Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                                        </MudCarouselItem>
+                                    }
+                                </ChildContent>
+                            </MudCarousel>
+                        }
+                        else
+                        {
+                            <MudItem Style="height: 75vh">
+                                <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                    @Localizer["there is sketches:)"]
+                                </MudAlert>
+                            </MudItem>
+                        }
+                    </MudPaper>
+                </ChildContent>
+            </MudTabPanel>
+
+            @if (!IsCreateMode)
+            {
+                <MudTabPanel @onclick="(() => PhotoIndex = 0)">
+                    <TabContent>
+                        <MudChip Icon="@Icons.Material.Filled.Folder" Style="display: flex;" Color="Color.Info">Just added prev.</MudChip>
+                    </TabContent>
+                    <ChildContent>
+                        <MudPaper Elevation="0">
+                            @if (TempCapturedImages.Any())
+                            {
+                                <MudCarousel Class="mud-width-full" Style="height: 75vh" ShowArrows="true" ShowBullets="true" EnableSwipeGesture="true" AutoCycle="false" TData="object" @bind-SelectedIndex="PhotoIndex">
+                                    <ChildContent>
+                                        @foreach (var evidence in TempCapturedImages)
+                                        {
+                                            <MudCarouselItem Transition="Transition.Fade">
+                                                <MudImage ObjectFit="ObjectFit.Cover" Height="720" Width="1280" Src="@evidence" Alt="Evidence" Elevation="25" Class="rounded-lg" Style="max-height: 66vh; width: 100%; border-radius: 10px; margin-bottom:24px;" />
+                                            </MudCarouselItem>
+                                        }
+                                    </ChildContent>
+                                </MudCarousel>
+                            }
+                            else
+                            {
+                                <MudItem Style="height: 75vh">
+                                    <MudAlert Severity="Severity.Info" Dense ContentAlignment="HorizontalAlignment.Center">
+                                        @Localizer["there is no sketches:)"]
+                                    </MudAlert>
+                                </MudItem>
+                            }
+                        </MudPaper>
+                    </ChildContent>
+                </MudTabPanel>
+            }
+        </MudTabs>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    
+    [Parameter] public List<string> PartImages { get; set; } = new();
+    [Parameter] public List<string> TempCapturedImages { get; set; } = new();
+    [Parameter] public int PhotoIndex { get; set; } = 0;
+    [Parameter] public int SelectedEvidence { get; set; } = 0;
+    [Parameter] public bool IsCreateMode { get; set; }
+}
