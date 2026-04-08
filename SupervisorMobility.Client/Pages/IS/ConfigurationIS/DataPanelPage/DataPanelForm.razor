@@ -1,223 +1,159 @@
-﻿@page "/configurationIS/DataPanels/Create"
-@page "/configurationIS/DataPanels/Update/{DataPanelId:int}"
-
-@inject IDataPanelService DataPanelServices
-@inject NavigationManager NavigationManager
+﻿@inject IDataPanelService DataPanelServices
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<Resource1> Localizer1
 @inject IStringLocalizer<Resource> Localizer
 @inject ISnackbar Snackbar
-@inject IBreadcrumbService BreadcrumbService
 
-
-@if (ShowLoading)
-{
-    <MudCarousel Class="mud-width-full" ItemsSource="@_sourceMsgLoading" Context="Carousel" AutoCycle="true" Style="height:200px;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false">
-        <ItemTemplate>
-            <div class="d-flex flex-column flex-column justify-center" style="height:100%">
-                <MudItem class="d-flex flex-column justify-center align-self-center">
-                    <MudProgressCircular Color="@_Colors[Carousel.IndexOf(Carousel)]" Style="height:70px;width:70px;" Indeterminate="true" />
-                </MudItem>
-                @*<MudIcon Class="mx-auto" Icon="@Icons.Custom.Brands.MudBlazor" Size="@Size.Large" />*@
-                <MudText Align="@Align.Center" Color="Color.Primary" Class="mx-auto">@Carousel</MudText>
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@(pageType == PageType.Create ? Icons.Material.Filled.AddBox : Icons.Material.Filled.Edit)" Class="mr-2 mb-n1" />
+            @(pageType == PageType.Create ? Localizer["DataPanelCreate"] : Localizer["DataPanelUpdate"])
+        </MudText>
+    </TitleContent>
+    
+    <DialogContent>
+        @if (ShowLoading)
+        {
+            <div class="d-flex flex-column align-center justify-center py-8">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Typo="Typo.body2" Class="mt-4">@_sourceMsgLoading.FirstOrDefault()</MudText>
             </div>
-        </ItemTemplate>
-    </MudCarousel>
-}
-else
-{
-
-    @*Form*@
-    <EditForm Model="_datapanel" OnValidSubmit="SubmitOperations">
-        <DataAnnotationsValidator />
-        <MudGrid>
-            <MudItem xs="12">
-                <MudCard>
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            @switch (pageType)
-                            {
-                                case PageType.Create:
-                                    <MudText Typo="Typo.h6">@Localizer["DataPanelCreate"]</MudText>
-                                    break;
-                                case PageType.Update:
-                                    <MudText Typo="Typo.h6">@Localizer["DataPanelUpdate"]</MudText>
-                                    break;
-                            }
-                        </CardHeaderContent>
-                        <CardHeaderActions>
-                            @switch (pageType)
-                            {
-                                case PageType.Create:
-                                    <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["create"]</MudChip>
-                                    break;
-                                case PageType.Update:
-                                    <MudChip Variant="Variant.Text" Color="Color.Success">@Localizer["update"]</MudChip>
-                                    break;
-                            }
-                        </CardHeaderActions>
-                    </MudCardHeader>
-                    <MudCardContent>
-                        <MudTextField Label="@Localizer1["DP_Title"]" @bind-Value="_datapanel.DataTitle" For="@(() => _datapanel.DataTitle)" />
+        }
+        else
+        {
+            <EditForm Model="_datapanel" OnValidSubmit="SubmitOperations">
+                <DataAnnotationsValidator />
+                <MudGrid Spacing="2">
+                    @* Cabecera con Estado *@
+                    <MudItem xs="12" sm="9">
+                        <MudTextField Label="@Localizer1["DP_Title"]"
+                                      @bind-Value="_datapanel.DataTitle"
+                                      For="@(() => _datapanel.DataTitle)"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3" Class="d-flex align-center justify-end">
                         @if (user.UserType == 1)
                         {
-                            <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="_datapanel.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
+                            <MudSwitch Label="Activo" @bind-Checked="_datapanel.IsActive" Color="Color.Success" />
                         }
+                        else
+                        {
+                            <MudChip Variant="Variant.Text" Color="Color.Success">@(pageType == PageType.Create ? Localizer["create"] : Localizer["update"])</MudChip>
+                        }
+                    </MudItem>
 
-                        <MudItem>
-                            <MudButton EndIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto" Disabled="AddSpecification" OnClick="AddOneMoreSpecification" OnTouch="AddOneMoreSpecification">@Localizer1["AddDP_Specification"]</MudButton>
+                    @* Tabla de Especificaciones - Mejorada *@
+                    <MudItem xs="12" Class="mt-2">
+                        <MudTable Items="_datapanel.Specifications" T="DataPanelSpecification"
+                                  Height="300px" FixedHeader="true" Dense="true" Hover="true"
+                                  Elevation="0" Outlined="true" Class="mud-width-full"
+                                  ReadOnly="false"
+                                  CanCancelEdit="true"
+                                  RowEditPreview="BackupItem"
+                                  RowEditCancel="ResetItemToOriginalValues"
+                                  RowEditCommit="ItemHasBeenCommitted"
+                                  EditTrigger="TableEditTrigger.EditButton">
+                            
+                            <ToolBarContent>
+                                <MudText Typo="Typo.subtitle2"><b>@Localizer1["AddDP_Specification"]</b></MudText>
+                                <MudSpacer />
+                                <MudTextField @bind-Value="searchString" Placeholder="@Localizer["Search"]"
+                                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                                              IconSize="Size.Small" Class="mt-0 mr-4" />
+                                <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled"
+                                           Color="Color.Info" Size="Size.Small"
+                                           Disabled="AddSpecification" OnClick="AddOneMoreSpecification">
+                                    @Localizer["Add"]
+                                </MudButton>
+                            </ToolBarContent>
 
-                            @if (_datapanel.Specifications?.Count() > 0)
-                            {
-                                <MudTable Context="specContext" Items="_datapanel.Specifications" T="DataPanelSpecification" Height="35vh" FixedHeader=true Class="styled-table table-striped mt-5"
-                                          SortLabel="Sort By" Filter="new Func<DataPanelSpecification,bool>(FilterFunc)"
-                                          HorizontalScrollbar="true" Virtualize="true"
-                                          
-                                          CommitEditTooltip="Commit Edit" CanCancelEdit="true"
-                                          IsEditRowSwitchingBlocked="true"
-                                          ApplyButtonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition"
-                                          OnCommitEditClick="@(() => Snackbar.Add("Commit Edit"))"
-                                          RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
-                                          RowEditCommit="ItemHasBeenCommitted"
-                                          EditTrigger="@editTrigger">
-                                    <ToolBarContent>
-                                        <MudGrid class="d-flex flex-column justify-center align-self-center mb-10 mt-10">
-                                            <MudSpacer />
-                                            <MudItem Class="d-flex">
-                                                <MudSpacer />
-                                                <MudTextField @bind-Value="searchString" Placeholder="@Localizer["Search"]" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                                                <MudSpacer />
-                                            </MudItem>
-                                        </MudGrid>
-                                    </ToolBarContent>
-                                    <ColGroup>
-                                        @if (applyButtonPosition.DisplayApplyButtonAtStart() || (editButtonPosition.DisplayEditButtonAtStart() && editTrigger == TableEditTrigger.EditButton))
+                            <HeaderContent>
+                                @if (user.UserType == 1)
+                                {
+                                    <MudTh Style="width:60px">Id</MudTh>
+                                }
+                                <MudTh>Especificación</MudTh>
+                                <MudTh Style="width:100px">Secuencia</MudTh>
+                                @if (user.UserType == 1)
+                                {
+                                    <MudTh Style="width:80px">Activo</MudTh>
+                                }
+                                <MudTh Style="width:50px"></MudTh>
+                            </HeaderContent>
+
+                            <RowTemplate Context="specContext">
+                                @if (user.UserType == 1)
+                                {
+                                    <MudTd>
+                                        @if (specContext.DataPanelSpecificationId == 0)
                                         {
-                                            <col style="width:50px;" />
+                                            <MudChip Size="Size.Small" Color="Color.Success" Variant="Variant.Text">@Localizer["new"]</MudChip>
                                         }
-                                        <col  />
-                                        <col style="width:50%;" />
-                                        <col />
-                                        @if (applyButtonPosition.DisplayApplyButtonAtEnd() || (editButtonPosition.DisplayEditButtonAtEnd() && editTrigger == TableEditTrigger.EditButton))
+                                        else
                                         {
-                                            <col style="width:50px;" />
+                                            @specContext.DataPanelSpecificationId
                                         }
-                                    </ColGroup>
-                                    <HeaderContent>
-                                        @if (user.UserType == 1)
-                                        {
-                                            <MudTh><MudTableSortLabel SortBy="new Func<DataPanelSpecification, object>(x=>x.DataPanelSpecificationId)">Id</MudTableSortLabel></MudTh>
-                                        }
-                                        <MudTh><MudTableSortLabel SortBy="new Func<DataPanelSpecification, object>(x=>x.DataSpecification)">Spect</MudTableSortLabel></MudTh>
-                                        <MudTh><MudTableSortLabel SortBy="new Func<DataPanelSpecification, object>(x=>x.ItemOrder)">Sequence</MudTableSortLabel></MudTh>
-                                        @if (user.UserType == 1)
-                                        {
-                                            <MudTh><MudTableSortLabel SortBy="new Func<DataPanelSpecification, object>(x=>x.IsActive)">IsActive</MudTableSortLabel></MudTh>
-                                        }
-                                    </HeaderContent>
-                                    <RowTemplate>
-                                        @if (user.UserType == 1)
-                                        {
-                                            <MudTd DataLabel="DataPanelSpecificationId">
-                                            @if (specContext.DataPanelSpecificationId == 0)
-                                            {
-                                                <MudChip Variant="Variant.Text" Color="Color.Success">
-                                                    @Localizer["new"]
-                                                </MudChip>
-                                            }
-                                            else
-                                            {
-                                                @specContext.DataPanelSpecificationId
-                                            }
-                                        </MudTd>
-                                        }
-                                        <MudTd DataLabel="DataSpecification">@specContext.DataSpecification</MudTd>
-                                        <MudTd DataLabel="ItemOrder">
-                                            @if (specContext.ItemOrder == 0)
-                                            {
-                                                <MudTooltip Text="To Change this go to data panel specification sequence page">
-                                                 <MudChip Variant="Variant.Text" Color="Color.Success">
-                                                    @Localizer["new"]
-                                                </MudChip>
-                                                </MudTooltip>
-                                            }
-                                            else
-                                            {
-                                                @specContext.ItemOrder
-                                            }
-                                        </MudTd>
-                                        @if (user.UserType == 1)
-                                        {
-                                            <MudTd DataLabel="IsActive">      
-                                                <MudSwitch Class="mt-3" Label="Is active?" Disabled="true" @bind-Checked="specContext.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
-                                            </MudTd>
-                                        }
-                                    </RowTemplate>                                    
-                                    <RowEditingTemplate>
+                                    </MudTd>
+                                }
+                                <MudTd>@specContext.DataSpecification</MudTd>
+                                <MudTd>
+                                    @if (specContext.ItemOrder == 0)
+                                    {
+                                        <MudTooltip Text="Cambiar en secuencia">
+                                            <MudChip Size="Size.Small" Color="Color.Default" Variant="Variant.Text">@Localizer["new"]</MudChip>
+                                        </MudTooltip>
+                                    }
+                                    else
+                                    {
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">@specContext.ItemOrder</MudAvatar>
+                                    }
+                                </MudTd>
+                                @if (user.UserType == 1)
+                                {
+                                    <MudTd>
+                                        <MudCheckBox @bind-Value="specContext.IsActive" ReadOnly="true" Color="Color.Info" Dense="true" />
+                                    </MudTd>
+                                }
+                                <MudTd></MudTd>
+                            </RowTemplate>
 
-                                        @if (user.UserType == 1)
-                                        {
-                                            <MudTd DataLabel="SpecId">
-                                              @if (specContext.DataPanelSpecificationId == 0)
-                                            {
-                                                <MudChip Variant="Variant.Text" Color="Color.Success">
-                                                    @Localizer["new"]
-                                                </MudChip>
-                                            }
-                                            else
-                                            {
-                                                @specContext.DataPanelSpecificationId
-                                            }
-                                           </MudTd>
-                                        }
-                                        <MudTd DataLabel="DataSpecification">
-                                            <MudTextField @bind-Value="@specContext.DataSpecification" Required />
-                                        </MudTd>
-                                        <MudTd DataLabel="Position">
-                                            <MudTd DataLabel="ItemOrder">
-                                                 @if (specContext.ItemOrder == 0)
-                                            {
-                                                <MudTooltip Text="To Change this go to data panel specification sequence page">
-                                                 <MudChip Variant="Variant.Text" Color="Color.Success">
-                                                    @Localizer["new"]
-                                                </MudChip>
-                                                </MudTooltip>
-                                            }
-                                            else
-                                            {
-                                                @specContext.ItemOrder
-                                            }
-                                                </MudTd>
-                                        </MudTd>
-                                        @if (user.UserType == 1)
-                                        {
-                                            <MudTd DataLabel="Is Active">
-                                            <MudSwitch Class="mt-3" Label="Is active?" @bind-Checked="specContext.IsActive" Color="Color.Info" UnCheckedColor="Color.Dark" />
-                                        </MudTd>
-                                        }
-                                    </RowEditingTemplate>
-                                    <PagerContent>
-                                        <MudTablePager />
-                                    </PagerContent>
-                                    <EditButtonContent Context="button">
-                                        <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />
-                                    </EditButtonContent>
-                                </MudTable>
+                            <RowEditingTemplate Context="specContext">
+                                @if (user.UserType == 1)
+                                {
+                                    <MudTd></MudTd>
+                                }
+                                <MudTd>
+                                    <MudTextField @bind-Value="@specContext.DataSpecification" Required Margin="Margin.Dense" />
+                                </MudTd>
+                                <MudTd>
+                                    <MudText Typo="Typo.caption">Auto</MudText>
+                                </MudTd>
+                                @if (user.UserType == 1)
+                                {
+                                    <MudTd>
+                                        <MudCheckBox @bind-Value="specContext.IsActive" Color="Color.Info" Dense="true" />
+                                    </MudTd>
+                                }
+                                <MudTd></MudTd>
+                            </RowEditingTemplate>
 
+                            <EditButtonContent Context="button">
+                                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Filled.Edit"
+                                               OnClick="@button.ButtonAction" Disabled="@button.ButtonDisabled" />
+                            </EditButtonContent>
+                        </MudTable>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        }
+    </DialogContent>
 
-                            }
-                        </MudItem>
-
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" Class="ml-auto">@(pageType == PageType.Create ? Localizer["create"] : Localizer["save"])</MudButton>
-                        <MudButton Href="/configurationIS/DataPanels" Variant="Variant.Filled" Class="ml-4">@Localizer["Cancel"]</MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
-    </EditForm>
-}
-
-
-
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancel">@Localizer["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitOperations" Class="px-6">
+            @(pageType == PageType.Create ? Localizer["create"] : Localizer["save"])
+        </MudButton>
+    </DialogActions>
+</MudDialog>

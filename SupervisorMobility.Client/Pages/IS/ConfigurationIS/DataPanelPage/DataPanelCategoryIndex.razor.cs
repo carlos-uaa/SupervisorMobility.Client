@@ -98,15 +98,44 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
 
+        DialogOptions options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            DisableBackdropClick = true // Evita que se cierre por error al hacer clic fuera
+        };
+
         // Create CreateDataPanel
-        void CreateDataPanel()
+        async void CreateDataPanel()
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/Create");
+            var parameters = new DialogParameters
+            {
+                ["Type"] = "Create",
+                ["DataPanelId"] = 0
+            };
+
+            var dialog = await DialogService.ShowAsync<DataPanelForm>("New DataPanel", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+                StateHasChanged();
         }
+
         // Details CreateDataPanel
-        void DataPanelDetails(int datapanelId)
+        async void DataPanelDetails(int datapanelId)
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/Details/{datapanelId}");
+            var parameters = new DialogParameters
+            {
+                ["Type"] = "Details",
+                ["DataPanelId"] = datapanelId
+            };
+
+            var dialog = await DialogService.ShowAsync<DataPanelForm>("DataPanel", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+                StateHasChanged();
         }
 
         // Reorder CreateDataPanel
@@ -115,9 +144,19 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
             NavigationManager.NavigateTo($"configurationIS/DataPanels/sequence");
         }
         // Update category
-        void UpdateCategory(int categoryId)
+        async void UpdateCategory(int categoryId)
         {
-            NavigationManager.NavigateTo($"configurationIS/DataPanels/Update/{categoryId}");
+            var parameters = new DialogParameters
+            {
+                ["Type"] = "Update",
+                ["DataPanelId"] = categoryId // ID en 0 para nuevo registro
+            };
+
+            var dialog = await DialogService.ShowAsync<DataPanelForm>("Edit DataPanel", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+                StateHasChanged();
         }
 
         async Task DeleteDataPanel(int datapanelId)
