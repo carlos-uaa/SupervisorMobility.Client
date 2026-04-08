@@ -1,0 +1,582 @@
+@page "/hrischedule"
+
+@using System.Globalization
+@using SupervisorMobility.Client.Data.Entities
+
+@inject IStringLocalizer<Resource> Localizer
+@inject IBreadcrumbService BreadcrumbService
+
+<style>
+	.hri-calendar-wrap {
+		width: 100%;
+	}
+
+	.scroll1::-webkit-scrollbar {
+		width: 2px;
+	}
+
+	.hri-calendar-table {
+		table-layout: fixed;
+	}
+
+	.hri-calendar-table th,
+	.hri-calendar-table td {
+		width: 14.28%;
+	}
+
+	.hri-day-cell {
+		min-height: 11vh;
+		max-height: 15vh;
+		overflow-y: auto;
+		padding: 0.2rem 0.35rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	.hri-day-num {
+		font-size: 0.85rem;
+		font-weight: 600;
+		text-align: end;
+		padding-right: 0.8rem;
+	}
+
+	.hri-day-head {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		min-height: 28px;
+	}
+
+	.hri-day-num-muted {
+		color: #b8b8b8;
+	}
+
+	.hri-event-chip {
+		font-size: 0.72rem;
+		line-height: 1.15;
+		justify-content: flex-start;
+		height: auto;
+		padding: 2px 6px;
+		margin: 0 0.25rem;
+	}
+
+	.hri-scroll {
+		scroll-behavior: smooth;
+		scrollbar-width: none;
+	}
+
+	.hri-scroll::-webkit-scrollbar {
+		width: 2px;
+	}
+
+	.calendar-item {
+		font-size: 10px;
+		color: black;
+		cursor: pointer;
+		width: 14vh;
+	}
+</style>
+
+<PageTitle>Supervisor Mobility | HRI Schedule</PageTitle>
+
+<MudGrid Justify="Justify.Center" Class="hri-calendar-wrap overflow-x-auto">
+	<MudItem xs="12" Class="d-flex justify-space-between align-center mb-3">
+		<MudText Typo="Typo.h6" Class="d-flex align-center">
+			<MudTooltip Text="Mes anterior" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+				<MudIconButton Icon="@Icons.Material.Filled.ArrowBackIosNew" Color="Color.Info" OnClick="LastMonth" Class="mr-3" />
+			</MudTooltip>
+
+			<span style="min-width: 11rem; max-width: 14rem;">
+				<MudDatePicker OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" Date="@_yearMonth" DateChanged="OnDateChangedAsync" />
+			</span>
+
+			<MudTooltip Text="Mes siguiente" Arrow="true" Placement="Placement.Top" Color="Color.Info">
+				<MudIconButton Icon="@Icons.Material.Filled.ArrowForwardIos" Color="Color.Info" OnClick="NextMonth" Class="ml-3" />
+			</MudTooltip>
+		</MudText>
+
+		<MudItem Class="d-flex align-center">
+			<MudButton StartIcon="@Icons.Material.Filled.AddTask" Color="Color.Primary" Href="/hri/form" Class="mr-3">
+				Nuevo HRI
+			</MudButton>
+
+			<MudSelect T="string" Label="NameOfItem" Variant="Variant.Text" Style="width: 14vw; min-width: 12rem" AnchorOrigin="Origin.BottomCenter" @bind-Value="_nameOfItemFilter" Dense Class="mr-2">
+				<MudSelectItem Value='@("ALL")'>Todos</MudSelectItem>
+				@foreach (var hri in _hris)
+				{
+					<MudSelectItem Value="@hri.NameOfItem">@hri.NameOfItem</MudSelectItem>
+				}
+			</MudSelect>
+
+			<MudSelect T="int" Label="HriScheduleItem" Variant="Variant.Text" Style="width: 18vw; min-width: 16rem" AnchorOrigin="Origin.BottomCenter" @bind-Value="_scheduleItemFilter" Dense Class="mr-2" Disabled="@(_nameOfItemFilter == "ALL")">
+				<MudSelectItem Value="0">Todos</MudSelectItem>
+				@foreach (var template in HRIScheduleCatalog.Templates.OrderBy(t => t.ItemNumber))
+				{
+					<MudSelectItem Value="@template.ItemNumber">@($"{template.ItemNumber}. {template.Title}")</MudSelectItem>
+				}
+			</MudSelect>
+
+			<MudSelect T="int" Label="Turno" Variant="Variant.Text" Style="width: 10vw; min-width: 9rem" AnchorOrigin="Origin.BottomCenter" @bind-Value="_shiftFilter" Dense Class="mr-2">
+				<MudSelectItem Value="0">Todos</MudSelectItem>
+				<MudSelectItem Value="1">1er T</MudSelectItem>
+				<MudSelectItem Value="2">2do T</MudSelectItem>
+				<MudSelectItem Value="3">3er T</MudSelectItem>
+			</MudSelect>
+
+			<MudSelect T="int" Label="@Localizer["status"]" Variant="Variant.Text" Style="width: 13vw; min-width: 12rem" AnchorOrigin="Origin.BottomCenter" @bind-Value="_statusFilter" Dense>
+				<MudSelectItem Value="0">
+					<span style="display: flex; align-items: center;">
+						<MudIcon Icon="@Icons.Material.Filled.BubbleChart" Class="mr-2"></MudIcon>
+						@Localizer["allStatus"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="8" Disabled>@Localizer["SOS Program"]</MudSelectItem>
+				<MudSelectItem Value="7">
+					<span style="display: flex; align-items: center;">
+						<MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Class="mr-2"></MudIcon>
+						@Localizer["programmed"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="1">
+					<span style="display: flex; align-items: center;">
+						<MudIcon Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Class="mr-2"></MudIcon>
+						@Localizer["planned"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="2">
+					<span style="display: flex; align-items: center;">
+						<MudIcon Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Class="mr-2"></MudIcon>
+						@Localizer["inProgress"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="3">
+					<span style="display: flex; align-items: center;">
+						<MudIcon Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Class="mr-2"></MudIcon>
+						@Localizer["late"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="4">
+					<span style="display: flex; align-items: center;">
+						<MudIcon Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Class="mr-2"></MudIcon>
+						@Localizer["underReview"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="5">
+					<span style="display: flex; align-items: center;">
+						<MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Class="mr-2"></MudIcon>
+						@Localizer["rejected"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="6">
+					<span style="display: flex; align-items: center;">
+						<MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Class="mr-2"></MudIcon>
+						@Localizer["finished"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="8" Disabled>@Localizer["Manual"]</MudSelectItem>
+				<MudSelectItem Value="17">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Class="mr-2" Variant="Variant.Filled" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["programmed"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="11">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Class="mr-2" Variant="Variant.Filled" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["planned"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="12">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Class="mr-2" Variant="Variant.Filled" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["inProgress"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="13">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Class="mr-2" Variant="Variant.Filled" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["late"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="14">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Class="mr-2" Variant="Variant.Filled" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["underReview"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="15">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Class="mr-2" Variant="Variant.Filled" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["rejected"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="16">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Class="mr-2" Variant="Variant.Filled" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["finished"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="18" Disabled>@Localizer["PAT"]</MudSelectItem>
+				<MudSelectItem Value="27">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.Info" Color="Color.Warning" Class="mr-2" Variant="Variant.Outlined" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["programmed"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="21">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Warning" Class="mr-2" Variant="Variant.Outlined" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["planned"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="22">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.StopCircle" Color="Color.Info" Class="mr-2" Variant="Variant.Outlined" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["inProgress"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="23">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.RemoveCircle" Color="Color.Error" Class="mr-2" Variant="Variant.Outlined" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["late"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="24">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.IncompleteCircle" Color="Color.Info" Class="mr-2" Variant="Variant.Outlined" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["underReview"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="25">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Class="mr-2" Variant="Variant.Outlined" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["rejected"]
+					</span>
+				</MudSelectItem>
+				<MudSelectItem Value="26">
+					<span style="display: flex; align-items: center;">
+						<MudIconButton Icon="@Icons.Material.Filled.Circle" Color="Color.Success" Class="mr-2" Variant="Variant.Outlined" Size="Size.Small" Style="margin-top: -6px"></MudIconButton>
+						@Localizer["finished"]
+					</span>
+				</MudSelectItem>
+			</MudSelect>
+		</MudItem>
+	</MudItem>
+
+	<MudItem xs="12">
+		<MudSimpleTable Striped="true" Bordered="true" Elevation="6" Dense="true" FixedHeader="true" Style="height: 82vh" Class="hri-calendar-table scroll1">
+			<thead>
+				<tr style="cursor:default">
+					@foreach (var day in _days)
+					{
+						<th style="text-align:center; width:14.28%">@day.ToUpperInvariant()</th>
+					}
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var week in _weeks)
+				{
+					<tr>
+						@foreach (var day in week)
+						{
+							var isCurrentMonth = day.Month == _yearMonth.Month;
+							var dayEvents = GetEventsForDate(day);
+							<td style="text-align: end; width:14.28%; padding: 0px; vertical-align:top;">
+								<div class="hri-day-cell hri-scroll">
+									<div class="hri-day-head">
+										@if (isCurrentMonth)
+										{
+											<MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@day.Day.ToString()" Color="@(day.Date == DateTime.Today.Date ? Color.Info : Color.Default)" AnchorOrigin="Origin.BottomCenter" Dense>
+												<MudMenuItem Icon="@Icons.Material.Filled.PlaylistAdd" Href="/hri/form">
+													Programar HRI
+												</MudMenuItem>
+												<MudMenuItem Icon="@Icons.Material.Filled.EditCalendar" Href="/hri/form">
+													Planear revision
+												</MudMenuItem>
+												<MudMenuItem Icon="@Icons.Material.Filled.Add" Href="/hri/form">
+													Crear HRI
+												</MudMenuItem>
+											</MudMenu>
+										}else{
+										    <MudText Class="@(isCurrentMonth ? "hri-day-num" : "hri-day-num hri-day-num-muted")">@day.Day</MudText>
+                                        }
+
+									</div>
+									@if (!isCurrentMonth)
+									{
+										<div></div>
+									}
+									else if (!dayEvents.Any())
+									{
+										<MudText Typo="Typo.caption" Class="mud-text-secondary">Sin eventos</MudText>
+									}
+									else
+									{
+										@foreach (var item in dayEvents)
+										{
+											<MudTooltip Text="@item.Title" Color="@MapColor(item.Status)" Placement="Placement.Bottom" Arrow="true" ShowOnFocus="false">
+												<MudChip Variant="Variant.Text" Color="@MapColor(item.Status)" Label Class="hri-event-chip">
+													<MudIconButton Style="padding: 0px;"
+																   Color="@MapColor(item.Status)"
+																   Icon="@GetStatusIcon(item.Status)"
+																   Variant="Variant.Text"
+																   Size="Size.Small">
+													</MudIconButton>
+													<span class="calendar-item">@GetShortTitle(item.Title)</span>
+												</MudChip>
+											</MudTooltip>
+										}
+									}
+								</div>
+							</td>
+						}
+					</tr>
+				}
+			</tbody>
+		</MudSimpleTable>
+	</MudItem>
+</MudGrid>
+
+@code {
+	private DateTime _yearMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+	private readonly List<string> _days = new() { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+	private readonly List<List<DateTime>> _weeks = new();
+	private readonly List<HriScheduleItem> _allEvents = new();
+	private readonly List<Hri> _hris = new();
+	private int _statusFilter;
+	private string _nameOfItemFilter = "ALL";
+	private int _scheduleItemFilter;
+	private int _shiftFilter;
+	private readonly Random _random = new();
+
+	protected override Task OnInitializedAsync()
+	{
+		BreadcrumbService.UpdateBreadcrumbs(new List<BreadcrumbItem>
+		{
+			new BreadcrumbItem(text: Localizer["home"], href: "/"),
+			new BreadcrumbItem(text: "HRI Schedule", href: "/hrischedule", disabled: true)
+		});
+
+		GenerateCalendarBody();
+		SeedMonthEvents();
+		return Task.CompletedTask;
+	}
+
+	private void LastMonth()
+	{
+		_yearMonth = _yearMonth.AddMonths(-1);
+		GenerateCalendarBody();
+		SeedMonthEvents();
+	}
+
+	private void NextMonth()
+	{
+		_yearMonth = _yearMonth.AddMonths(1);
+		GenerateCalendarBody();
+		SeedMonthEvents();
+	}
+
+	private Task OnDateChangedAsync(DateTime? date)
+	{
+		_yearMonth = new DateTime((date ?? DateTime.Today).Year, (date ?? DateTime.Today).Month, 1);
+		GenerateCalendarBody();
+		SeedMonthEvents();
+		return Task.CompletedTask;
+	}
+
+	private void GenerateCalendarBody()
+	{
+		_weeks.Clear();
+
+		var first = new DateTime(_yearMonth.Year, _yearMonth.Month, 1);
+		var offset = ((int)first.DayOfWeek + 6) % 7;
+		var gridStart = first.AddDays(-offset);
+
+		for (var weekIndex = 0; weekIndex < 6; weekIndex++)
+		{
+			var week = new List<DateTime>();
+			for (var dayIndex = 0; dayIndex < 7; dayIndex++)
+			{
+				week.Add(gridStart.AddDays((weekIndex * 7) + dayIndex));
+			}
+			_weeks.Add(week);
+		}
+	}
+
+	private void SeedMonthEvents()
+	{
+		SeedHris();
+
+		_allEvents.Clear();
+		foreach (var hri in _hris)
+		{
+			hri.Tasks.Clear();
+		}
+
+		var daysInMonth = DateTime.DaysInMonth(_yearMonth.Year, _yearMonth.Month);
+
+		for (var day = 1; day <= daysInMonth; day++)
+		{
+			var date = new DateTime(_yearMonth.Year, _yearMonth.Month, day);
+			var count = _random.Next(0, 3);
+			for (var i = 0; i < count; i++)
+			{
+				var template = HRIScheduleCatalog.GetRandomTemplate(_random);
+				var status = template.SuggestedStatus > 0 ? template.SuggestedStatus : _random.Next(1, 8);
+				var selectedHri = _hris[_random.Next(_hris.Count)];
+				var eventItem = new HriScheduleItem
+				{
+					HriId = selectedHri.HriId,
+					NameOfItem = selectedHri.NameOfItem,
+					Date = date,
+					Type = template.Type,
+					ItemNumber = template.ItemNumber,
+					Title = template.Title,
+					ReviewMethod = template.ReviewMethod,
+					Criteria = template.Criteria,
+					ActionIfFail = template.ActionIfFail,
+					Shift = _random.Next(1, 4),
+					Status = status
+				};
+
+				_allEvents.Add(eventItem);
+				selectedHri.Tasks.Add(eventItem);
+			}
+		}
+	}
+
+	private void SeedHris()
+	{
+		if (_hris.Any())
+		{
+			return;
+		}
+
+		_hris.AddRange(new[]
+		{
+			new Hri { HriId = 1, NameOfItem = "MONTACARGAS A" },
+			new Hri { HriId = 2, NameOfItem = "MONTACARGAS B" },
+			new Hri { HriId = 3, NameOfItem = "MONTACARGAS C" },
+			new Hri { HriId = 4, NameOfItem = "MONTACARGAS D" }
+		});
+	}
+
+	private IEnumerable<HriScheduleItem> GetEventsForDate(DateTime date)
+	{
+		var query = _allEvents.Where(x => x.Date.Date == date.Date);
+
+		if (!string.Equals(_nameOfItemFilter, "ALL", StringComparison.OrdinalIgnoreCase))
+		{
+			query = query.Where(x => x.NameOfItem == _nameOfItemFilter);
+		}
+
+		if (_scheduleItemFilter > 0)
+		{
+			query = query.Where(x => x.ItemNumber == _scheduleItemFilter);
+		}
+
+		if (_shiftFilter > 0)
+		{
+			query = query.Where(x => x.Shift == _shiftFilter);
+		}
+
+		var normalizedStatus = NormalizeStatusFilter(_statusFilter);
+		if (normalizedStatus > 0)
+		{
+			query = query.Where(x => x.Status == normalizedStatus);
+		}
+
+		return query.Take(3);
+	}
+
+	private int NormalizeStatusFilter(int status)
+	{
+		if (status >= 21 && status <= 27)
+		{
+			return status - 20;
+		}
+
+		if (status >= 11 && status <= 17)
+		{
+			return status - 10;
+		}
+
+		if (status == 8 || status == 18)
+		{
+			return 0;
+		}
+
+		return status;
+	}
+
+	private Color MapColor(int status)
+	{
+		return status switch
+		{
+			7 => Color.Warning,
+			1 => Color.Warning,
+			2 => Color.Info,
+			3 => Color.Success,
+			4 => Color.Error,
+			5 => Color.Error,
+			6 => Color.Success,
+			_ => Color.Default
+		};
+	}
+
+	private string GetStatusIcon(int status)
+	{
+		return status switch
+		{
+			7 => Icons.Material.Filled.Info,
+			1 => Icons.Material.Filled.PlayCircle,
+			2 => Icons.Material.Filled.StopCircle,
+			3 => Icons.Material.Filled.RemoveCircle,
+			4 => Icons.Material.Filled.IncompleteCircle,
+			5 => Icons.Material.Filled.Cancel,
+			6 => Icons.Material.Filled.Circle,
+			_ => Icons.Material.Filled.Help
+		};
+	}
+
+	private string GetShortTitle(string title)
+	{
+		if (string.IsNullOrWhiteSpace(title)) return string.Empty;
+		return title.Length <= 18 ? title : title.Substring(0, 15) + "...";
+	}
+
+    private class Hri
+    {
+        public int HriId { get; set; }
+        public string NameOfLine { get; set; }
+        public string NameOfItem { get; set; }
+        public string ControlNumber { get; set; }
+        public string Dock { get; set; }
+        public string Department { get; set; }
+        public User Supervisor { get; set; }
+        //public List<Images> LayOut { get; set; }
+        //public List<HRIRevisionItems> ItemsRevised { get; set; }
+        //public List<SemanalRevisions> SemanalRevisions { get; set; }
+        //public List<HriCycles> Cycles { get; set; }
+        //public List<RevisionCycles> Revisions { get; set; }
+        public bool isActive { get; set; }
+        public DateTime CreationDate { get; set; }
+        public List<HriScheduleItem> Tasks { get; set; } = new List<HriScheduleItem>();
+    }
+
+	private class HriScheduleItem
+	{
+		public int HriId { get; set; }
+		public string NameOfItem { get; set; } = string.Empty;
+		public HriScheduleItemType Type { get; set; }
+		public int ItemNumber { get; set; }
+		public DateTime Date { get; set; }
+		public string Title { get; set; } = string.Empty;
+		public string ReviewMethod { get; set; } = string.Empty;
+		public string Criteria { get; set; } = string.Empty;
+		public string ActionIfFail { get; set; } = string.Empty;
+		public int Shift { get; set; }
+		public int Status { get; set; }
+	}
+}
