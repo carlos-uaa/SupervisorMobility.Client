@@ -1,0 +1,284 @@
+﻿@page "/reports/users"
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8">
+    <MudText Typography="Typography.h4" GutterBottom="true">Panel de Control de Usuarios</MudText>
+
+    
+        <MudGrid Spacing="2" Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="lup-kpi-card lup-kpi-primary pa-4" Elevation="0">
+                    <div class="lup-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Assessment" />
+                        <MudText Typo="Typo.caption">Total Headcount</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">1,240</MudText>
+                    <MudText Typo="Typo.caption" Class="lup-kpi-sub mt-1"></MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="lup-kpi-card lup-kpi-info pa-4" Elevation="0">
+                    <div class="lup-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Insights" />
+                        <MudText Typo="Typo.caption">Operadores sin Superior</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">24</MudText>
+                    <MudText Typo="Typo.caption" Class="lup-kpi-sub mt-1"></MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="lup-kpi-card lup-kpi-success pa-4" Elevation="0">
+                    <div class="lup-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Verified" />
+                        <MudText Typo="Typo.caption">Supervisores sin subordinados</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">76</MudText>
+                    <MudText Typo="Typo.caption" Class="lup-kpi-sub mt-1"></MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="lup-kpi-card lup-kpi-warn pa-4" Elevation="0">
+                    <div class="lup-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" />
+                        <MudText Typo="Typo.caption">Usuarios sin Area</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">244</MudText>
+                    <MudText Typo="Typo.caption" Class="lup-kpi-sub mt-1"></MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+    <MudGrid style="overflow-y: scroll; height: 70vh;">
+
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Distribución por Rol</MudText>
+                <MudChart ChartType="ChartType.Donut" InputData="@donutData" InputLabels="@donutLabels" Width="100%" Height="250px" />
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4">
+                <MudText Typo="Typo.h6">Headcount por Planta</MudText>
+                <MudChart ChartType="ChartType.Bar" ChartSeries="@series" XAxisLabels="@xaxisLabels" Width="100%" Height="250px" />
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="7">
+            <MudPaper Class="pa-4" Style="height: 450px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-4">Mapa de Ocupación por Área</MudText>
+                <MudGrid Spacing="2">
+                    @foreach (var area in areasMock)
+                    {
+                        <MudItem xs="6" sm="4">
+                            <MudPaper Elevation="0" Class="pa-3 d-flex flex-column align-center justify-center"
+                                      Style="@($"background-color:{GetIntensityColor(area.Count)}; height:100px; border-radius:12px;")">
+                                <MudText Typo="Typo.subtitle2" Class="mud-text-secondary">@area.Name</MudText>
+                                <MudText Typo="Typo.h5">@area.Count</MudText>
+                                <MudText Typo="Typo.caption">Usuarios</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="5">
+            <MudPaper Class="pa-4" Style="height: 450px; overflow-y: auto;">
+                <MudText Typo="Typo.h6" Class="mb-4">Organigrama (Jerarquía)</MudText>
+        
+                @* Forzamos a que trate TreeItems como IEnumerable desde el inicio *@
+                <MudTreeView T="UserNode" Items="TreeItems" Hover="true">
+                    <ItemTemplate Context="item">
+                        <MudTreeViewItem T="UserNode"
+                                         @bind-Expanded="@item.IsExpanded"
+                                         Items="@item.Subordinates"
+                                         Value="@item">
+                            <Content>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@(item.Subordinates != null && item.Subordinates.Any() ? Icons.Material.Filled.Groups : Icons.Material.Filled.Person)"
+                                             Color="@(item.Position == "Admin" ? Color.Primary : Color.Default)"
+                                             Class="mr-2" />
+                                    <div>
+                                        <MudText Typo="Typo.body1">@item.Name</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@item.Position</MudText>
+                                    </div>
+                                </div>
+                            </Content>
+                        </MudTreeViewItem>
+                    </ItemTemplate>
+                </MudTreeView>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    // Datos para la Dona (UserType)
+    private double[] donutData = { 5, 15, 25, 300, 10 };
+    private string[] donutLabels = { "Admin", "SSV", "SV", "OP", "Manager" };
+
+    // Datos para Barras (Headcount por Planta)
+    private List<ChartSeries> series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Personal Activo", Data = new double[] { 400, 320, 520 } },
+    };
+    private string[] xaxisLabels = { "Planta Norte", "Planta Sur", "Planta Bajío" };
+
+    // Lógica de colores para la Matriz
+    private string GetColor(int value) => value switch
+    {
+        >= 90 => "#A5D6A7", // Verde (Experto)
+        >= 60 => "#FFF59D", // Amarillo (Autónomo)
+        _ => "#EF9A9A"      // Rojo (Aprendiz)
+    };
+
+    private List<AreaDensity> areasMock = new()
+    {
+        new ("Ensamble", 120),
+        new ("Calidad", 45),
+        new ("Logística", 80),
+        new ("Mantenimiento", 15),
+        new ("Pintura", 33),
+        new ("Recursos H.", 10),
+        new ("IT", 8),
+        new ("Seguridad", 12)
+    };
+
+    public record AreaDensity(string Name, int Count);
+
+    // Función para dar un tono de color según la cantidad de gente
+    private string GetIntensityColor(int count) => count switch
+    {
+        > 100 => "var(--mud-palette-primary-hover)", // Muy lleno
+        > 50 => "var(--mud-palette-action-default-hover)",
+        > 20 => "var(--mud-palette-background-grey)",
+        _ => "var(--mud-palette-surface)" // Casi vacío
+    };
+
+    public record OperatorMock(string Name, int S1, int S2, int S3, int S4);
+
+    // Jerarquía para Organigrama
+    public class UserNode
+    {
+        public string Name { get; set; }
+        public string Position { get; set; }
+        public bool IsExpanded { get; set; }
+        public HashSet<UserNode> Subordinates { get; set; } = new();
+    }
+
+    // Unificado a List para evitar errores de conversión
+    private HashSet<UserNode> TreeItems { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        // Limpiamos para evitar duplicados en re-renders
+        TreeItems.Clear();
+
+        var boss = new UserNode
+        {
+            Name = "Carlos",
+            Position = "Admin",
+            IsExpanded = true
+        };
+
+        var supervisor = new UserNode
+        {
+            Name = "Ana López",
+            Position = "SSV Producción"
+        };
+
+        supervisor.Subordinates.Add(new UserNode { Name = "Operador 1", Position = "OP" });
+        supervisor.Subordinates.Add(new UserNode { Name = "Operador 2", Position = "OP" });
+
+        boss.Subordinates.Add(supervisor);
+        
+        TreeItems.Add(boss);
+    }
+}
+
+<style>
+    .lup-page {
+        padding: 0.5rem 0 1.25rem 0;
+    }
+
+    .lup-loading-wrap {
+        min-height: 45vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lup-kpi-card {
+        border-radius: 14px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(130deg, #f8fafc 0%, #ffffff 100%);
+    }
+
+    .lup-kpi-primary {
+        background: linear-gradient(130deg, #f8fafc 0%, #ffffff 100%);
+        border-left: 4px solid #22c55e;
+    }
+
+    .lup-kpi-info {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .lup-kpi-success {
+        border-left: 4px solid #f59e0b;
+    }
+
+    .lup-kpi-warn {
+        border-left: 4px solid #a855f7;
+    }
+
+    .lup-kpi-head {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: rgba(0, 0, 0, 0.72);
+    }
+
+    .lup-kpi-sub {
+        color: rgba(0, 0, 0, 0.62);
+    }
+
+    .lup-card {
+        border-radius: 14px;
+        border: 1px solid rgba(0, 0, 0, 0.07);
+        height: 100%;
+    }
+
+    .lup-card-head {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    .lup-filter-box,
+    .lup-chart-box {
+        border-radius: 10px;
+        border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .lup-chart-kpi {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+
+    .lup-demo-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+</style>

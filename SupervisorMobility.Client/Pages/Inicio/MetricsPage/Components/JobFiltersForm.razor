@@ -6,125 +6,130 @@
 @inject IStringLocalizer<Resource> Localizer
 @inject IStringLocalizer<Resource1> Localizer1
 
-<MudItem md="12" lg="12">
-    <MudPaper Class="mt-3 pa-3 d-flex align-center gap-2 justify-center" Elevation="3" Outlined>
-    <MudGrid Justify="Justify.Center">
-        @if(ShowPlantsSelect){
-        <MudItem xs="6" sm="4" md="3" lg="3">
-            <MudSelect T="int?" Label=@Localizer["plant"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@filters.plantId" For="@(() => filters.plantId)" SelectedValuesChanged="(args)=>UpdatePlant(args.First())" Style="width: 15vw;">
-                <MudSelectItem T="int?" Value="null">@Localizer["allPlants"]</MudSelectItem>
-                @foreach (var type in Plants)
-                {
-                    <MudSelectItem T="int?" Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                }
-            </MudSelect>
-        </MudItem>
-        }
-        @if(ShowAreasSelect){
-            <MudItem xs="6" sm="4" md="3" lg="3">
-            @if (filters.plantId != null)
+<MudItem xs="12">
+    <MudPaper Elevation="0" Class="pa-6 border-all">
+        <MudGrid Spacing="3" Justify="Justify.Center" Class="align-end">
+            
+            @if (ShowPlantsSelect)
             {
-                @*Mud select of Areas for Admin*@
-                <MudSelect T="int?" Label=@Localizer["area"] Variant="Variant.Text" Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" @bind-Value="@filters.areaId" For="@(() => filters.areaId)" SelectedValuesChanged="(args)=>UpdateArea(args.First())" Style="width: 15vw;">
-                    <MudSelectItem T="int?" Value="null">@Localizer["allAreas"]</MudSelectItem>
-                    @foreach (var type in Areas)
-                    {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSelect T="int?" Label=@Localizer["plant"] Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense"
+                               @bind-Value="@filters.plantId" For="@(() => filters.plantId)"
+                               SelectedValuesChanged="(args)=>UpdatePlant(args.First())" Dense="true" Class="bg-white rounded-lg">
+                        <MudSelectItem T="int?" Value="null">@Localizer["allPlants"]</MudSelectItem>
+                        @foreach (var type in Plants)
+                        {
+                            <MudSelectItem T="int?" Value="type.PlantId">@($"{type.Code} - {type.Description}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
+
+            @if (ShowAreasSelect)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSelect T="int?" Label=@Localizer["area"] Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense"
+                               @bind-Value="@filters.areaId" For="@(() => filters.areaId)"
+                               SelectedValuesChanged="(args)=>UpdateArea(args.First())" Dense="true"
+                               Disabled="@(filters.plantId == null)" Class="bg-white rounded-lg">
+                        <MudSelectItem T="int?" Value="null">@Localizer["allAreas"]</MudSelectItem>
+                        @foreach (var type in Areas)
+                        {
                             <MudSelectItem T="int?" Value="type.AreaId">@($"{type.Code} - {type.Description}")</MudSelectItem>
-                    }
-                </MudSelect>
+                        }
+                    </MudSelect>
+                </MudItem>
             }
-            else
+
+            @if (ShowDistributionsSelect)
             {
-                @*Mud select for SSV *@
-                <MudSelect T="int" Label=@Localizer["area"] Variant="Variant.Text" Disabled Class="mb-3 mr-8" AnchorOrigin="Origin.BottomCenter" Style="width: 15vw;">
-                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAPlant"]</MudSelectItem>
-                </MudSelect>
-            }
-        </MudItem>
-        }
-        @if(ShowDistributionsSelect){
-            <MudItem xs="6" sm="4" md="3" lg="3">
-            @if (filters.areaId != null)
-            {
-                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="0">
-                    <MudSelect T="int?" Style="display: flex; align-items: center; justify-content: space-evenly;" Label=@Localizer["distribution"] Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@filters.distributionId" For="@(() => filters.distributionId)" SelectedValuesChanged="(args)=>UpdateDistribution(args.First())">
-                        <MudSelectItem T="int?" Value="null"> @Localizer["allDistributions"]</MudSelectItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSelect T="int?" Label=@Localizer["distribution"] Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense"
+                               @bind-Value="@filters.distributionId" For="@(() => filters.distributionId)"
+                               SelectedValuesChanged="(args)=>UpdateDistribution(args.First())" Dense="true"
+                               Disabled="@(filters.areaId == null)" Class="bg-white rounded-lg">
+                        <MudSelectItem T="int?" Value="null">@Localizer["allDistributions"]</MudSelectItem>
                         @foreach (var type in Distributions)
                         {
-                                <MudSelectItem T="int?" Value="type.DistributionId" Style="display: flex; align-items: center; justify-content: space-evenly;">
-                                @($"{type.Description}   ")
-                                @switch (type.CriticalType)
-                                {
-                                    case 1:
-                                        <img src="Images/A.png" Height="25" Width="25" />
-                                        break;
-                                    case 2:
-                                        <img src="Images/B.png" Height="25" Width="25" />
-                                        break;
-                                    case 3:
-                                        <img src="Images/C.png" Height="25" Width="25" />
-                                        break;
-                                }
+                            <MudSelectItem T="int?" Value="type.DistributionId">
+                                <div class="d-flex align-center gap-2">
+                                    @type.Description
+                                    @switch (type.CriticalType)
+                                    {
+                                        case 1:
+                                            <img src="Images/A.png" height="18" />
+                                            break;
+                                        case 2:
+
+                                            <img src="Images/B.png" height="18" />
+                                            break;
+                                        case 3:
+
+                                            <img src="Images/C.png" height="18" />
+                                            break;
+                                    }
+                                </div>
                             </MudSelectItem>
                         }
                     </MudSelect>
-                </MudStack>
+                </MudItem>
             }
-            else
-            {
-                <MudSelect T="int" Label=@Localizer["distribution"] Disabled Variant="Variant.Text" Class="mt-3" AnchorOrigin="Origin.BottomCenter">
-                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectAnArea"]</MudSelectItem>
-                </MudSelect>
-            }
-        </MudItem>
-        }
-        @if(ShowOperationsSelect){
-            <MudItem xs="6" sm="4" md="3" lg="3">
-            @if(filters.distributionId != null)
-            {
-                <MudSelect T="int?" Label=@Localizer["operation"] Variant="Variant.Text" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" @bind-Value="@filters.operationId" SelectedValuesChanged="(args)=>UpdateOperation(args.First())">
-                    <MudSelectItem T="int?" Value="null" >@Localizer["allOperations"]</MudSelectItem>
-                    @foreach (var type in Operations)
-                    {
 
-                            <MudSelectItem T="int?" Value="type.OperationId">
-                            @($"{type.Description}")
-                        </MudSelectItem>
-                    }
-                </MudSelect>
-            }
-            else
+            @if (ShowOperationsSelect)
             {
-                    <MudSelect T="int" Label=@Localizer["operation"] Variant="Variant.Text" Margin="Margin.Dense" Class="mt-3" AnchorOrigin="Origin.BottomCenter" Disabled>
-                    <MudSelectItem Disabled="true" Value="0">@Localizer["firstSelectADistribution"]</MudSelectItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSelect T="int?" Label=@Localizer["operation"] Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Margin="Margin.Dense"
+                               @bind-Value="@filters.operationId" SelectedValuesChanged="(args) => UpdateOperation(args.First())"
+                               Dense="true" Disabled="@(filters.distributionId == null)" Class="bg-white rounded-lg">
+                        <MudSelectItem T="int?" Value="null">@Localizer["allOperations"]</MudSelectItem>
+                        @foreach (var type in Operations)
+                        {
+                            <MudSelectItem T="int?" Value="type.OperationId">@type.Description</MudSelectItem>
+                        }
                     </MudSelect>
+                </MudItem>
             }
-        </MudItem>
-        }
-        @if (ShowDatesSelect)
-        {
-            <MudItem md="12" lg="12">
-                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Position="Position.Center" @bind-ActivePanelIndex="ActiveTabIndex">
-                <MudTabPanel Text="@Localizer["monthly"]">
-                    <MudDatePicker OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy" PickerVariant="PickerVariant.Dialog" Color="Color.Info" AdornmentColor="Color.Info" DateChanged=@OnMonthChangedAsync Date="_yearMonth" AutoClose="true"/>
-                </MudTabPanel>
-                <MudTabPanel Text="@Localizer["Yearly"]">
-                    <MudDatePicker 
-                        OpenTo="OpenTo.Year" 
-                        FixDay="1" FixMonth="1" DateFormat="yyyy"
-                        PickerVariant="PickerVariant.Dialog" 
-                        Color="Color.Info" AdornmentColor="Color.Info" 
-                        DateChanged=@OnYearChangedAsync Date="_year" AutoClose="true" />
-                </MudTabPanel>
-                <MudTabPanel Text="@Localizer["customDate"]">
-                    <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="OnCustomChangedAsync">
 
-                    </MudDateRangePicker>
-                </MudTabPanel>
-            </MudTabs>
-        </MudItem>
-        }
-    </MudGrid>
+            @if (ShowDatesSelect)
+            {
+                <MudItem xs="12" Class="mt-2">
+                    <MudDivider Class="mb-4" />
+                    <div class="d-flex justify-center">
+                        <MudPaper Elevation="0" Class="pa-1 border-all" Style="border: 1px solid var(--mud-palette-lines-default); max-width: 800px; width: 100%;">
+                            <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true"
+                                     Centered="true" Color="Color.Tertiary" SliderColor="Color.Tertiary"
+                                     @bind-ActivePanelIndex="ActiveTabIndex" PanelClass="pa-4">
+                                
+                                <MudTabPanel Text="@Localizer["monthly"]" Icon="@Icons.Material.Outlined.CalendarMonth">
+                                    <div class="d-flex justify-center border-all rounded-lg pa-2 bg-white mt-2" style="border: 1px dashed var(--mud-palette-divider)">
+                                        <MudDatePicker OpenTo="OpenTo.Month" FixDay="1" DateFormat="MMMM / yyyy"
+                                                       Label=@Localizer["selectMonth"] PickerVariant="PickerVariant.Dialog"
+                                                       DateChanged=@OnMonthChangedAsync Date="_yearMonth" AutoClose="true"
+                                                       Variant="Variant.Text" DisableToolbar="true" Margin="Margin.Dense" />
+                                    </div>
+                                </MudTabPanel>
+
+                                <MudTabPanel Text="@Localizer["Yearly"]" Icon="@Icons.Material.Outlined.EventNote">
+                                    <div class="d-flex justify-center border-all rounded-lg pa-2 bg-white mt-2" style="border: 1px dashed var(--mud-palette-divider)">
+                                        <MudDatePicker OpenTo="OpenTo.Year" FixDay="1" FixMonth="1" DateFormat="yyyy"
+                                                       Label=@Localizer["selectYear"] PickerVariant="PickerVariant.Dialog"
+                                                       DateChanged=@OnYearChangedAsync Date="_year" AutoClose="true"
+                                                       Variant="Variant.Text" DisableToolbar="true" Margin="Margin.Dense" />
+                                    </div>
+                                </MudTabPanel>
+
+                                <MudTabPanel Text="@Localizer["customDate"]" Icon="@Icons.Material.Outlined.DateRange">
+                                    <div class="d-flex justify-center border-all rounded-lg pa-2 bg-white mt-2" style="border: 1px dashed var(--mud-palette-divider)">
+                                        <MudDateRangePicker DateRange="_dateRange" DateRangeChanged="OnCustomChangedAsync"
+                                                            Variant="Variant.Text" DisableToolbar="true" Margin="Margin.Dense" />
+                                    </div>
+                                </MudTabPanel>
+                            </MudTabs>
+                        </MudPaper>
+                    </div>
+                </MudItem>
+            }
+        </MudGrid>
     </MudPaper>
 </MudItem>
 

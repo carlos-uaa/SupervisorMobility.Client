@@ -8,9 +8,9 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
 {
     public partial class DataPanelForm
     {
-        [Parameter]
-
-        public int? DataPanelId { get; set; }
+        [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+        [Parameter] public int? DataPanelId { get; set; }
+        [Parameter] public string Type { get; set; }
 
         public DataPanel _datapanel { get; set; } = new DataPanel();
 
@@ -19,7 +19,6 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
 
         //Loading
         private IList<string> _sourceMsgLoading = new List<string>();
-        private IList<Color> _Colors = new List<Color>() { Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info, Color.Default, Color.Primary, Color.Secondary, Color.Success, Color.Info };
         public bool ShowLoading = true;
 
 
@@ -31,7 +30,8 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
         public enum PageType
         {
             Create,
-            Update
+            Update,
+            Details
         }
 
         public PageType pageType { get; set; }
@@ -51,12 +51,18 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
        
         private IEnumerable<DataPanelSpecification> Elements = new List<DataPanelSpecification>();
 
-      
+
         // Initialization
         protected async override Task OnInitializedAsync()
         {
-            var currentUrl = NavigationManager.Uri;
-            pageType = currentUrl.Contains("Create", StringComparison.OrdinalIgnoreCase) ? PageType.Create : PageType.Update;
+            pageType = Type switch
+            {
+                "Create" => PageType.Create,
+                "Update" => PageType.Update,
+                "Details" => PageType.Details,
+                _ => throw new ArgumentException($"Invalid page type: {Type}")
+            };
+
 
 
             _sourceMsgLoading.Add($"{Localizer1["Loading1"]}");
@@ -87,7 +93,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
                 Snackbar.Clear();
                 Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                 Snackbar.Add($"Error You have to log in", Severity.Error);
-                NavigationManager.NavigateTo($"/");
+                MudDialog.Close(DialogResult.Ok(false));
             }
             else
             {
@@ -117,7 +123,6 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
                 }
                 finally
                 {
-            BreadcrumbService.UpdateBreadcrumbs(_links);
                     ShowLoading = false;
                     base.StateHasChanged();
                 }
@@ -148,6 +153,8 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
         private async Task<bool> HasPropertyAsync()
             => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
+        private void Cancel() => MudDialog.Cancel();
+
         private async void SubmitOperations()
         {
             switch (pageType)
@@ -161,7 +168,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Create Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/DataPanels");
+                        MudDialog.Close(DialogResult.Ok(true));
 
                     }
                     else
@@ -183,7 +190,7 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.DataPanelPage
                         Snackbar.Clear();
                         Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
                         Snackbar.Add($"Update Succes", Severity.Success);
-                        NavigationManager.NavigateTo($"/configurationIS/DataPanels");
+                        MudDialog.Close(DialogResult.Ok(true));
                         //NavigationManager.NavigateTo($"/");
                     }
                     else

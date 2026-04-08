@@ -12,41 +12,208 @@
 
 @if (isLoading)
 {
-    <MudProgressCircular Indeterminate="true" />
+    <div class="lup-loading-wrap">
+        <MudProgressCircular Indeterminate="true" Size="Size.Large" Color="Color.Primary" />
+        <MudText Typo="Typo.body2" Class="mt-3 mud-text-secondary">@Localizer1["Loading1"]</MudText>
+    </div>
 }
 else
 {
-    <MudGrid Justify="Justify.Center" >
-        <MudItem md="6" xs="12" sm="12">
-            <MudTabs ActivePanelIndexChanged="(arg)=>UpdateFilterForm(arg)">
-                <MudTabPanel Text="@Localizer1["ACPlants"]"/>
-                <MudTabPanel Text="@Localizer1["ACAreas"]"/>
-                <MudTabPanel Text="@Localizer1["ACDistributions"]"/>
-            </MudTabs>
-
-            <SupervisorMobility.Client.Pages.Inicio.MetricsPage.Components.JobFiltersForm filters="@filters" filtersChanged="applyTotalFilters" 
-                ShowOperationsSelect ="@false" ShowDatesSelect="@true"
-                ShowAreasSelect="@areaFlag" ShowPlantsSelect="@plantFlag" ShowDistributionsSelect="@false"
-            />
-            <div class="d-flex flex-column align-center justify-center " style="margin-top:@(plantFlag?"0px":"90px");">
-                <MudPaper Class="pa-4 d-flex flex-column align-center justify-center" Style="width:100%">
-                    <canvas id="myPieChart" width="400" height="400"></canvas>
+    <MudContainer MaxWidth="MaxWidth.False" Class="lup-page px-0">
+        <MudGrid Spacing="2" Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="lup-kpi-card lup-kpi-primary pa-4" Elevation="0">
+                    <div class="lup-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Assessment" />
+                        <MudText Typo="Typo.caption">LUP Totales</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">@totalAll</MudText>
+                    <MudText Typo="Typo.caption" Class="lup-kpi-sub mt-1">Registros consolidados del periodo</MudText>
                 </MudPaper>
-            </div>
+            </MudItem>
 
-        </MudItem>
-        <MudItem md="6" xs="12" sm="12">
-            <MudText Align="Align.Center" Class="mud-tab">@Localizer["byProgressLUP"]</MudText>
-            <SupervisorMobility.Client.Pages.Inicio.MetricsPage.Components.JobFiltersForm filters="@Ofilters" filtersChanged="applyOtherFilters"
-            />
-            <div class="d-flex flex-column align-center justify-center">
-                <MudPaper Class="pa-4 d-flex flex-column align-center justify-center" Style="width:100%">
-                    <canvas id="myStackedBarChart" width="500" height="400" />
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="lup-kpi-card lup-kpi-info pa-4" Elevation="0">
+                    <div class="lup-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Insights" />
+                        <MudText Typo="Typo.caption">Avance Total</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">@totalOther</MudText>
+                    <MudText Typo="Typo.caption" Class="lup-kpi-sub mt-1">Estados acumulados por progreso</MudText>
                 </MudPaper>
-            </div>
-        </MudItem>
-    </MudGrid>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="lup-kpi-card lup-kpi-success pa-4" Elevation="0">
+                    <div class="lup-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Verified" />
+                        <MudText Typo="Typo.caption">Cumplimiento</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">92%</MudText>
+                    <MudText Typo="Typo.caption" Class="lup-kpi-sub mt-1">Demo: objetivos del mes alcanzados</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="lup-kpi-card lup-kpi-warn pa-4" Elevation="0">
+                    <div class="lup-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" />
+                        <MudText Typo="Typo.caption">Tendencia Semanal</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">+6.2%</MudText>
+                    <MudText Typo="Typo.caption" Class="lup-kpi-sub mt-1">Demo: variacion contra semana previa</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid Spacing="3" style="overflow-y: scroll; height: 70vh;">
+            <MudItem md="6" xs="12" sm="12">
+                <MudPaper Class="lup-card pa-4" Elevation="1">
+                    <div class="lup-card-head mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.DonutLarge" Color="Color.Primary" />
+                        <div>
+                            <MudText Typo="Typo.h6" Class="font-weight-bold">@Localizer["byClassificationLUP"]</MudText>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Filtros y distribucion por categoria</MudText>
+                        </div>
+                    </div>
+
+                    <MudTabs Rounded="true" PanelClass="pt-2" ActivePanelIndexChanged="(arg)=>UpdateFilterForm(arg)">
+                        <MudTabPanel Text="@Localizer1["ACPlants"]" />
+                        <MudTabPanel Text="@Localizer1["ACAreas"]" />
+                        <MudTabPanel Text="@Localizer1["ACDistributions"]" />
+                    </MudTabs>
+
+                    <MudPaper Outlined="true" Class="pa-3 mt-2 mb-3 lup-filter-box">
+                        <SupervisorMobility.Client.Pages.Inicio.MetricsPage.Components.JobFiltersForm filters="@filters" filtersChanged="applyTotalFilters"
+                                                                                                  ShowOperationsSelect="@false" ShowDatesSelect="@true"
+                                                                                                  ShowAreasSelect="@areaFlag" ShowPlantsSelect="@plantFlag" ShowDistributionsSelect="@false" />
+                    </MudPaper>
+
+                    <MudPaper Class="pa-4 d-flex flex-column align-center justify-center lup-chart-box" Style="@LupChartMarginTopStyle" Outlined="true">
+                        <div class="lup-chart-kpi mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Primary" />
+                            <MudText Typo="Typo.subtitle2">Total: @totalAll</MudText>
+                        </div>
+                        <canvas id="myPieChart" width="400" height="400"></canvas>
+                    </MudPaper>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem md="6" xs="12" sm="12">
+                <MudPaper Class="lup-card pa-4" Elevation="1">
+                    <div class="lup-card-head mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Insights" Color="Color.Info" />
+                        <div>
+                            <MudText Typo="Typo.h6" Class="font-weight-bold">@Localizer["byProgressLUP"]</MudText>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">Seguimiento por estado de avance</MudText>
+                        </div>
+                    </div>
+
+                    <MudPaper Outlined="true" Class="pa-3 mb-3 lup-filter-box">
+                        <SupervisorMobility.Client.Pages.Inicio.MetricsPage.Components.JobFiltersForm filters="@Ofilters" filtersChanged="applyOtherFilters" />
+                    </MudPaper>
+
+                    <div class="lup-demo-row mb-3">
+                        <MudChip Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Demo benchmark: 85%</MudChip>
+                        <MudChip Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">Demo tendencia: +6.2%</MudChip>
+                    </div>
+
+                    <MudPaper Class="pa-4 d-flex flex-column align-center justify-center lup-chart-box" Outlined="true">
+                        <div class="lup-chart-kpi mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Color="Color.Info" />
+                            <MudText Typo="Typo.subtitle2">Total: @totalOther</MudText>
+                        </div>
+                        <canvas id="myStackedBarChart" width="500" height="400" />
+                    </MudPaper>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
 }
+
+<style>
+.lup-page {
+    padding: 0.5rem 0 1.25rem 0;
+}
+
+.lup-loading-wrap {
+    min-height: 45vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.lup-kpi-card {
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(130deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.lup-kpi-primary {
+    background: linear-gradient(130deg, #f8fafc 0%, #ffffff 100%);
+    border-left: 4px solid #22c55e;
+}
+
+.lup-kpi-info {
+    border-left: 4px solid #3b82f6;
+}
+
+.lup-kpi-success {
+    border-left: 4px solid #f59e0b;
+}
+
+.lup-kpi-warn {
+    border-left: 4px solid #a855f7;
+}
+
+.lup-kpi-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: rgba(0, 0, 0, 0.72);
+}
+
+.lup-kpi-sub {
+    color: rgba(0, 0, 0, 0.62);
+}
+
+.lup-card {
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    height: 100%;
+}
+
+.lup-card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.lup-filter-box,
+.lup-chart-box {
+    border-radius: 10px;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.lup-chart-kpi {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.lup-demo-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+</style>
 
 @code {
     bool isLoading;
@@ -73,8 +240,10 @@ else
     bool areaFlag = false;
     bool plantFlag = false;
 
-    int totalAll;
-    int totalOther;
+    private string LupChartMarginTopStyle => plantFlag ? "margin-top:0px;" : "margin-top:90px;";
+
+    int totalAll = 48;
+    int totalOther = 63;
 
     private readonly string[] LabelColors = { "#B0B0B0", "#FFA500", "#FFD700", "#4CAF50", "#1E90FF" };
 
@@ -113,11 +282,20 @@ else
     private async Task RecountLUPChart()
     {
         totalAll = await MetricService.GetTotalLUPs(filters);
-        var rawData = await MetricService.GetLUPData(filters);
+        //var rawData = await MetricService.GetLUPData(filters);
 
+        var rawData = new Dictionary<string, int>
+        {
+            { "Body", 40 },
+            { "TRIM", 25},
+            { "Chasis", 15},
+            { "Paint", 10},
+            { "DCC", 10}
+        };
         List<string> tempLabels = new List<string>();
         List<int> tempValues = new List<int>();
 
+        
         foreach (var item in rawData)
         {
             tempLabels.Add(Localizer[item.Key]);
@@ -136,12 +314,14 @@ else
 
         int i = 0;
         var datasetsT = new StackedBarChartData[rawData.Count];
+        int[] tem = { 5, 3, 10, 15, 26 };
         foreach (var item in rawData)
         {
             var temparray = new int[rawData.Count];
 
             tempLabels.Add(Localizer[item.Key]);
-            temparray[i] = item.Value;
+            //temparray[i] = item.Value;
+            temparray[i] = tem[i];
 
             datasetsT[i] = new StackedBarChartData
                 {

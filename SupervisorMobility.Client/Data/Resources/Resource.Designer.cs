@@ -19,7 +19,7 @@ namespace SupervisorMobility.Client.Data.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resource {
@@ -975,6 +975,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string createNewDistribution {
             get {
                 return ResourceManager.GetString("createNewDistribution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create part.
+        /// </summary>
+        public static string createParts {
+            get {
+                return ResourceManager.GetString("createParts", resourceCulture);
             }
         }
         
@@ -2941,6 +2950,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No departments found.
+        /// </summary>
+        public static string noDepartments {
+            get {
+                return ResourceManager.GetString("noDepartments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No files uploaded yet.
         /// </summary>
         public static string noFilesUploadedYet {
@@ -3022,6 +3040,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to It looks like there are not parts in the DataBase, Start creating a new part to manage in the system..
+        /// </summary>
+        public static string noPartsFound {
+            get {
+                return ResourceManager.GetString("noPartsFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Folder/Documents not found.
         /// </summary>
         public static string NoPathFiles {
@@ -3036,6 +3063,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string NoPathFilesMsg {
             get {
                 return ResourceManager.GetString("NoPathFilesMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to It looks like nobody had configured a Problem Defect. start adding any new to manage the operations..
+        /// </summary>
+        public static string noProblemsFound {
+            get {
+                return ResourceManager.GetString("noProblemsFound", resourceCulture);
             }
         }
         
@@ -3576,6 +3612,51 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string PlantUploadWork {
             get {
                 return ResourceManager.GetString("PlantUploadWork", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create Problem Defect.
+        /// </summary>
+        public static string ProblemDefectCreate {
+            get {
+                return ResourceManager.GetString("ProblemDefectCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem Defect Description.
+        /// </summary>
+        public static string ProblemDefectDescription {
+            get {
+                return ResourceManager.GetString("ProblemDefectDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem Defect Details.
+        /// </summary>
+        public static string ProblemDefectDetails {
+            get {
+                return ResourceManager.GetString("ProblemDefectDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Problem Defects.
+        /// </summary>
+        public static string ProblemDefectTitle {
+            get {
+                return ResourceManager.GetString("ProblemDefectTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update Problem Defect.
+        /// </summary>
+        public static string ProblemDefectUpdate {
+            get {
+                return ResourceManager.GetString("ProblemDefectUpdate", resourceCulture);
             }
         }
         
@@ -4525,6 +4606,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are no parts created.
+        /// </summary>
+        public static string thereAreNoPartsCreated {
+            get {
+                return ResourceManager.GetString("thereAreNoPartsCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are no Past job observations.
         /// </summary>
         public static string thereAreNoPastJobObservations {
@@ -4548,6 +4638,15 @@ namespace SupervisorMobility.Client.Data.Resources {
         public static string thereAreNoPlantsCreated {
             get {
                 return ResourceManager.GetString("thereAreNoPlantsCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There Are No Problem Defects Created.
+        /// </summary>
+        public static string thereAreNoProblemDefectsCreated {
+            get {
+                return ResourceManager.GetString("thereAreNoProblemDefectsCreated", resourceCulture);
             }
         }
         
