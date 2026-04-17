@@ -145,6 +145,11 @@ builder.Services.AddScoped<ICalendarProductiveService, CalendarProductiveService
 builder.Services.AddScoped<IMetricsService, MetricsService>();
 builder.Services.AddScoped<IMetricsService, MetricsService>();
 builder.Services.AddScoped<IHRILinesService, HRILinesService>();
+builder.Services.AddScoped<IHRIItemsService, HRIItemsService>();
+builder.Services.AddScoped<IHRIDocksService, HRIDocksService>();
+builder.Services.AddScoped<IHRIRevisionItemsService, HRIRevisionItemsService>();
+builder.Services.AddScoped<IHRICyclesService, HRICyclesService>();
+builder.Services.AddScoped<IUserCoursesService, UserCoursesService>();
 
 //For testing video uploads
 builder.Services.AddScoped<ITestService, TestService>();

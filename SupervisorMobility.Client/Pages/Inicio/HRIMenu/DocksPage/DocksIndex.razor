@@ -1,6 +1,6 @@
-﻿@page "/hri/lines"
+﻿@page "/hri/docks"
 @inject IDialogService DialogService
-@inject IHRILinesService LinesService
+@inject IHRIDocksService DocksService
 @inject ISnackbar Snackbar
 
 @* Contenedor principal con padding y fondo suave *@
@@ -12,7 +12,7 @@
             <MudIcon Icon="@Icons.Material.Filled.AppSettingsAlt" Color="Color.Primary" Size="Size.Large" Class="mr-3"/>
         </MudItem>
         <MudItem>
-            <MudText Typo="Typo.h4" Class="mud-text-primary">HRI Lines</MudText>
+            <MudText Typo="Typo.h4" Class="mud-text-primary">HRI Docks</MudText>
             <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Administración & Gestión</MudText>
         </MudItem>
     </MudGrid>
@@ -52,8 +52,8 @@
         </MudGrid>
 
         @* DataGrid Principal con Estilizado Avanzado *@
-        <MudDataGrid Items="@_hriLines" 
-                     T="HRILines"
+        <MudDataGrid Items="@_hridocks" 
+                     T="HRIDock"
                      Hover="true" 
                      Striped="false"
                      Bordered="false"
@@ -71,7 +71,7 @@
             <Columns>
                 <PropertyColumn Property="x => x.Id" Title="ID" Sortable="true" InitialSortDirection="SortDirection.Ascending" />
                 <PropertyColumn Property="x => x.Code" Title="Código" Sortable="true" />
-                <PropertyColumn Property="x => x.LineName" Title="Nombre de Línea" Sortable="true" />
+                <PropertyColumn Property="x => x.DockName" Title="Nombre del Dock" Sortable="true" />
                 
                 @* Columna de Estado Personalizada con Chips Modernos *@
                 <TemplateColumn Title="Estado" Sortable="true" SortBy="x => x.IsActive">
@@ -106,7 +106,7 @@
             </Columns>
             
             <PagerContent>
-                <MudDataGridPager T="HRILines" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
+                <MudDataGridPager T="HRIDock" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
             </PagerContent>
         </MudDataGrid>
 
@@ -140,24 +140,24 @@
 @code {
     private bool _loading = true;
     private string _searchString = "";
-    private List<HRILines> _hriLines = new();
-    private MudDataGrid<HRILines> _dataGrid = null!;
+    private List<HRIDock> _hridocks = new();
+    private MudDataGrid<HRIDock> _dataGrid = null!;
 
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        var response = await LinesService.GetAllHRILinesAsync();
+        var response = await DocksService.GetAllHRIDocksAsync();
 
         if (response != null && response.Success && response.Data != null)
-            _hriLines = response.Data;
+            _hridocks = response.Data;
         else
-            _hriLines = new List<HRILines>();
-        
+            _hridocks = new List<HRIDock>();
+
         _loading = false;
     }
 
     // Lógica de búsqueda rápida del DataGrid
-    private Func<HRILines, bool> QuickFilter => x =>
+    private Func<HRIDock, bool> QuickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
@@ -165,30 +165,30 @@
         if (x.Code.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (x.LineName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (x.DockName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
         return false;
     };
 
     // Métodos para botones de acción (Implementar navegación o diálogos aquí)
-    private void DeleteItem(HRILines item) => Console.WriteLine($"Eliminando: {item.Id}");
+    private void DeleteItem(HRIDock item) => Console.WriteLine($"Eliminando: {item.Id}");
 
     private async Task CreateNew()
     {
         var parameters = new DialogParameters
         {
-            { "Model", new HRILines() { IsActive = true } }, // Valores por defecto
-            { "Mode", LinesFormDialog.FormMode.Create }
+            { "Model", new HRIDock() { IsActive = true } }, // Valores por defecto
+            { "Mode", DocksFormDialog.FormMode.Create }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, ClassBackground = "modern-dialog-bg" };
-        var dialog = await DialogService.ShowAsync<LinesFormDialog>("", parameters, options);
+        var dialog = await DialogService.ShowAsync<DocksFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is HRILines newRecord)
+        if (!result.Canceled && result.Data is HRIDock newRecord)
         {
-            var response = await LinesService.CreateHRILineAsync(newRecord);
+            var response = await DocksService.CreateHRIDockAsync(newRecord);
             if (response != null && response.Success)
             {
                 newRecord = response.Data;
@@ -199,23 +199,23 @@
         }
     }
 
-    private async Task EditItem(HRILines item)
+    private async Task EditItem(HRIDock item)
     {
-        var itemToEdit = new HRILines { Id = item.Id, Code = item.Code, LineName = item.LineName, IsActive = item.IsActive };
+        var itemToEdit = new HRIDock { Id = item.Id, Code = item.Code, DockName = item.DockName, IsActive = item.IsActive };
 
-        var parameters = new DialogParameters<LinesFormDialog>
+        var parameters = new DialogParameters<DocksFormDialog>
         {
             { "Model", itemToEdit },
-            { "Mode", LinesFormDialog.FormMode.Edit }
+            { "Mode", DocksFormDialog.FormMode.Edit }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<LinesFormDialog>("", parameters, options);
+        var dialog = await DialogService.ShowAsync<DocksFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is HRILines updatedRecord)
+        if (!result.Canceled && result.Data is HRIDock updatedRecord)
         {
-            var response = await LinesService.UpdateHRILineAsync(updatedRecord);
+            var response = await DocksService.UpdateHRIDockAsync(updatedRecord);
             if (response != null && response.Success)
             {
                 updatedRecord = response.Data;
@@ -226,15 +226,15 @@
         }
     }
 
-    private void ViewDetails(HRILines item)
+    private void ViewDetails(HRIDock item)
     {
-        var parameters = new DialogParameters<LinesFormDialog>
+        var parameters = new DialogParameters<DocksFormDialog>
         {
             { "Model", item },
-            { "Mode", LinesFormDialog.FormMode.View }
+            { "Mode", DocksFormDialog.FormMode.View }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        DialogService.Show<LinesFormDialog>("", parameters, options);
+        DialogService.Show<DocksFormDialog>("", parameters, options);
     }
 }

@@ -1,6 +1,6 @@
-﻿@page "/hri/lines"
+﻿@page "/hri/items"
 @inject IDialogService DialogService
-@inject IHRILinesService LinesService
+@inject IHRIItemsService ItemsService
 @inject ISnackbar Snackbar
 
 @* Contenedor principal con padding y fondo suave *@
@@ -12,7 +12,7 @@
             <MudIcon Icon="@Icons.Material.Filled.AppSettingsAlt" Color="Color.Primary" Size="Size.Large" Class="mr-3"/>
         </MudItem>
         <MudItem>
-            <MudText Typo="Typo.h4" Class="mud-text-primary">HRI Lines</MudText>
+            <MudText Typo="Typo.h4" Class="mud-text-primary">HRI Items</MudText>
             <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Administración & Gestión</MudText>
         </MudItem>
     </MudGrid>
@@ -24,7 +24,7 @@
         <MudGrid Class="mb-6" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudItem xs="12" sm="8" md="6">
                 <MudTextField @bind-Value="_searchString" 
-                              Placeholder="Buscar por Código o Nombre de Línea..." 
+                              Placeholder="Buscar por Código o Nombre de Item..." 
                               Adornment="Adornment.Start" 
                               AdornmentIcon="@Icons.Material.Filled.Search" 
                               IconSize="Size.Medium" 
@@ -52,8 +52,8 @@
         </MudGrid>
 
         @* DataGrid Principal con Estilizado Avanzado *@
-        <MudDataGrid Items="@_hriLines" 
-                     T="HRILines"
+        <MudDataGrid Items="@_hriItems" 
+                     T="HRIItem"
                      Hover="true" 
                      Striped="false"
                      Bordered="false"
@@ -70,8 +70,8 @@
             
             <Columns>
                 <PropertyColumn Property="x => x.Id" Title="ID" Sortable="true" InitialSortDirection="SortDirection.Ascending" />
-                <PropertyColumn Property="x => x.Code" Title="Código" Sortable="true" />
-                <PropertyColumn Property="x => x.LineName" Title="Nombre de Línea" Sortable="true" />
+                <PropertyColumn Property="x => x.ControlNumber" Title="Numero de Control" Sortable="true" />
+                <PropertyColumn Property="x => x.Name" Title="Nombre de Item" Sortable="true" />
                 
                 @* Columna de Estado Personalizada con Chips Modernos *@
                 <TemplateColumn Title="Estado" Sortable="true" SortBy="x => x.IsActive">
@@ -106,7 +106,7 @@
             </Columns>
             
             <PagerContent>
-                <MudDataGridPager T="HRILines" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
+                <MudDataGridPager T="HRIItem" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
             </PagerContent>
         </MudDataGrid>
 
@@ -140,55 +140,54 @@
 @code {
     private bool _loading = true;
     private string _searchString = "";
-    private List<HRILines> _hriLines = new();
-    private MudDataGrid<HRILines> _dataGrid = null!;
+    private List<HRIItem> _hriItems = new();
+    private MudDataGrid<HRIItem> _dataGrid = null!;
 
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        var response = await LinesService.GetAllHRILinesAsync();
+        var response = await ItemsService.GetAllHRIItemsAsync();
 
         if (response != null && response.Success && response.Data != null)
-            _hriLines = response.Data;
+            _hriItems = response.Data;
         else
-            _hriLines = new List<HRILines>();
-        
+            _hriItems = new List<HRIItem>();
         _loading = false;
     }
 
     // Lógica de búsqueda rápida del DataGrid
-    private Func<HRILines, bool> QuickFilter => x =>
+    private Func<HRIItem, bool> QuickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
 
-        if (x.Code.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (x.ControlNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (x.LineName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
         return false;
     };
 
     // Métodos para botones de acción (Implementar navegación o diálogos aquí)
-    private void DeleteItem(HRILines item) => Console.WriteLine($"Eliminando: {item.Id}");
+    private void DeleteItem(HRIItem item) => Console.WriteLine($"Eliminando: {item.Id}");
 
     private async Task CreateNew()
     {
         var parameters = new DialogParameters
         {
-            { "Model", new HRILines() { IsActive = true } }, // Valores por defecto
-            { "Mode", LinesFormDialog.FormMode.Create }
+            { "Model", new HRIItem() { IsActive = true } }, // Valores por defecto
+            { "Mode", ItemsFormDialog.FormMode.Create }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, ClassBackground = "modern-dialog-bg" };
-        var dialog = await DialogService.ShowAsync<LinesFormDialog>("", parameters, options);
+        var dialog = await DialogService.ShowAsync<ItemsFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is HRILines newRecord)
+        if (!result.Canceled && result.Data is HRIItem newRecord)
         {
-            var response = await LinesService.CreateHRILineAsync(newRecord);
+            var response = await ItemsService.CreateHRIItemAsync(newRecord);
             if (response != null && response.Success)
             {
                 newRecord = response.Data;
@@ -199,23 +198,24 @@
         }
     }
 
-    private async Task EditItem(HRILines item)
+    private async Task EditItem(HRIItem item)
     {
-        var itemToEdit = new HRILines { Id = item.Id, Code = item.Code, LineName = item.LineName, IsActive = item.IsActive };
+        // Importante: Clonar el objeto para no editar la fila directamente antes de darle "Guardar"
+        var itemToEdit = new HRIItem { Id = item.Id, ControlNumber = item.ControlNumber, Name = item.Name, IsActive = item.IsActive };
 
-        var parameters = new DialogParameters<LinesFormDialog>
+        var parameters = new DialogParameters<ItemsFormDialog>
         {
             { "Model", itemToEdit },
-            { "Mode", LinesFormDialog.FormMode.Edit }
+            { "Mode", ItemsFormDialog.FormMode.Edit }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<LinesFormDialog>("", parameters, options);
+        var dialog = await DialogService.ShowAsync<ItemsFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is HRILines updatedRecord)
+        if (!result.Canceled && result.Data is HRIItem updatedRecord)
         {
-            var response = await LinesService.UpdateHRILineAsync(updatedRecord);
+            var response = await ItemsService.UpdateHRIItemAsync(updatedRecord);
             if (response != null && response.Success)
             {
                 updatedRecord = response.Data;
@@ -226,15 +226,15 @@
         }
     }
 
-    private void ViewDetails(HRILines item)
+    private void ViewDetails(HRIItem item)
     {
-        var parameters = new DialogParameters<LinesFormDialog>
+        var parameters = new DialogParameters<ItemsFormDialog>
         {
             { "Model", item },
-            { "Mode", LinesFormDialog.FormMode.View }
+            { "Mode", ItemsFormDialog.FormMode.View }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        DialogService.Show<LinesFormDialog>("", parameters, options);
+        DialogService.Show<ItemsFormDialog>("", parameters, options);
     }
 }

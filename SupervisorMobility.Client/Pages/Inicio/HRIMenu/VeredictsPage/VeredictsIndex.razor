@@ -1,7 +1,5 @@
-﻿@page "/hri/lines"
+﻿@page "/hri/veredicts"
 @inject IDialogService DialogService
-@inject IHRILinesService LinesService
-@inject ISnackbar Snackbar
 
 @* Contenedor principal con padding y fondo suave *@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
@@ -146,12 +144,17 @@
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        var response = await LinesService.GetAllHRILinesAsync();
-
-        if (response != null && response.Success && response.Data != null)
-            _hriLines = response.Data;
-        else
-            _hriLines = new List<HRILines>();
+        // Simulación de carga de datos (API)
+        await Task.Delay(1000); 
+        
+        _hriLines = new List<HRILines>
+        {
+            new() { Id = 1, Code = "HR-L-001", LineName = "Northern Distribution", IsActive = true },
+            new() { Id = 2, Code = "HR-L-002", LineName = "Southern Processing", IsActive = true },
+            new() { Id = 3, Code = "HR-L-003", LineName = "Maintenance Line A (Inactive)", IsActive = false },
+            new() { Id = 4, Code = "HR-L-004", LineName = "Western Logistics", IsActive = true },
+            new() { Id = 5, Code = "HR-L-005", LineName = "Eastern Operations", IsActive = false },
+        };
         
         _loading = false;
     }
@@ -179,62 +182,52 @@
         var parameters = new DialogParameters
         {
             { "Model", new HRILines() { IsActive = true } }, // Valores por defecto
-            { "Mode", LinesFormDialog.FormMode.Create }
+            { "Mode", VeredictsFormDialog.FormMode.Create }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, ClassBackground = "modern-dialog-bg" };
-        var dialog = await DialogService.ShowAsync<LinesFormDialog>("", parameters, options);
+        var dialog = await DialogService.ShowAsync<VeredictsFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is HRILines newRecord)
         {
-            var response = await LinesService.CreateHRILineAsync(newRecord);
-            if (response != null && response.Success)
-            {
-                newRecord = response.Data;
-                Snackbar.Add("Registro creado exitosamente", Severity.Success);
-            }
-            else
-                Snackbar.Add("Error al crear el registro: " + response?.Message, Severity.Error);
+            // Lógica para guardar en tu API/Base de datos
+            // newRecord.Id = ...
+            _hriLines.Add(newRecord);
         }
     }
 
     private async Task EditItem(HRILines item)
     {
+        // Importante: Clonar el objeto para no editar la fila directamente antes de darle "Guardar"
         var itemToEdit = new HRILines { Id = item.Id, Code = item.Code, LineName = item.LineName, IsActive = item.IsActive };
 
-        var parameters = new DialogParameters<LinesFormDialog>
+        var parameters = new DialogParameters<VeredictsFormDialog>
         {
             { "Model", itemToEdit },
-            { "Mode", LinesFormDialog.FormMode.Edit }
+            { "Mode", VeredictsFormDialog.FormMode.Edit }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<LinesFormDialog>("", parameters, options);
+        var dialog = await DialogService.ShowAsync<VeredictsFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is HRILines updatedRecord)
         {
-            var response = await LinesService.UpdateHRILineAsync(updatedRecord);
-            if (response != null && response.Success)
-            {
-                updatedRecord = response.Data;
-                Snackbar.Add("Registro actualizado exitosamente", Severity.Success);
-            }
-            else
-                Snackbar.Add("Error al actualizar el registro: " + response?.Message, Severity.Error);
+            // Lógica para actualizar en tu API
+            Console.WriteLine($"Actualizando: {updatedRecord.Id}");
         }
     }
 
     private void ViewDetails(HRILines item)
     {
-        var parameters = new DialogParameters<LinesFormDialog>
+        var parameters = new DialogParameters<VeredictsFormDialog>
         {
             { "Model", item },
-            { "Mode", LinesFormDialog.FormMode.View }
+            { "Mode", VeredictsFormDialog.FormMode.View }
         };
 
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-        DialogService.Show<LinesFormDialog>("", parameters, options);
+        DialogService.Show<VeredictsFormDialog>("", parameters, options);
     }
 }

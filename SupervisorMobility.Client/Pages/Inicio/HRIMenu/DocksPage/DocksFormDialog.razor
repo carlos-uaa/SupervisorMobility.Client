@@ -1,0 +1,117 @@
+﻿@using MudBlazor
+@using static SupervisorMobility.Client.Pages.Inicio.HRIMenu.DocksPage.DocksIndex
+
+<MudDialog DisableSidePadding="true">
+    <TitleContent>
+        <div class="d-flex align-center px-4 py-2">
+            <MudIcon Icon="@GetIcon()" Color="@GetColor()" Size="Size.Large" Class="mr-3" />
+            <MudText Typo="Typo.h6" Class="font-weight-bold mud-text-primary">
+                @GetTitle()
+            </MudText>
+        </div>
+        <MudDivider />
+    </TitleContent>
+
+    <DialogContent>
+        <MudContainer Class="pt-6 pb-4 px-6">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.Code"
+                                  Label="Código de Dock"
+                                  Placeholder="Ej. HR-L-001"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="@IsViewMode"
+                                  Required="true"
+                                  RequiredError="El código es obligatorio" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.DockName"
+                                  Label="Nombre del Dock"
+                                  Placeholder="Ej. Northern Distribution"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="@IsViewMode"
+                                  Required="true"
+                                  RequiredError="El nombre es obligatorio" />
+                </MudItem>
+
+                <MudItem xs="12" Class="d-flex align-center mt-2">
+                    <MudSwitch @bind-Value="Model.IsActive"
+                               Color="Color.Success"
+                               Disabled="@IsViewMode"
+                               Label="El dock se encuentra activo" />
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+
+    <DialogActions>
+        <MudContainer Class="d-flex justify-end px-6 pb-4 gap-2">
+            <MudButton OnClick="Cancel"
+                       Variant="Variant.Text"
+                       Class="rounded-pill px-4">
+                @(IsViewMode ? "Cerrar" : "Cancelar")
+            </MudButton>
+            
+            @if (!IsViewMode)
+            {
+                <MudButton OnClick="Submit"
+                           Variant="Variant.Filled"
+                           Color="@GetColor()"
+                           Class="rounded-pill px-8">
+                    @(Mode == FormMode.Create ? "Guardar" : "Actualizar")
+                </MudButton>
+            }
+        </MudContainer>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+
+    // El objeto que vamos a editar, crear o ver
+    [Parameter] public HRIDock Model { get; set; } = new();
+
+    // El modo del formulario
+    [Parameter] public FormMode Mode { get; set; }
+
+    private bool IsViewMode => Mode == FormMode.View;
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(Model));
+    private void Cancel() => MudDialog.Cancel();
+
+    // --- Helpers visuales dinámicos ---
+    private string GetTitle() => Mode switch
+    {
+        FormMode.Create => "Nuevo Registro Dock",
+        FormMode.Edit => "Editar Registro Dock",
+        FormMode.View => "Detalles del Registro Dock",
+        _ => ""
+    };
+
+    private string GetIcon() => Mode switch
+    {
+        FormMode.Create => Icons.Material.Filled.AddCircleOutline,
+        FormMode.Edit => Icons.Material.Filled.EditNote,
+        FormMode.View => Icons.Material.Filled.Info,
+        _ => Icons.Material.Filled.Apps
+    };
+
+    private Color GetColor() => Mode switch
+    {
+        FormMode.Create => Color.Secondary, // Teal/Cian que usamos antes
+        FormMode.Edit => Color.Warning,
+        FormMode.View => Color.Info,
+        _ => Color.Default
+    };
+
+    // Puedes colocar este Enum aquí o en una clase separada si lo usarás en más pantallas
+    public enum FormMode
+    {
+        Create,
+        Edit,
+        View
+    }
+}

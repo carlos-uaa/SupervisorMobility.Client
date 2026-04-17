@@ -1,0 +1,212 @@
+﻿@page "/hri/index"
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
+    
+    @* Encabezado Dinámico *@
+    <MudGrid Class="mb-6" Justify="Justify.FlexStart" AlignItems="AlignItems.Center">
+        <MudItem>
+            <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" Class="mr-3"/>
+        </MudItem>
+        <MudItem>
+            <MudText Typo="Typo.h4" Class="mud-text-primary">Gestión de Inspecciones HRI</MudText>
+            <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Control de Ciclos, Revisiones y Activos</MudText>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Elevation="4" Class="pa-6 rounded-lg mb-8">
+        
+        @* Barra de Herramientas *@
+        <MudGrid Class="mb-6" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="_searchString" 
+                              Placeholder="Buscar por Control #, Departamento o Item..." 
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" 
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Clearable="true"
+                              FullWidth="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6" Class="d-flex justify-sm-end gap-2">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.FilterList">Filtros</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateNewHRI" Class="rounded-pill px-6">
+                    Nueva Inspección
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+
+        @* DataGrid Principal con Jerarquía *@
+        <MudDataGrid Items="@_hriList" 
+                     T="HRI"
+                     Hover="true" 
+                     Filterable="true" 
+                     QuickFilter="@QuickFilter"
+                     Hideable="true"
+                     Height="calc(100vh - 400px)"
+                     FixedHeader="true"
+                     Loading="@_loading"
+                     Class="modern-datagrid rounded">
+            
+            <Columns>
+                @* Columna de Expansión para ver detalles rápidos *@
+                <HierarchyColumn T="HRI" />
+                
+                <PropertyColumn Property="x => x.ControlNumber" Title="Nº Control" />
+                <TemplateColumn Title="Línea / Item">
+                    <CellTemplate>
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body2"><b>Línea:</b> @context.Item.Line?.LineName</MudText>
+                            <MudText Typo="Typo.caption" Class="mud-text-secondary">@context.Item.NameOfItem?.Name</MudText>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <PropertyColumn Property="x => x.Department" Title="Departamento" />
+                
+                @* Indicadores de Complejidad (Listas) *@
+                <TemplateColumn Title="Contenido">
+                    <CellTemplate>
+                        <MudStack Row="true" Spacing="1">
+                            <MudTooltip Text="Imágenes">
+                                <MudBadge Content="@context.Item.Images?.Count" Color="Color.Info" Overlap="true" Bordered="true">
+                                    <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Size="Size.Small" Color="Color.Default"/>
+                                </MudBadge>
+                            </MudTooltip>
+                            <MudTooltip Text="Revisiones Semanales">
+                                <MudBadge Content="@context.Item.WeeklyRevisions?.Count" Color="Color.Secondary" Overlap="true" Bordered="true" Class="ml-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.DateRange" Size="Size.Small" Color="Color.Default"/>
+                                </MudBadge>
+                            </MudTooltip>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Estado" SortBy="x => x.IsActive">
+                    <CellTemplate>
+                        <MudChip Color="@(context.Item.IsActive ? Color.Success : Color.Warning)" 
+                                 Variant="Variant.Text" 
+                                 Size="Size.Small" 
+                                 Class="@($"font-weight-bold rounded-pill {(context.Item.IsActive ? "mud-bg-success-light" : "mud-bg-warning-light")}")">
+                            @(context.Item.IsActive ? "ACTIVO" : "INACTIVO")
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn Title="Acciones" HeaderStyle="text-align:right;" CellStyle="text-align:right;">
+                    <CellTemplate>
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" OnClick="@(() => EditHRI(context.Item))">Editar</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.History" OnClick="@(() => ViewHistory(context.Item))">Ver Ciclos</MudMenuItem>
+                            <MudDivider DividerType="DividerType.Middle" Class="my-2"/>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Eliminar</MudMenuItem>
+                        </MudMenu>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+
+            @* Contenido expandible para mostrar detalles de las listas sin salir de la página *@
+            <ChildRowContent>
+                <MudCard Elevation="0" Class="ma-4 mud-bg-alternating rounded-lg border-dashed">
+                    <MudCardContent>
+                        <MudTabs Elevation="0" Outlined="false" Color="Color.Primary" Rounded="true">
+                            <MudTabPanel Text="Items Revisados" Icon="@Icons.Material.Filled.List">
+                                <MudList T="string" Dense="true">
+                                    @foreach (var rev in context.Item.ItemsRevised ?? new())
+                                    {
+                                        <MudListItem Text="@rev.RevisionPoint" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" />
+                                    }
+                                </MudList>
+                            </MudTabPanel>
+                            <MudTabPanel Text="Resumen de Ciclos" Icon="@Icons.Material.Filled.Loop">
+                                <MudText Class="pa-4">Oportunidad de agregar algun gráfico para @context.Item.Cycles?.Count ciclos.</MudText>
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudCardContent>
+                </MudCard>
+            </ChildRowContent>
+
+            <PagerContent>
+                <MudDataGridPager T="HRI" RowsPerPageString="Filas:" />
+            </PagerContent>
+        </MudDataGrid>
+    </MudPaper>
+</MudContainer>
+
+<style>
+    .modern-grid-header th {
+        background-color: var(--mud-palette-background-grey) !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+    .mud-bg-alternating { background-color: #f8f9fa; }
+    .mud-bg-success-light { background-color: rgba(76, 175, 80, 0.1); }
+    .mud-bg-warning-light { background-color: rgba(255, 152, 0, 0.1); }
+    .border-dashed { border: 1px dashed var(--mud-palette-divider); }
+</style>
+
+@code {
+    private bool _loading = true;
+    private string _searchString = "";
+    private List<HRI> _hriList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        // Simulación de delay de red
+        await Task.Delay(800); 
+
+        // Registros de prueba (Mock Data)
+        _hriList = new List<HRI>
+        {
+            new HRI
+            {
+                HriId = 1,
+                ControlNumber = "HRI-2024-001",
+                Department = "Mantenimiento",
+                IsActive = true,
+                CreationDate = DateTime.Now.AddDays(-10),
+                Line = new HRILines { Id = 1, LineName = "Línea de Ensamble A" },
+                NameOfItem = new HRIItem { Id = 101, Name = "Brazo Robótico Kuka v2" },
+                Images = new List<HRImages> { new(), new() }, // 2 imágenes
+                ItemsRevised = new List<HRIRevisionItems> 
+                { 
+                    new() { RevisionPoint = "Verificación de sensores ópticos" },
+                    new() { RevisionPoint = "Lubricación de ejes primarios" }
+                },
+                WeeklyRevisions = new List<WeeklyRevisions> { new(), new(), new() }
+            },
+            new HRI
+            {
+                HriId = 2,
+                ControlNumber = "HRI-2024-042",
+                Department = "Producción",
+                IsActive = false,
+                CreationDate = DateTime.Now.AddDays(-2),
+                Line = new HRILines { Id = 5, LineName = "Línea de Empaque" },
+                NameOfItem = new HRIItem { Id = 205, Name = "Selladora Térmica Industrial" },
+                Images = new List<HRImages>(), // Sin imágenes
+                ItemsRevised = new List<HRIRevisionItems> 
+                { 
+                    new() { RevisionPoint = "Limpieza de residuos de plástico" }
+                },
+                WeeklyRevisions = new List<WeeklyRevisions> { new() }
+            }
+        };
+        _loading = false;
+    }
+
+    private Func<HRI, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString)) return true;
+        return x.ControlNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+               x.Department.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+               (x.NameOfItem?.Name?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false);
+    };
+
+    private void CreateNewHRI() { /* Lógica para abrir diálogo complejo */ }
+    private void EditHRI(HRI item) { /* Lógica para edición */ }
+    private void ViewHistory(HRI item) { /* Lógica para ver historial de ciclos */ }
+}
