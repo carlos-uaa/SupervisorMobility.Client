@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos;
+using SupervisorMobility.Client.Data.Entities.Hri;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -17,27 +18,58 @@ namespace SupervisorMobility.Client.Services.HRIServices
             _httpClient = httpClient;
         }
 
-        public async Task<ServiceResponse<List<GetHRIDto>>> GetAllHRI()
+        public async Task<ServiceResponse<List<HRI>>> GetAllHRI()
         {
+            var serviceResponse = new ServiceResponse<List<HRI>>();
+
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<GetHRIDto>>>("HRI/GetAllHRI");
-                return response ?? new ServiceResponse<List<GetHRIDto>>
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<GetHRIDto>>>(
+                    "HRI/GetAllHRI"
+                );
+
+                if (response == null || response.Data == null)
                 {
-                    Success = false,
-                    Data = new List<GetHRIDto>(),
-                    Message = "Empty response while getting HRI list."
-                };
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = response?.Message ?? "Empty response while getting HRI list.";
+                    serviceResponse.Data = new List<HRI>();
+                    return serviceResponse;
+                }
+
+                // Mapear DTO → Entidad
+                serviceResponse.Data = response.Data.Select(dto => new HRI
+                {
+                    HriId = dto.HriId,
+                    HRILinesId = dto.HRILinesId,
+                    Line = dto.Line,
+                    HRIItemId = dto.HRIItemId,
+                    NameOfItem = dto.NameOfItem,
+                    ControlNumber = dto.ControlNumber,
+                    HRIDockId = dto.HRIDockId,
+                    Dock = dto.Dock,
+                    Department = dto.Department,
+                    Images = dto.Images,
+                    ItemsRevised = dto.ItemsRevised,
+                    WeeklyRevisions = dto.WeeklyRevisions,
+                    HriCycles = dto.HriCycles,
+                    IsActive = dto.IsActive,
+                    CreationDate = dto.CreationDate,
+                    HourmeterRevision = dto.HourmeterRevision,
+                    UserId = dto.UserId,
+                    Supervisor = dto.Supervisor
+                }).ToList();
+
+                serviceResponse.Success = true;
+                serviceResponse.Message = response.Message ?? "HRI list retrieved successfully.";
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<List<GetHRIDto>>
-                {
-                    Success = false,
-                    Data = new List<GetHRIDto>(),
-                    Message = $"Exception getting HRI list: {ex.Message}"
-                };
+                serviceResponse.Success = false;
+                serviceResponse.Data = new List<HRI>();
+                serviceResponse.Message = $"Exception getting HRI list: {ex.Message}";
             }
+
+            return serviceResponse;
         }
 
         public async Task<ServiceResponse<GetHRIDto>> GetHRIById(int id)

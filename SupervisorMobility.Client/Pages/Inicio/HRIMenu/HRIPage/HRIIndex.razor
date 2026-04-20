@@ -1,6 +1,7 @@
 ﻿@page "/hri/index"
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject IHRIService HRIService
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
     
@@ -120,7 +121,7 @@
                                 </MudList>
                             </MudTabPanel>
                             <MudTabPanel Text="Resumen de Ciclos" Icon="@Icons.Material.Filled.Loop">
-                                <MudText Class="pa-4">Oportunidad de agregar algun gráfico para @context.Item.Cycles?.Count ciclos.</MudText>
+                                <MudText Class="pa-4">Oportunidad de agregar algun gráfico para @context.Item.HriCycles?.Count ciclos.</MudText>
                             </MudTabPanel>
                         </MudTabs>
                     </MudCardContent>
@@ -155,46 +156,13 @@
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        // Simulación de delay de red
-        await Task.Delay(800); 
+        
+        var response = await HRIService.GetAllHRI();
+        if (response.Success)
+            _hriList = response.Data;
+        else
+            Snackbar.Add("Error al cargar las inspecciones HRI.", Severity.Error);
 
-        // Registros de prueba (Mock Data)
-        _hriList = new List<HRI>
-        {
-            new HRI
-            {
-                HriId = 1,
-                ControlNumber = "HRI-2024-001",
-                Department = "Mantenimiento",
-                IsActive = true,
-                CreationDate = DateTime.Now.AddDays(-10),
-                Line = new HRILines { Id = 1, LineName = "Línea de Ensamble A" },
-                NameOfItem = new HRIItem { Id = 101, Name = "Brazo Robótico Kuka v2" },
-                Images = new List<HRImages> { new(), new() }, // 2 imágenes
-                ItemsRevised = new List<HRIRevisionItems> 
-                { 
-                    new() { RevisionPoint = "Verificación de sensores ópticos" },
-                    new() { RevisionPoint = "Lubricación de ejes primarios" }
-                },
-                WeeklyRevisions = new List<WeeklyRevisions> { new(), new(), new() }
-            },
-            new HRI
-            {
-                HriId = 2,
-                ControlNumber = "HRI-2024-042",
-                Department = "Producción",
-                IsActive = false,
-                CreationDate = DateTime.Now.AddDays(-2),
-                Line = new HRILines { Id = 5, LineName = "Línea de Empaque" },
-                NameOfItem = new HRIItem { Id = 205, Name = "Selladora Térmica Industrial" },
-                Images = new List<HRImages>(), // Sin imágenes
-                ItemsRevised = new List<HRIRevisionItems> 
-                { 
-                    new() { RevisionPoint = "Limpieza de residuos de plástico" }
-                },
-                WeeklyRevisions = new List<WeeklyRevisions> { new() }
-            }
-        };
         _loading = false;
     }
 

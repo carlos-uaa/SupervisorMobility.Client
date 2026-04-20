@@ -1,5 +1,7 @@
 ﻿@page "/hri/veredicts"
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IHRIRevisionItemsService RevisionService
 
 @* Contenedor principal con padding y fondo suave *@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
@@ -50,8 +52,8 @@
         </MudGrid>
 
         @* DataGrid Principal con Estilizado Avanzado *@
-        <MudDataGrid Items="@_hriLines" 
-                     T="HRILines"
+        <MudDataGrid Items="@_veredicts" 
+                     T="Veredict"
                      Hover="true" 
                      Striped="false"
                      Bordered="false"
@@ -69,7 +71,7 @@
             <Columns>
                 <PropertyColumn Property="x => x.Id" Title="ID" Sortable="true" InitialSortDirection="SortDirection.Ascending" />
                 <PropertyColumn Property="x => x.Code" Title="Código" Sortable="true" />
-                <PropertyColumn Property="x => x.LineName" Title="Nombre de Línea" Sortable="true" />
+                <PropertyColumn Property="x => x.Description" Title="Descripción" Sortable="true" />
                 
                 @* Columna de Estado Personalizada con Chips Modernos *@
                 <TemplateColumn Title="Estado" Sortable="true" SortBy="x => x.IsActive">
@@ -104,7 +106,7 @@
             </Columns>
             
             <PagerContent>
-                <MudDataGridPager T="HRILines" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
+                <MudDataGridPager T="Veredict" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
             </PagerContent>
         </MudDataGrid>
 
@@ -138,29 +140,24 @@
 @code {
     private bool _loading = true;
     private string _searchString = "";
-    private List<HRILines> _hriLines = new();
-    private MudDataGrid<HRILines> _dataGrid = null!;
+    private List<Veredict> _veredicts = new();
+    private MudDataGrid<Veredict> _dataGrid = null!;
 
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        // Simulación de carga de datos (API)
-        await Task.Delay(1000); 
         
-        _hriLines = new List<HRILines>
-        {
-            new() { Id = 1, Code = "HR-L-001", LineName = "Northern Distribution", IsActive = true },
-            new() { Id = 2, Code = "HR-L-002", LineName = "Southern Processing", IsActive = true },
-            new() { Id = 3, Code = "HR-L-003", LineName = "Maintenance Line A (Inactive)", IsActive = false },
-            new() { Id = 4, Code = "HR-L-004", LineName = "Western Logistics", IsActive = true },
-            new() { Id = 5, Code = "HR-L-005", LineName = "Eastern Operations", IsActive = false },
-        };
+        var response  = await RevisionService.GetAllVeredicts();
+        if(response.Success)
+            _veredicts = response.Data;
+        else
+            Snackbar.Add("Error al cargar los veredictos", Severity.Error);
         
         _loading = false;
     }
 
     // Lógica de búsqueda rápida del DataGrid
-    private Func<HRILines, bool> QuickFilter => x =>
+    private Func<Veredict, bool> QuickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
@@ -168,20 +165,20 @@
         if (x.Code.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (x.LineName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        if (x.Description.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
             return true;
 
         return false;
     };
 
     // Métodos para botones de acción (Implementar navegación o diálogos aquí)
-    private void DeleteItem(HRILines item) => Console.WriteLine($"Eliminando: {item.Id}");
+    private void DeleteItem(Veredict item) => Console.WriteLine($"Eliminando: {item.Id}");
 
     private async Task CreateNew()
     {
         var parameters = new DialogParameters
         {
-            { "Model", new HRILines() { IsActive = true } }, // Valores por defecto
+            { "Model", new Veredict() { IsActive = true } }, // Valores por defecto
             { "Mode", VeredictsFormDialog.FormMode.Create }
         };
 
@@ -189,18 +186,22 @@
         var dialog = await DialogService.ShowAsync<VeredictsFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is HRILines newRecord)
+        if (!result.Canceled && result.Data is Veredict newRecord)
         {
-            // Lógica para guardar en tu API/Base de datos
-            // newRecord.Id = ...
-            _hriLines.Add(newRecord);
+            var response = await RevisionService.CreateVeredict(newRecord);
+            if (response != null && response.Success)
+            {
+                newRecord = response.Data;
+                Snackbar.Add("Registro creado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al crear el registro: " + response?.Message, Severity.Error);
         }
     }
 
-    private async Task EditItem(HRILines item)
+    private async Task EditItem(Veredict item)
     {
-        // Importante: Clonar el objeto para no editar la fila directamente antes de darle "Guardar"
-        var itemToEdit = new HRILines { Id = item.Id, Code = item.Code, LineName = item.LineName, IsActive = item.IsActive };
+        var itemToEdit = new Veredict { Id = item.Id, Code = item.Code, Description = item.Description, IsActive = item.IsActive };
 
         var parameters = new DialogParameters<VeredictsFormDialog>
         {
@@ -212,14 +213,20 @@
         var dialog = await DialogService.ShowAsync<VeredictsFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is HRILines updatedRecord)
+        if (!result.Canceled && result.Data is Veredict updatedRecord)
         {
-            // Lógica para actualizar en tu API
-            Console.WriteLine($"Actualizando: {updatedRecord.Id}");
+            var response = await RevisionService.UpdateVeredict(updatedRecord.Id, updatedRecord);
+            if (response != null && response.Success)
+            {
+                updatedRecord = response.Data;
+                Snackbar.Add("Registro actualizado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al actualizar el registro: " + response?.Message, Severity.Error);
         }
     }
 
-    private void ViewDetails(HRILines item)
+    private void ViewDetails(Veredict item)
     {
         var parameters = new DialogParameters<VeredictsFormDialog>
         {

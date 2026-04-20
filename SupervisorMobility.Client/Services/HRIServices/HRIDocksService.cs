@@ -17,7 +17,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HRIDock>>>("api/HRIDocks/GetAllHRIDocksAsync");
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HRIDock>>>("HRIDocks/GetAllHRIDocksAsync");
                 return response!;
             }
             catch (Exception ex)
@@ -34,7 +34,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<HRIDock>>($"api/HRIDocks/GetSingleHRIDockAsync/{Id}");
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<HRIDock>>($"HRIDocks/GetSingleHRIDockAsync/{Id}");
                 return response!;
             }
             catch (Exception ex)
@@ -51,7 +51,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("api/HRIDocks/CreateHRIDockAsync", Line);
+                var response = await _httpClient.PostAsJsonAsync("HRIDocks/CreateHRIDockAsync", Line);
                 return await response.Content.ReadFromJsonAsync<ServiceResponse<HRIDock>>() ?? new ServiceResponse<HRIDock>();
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.PutAsJsonAsync("api/HRIDocks/UpdateHRIDockAsync", Line);
+                var response = await _httpClient.PutAsJsonAsync("HRIDocks/UpdateHRIDockAsync", Line);
                 return await response.Content.ReadFromJsonAsync<ServiceResponse<HRIDock>>() ?? new ServiceResponse<HRIDock>();
             }
             catch (Exception ex)
@@ -85,7 +85,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/HRIDocks/DeleteHRIDockAsync/{Id}");
+                var response = await _httpClient.DeleteAsync($"HRIDocks/DeleteHRIDockAsync/{Id}");
                 return await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>() ?? new ServiceResponse<bool>();
             }
             catch (Exception ex)

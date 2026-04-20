@@ -1,5 +1,8 @@
 ﻿@page "/hri/frequency"
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionItemsDtos
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IHRIRevisionItemsService RevisionService
 
 @* Contenedor principal con padding y fondo suave *@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
@@ -144,17 +147,12 @@
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        // Simulación de carga de datos (API)
-        await Task.Delay(1000); 
         
-        _hriFrequencies = new List<Frequency>
-        {
-            new() { Id = 1, Code = "FR-001", Description = "Daily", IsActive = true },
-            new() { Id = 2, Code = "FR-002", Description = "Weekly", IsActive = true },
-            new() { Id = 3, Code = "FR-003", Description = "Monthly", IsActive = false },
-            new() { Id = 4, Code = "FR-004", Description = "Quarterly", IsActive = true },
-            new() { Id = 5, Code = "FR-005", Description = "Eastern Operations", IsActive = false },
-        };
+        var response  = await RevisionService.GetAllFrequencies();
+        if(response.Success)
+            _hriFrequencies = response.Data;
+        else
+            Snackbar.Add("Error al cargar las frecuencias", Severity.Error);
         
         _loading = false;
     }
@@ -191,9 +189,14 @@
 
         if (!result.Canceled && result.Data is Frequency newRecord)
         {
-            // Lógica para guardar en tu API/Base de datos
-            // newRecord.Id = ...
-            _hriFrequencies.Add(newRecord);
+            var response = await RevisionService.CreateFrequency(newRecord);
+            if (response != null && response.Success)
+            {
+                newRecord = response.Data;
+                Snackbar.Add("Registro creado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al crear el registro: " + response?.Message, Severity.Error);
         }
     }
 
@@ -212,10 +215,16 @@
         var dialog = await DialogService.ShowAsync<FrequenciesFormDialog>("", parameters, options);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is HRILines updatedRecord)
+        if (!result.Canceled && result.Data is Frequency updatedRecord)
         {
-            // Lógica para actualizar en tu API
-            Console.WriteLine($"Actualizando: {updatedRecord.Id}");
+            var response = await RevisionService.UpdateFrequency(updatedRecord.Id, updatedRecord);
+            if (response != null && response.Success)
+            {
+                updatedRecord = response.Data;
+                Snackbar.Add("Registro actualizado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al actualizar el registro: " + response?.Message, Severity.Error);
         }
     }
 

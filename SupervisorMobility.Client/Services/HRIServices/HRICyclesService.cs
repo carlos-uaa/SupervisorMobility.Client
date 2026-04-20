@@ -17,7 +17,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                return await _http.GetFromJsonAsync<ServiceResponse<List<GetHRICyclesDto>>>("api/HRICycles/GetAllHRICycles");
+                return await _http.GetFromJsonAsync<ServiceResponse<List<GetHRICyclesDto>>>("HRICycles/GetAllHRICycles");
             }
             catch (Exception ex)
             {
@@ -34,7 +34,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                return await _http.GetFromJsonAsync<ServiceResponse<GetHRICyclesDto>>($"api/HRICycles/GetHRICycleById/{id}");
+                return await _http.GetFromJsonAsync<ServiceResponse<GetHRICyclesDto>>($"HRICycles/GetHRICycleById/{id}");
             }
             catch (Exception ex)
             {
@@ -51,7 +51,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _http.PostAsJsonAsync("api/HRICycles/CreateHRICycle", dto);
+                var response = await _http.PostAsJsonAsync("HRICycles/CreateHRICycle", dto);
                 return await response.Content.ReadFromJsonAsync<ServiceResponse<GetHRICyclesDto>>();
             }
             catch (Exception ex)
@@ -69,7 +69,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _http.DeleteAsync($"api/HRICycles/DeleteHRICycle/{id}");
+                var response = await _http.DeleteAsync($"HRICycles/DeleteHRICycle/{id}");
                 return await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
             }
             catch (Exception ex)

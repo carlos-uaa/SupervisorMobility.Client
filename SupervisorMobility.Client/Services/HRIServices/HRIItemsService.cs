@@ -17,7 +17,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HRIItem>>>("api/HRIItems/GetAllHRIItemsAsync");
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HRIItem>>>("HRIItems/GetAllHRIItemsAsync");
                 return response!;
             }
             catch (Exception ex)
@@ -34,7 +34,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<HRIItem>>($"api/HRIItems/GetSingleHRIItemAsync/{Id}");
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<HRIItem>>($"HRIItems/GetSingleHRIItemAsync/{Id}");
                 return response!;
             }
             catch (Exception ex)
@@ -51,7 +51,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("api/HRIItems/CreateHRIItemAsync", Line);
+                var response = await _httpClient.PostAsJsonAsync("HRIItems/CreateHRIItemAsync", Line);
                 return await response.Content.ReadFromJsonAsync<ServiceResponse<HRIItem>>() ?? new ServiceResponse<HRIItem>();
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.PutAsJsonAsync("api/HRIItems/UpdateHRIItemAsync", Line);
+                var response = await _httpClient.PutAsJsonAsync("HRIItems/UpdateHRIItemAsync", Line);
                 return await response.Content.ReadFromJsonAsync<ServiceResponse<HRIItem>>() ?? new ServiceResponse<HRIItem>();
             }
             catch (Exception ex)
@@ -85,7 +85,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"api/HRIItems/DeleteHRIItemAsync/{Id}");
+                var response = await _httpClient.DeleteAsync($"HRIItems/DeleteHRIItemAsync/{Id}");
                 return await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>() ?? new ServiceResponse<bool>();
             }
             catch (Exception ex)
