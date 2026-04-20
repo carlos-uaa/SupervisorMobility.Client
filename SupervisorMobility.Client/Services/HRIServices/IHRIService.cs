@@ -10,7 +10,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
     {
         // HRI
         Task<ServiceResponse<List<HRI>>> GetAllHRI();
-        Task<ServiceResponse<GetHRIDto>> GetHRIById(int id);
+        Task<ServiceResponse<HRI>> GetHRIById(int id);
         Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto);
         Task<ServiceResponse<bool>> DeleteHRI(int id);
 

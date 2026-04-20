@@ -72,27 +72,58 @@ namespace SupervisorMobility.Client.Services.HRIServices
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<GetHRIDto>> GetHRIById(int id)
+        public async Task<ServiceResponse<HRI>> GetHRIById(int id)
         {
+            var serviceResponse = new ServiceResponse<HRI>();
+
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<GetHRIDto>>($"HRI/GetHRIById/{id}");
-                return response ?? new ServiceResponse<GetHRIDto>
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<GetHRIDto>>(
+                    $"HRI/GetHRIById/{id}"
+                );
+
+                if (response == null || response.Data == null)
                 {
-                    Success = false,
-                    Data = new GetHRIDto(),
-                    Message = "Empty response while getting HRI by id."
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = response?.Message ?? "Empty response while getting HRI by id.";
+                    serviceResponse.Data = null;
+                    return serviceResponse;
+                }
+
+                // Mapear DTO → Entidad
+                serviceResponse.Data = new HRI
+                {
+                    HriId = response.Data.HriId,
+                    HRILinesId = response.Data.HRILinesId,
+                    Line = response.Data.Line,
+                    HRIItemId = response.Data.HRIItemId,
+                    NameOfItem = response.Data.NameOfItem,
+                    ControlNumber = response.Data.ControlNumber,
+                    HRIDockId = response.Data.HRIDockId,
+                    Dock = response.Data.Dock,
+                    Department = response.Data.Department,
+                    Images = response.Data.Images,
+                    ItemsRevised = response.Data.ItemsRevised,
+                    WeeklyRevisions = response.Data.WeeklyRevisions,
+                    HriCycles = response.Data.HriCycles,
+                    IsActive = response.Data.IsActive,
+                    CreationDate = response.Data.CreationDate,
+                    HourmeterRevision = response.Data.HourmeterRevision,
+                    UserId = response.Data.UserId,
+                    Supervisor = response.Data.Supervisor
                 };
+
+                serviceResponse.Success = true;
+                serviceResponse.Message = response.Message ?? "HRI retrieved successfully.";
             }
             catch (Exception ex)
             {
-                return new ServiceResponse<GetHRIDto>
-                {
-                    Success = false,
-                    Data = new GetHRIDto(),
-                    Message = $"Exception getting HRI by id: {ex.Message}"
-                };
+                serviceResponse.Success = false;
+                serviceResponse.Data = null;
+                serviceResponse.Message = $"Exception getting HRI by id: {ex.Message}";
             }
+
+            return serviceResponse;
         }
 
         public async Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto)

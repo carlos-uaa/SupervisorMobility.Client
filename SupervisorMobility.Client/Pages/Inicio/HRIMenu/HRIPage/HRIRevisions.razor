@@ -1,4 +1,7 @@
 ﻿@page "/hri/revisions"
+@page "/hri/revisions/{hriID:int}"
+@inject IHRIService HRIService
+@inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-10">
 
@@ -7,9 +10,9 @@
             <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 700;">
                 Detalles de Hoja de Revisión Inicial
             </MudText>
-            <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mt-1">
+            @* <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mt-1">
                 ID Documento: #REV-2026-0041 | Fecha de Creación: 01/04/2026
-            </MudText>
+            </MudText> *@
         </div>
         <MudChip Color="Color.Success" Variant="Variant.Filled" Size="Size.Large">ACTIVO</MudChip>
     </div>
@@ -51,32 +54,32 @@
                 <MudGrid Spacing="3">
                     <MudItem xs="12" md="4">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Nombre de Item</MudText>
-                        <MudText Typo="Typo.body1" Style="font-weight: 500;">Montacargas Eléctrico - Caterpillar Serie F</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.NameOfItem?.Name ?? "")</MudText>
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Nombre de Línea</MudText>
-                        <MudText Typo="Typo.body1" Style="font-weight: 500;">Almacén de Producto Terminado</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.Line?.LineName ?? "")</MudText>
                     </MudItem>
                     <MudItem xs="12" md="4">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Número de Control</MudText>
-                        <MudText Typo="Typo.body1" Style="font-weight: 500;">MT-28-WMS</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.ControlNumber ?? "")</MudText>
                     </MudItem>
 
                     <MudItem xs="12" md="3">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Dock Asignado</MudText>
-                        <MudText Typo="Typo.body1" Style="font-weight: 500;">Dock A - Norte</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.Dock?.DockName ?? "")</MudText>
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Departamento</MudText>
-                        <MudText Typo="Typo.body1" Style="font-weight: 500;">Logística</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.Department ?? "")</MudText>
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Supervisor Encargado</MudText>
-                        <MudText Typo="Typo.body1" Style="font-weight: 500;">Juan Pérez Rodríguez</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.Supervisor?.Name ?? "")</MudText>
                     </MudItem>
                     <MudItem xs="12" md="3">
                         <MudText Typo="Typo.caption" Color="Color.Secondary">Numero de Turnos</MudText>
-                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@NumeroCiclos Turnos</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">3 Turnos</MudText>
                     </MudItem>
                 </MudGrid>
             </MudPaper>
@@ -230,12 +233,28 @@
                                     <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                         @if (!inhabíl)
                                         {
-                                            <button type="button" 
-                                                    class="mud-button-root mud-icon-button mud-ripple"
-                                                    style="width: 100%; height: 100%; font-weight: bold; font-size: 0.75rem; color: var(--mud-palette-@GetColorEstado(estado).ToDescriptionString());"
-                                                    @onclick="() => RotarEstado(currentCycle, diaActual, rol)">
-                                                @estado
-                                            </button>
+                                            <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                <select style=" width: 100%; 
+                                                            height: 100%; 
+                                                            cursor: pointer; 
+                                                            appearance: none; 
+                                                            -webkit-appearance: none; 
+                                                            -moz-appearance: none; 
+                                                            border: 1px solid #ccc;
+                                                            border-radius: 4px;
+                                                            background-color: #f9f9f9;
+                                                            text-align: center;
+                                                            padding: 0;
+                                                            font-size: 12px;
+                                                            color: #333;
+                                                            outline: none;
+                                                            transition: border-color 0.2s;">
+                                                    <option value=""></option>
+                                                    <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                    <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                    <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                </select>
+                                            </div>
                                         }
                                     </td>
                                 }
@@ -263,12 +282,28 @@
                                         <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                             @if (!inhabíl)
                                             {
-                                                <button type="button" 
-                                                        class="mud-button-root mud-icon-button mud-ripple"
-                                                        style="width: 100%; height: 100%; font-weight: bold; font-size: 0.75rem; color: var(--mud-palette-@GetColorEstado(estado).ToDescriptionString());"
-                                                        @onclick="() => RotarEstado(currentCycle, diaActual, rol)">
-                                                    @estado
-                                                </button>
+                                                <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                    <select style=" width: 100%; 
+                                                                height: 100%; 
+                                                                cursor: pointer; 
+                                                                appearance: none; 
+                                                                -webkit-appearance: none; 
+                                                                -moz-appearance: none; 
+                                                                border: 1px solid #ccc;
+                                                                border-radius: 4px;
+                                                                background-color: #f9f9f9;
+                                                                text-align: center;
+                                                                padding: 0;
+                                                                font-size: 12px;
+                                                                color: #333;
+                                                                outline: none;
+                                                                transition: border-color 0.2s;">
+                                                        <option value=""></option>
+                                                        <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                        <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                        <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                    </select>
+                                                </div>
                                             }
                                         </td>
                                     }
@@ -289,12 +324,28 @@
                                         <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                             @if (!inhabíl)
                                             {
-                                                <button type="button" 
-                                                        class="mud-button-root mud-icon-button mud-ripple"
-                                                        style="width: 100%; height: 100%; font-weight: bold; font-size: 0.75rem; color: var(--mud-palette-@GetColorEstado(estado).ToDescriptionString());"
-                                                        @onclick="() => RotarEstado(currentCycle, diaActual, rol)">
-                                                    @estado
-                                                </button>
+                                                <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                    <select style=" width: 100%; 
+                                                                height: 100%; 
+                                                                cursor: pointer; 
+                                                                appearance: none; 
+                                                                -webkit-appearance: none; 
+                                                                -moz-appearance: none; 
+                                                                border: 1px solid #ccc;
+                                                                border-radius: 4px;
+                                                                background-color: #f9f9f9;
+                                                                text-align: center;
+                                                                padding: 0;
+                                                                font-size: 12px;
+                                                                color: #333;
+                                                                outline: none;
+                                                                transition: border-color 0.2s;">
+                                                        <option value=""></option>
+                                                        <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                        <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                        <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                    </select>
+                                                </div>
                                             }
                                         </td>
                                     }
@@ -361,11 +412,26 @@
 
                                             // Celda combinada para la semana
                                             <td colspan="@span" class="pa-0">
-                                                <button type="button" 
-                                                        class="mud-button-root mud-ripple d-flex align-center justify-center"
-                                                        style="width: 100%; height: 32px; border: 1px solid var(--mud-palette-lines-default);"
-                                                        @onclick='() => Console.WriteLine("Validar Semana")'>
-                                                </button>
+                                                <select style=" width: 100%; 
+                                                                height: 100%; 
+                                                                cursor: pointer; 
+                                                                appearance: none; 
+                                                                -webkit-appearance: none; 
+                                                                -moz-appearance: none; 
+                                                                border: 1px solid #ccc;
+                                                                border-radius: 4px;
+                                                                background-color: #f9f9f9;
+                                                                text-align: center;
+                                                                padding: 0;
+                                                                font-size: 12px;
+                                                                color: #333;
+                                                                outline: none;
+                                                                transition: border-color 0.2s;">
+                                                    <option value=""></option>
+                                                    <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                    <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                    <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                </select>
                                             </td>
                                         }
                                     }
@@ -380,7 +446,7 @@
         <MudItem xs="12">
             <div class="d-flex justify-end gap-2 mt-2">
                 <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Print">Descargar Excel</MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit">Editar Documento</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit">Guardar Cambios</MudButton>
             </div>
         </MudItem>
 
@@ -471,14 +537,27 @@
 </style>
 
 @code{
+    [Parameter] public int? hriID { get; set; }
     private Dictionary<string, (string ContentType, string Uri)> UploadedImages { get; set; } = new();
     private int NumeroCiclos { get; set; } = 3;
     private int añoActual = 2026;
     private int mesActual = 4;
     private int diasEnMes = 30;
+    private HRI _currentHRI = new HRI();
 
-    protected override void OnInitialized()
+    protected async override void OnInitialized()
     {
+        if (hriID.HasValue)
+        {
+            var response = await HRIService.GetHRIById(hriID.Value);
+            if (response != null && response.Data != null)
+                _currentHRI = response.Data;
+            else
+                _currentHRI = new HRI();
+        }
+        else
+            _currentHRI = new HRI();
+
         // Llenamos el diccionario con las imágenes de la carpeta TempHRI
         for (int i = 1; i <= 9; i++)
         {
