@@ -1,4 +1,8 @@
 ﻿@page "/hri/form"
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIImagesDtos
+@using SupervisorMobility.Client.Services.HRIServices;
+@inject IHRIService HRIService;
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-10">
 
@@ -255,7 +259,7 @@
             <MudSpacer />
             <div class="d-flex justify-end gap-2 mt-2">
                 <MudButton Variant="Variant.Text" Color="Color.Error">Cancelar</MudButton>
-                <MudButton StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Color="Color.Primary">
+                <MudButton OnClick="SaveDocument" StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Color="Color.Primary">
                     Crear Documento
                 </MudButton>
             </div>
@@ -294,6 +298,8 @@
     private int NumeroCiclos { get; set; } = 3; 
 
     private Dictionary<string, (string ContentType, string Uri)> UploadedImages { get; set; } = new();
+    private List<CreateHRImageDto> ImagesToSave { get; set; } = new();
+    private bool disableCreateButton = false;
 
     private async void UploadFiles(InputFileChangeEventArgs e)
     {
@@ -314,6 +320,18 @@
                     UploadedImages.Add(file.Name, (file.ContentType, fullUri));
                 }
             }
+
+            var result = await HRIService.SaveImageInTempFolderAsync(file);
+            if (!string.IsNullOrEmpty(result))
+            {
+                ImagesToSave.Add(new CreateHRImageDto
+                {
+                    HriId = 0,
+                    ImageUrl = result,
+                    ImageType = file.ContentType
+                });
+            }
+            
         }
 
         StateHasChanged();
@@ -325,5 +343,37 @@
         {
             UploadedImages.Remove(fileName);
         }
+    }
+
+    private async void SaveDocument()
+    {
+        disableCreateButton = true;
+        StateHasChanged();
+
+
+        // Validate Form
+
+
+        // Save Document Data 
+        var dto = new CreateHRIDto
+        {
+            HRILinesId = null,
+            Line = null,
+            HRIItemId = null,
+            NameOfItem = null,
+            ControlNumber = null,
+            HRIDockId = null,
+            Dock = null,
+            Department = null,
+            Images = ImagesToSave,
+            ItemsRevised = null,
+            WeeklyRevisions = null,
+            HriCycles = null,
+            IsActive = false,
+            CreationDate = DateTime.Now,
+            HourmeterRevision = null,
+            SupervisorId = null
+        };
+        var response = HRIService.CreateHRI(dto);
     }
 }
