@@ -146,14 +146,19 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadFrequenciesAsync();
+    }
+
+    private async Task LoadFrequenciesAsync()
+    {
         _loading = true;
-        
-        var response  = await RevisionService.GetAllFrequencies();
-        if(response.Success)
+
+        var response = await RevisionService.GetAllFrequencies();
+        if (response.Success)
             _hriFrequencies = response.Data;
         else
             Snackbar.Add("Error al cargar las frecuencias", Severity.Error);
-        
+
         _loading = false;
     }
 
@@ -192,7 +197,7 @@
             var response = await RevisionService.CreateFrequency(newRecord);
             if (response != null && response.Success)
             {
-                newRecord = response.Data;
+                await LoadFrequenciesAsync();
                 Snackbar.Add("Registro creado exitosamente", Severity.Success);
             }
             else
