@@ -145,6 +145,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadDocksAsync();
+    }
+
+    private async Task LoadDocksAsync()
+    {
         _loading = true;
         var response = await DocksService.GetAllHRIDocksAsync();
 
@@ -191,7 +196,7 @@
             var response = await DocksService.CreateHRIDockAsync(newRecord);
             if (response != null && response.Success)
             {
-                newRecord = response.Data;
+                await LoadDocksAsync();
                 Snackbar.Add("Registro creado exitosamente", Severity.Success);
             }
             else

@@ -24,5 +24,6 @@ namespace SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
         public DateTime CreationDate { get; set; }
         public CreateHourMeterRevisionDto? HourmeterRevision { get; set; }
         public int? SupervisorId { get; set; }
+        public int? SSVUserId { get; set; }
     }
 }

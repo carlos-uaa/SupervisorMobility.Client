@@ -15,8 +15,21 @@ namespace SupervisorMobility.Client.Services.HRIServices
         }
 
         // Revision Items
-        public async Task<ServiceResponse<List<GetHRIRevisionItemDto>>> GetAllHRIRevisionItems() =>
-            await _http.GetFromJsonAsync<ServiceResponse<List<GetHRIRevisionItemDto>>>("HRIRevisionItem/GetAllHRIRevisionItems");
+        public async Task<ServiceResponse<List<GetHRIRevisionItemDto>>> GetAllHRIRevisionItems()
+        {
+            try
+            {
+                return await _http.GetFromJsonAsync<ServiceResponse<List<GetHRIRevisionItemDto>>>("HRIRevisionItem/GetAllHRIRevisionItems");
+            }catch (Exception ex)
+            {
+                return new ServiceResponse<List<GetHRIRevisionItemDto>>
+                {
+                    Success = false,
+                    Message = $"Error al obtener HRI Revision Items: {ex.Message}",
+                    Data = new List<GetHRIRevisionItemDto>()
+                };
+            }
+        }
 
         public async Task<ServiceResponse<GetHRIRevisionItemDto>> GetHRIRevisionItemById(int id) =>
             await _http.GetFromJsonAsync<ServiceResponse<GetHRIRevisionItemDto>>($"HRIRevisionItem/GetHRIRevisionItemById/{id}");

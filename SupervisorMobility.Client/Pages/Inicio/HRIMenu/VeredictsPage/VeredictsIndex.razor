@@ -145,13 +145,18 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadVeredictsAsync();
+    }
+
+    private async Task LoadVeredictsAsync()
+    {
         _loading = true;
         
         var response  = await RevisionService.GetAllVeredicts();
         if(response.Success)
             _veredicts = response.Data;
         else
-            Snackbar.Add("Error al cargar los veredictos", Severity.Error);
+            Snackbar.Add("No se encontraron o no existen los veredictos", Severity.Error);
         
         _loading = false;
     }
@@ -192,6 +197,7 @@
             if (response != null && response.Success)
             {
                 newRecord = response.Data;
+                await LoadVeredictsAsync();
                 Snackbar.Add("Registro creado exitosamente", Severity.Success);
             }
             else
