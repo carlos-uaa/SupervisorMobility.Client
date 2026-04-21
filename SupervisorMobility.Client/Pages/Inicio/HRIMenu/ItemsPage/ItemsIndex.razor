@@ -145,6 +145,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadItemsAsync();
+    }
+
+    private async Task LoadItemsAsync()
+    {
         _loading = true;
         var response = await ItemsService.GetAllHRIItemsAsync();
 
@@ -152,6 +157,7 @@
             _hriItems = response.Data;
         else
             _hriItems = new List<HRIItem>();
+
         _loading = false;
     }
 
@@ -190,7 +196,7 @@
             var response = await ItemsService.CreateHRIItemAsync(newRecord);
             if (response != null && response.Success)
             {
-                newRecord = response.Data;
+                await LoadItemsAsync();
                 Snackbar.Add("Registro creado exitosamente", Severity.Success);
             }
             else
