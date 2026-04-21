@@ -145,6 +145,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadLinesAsync();
+    }
+
+    private async Task LoadLinesAsync()
+    {
         _loading = true;
         var response = await LinesService.GetAllHRILinesAsync();
 
@@ -152,7 +157,7 @@
             _hriLines = response.Data;
         else
             _hriLines = new List<HRILines>();
-        
+
         _loading = false;
     }
 
@@ -191,7 +196,7 @@
             var response = await LinesService.CreateHRILineAsync(newRecord);
             if (response != null && response.Success)
             {
-                newRecord = response.Data;
+                await LoadLinesAsync();
                 Snackbar.Add("Registro creado exitosamente", Severity.Success);
             }
             else
