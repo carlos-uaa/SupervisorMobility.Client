@@ -181,6 +181,21 @@
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudSelect T="int"
+                                   Label="Área"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   Disabled="@(SelectedPlantId == 0)"
+                                   ValueChanged="OnAreaChanged">
+                            <MudSelectItem Value="0" Disabled>Seleccione un área...</MudSelectItem>
+                            @foreach (var area in HRIAreas)
+                            {
+                                <MudSelectItem Value="@area.Key">@area.Value</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" md="2">
+                        <MudSelect T="int"
                                    Label="Departamento"
                                    Variant="Variant.Outlined"
                                    Margin="Margin.Dense"
@@ -195,25 +210,11 @@
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudSelect T="int"
-                                   Label="Área"
-                                   Variant="Variant.Outlined"
-                                   Margin="Margin.Dense"
-                                   AnchorOrigin="Origin.BottomCenter"
-                                   Disabled="@(SelectedPlantId == 0)"
-                                   @bind-Value="SelectedAreaId">
-                            <MudSelectItem Value="0" Disabled>Seleccione un área...</MudSelectItem>
-                            @foreach (var area in HRIAreas)
-                            {
-                                <MudSelectItem Value="@area.Key">@area.Value</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                    <MudItem xs="12" md="2">
-                        <MudSelect T="int"
                                    Label="Supervisor"
                                    Variant="Variant.Outlined"
                                    Margin="Margin.Dense"
                                    AnchorOrigin="Origin.BottomCenter"
+                                   Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)"
                                    @bind-Value="SelectedSupervisorId">
                             <MudSelectItem Value="0" Disabled>Seleccione un supervisor...</MudSelectItem>
                             @foreach (var user in HRISupervisorsUsers)
@@ -324,7 +325,15 @@
                                     <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight: 600;">Ciclo @cycle.Cycle</MudText>
                                 </div>
                                 
-                                <MudSelect T="int" @bind-Value="cycle.OperatorId" Label="Operador" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="mb-3 bg-white">
+                                <MudSelect 
+                                    T="int" 
+                                    @bind-Value="cycle.OperatorId" 
+                                    Label="Operador" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.Dense" 
+                                    Dense="true" 
+                                    Class="mb-3 bg-white"
+                                    Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)">
                                     <MudSelectItem Value="0" Disabled>Select Operator...</MudSelectItem>
                                     @foreach (var user in HRIOperatorsUsers)
                                     {
@@ -332,7 +341,15 @@
                                     }
                                 </MudSelect>
                                 
-                                <MudSelect T="int" @bind-Value="cycle.SupervisorId" Label="Supervisor" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="bg-white">
+                                <MudSelect 
+                                    T="int" 
+                                    @bind-Value="cycle.SupervisorId" 
+                                    Label="Supervisor" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.Dense" 
+                                    Dense="true" 
+                                    Class="bg-white"
+                                    Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)">
                                     <MudSelectItem Value="0" Disabled>Select Supervisor...</MudSelectItem>
                                     @foreach (var user in HRISupervisorsUsers)
                                     {
@@ -350,7 +367,13 @@
                     <MudItem xs="12" md="6">
                         <div class="d-flex align-center">
                             <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Warning" Class="mr-3" />
-                            <MudSelect T="int" @bind-Value="SelectedSeniorSupervisorId" Label="Senior Supervisor (SSV) para revisiones semanales" Variant="Variant.Outlined" Margin="Margin.Dense">
+                            <MudSelect 
+                                T="int" 
+                                @bind-Value="SelectedSeniorSupervisorId" 
+                                Label="Senior Supervisor (SSV) para revisiones semanales" 
+                                Variant="Variant.Outlined" 
+                                Margin="Margin.Dense"
+                                Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)">
                                 <MudSelectItem Value="0" Disabled>Select SSV...</MudSelectItem>
                                 @foreach (var user in HRISSupervisorsUsers)
                                 {
@@ -417,6 +440,9 @@
     private  List<CreateHRIRevisionItemDto> hriRevisionItems { get; set; } = new();
     private List<CreateHRICyclesDto> hriCycles { get; set; } = new();
 
+    private List<User> SupervisorsUsers { get; set; } = new();
+    private List<User> SeniorSupervisorsUsers { get; set; } = new();
+    private List<User> OperatorsUsers { get; set; } = new();
     private Dictionary<string, (string ContentType, string Uri)> UploadedImages { get; set; } = new();
     private Dictionary<int, string> HRIItems { get; set; } = new();
     private Dictionary<int, string> HRILines { get; set; } = new();
@@ -504,21 +530,26 @@
 
         if (usersResponse != null)
         {
-            @* HRIUsers = usersResponse
-                .Where(x => x.IsActive == true && !string.IsNullOrWhiteSpace(x.Name))
+            SupervisorsUsers = usersResponse
+                .Where(x => x.IsActive == true && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
                 .OrderBy(x => x.Name)
-                .ToDictionary(x => x.UserId, x => x.Name); *@
-            HRISupervisorsUsers = usersResponse
-                                .Where(x => x.IsActive == true && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
-                                .OrderBy(x => x.Name)
-                                .ToDictionary(x => x.UserId, x => x.Name);
-            HRISSupervisorsUsers = usersResponse
+                .ToList();
+            HRISupervisorsUsers = SupervisorsUsers
+                .ToDictionary(x => x.UserId, x => x.Name);
+
+            SeniorSupervisorsUsers = usersResponse
                 .Where(x => x.IsActive == true && x.UserType == 2 && !string.IsNullOrWhiteSpace(x.Name))
                 .OrderBy(x => x.Name)
+                .ToList();
+            HRISSupervisorsUsers = SeniorSupervisorsUsers
                 .ToDictionary(x => x.UserId, x => x.Name);
-            HRIOperatorsUsers = usersResponse
+
+
+            OperatorsUsers = usersResponse
                 .Where(x => x.IsActive == true && x.UserType == 4 && !string.IsNullOrWhiteSpace(x.Name))
                 .OrderBy(x => x.Name)
+                .ToList();
+            HRIOperatorsUsers = OperatorsUsers
                 .ToDictionary(x => x.UserId, x => x.Name);
         }
 
@@ -574,6 +605,28 @@
                 .Where(x => x.IsActive == true)
                 .ToDictionary(x => x.AreaId, x => x.Description);
         }
+    }
+    private async Task OnAreaChanged(int areaId)
+    {
+        SelectedAreaId = areaId;
+
+        // Filter supervisors based on selected plant and area
+        HRISupervisorsUsers = SupervisorsUsers
+            .Where(x => x.PlantId == SelectedPlantId && x.AreaId == SelectedAreaId && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
+            .OrderBy(x => x.Name)
+            .ToDictionary(x => x.UserId, x => x.Name);
+
+        // Filter senior supervisors based on selected plant and area
+        HRISSupervisorsUsers = SeniorSupervisorsUsers
+            .Where(x => x.PlantId == SelectedPlantId && x.AreaId == SelectedAreaId && x.UserType == 2 && !string.IsNullOrWhiteSpace(x.Name))
+            .OrderBy(x => x.Name)
+            .ToDictionary(x => x.UserId, x => x.Name);
+
+        // Filter operators based on selected plant and area
+        HRIOperatorsUsers = OperatorsUsers
+            .Where(x => x.PlantId == SelectedPlantId && x.AreaId == SelectedAreaId && x.UserType == 4 && !string.IsNullOrWhiteSpace(x.Name))
+            .OrderBy(x => x.Name)
+            .ToDictionary(x => x.UserId, x => x.Name);
     }
 
     private void RemoveRevisionItem(int itemNumber)
