@@ -5,10 +5,9 @@ namespace SupervisorMobility.Client.Data.Entites.Dtos.HRICyclesDtos
     public class CreateHRICyclesDto
     {
         public int HriId { get; set; }
-        public HRI HRI { get; set; }
-        public int Cycle { get; set; }
-        public int OperatorId { get; set; } = 0;
-        public int SupervisorId { get; set; } = 0;
-        public List<DailyRevisions> DailyRevisions { get; set; }
+        public int Cycle { get; set; } 
+        public int SupervisorUserId { get; set; }
+        public int OperatorUserId { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }
