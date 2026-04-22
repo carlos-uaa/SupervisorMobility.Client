@@ -1,9 +1,14 @@
 ﻿@page "/hri/revisions"
 @page "/hri/revisions/{hriID:int}"
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@using SupervisorMobility.Client.Data.Entities.Dtos.HRIRevisionItemsDtos
 @inject IHRIService HRIService
 @inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-10">
+@if(!_loading)
+{
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-10">
 
     <div class="d-flex justify-space-between align-center mb-8 px-2">
         <div>
@@ -94,10 +99,11 @@
                     </MudAvatar>
                     <div>
                         <MudText Typo="Typo.h6" Style="font-weight: 600;">II. Registro de Realización de Revisión</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">MES: ABRIL | AÑO: 2026</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            MES: @mesTexto | AÑO: @añoActual
+                        </MudText>
                     </div>
                 </div>
-
 
                 <div class="table-container-scroll rounded-lg border">
                     <MudSimpleTable Dense="true" Hover="false" Striped="false" Elevation="0">
@@ -107,7 +113,9 @@
                                 <th rowspan="2" style="min-width: 220px;" class="border-right">Puntos de Revisión</th>
                                 <th rowspan="2" style="min-width: 130px;" class="border-right">Criterio</th>
                                 <th rowspan="2" class="text-center border-right">Turno</th>
-                                <th colspan="@diasEnMes" class="text-center">Días del Mes (Abril @añoActual)</th>
+                                <th colspan="@diasEnMes" class="text-center">
+                                    Días del Mes (@mesTexto @añoActual)
+                                </th>
                             </tr>
                             <tr style="background-color: #f5f5f5;">
                                 @for (int d = 1; d <= diasEnMes; d++)
@@ -117,69 +125,76 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @{
-                                var listaPuntos = new[] {
-                                    new { Id = 1, Nombre = "FUGAS DE ACEITE", Criterio = "SIN MANCHAS" },
-                                    new { Id = 2, Nombre = "HORQUILLAS Y SEGUROS", Criterio = "SIN DEFORMACIÓN" },
-                                    new { Id = 3, Nombre = "CHASIS Y CONTRAPESO", Criterio = "SIN GOLPES" },
-                                    new { Id = 4, Nombre = "CRISTALES DE CABINA", Criterio = "LIMPIOS / NO ROTOS" },
-                                    new { Id = 5, Nombre = "LLANTAS Y BIRLOS", Criterio = "BUEN ESTADO / AJUSTADOS" },
-                                    new { Id = 6, Nombre = "SISTEMA DE DIRECCIÓN", Criterio = "SUAVE / SIN JUEGO" },
-                                    new { Id = 7, Nombre = "EXTINTOR", Criterio = "CARGA VIGENTE" }
-                                };
-                            }
-
-                            @foreach (var p in listaPuntos)
+                            @if(_currentHRI.ItemsRevised != null)
                             {
-                                @for (int c = 1; c <= NumeroCiclos; c++)
+                                foreach (var p in _currentHRI.ItemsRevised)
                                 {
-                                    <tr>
-                                        @if (c == 1)
-                                        {
-                                            <td rowspan="@NumeroCiclos" class="text-center border-right">@p.Id</td>
-                                            <td rowspan="@NumeroCiclos" class="border-right"><b>@p.Nombre</b></td>
-                                            <td rowspan="@NumeroCiclos" class="border-right"><MudText Typo="Typo.caption">@p.Criterio</MudText></td>
-                                        }
-                                        <td class="text-center border-right" style="background-color: #fafafa;"><b>@c</b></td>
+                                    foreach (var c in p.RevisionCycles)
+                                    {
+                                        <tr>
+                                            @if (c.Cycle == 1)
+                                            {
+                                                <td rowspan="@NumeroCiclos" class="text-center border-right">@p.ItemId</td>
+                                                <td rowspan="@NumeroCiclos" class="border-right"><b>@p.RevisionPoint</b></td>
+                                                <td rowspan="@NumeroCiclos" class="border-right"><MudText Typo="Typo.caption">@p.Veredict</MudText></td>
+                                            }
+                                            <td class="text-center border-right" style="background-color: #fafafa;"><b>@c</b></td>
 
-                                        @for (int d = 1; d <= diasEnMes; d++)
-                                        {
-                                            bool inhabíl = EsFinDeSemana(d);
-                                            <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
-                                                @if (!inhabíl)
-                                                {
-                                                    @* Aquí iría el componente para marcar X o O *@
-                                                    <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
-                                                        <select style=" width: 100%; 
-                                                                    height: 100%; 
-                                                                    cursor: pointer; 
-                                                                    appearance: none; 
-                                                                    -webkit-appearance: none; 
-                                                                    -moz-appearance: none; 
-                                                                    border: 1px solid #ccc;
-                                                                    border-radius: 4px;
-                                                                    background-color: #f9f9f9;
-                                                                    text-align: center;
-                                                                    padding: 0;
-                                                                    font-size: 12px;
-                                                                    color: #333;
-                                                                    outline: none;
-                                                                    transition: border-color 0.2s;">
-                                                            <option value=""></option>
-                                                            <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                            <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                            <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                        </select>
-                                                    </div>
-                                                }
-                                            </td>
-                                        }
+                                            @for (int d = 1; d <= diasEnMes; d++)
+                                            {
+                                                bool inhabíl = EsFinDeSemana(d);
+                                                <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
+                                                    @if (!inhabíl)
+                                                    {
+                                                        <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                            @{
+                                                                // Buscamos si existe una revisión para el día "d" en el ciclo actual
+                                                                var revisionExistente = c.DailyRevisions?
+                                                                                        .FirstOrDefault(r => r.Day == d);
+                                                            }
+
+                                                            @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
+                                                            {
+                                                                @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
+                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                                    @revisionExistente.Status
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                @* Si no existe, mostramos el select para que el usuario pueda capturar *@
+                                                                <select style=" width: 100%; 
+                                                                        height: 100%; 
+                                                                        cursor: pointer; 
+                                                                        appearance: none; 
+                                                                        -webkit-appearance: none; 
+                                                                        -moz-appearance: none; 
+                                                                        border: 1px solid #ccc;
+                                                                        border-radius: 4px;
+                                                                        background-color: #f9f9f9;
+                                                                        text-align: center;
+                                                                        padding: 0;
+                                                                        font-size: 12px;
+                                                                        color: #333;
+                                                                        outline: none;
+                                                                        transition: border-color 0.2s;"
+                                                                        @onchange="@(e => AddItemDailyRevision(d, c.RevisionCycleId, e.Value.ToString()))">
+                                                                <option value=""></option>
+                                                                <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                                <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                                <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                            </select>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                    <tr style="height: 2px; background-color: var(--mud-palette-divider);">
+                                        <td colspan="@(diasEnMes + 4)"></td>
                                     </tr>
                                 }
-                                @* Separador visual entre grupos de items *@
-                                <tr style="height: 2px; background-color: var(--mud-palette-divider);">
-                                    <td colspan="@(diasEnMes + 4)"></td>
-                                </tr>
                             }
                         </tbody>
                     </MudSimpleTable>
@@ -223,66 +238,28 @@
                                 </td>
                                 @for (int d = 1; d <= diasEnMes; d++)
                                 {
-                                    int currentCycle = 0; // Identificador único para el horómetro
-                                    int diaActual = d;
-                                    string rol = "HOR"; // Rol específico para horómetro
-                                    bool inhabíl = EsFinDeSemana(diaActual);
-                                    string key = $"{currentCycle}-{diaActual}-{rol}";
-                                    string estado = EstadosRevision.ContainsKey(key) ? EstadosRevision[key] : "";
+                                    bool inhabíl = EsFinDeSemana(d);
 
                                     <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                         @if (!inhabíl)
                                         {
                                             <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
-                                                <select style=" width: 100%; 
-                                                            height: 100%; 
-                                                            cursor: pointer; 
-                                                            appearance: none; 
-                                                            -webkit-appearance: none; 
-                                                            -moz-appearance: none; 
-                                                            border: 1px solid #ccc;
-                                                            border-radius: 4px;
-                                                            background-color: #f9f9f9;
-                                                            text-align: center;
-                                                            padding: 0;
-                                                            font-size: 12px;
-                                                            color: #333;
-                                                            outline: none;
-                                                            transition: border-color 0.2s;">
-                                                    <option value=""></option>
-                                                    <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                    <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                    <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                </select>
-                                            </div>
-                                        }
-                                    </td>
-                                }
-                            </tr>
-                            @for (int i = 1; i <= NumeroCiclos; i++)
-                            {
-                                int currentCycle = i;
-                                @* Fila para el Operador *@
-                                <tr>
-                                    <td rowspan="2" class="text-center border-right" style="background-color: #fafafa; font-weight: bold;">
-                                        <MudIcon Icon="@Icons.Material.Filled.Loop" Size="Size.Small" Color="Color.Primary" /><br />
-                                        @currentCycle
-                                    </td>
-                                    <td class="border-right"><MudText Typo="Typo.caption" Style="font-weight: 600;">OPERADOR</MudText></td>
-                                    <td class="border-right"><MudText Typo="Typo.body2">Operador Especialista @((char)(64 + i))</MudText></td>
-                            
-                                    @for (int d = 1; d <= diasEnMes; d++)
-                                    {
-                                        int diaActual = d;
-                                        string rol = "SUP";
-                                        bool inhabíl = EsFinDeSemana(diaActual);
-                                        string key = $"{currentCycle}-{diaActual}-{rol}";
-                                        string estado = EstadosRevision.ContainsKey(key) ? EstadosRevision[key] : "";
+                                                @{
+                                                    // Buscamos si existe una revisión para el día "d" en el ciclo actual
+                                                    var revisionExistente = _currentHRI.HourmeterRevision?.DailyRevisions?
+                                                                            .FirstOrDefault(r => r.Day == d);
+                                                }
 
-                                        <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
-                                            @if (!inhabíl)
-                                            {
-                                                <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
+                                                {
+                                                    @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
+                                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                        @revisionExistente.Status
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    @* Si no existe, mostramos el select para que el usuario pueda capturar *@
                                                     <select style=" width: 100%; 
                                                                 height: 100%; 
                                                                 cursor: pointer; 
@@ -297,12 +274,76 @@
                                                                 font-size: 12px;
                                                                 color: #333;
                                                                 outline: none;
-                                                                transition: border-color 0.2s;">
+                                                                transition: border-color 0.2s;"
+                                                                @onchange="@(e => AddHourmeterDailyRevision(d, _currentHRI.HourmeterRevision?.Id ?? 0, e.Value.ToString()))">>
                                                         <option value=""></option>
                                                         <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
                                                         <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
                                                         <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
                                                     </select>
+                                                }
+                                            </div>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                            @foreach (var cycle in _currentHRI.HriCycles)
+                            {
+                                @* Fila para el Operador *@
+                                <tr>
+                                    <td rowspan="2" class="text-center border-right" style="background-color: #fafafa; font-weight: bold;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Loop" Size="Size.Small" Color="Color.Primary" /><br />
+                                        @cycle.Cycle
+                                    </td>
+                                    <td class="border-right"><MudText Typo="Typo.caption" Style="font-weight: 600;">OPERADOR</MudText></td>
+                                    <td class="border-right"><MudText Typo="Typo.body2">@cycle.Operator?.Name</MudText></td>
+                            
+                                    @for (int d = 1; d <= diasEnMes; d++)
+                                    {
+                                        bool inhabíl = EsFinDeSemana(d);
+
+                                        <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
+                                            @if (!inhabíl)
+                                            {
+                                                <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                    @{
+                                                        // Buscamos si existe una revisión para el día "d" en el ciclo actual
+                                                        var revisionExistente = cycle.DailyRevisions?
+                                                                                .FirstOrDefault(r => r.Day == d && r.UserId == cycle.Operator?.UserId);
+                                                    }
+
+                                                    @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
+                                                    {
+                                                        @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                            @revisionExistente.Status
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        @* Si no existe, mostramos el select para que el usuario pueda capturar *@
+                                                        <select style=" width: 100%; 
+                                                                    height: 100%; 
+                                                                    cursor: pointer; 
+                                                                    appearance: none; 
+                                                                    -webkit-appearance: none; 
+                                                                    -moz-appearance: none; 
+                                                                    border: 1px solid #ccc;
+                                                                    border-radius: 4px;
+                                                                    background-color: #f9f9f9;
+                                                                    text-align: center;
+                                                                    padding: 0;
+                                                                    font-size: 12px;
+                                                                    color: #333;
+                                                                    outline: none;
+                                                                    transition: border-color 0.2s;"
+                                                                    @onchange="@(e => AddCyclesDailyRevision(d, cycle.CycleId, cycle.Operator?.UserId ?? 0, e.Value.ToString()))">
+                                                            <option value=""></option>
+                                                            <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                            <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                            <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                        </select>
+                                                    }
                                                 </div>
                                             }
                                         </td>
@@ -311,40 +352,54 @@
                                 @* Fila para el Supervisor *@
                                 <tr class="border-bottom">
                                     <td class="border-right"><MudText Typo="Typo.caption" Style="font-weight: 600;">SUPERVISOR</MudText></td>
-                                    <td class="border-right"><MudText Typo="Typo.body2">Supervisor Logístico @i</MudText></td>
+                                    <td class="border-right"><MudText Typo="Typo.body2">@cycle.Supervisor?.Name</MudText></td>
                             
                                     @for (int d = 1; d <= diasEnMes; d++)
                                     {
-                                        int diaActual = d;
-                                        string rol = "SUP";
-                                        bool inhabíl = EsFinDeSemana(diaActual);
-                                        string key = $"{currentCycle}-{diaActual}-{rol}";
-                                        string estado = EstadosRevision.ContainsKey(key) ? EstadosRevision[key] : "";
+                                        bool inhabíl = EsFinDeSemana(d);
 
                                         <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                             @if (!inhabíl)
                                             {
                                                 <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
-                                                    <select style=" width: 100%; 
-                                                                height: 100%; 
-                                                                cursor: pointer; 
-                                                                appearance: none; 
-                                                                -webkit-appearance: none; 
-                                                                -moz-appearance: none; 
-                                                                border: 1px solid #ccc;
-                                                                border-radius: 4px;
-                                                                background-color: #f9f9f9;
-                                                                text-align: center;
-                                                                padding: 0;
-                                                                font-size: 12px;
-                                                                color: #333;
-                                                                outline: none;
-                                                                transition: border-color 0.2s;">
-                                                        <option value=""></option>
-                                                        <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                        <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                        <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                    </select>
+                                                    @{
+                                                        // Buscamos si existe una revisión para el día "d" en el ciclo actual
+                                                        var revisionExistente = cycle.DailyRevisions?
+                                                                                .FirstOrDefault(r => r.Day == d && r.UserId == cycle.Supervisor?.UserId);
+                                                    }
+
+                                                    @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
+                                                    {
+                                                        @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                            @revisionExistente.Status
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        @* Si no existe, mostramos el select para que el usuario pueda capturar *@
+                                                        <select style=" width: 100%; 
+                                                                    height: 100%; 
+                                                                    cursor: pointer; 
+                                                                    appearance: none; 
+                                                                    -webkit-appearance: none; 
+                                                                    -moz-appearance: none; 
+                                                                    border: 1px solid #ccc;
+                                                                    border-radius: 4px;
+                                                                    background-color: #f9f9f9;
+                                                                    text-align: center;
+                                                                    padding: 0;
+                                                                    font-size: 12px;
+                                                                    color: #333;
+                                                                    outline: none;
+                                                                    transition: border-color 0.2s;"
+                                                                    @onchange="@(e => AddCyclesDailyRevision(d, cycle.CycleId, cycle.Supervisor?.UserId ?? 0, e.Value.ToString()))">>
+                                                            <option value=""></option>
+                                                            <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                            <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                            <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                        </select>
+                                                    }
                                                 </div>
                                             }
                                         </td>
@@ -452,6 +507,7 @@
 
     </MudGrid>
 </MudContainer>
+}
 
 <style>
     .bg-light-grey {
@@ -540,38 +596,75 @@
     [Parameter] public int? hriID { get; set; }
     private Dictionary<string, (string ContentType, string Uri)> UploadedImages { get; set; } = new();
     private int NumeroCiclos { get; set; } = 3;
-    private int añoActual = 2026;
-    private int mesActual = 4;
-    private int diasEnMes = 30;
-    private HRI _currentHRI = new HRI();
+    private int añoActual;
+    private int mesActual;
+    private int diasEnMes;
+    private string mesTexto;
+    private GetHRIDto _currentHRI = new GetHRIDto();
 
-    protected async override void OnInitialized()
+    private User user = new();
+    private string json;
+    private List<CreateDailyRevisionDto> ItemsDailyrevisions = new List<CreateDailyRevisionDto>();
+    private List<CreateDailyRevisionDto> HourmeterDailyrevisions = new List<CreateDailyRevisionDto>();
+    private List<CreateDailyRevisionDto> CyclesDailyrevisions = new List<CreateDailyRevisionDto>();
+
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
     {
+        _loading = true;
         if (hriID.HasValue)
         {
             var response = await HRIService.GetHRIById(hriID.Value);
             if (response != null && response.Data != null)
                 _currentHRI = response.Data;
             else
-                _currentHRI = new HRI();
+                _currentHRI = new GetHRIDto();
         }
         else
-            _currentHRI = new HRI();
+            _currentHRI = new GetHRIDto();
+
+        var fechaHoy = DateTime.Now;
+
+        añoActual = fechaHoy.Year;
+        mesActual = fechaHoy.Month;
+        diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
+        mesTexto = fechaHoy.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
 
         // Llenamos el diccionario con las imágenes de la carpeta TempHRI
         for (int i = 1; i <= 9; i++)
         {
             string imageName = $"{i}.png"; // Ajusta la extensión si son .png
             string imageId = Guid.NewGuid().ToString(); // Generamos un ID único como llave
-        
+
             // La Uri debe apuntar a la ruta relativa desde wwwroot para que el navegador la encuentre
             string relativePath = $"Images/TempHRI/{imageName}";
-        
+
             UploadedImages.Add(imageId, ("image/png", relativePath));
         }
+        _loading = false;
     }
 
-    // Función simple para saber si es fin de semana
+    private async Task GetUserAsync()
+    {
+        if (!await TryGetAsync())
+            user = new();
+    }
+
+    private async Task<bool> TryGetAsync()
+    {
+        bool hasProperty = await HasPropertyAsync();
+        if (hasProperty)
+        {
+            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
+            user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        return hasProperty;
+    }
+
+    private async Task<bool> HasPropertyAsync()
+        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
     private bool EsFinDeSemana(int dia) {
         DateTime fecha = new DateTime(añoActual, mesActual, dia);
         return fecha.DayOfWeek == DayOfWeek.Saturday || fecha.DayOfWeek == DayOfWeek.Sunday;
@@ -589,7 +682,7 @@
             "Ok" => "O",   // Cumple
             "NG" => "X",  // No Cumple
             "No aplica" => "N/A",// No Aplica
-            _ => ""      // Reset
+            _ => ""      // Default
         };
 
         StateHasChanged();
@@ -602,4 +695,56 @@
         "N/A" => Color.Default,
         _ => Color.Transparent
     };
+
+    private string GetUserTypeLabel(int userType) => userType switch
+    {
+        1 => "A",
+        2 => "SSV",
+        3 => "S",
+        4 => "O",
+        5 => "M",
+        6 => "LS",
+        7 => "HC",
+        8 => "RTC",
+        _ => "Invalid"
+    };
+
+    private void AddItemDailyRevision(int dia, int cycle, string value)
+    {
+        var revision = new CreateDailyRevisionDto();
+        revision.EntityRelationId = _currentHRI.HriCycles?.FirstOrDefault(c => c.Cycle == cycle)?.CycleId;
+        revision.Day = dia;
+        revision.Month = mesActual;
+        revision.Status = value;
+        revision.UserId = user.UserId;
+        revision.UserType = GetUserTypeLabel(user.UserType);
+
+        ItemsDailyrevisions.Add(revision);
+    }
+
+    private void AddHourmeterDailyRevision(int dia, int relation, string value)
+    {
+        var revision = new CreateDailyRevisionDto();
+        revision.EntityRelationId = relation;
+        revision.Day = dia;
+        revision.Month = mesActual;
+        revision.Status = value;
+        revision.UserId = user.UserId;
+        revision.UserType = GetUserTypeLabel(user.UserType);
+
+        HourmeterDailyrevisions.Add(revision);
+    }
+
+    private void AddCyclesDailyRevision(int dia, int relation, int userId, string value)
+    {
+        var revision = new CreateDailyRevisionDto();
+        revision.EntityRelationId = relation;
+        revision.Day = dia;
+        revision.Month = mesActual;
+        revision.Status = value;
+        revision.UserId = userId;
+        revision.UserType = GetUserTypeLabel(user.UserType);
+
+        CyclesDailyrevisions.Add(revision);
+    }
 }

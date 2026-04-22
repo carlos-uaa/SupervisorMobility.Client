@@ -1,5 +1,6 @@
 ﻿@page "/hri/form"
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIHourmeterRevisionDto
 @using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIImagesDtos
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionItemsDtos
 @using SupervisorMobility.Client.Services.HRIServices;
@@ -508,9 +509,9 @@
                 .OrderBy(x => x.Name)
                 .ToDictionary(x => x.UserId, x => x.Name); *@
             HRISupervisorsUsers = usersResponse
-                .Where(x => x.IsActive == true && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
-                .OrderBy(x => x.Name)
-                .ToDictionary(x => x.UserId, x => x.Name);
+                                .Where(x => x.IsActive == true && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
+                                .OrderBy(x => x.Name)
+                                .ToDictionary(x => x.UserId, x => x.Name);
             HRISSupervisorsUsers = usersResponse
                 .Where(x => x.IsActive == true && x.UserType == 2 && !string.IsNullOrWhiteSpace(x.Name))
                 .OrderBy(x => x.Name)
@@ -623,7 +624,7 @@
                     ImageType = file.ContentType
                 });
             }
-            
+
         }
 
         StateHasChanged();
@@ -660,7 +661,7 @@
                 FrequencyId = x.FrequencyId
             })
             .ToList();
-    
+
         var hriCyclesDto = new List<CreateHRICyclesDto>();
 
         // Save Document Data 
@@ -680,9 +681,11 @@
             HriCycles = hriCycles,
             IsActive = true,
             CreationDate = DateTime.Now,
-            HourmeterRevision = null,
-            SupervisorId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
-            SSVUserId = SelectedSeniorSupervisorId == 0 ? null : SelectedSeniorSupervisorId
+            HourmeterRevision = new CreateHourMeterRevisionDto { IsActive = true },
+            SupervisorUserId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
+            SSVUserId = SelectedSeniorSupervisorId == 0 ? null : SelectedSeniorSupervisorId,
+            PlantId = SelectedPlantId == 0 ? null : SelectedPlantId,
+            AreaId = SelectedAreaId == 0 ? null : SelectedAreaId
         };
         try
         {
@@ -692,7 +695,7 @@
             {
                 Snackbar.Add("Documento HRI creado correctamente. Redirigiendo...", Severity.Success);
                 await Task.Delay(2000);
-                NavigationManager.NavigateTo("/hri/menu");
+                NavigationManager.NavigateTo("/hri/index");
                 return;
             }
 
