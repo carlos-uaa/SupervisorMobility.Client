@@ -224,7 +224,14 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
-                        <MudNumericField @bind-Value="NumeroCiclos" Label="Número de ciclos del documento" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Max="10" />
+                        <MudNumericField T="int"
+                                         @bind-Value="NumeroCiclos"
+                                         @bind-Value:after="BuildCycles"
+                                         Label="Número de ciclos del documento"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         Min="1"
+                                         Max="10" />
                     </MudItem>
                 </MudGrid>
             </MudPaper>
@@ -327,7 +334,7 @@
                                 
                                 <MudSelect 
                                     T="int" 
-                                    @bind-Value="cycle.OperatorId" 
+                                    @bind-Value="cycle.OperatorUserId" 
                                     Label="Operador" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
@@ -343,7 +350,7 @@
                                 
                                 <MudSelect 
                                     T="int" 
-                                    @bind-Value="cycle.SupervisorId" 
+                                    @bind-Value="cycle.SupervisorUserId" 
                                     Label="Supervisor" 
                                     Variant="Variant.Outlined" 
                                     Margin="Margin.Dense" 
@@ -577,12 +584,16 @@
 
     private void BuildCycles()
     {
+        var existingCycles = hriCycles.ToDictionary(x => x.Cycle);
+
         hriCycles = Enumerable.Range(1, NumeroCiclos)
             .Select(x => new CreateHRICyclesDto
             {
                 HriId = 0,
                 Cycle = x,
-                DailyRevisions = new List<DailyRevisions>()
+                OperatorUserId = existingCycles.TryGetValue(x, out var existingCycle) ? existingCycle.OperatorUserId : 0,
+                SupervisorUserId = existingCycles.TryGetValue(x, out existingCycle) ? existingCycle.SupervisorUserId : 0,
+                IsActive = existingCycles.TryGetValue(x, out existingCycle) ? existingCycle.IsActive : true,
             })
             .ToList();
     }
@@ -696,8 +707,6 @@
         disableCreateButton = true;
         StateHasChanged();
 
-        BuildCycles();
-
 
         // Validate Form
 
@@ -714,8 +723,6 @@
                 FrequencyId = x.FrequencyId
             })
             .ToList();
-
-        var hriCyclesDto = new List<CreateHRICyclesDto>();
 
         // Save Document Data 
         var dto = new CreateHRIDto
