@@ -225,13 +225,13 @@
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudNumericField T="int"
-                                         @bind-Value="NumeroCiclos"
-                                         @bind-Value:after="BuildCycles"
-                                         Label="Número de ciclos del documento"
-                                         Variant="Variant.Outlined"
-                                         Margin="Margin.Dense"
-                                         Min="1"
-                                         Max="10" />
+                            @bind-Value="NumeroCiclos"
+                            @bind-Value:after="BuildCycles"
+                            Label="Turnos"
+                            Variant="Variant.Outlined"
+                            Margin="Margin.Dense"
+                            Min="1"
+                            Max="10" />
                     </MudItem>
                 </MudGrid>
             </MudPaper>
@@ -477,7 +477,7 @@
         var revisionMethodsResponse = await HRIRevisionItemsService.GetAllRevisionMethods();
         var frequenciesResponse = await HRIRevisionItemsService.GetAllFrequencies();
         var veredictsResponse = await HRIRevisionItemsService.GetAllVeredicts();
-        var usersResponse = await UsersService.GetUsers(false, false);
+        var usersResponse = await UsersService.GetUsers(true, false);
 
         if (response != null && response.Success && response.Data != null)
         {
@@ -623,21 +623,26 @@
 
         // Filter supervisors based on selected plant and area
         HRISupervisorsUsers = SupervisorsUsers
-            .Where(x => x.PlantId == SelectedPlantId && x.AreaId == SelectedAreaId && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
+            .Where(x => x.PlantId == SelectedPlantId && IsInSelectedArea(x) && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
             .OrderBy(x => x.Name)
             .ToDictionary(x => x.UserId, x => x.Name);
 
         // Filter senior supervisors based on selected plant and area
         HRISSupervisorsUsers = SeniorSupervisorsUsers
-            .Where(x => x.PlantId == SelectedPlantId && x.AreaId == SelectedAreaId && x.UserType == 2 && !string.IsNullOrWhiteSpace(x.Name))
+            .Where(x => x.PlantId == SelectedPlantId && IsInSelectedArea(x) && x.UserType == 2 && !string.IsNullOrWhiteSpace(x.Name))
             .OrderBy(x => x.Name)
             .ToDictionary(x => x.UserId, x => x.Name);
 
         // Filter operators based on selected plant and area
         HRIOperatorsUsers = OperatorsUsers
-            .Where(x => x.PlantId == SelectedPlantId && x.AreaId == SelectedAreaId && x.UserType == 4 && !string.IsNullOrWhiteSpace(x.Name))
+            .Where(x => x.PlantId == SelectedPlantId && IsInSelectedArea(x) && x.UserType == 4 && !string.IsNullOrWhiteSpace(x.Name))
             .OrderBy(x => x.Name)
             .ToDictionary(x => x.UserId, x => x.Name);
+    }
+
+    private bool IsInSelectedArea(User user)
+    {
+        return user.Areas?.Any(a => a.AreaId == SelectedAreaId) ?? false;
     }
 
     private void RemoveRevisionItem(int itemNumber)
