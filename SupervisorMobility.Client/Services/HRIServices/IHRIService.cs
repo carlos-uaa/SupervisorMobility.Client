@@ -13,6 +13,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         Task<ServiceResponse<GetHRIDto>> GetHRIById(int id);
         Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto);
         Task<ServiceResponse<bool>> DeleteHRI(int id);
+        Task<ServiceResponse<List<HRIToTableDto>>> GetHRISoftInfoList();
 
         // Images
         Task<string> SaveImageInTempFolderAsync(IBrowserFile imageFile);

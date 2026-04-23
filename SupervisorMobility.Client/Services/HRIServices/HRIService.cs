@@ -84,6 +84,16 @@ namespace SupervisorMobility.Client.Services.HRIServices
             }
         }
 
+
+        public async Task<ServiceResponse<List<HRIToTableDto>>> GetHRISoftInfoList()
+        {
+            var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HRIToTableDto>>>(
+                "HRI/GetHRISoftInfoList"
+            );
+
+            return response;
+        }
+        
         public async Task<string> SaveImageInTempFolderAsync(IBrowserFile imageFile)
         {
             if (imageFile is null || imageFile.Size == 0 || imageFile.Size > MaxImageUploadBytes)
@@ -105,7 +115,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
             }
 
             var result = await response.Content.ReadFromJsonAsync<ServiceResponse<string>>();
-            if(result is null || !result.Success)
+            if (result is null || !result.Success)
             {
                 return string.Empty;
             }
