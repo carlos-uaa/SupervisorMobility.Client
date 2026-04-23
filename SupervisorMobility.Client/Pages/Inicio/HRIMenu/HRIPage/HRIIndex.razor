@@ -42,7 +42,7 @@
 
         @* DataGrid Principal con Jerarquía *@
         <MudDataGrid Items="@_hriList" 
-                     T="GetHRIDto"
+                     T="HRIToTableDto"
                      Hover="true" 
                      Filterable="true" 
                      QuickFilter="@QuickFilter"
@@ -54,7 +54,7 @@
             
             <Columns>
                 @* Columna de Expansión para ver detalles rápidos *@
-                <HierarchyColumn T="GetHRIDto" InitiallyExpandedFunc="@( (GetHRIDto item) => false )" />
+                <HierarchyColumn T="HRIToTableDto" InitiallyExpandedFunc="@( (HRIToTableDto item) => false )" />
 
                 <PropertyColumn Property="x => x.ControlNumber" Title="Nº Control" />
 
@@ -74,12 +74,12 @@
                     <CellTemplate>
                         <MudStack Row="true" Spacing="1">
                             <MudTooltip Text="Imágenes">
-                                <MudBadge Content="@context.Item.Images?.Count" Color="Color.Info" Overlap="true" Bordered="true">
+                                <MudBadge Content="@context.Item.ImagesCount" Color="Color.Info" Overlap="true" Bordered="true">
                                     <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Size="Size.Small" Color="Color.Default"/>
                                 </MudBadge>
                             </MudTooltip>
                             <MudTooltip Text="Revisiones Semanales">
-                                <MudBadge Content="@context.Item.WeeklyRevisions?.Count" Color="Color.Secondary" Overlap="true" Bordered="true" Class="ml-4">
+                                <MudBadge Content="0" Color="Color.Secondary" Overlap="true" Bordered="true" Class="ml-4">
                                     <MudIcon Icon="@Icons.Material.Filled.DateRange" Size="Size.Small" Color="Color.Default"/>
                                 </MudBadge>
                             </MudTooltip>
@@ -118,14 +118,14 @@
                         <MudTabs Elevation="0" Outlined="false" Color="Color.Primary" Rounded="true">
                             <MudTabPanel Text="Items Revisados" Icon="@Icons.Material.Filled.List">
                                 <MudList T="string" Dense="true">
-                                    @foreach (var rev in context.Item.ItemsRevised ?? new())
+                                    @* @foreach (var rev in context.Item.ItemsRevised ?? new())
                                     {
                                         <MudListItem Text="@rev.RevisionPoint" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" />
-                                    }
+                                    } *@
                                 </MudList>
                             </MudTabPanel>
                             <MudTabPanel Text="Resumen de Ciclos" Icon="@Icons.Material.Filled.Loop">
-                                <MudText Class="pa-4">Oportunidad de agregar algun gráfico para @context.Item.HriCycles?.Count ciclos.</MudText>
+                                @* <MudText Class="pa-4">Oportunidad de agregar algun gráfico para @context.Item.HriCycles?.Count ciclos.</MudText> *@
                             </MudTabPanel>
                         </MudTabs>
                     </MudCardContent>
@@ -133,7 +133,7 @@
             </ChildRowContent>
 
             <PagerContent>
-                <MudDataGridPager T="GetHRIDto" RowsPerPageString="Filas:" />
+                <MudDataGridPager T="HRIToTableDto" RowsPerPageString="Filas:" />
             </PagerContent>
         </MudDataGrid>
     </MudPaper>
@@ -155,13 +155,13 @@
 @code {
     private bool _loading = true;
     private string _searchString = "";
-    private List<GetHRIDto> _hriList = new();
+    private List<HRIToTableDto> _hriList = new();
 
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
         
-        var response = await HRIService.GetAllHRI();
+        var response = await HRIService.GetHRISoftInfoList();
         if (response.Success)
             _hriList = response.Data;
         else
@@ -170,7 +170,7 @@
         _loading = false;
     }
 
-    private Func<GetHRIDto, bool> QuickFilter => x =>
+    private Func<HRIToTableDto, bool> QuickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString)) return true;
         return x.ControlNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
@@ -179,9 +179,9 @@
     };
 
     private void CreateNewHRI() { /* Lógica para abrir diálogo complejo */ }
-    private void EditHRI(GetHRIDto item) { /* Lógica para edición */ }
-    private void ViewHistory(GetHRIDto item) { /* Lógica para ver historial de ciclos */ }
-    private void Revisions(GetHRIDto item) 
+    private void EditHRI(HRIToTableDto item) { /* Lógica para edición */ }
+    private void ViewHistory(HRIToTableDto item) { /* Lógica para ver historial de ciclos */ }
+    private void Revisions(HRIToTableDto item) 
     { 
         // Navigate to revision page
         NavigationManager.NavigateTo($"/hri/revisions/{item.HriId}");
