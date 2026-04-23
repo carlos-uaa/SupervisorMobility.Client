@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos;
+using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos;
 using SupervisorMobility.Client.Data.Entities.Hri;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using static System.Net.WebRequestMethods;
 
 namespace SupervisorMobility.Client.Services.HRIServices
 {
@@ -84,6 +86,30 @@ namespace SupervisorMobility.Client.Services.HRIServices
             }
         }
 
+        public async Task<ServiceResponse<bool>> CreateNewWeeklyRevision(List<CreateWeeklyRevisionDto> weeklyRevisions)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("HRI/CreateNewWeeklyRevision", weeklyRevisions);
+                var result = await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+                return result ?? new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = "Empty response while creating weekly revision."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = $"Exception creating weekly revision: {ex.Message}"
+                };
+            }
+        }
+
 
         public async Task<ServiceResponse<List<HRIToTableDto>>> GetHRISoftInfoList()
         {
@@ -120,6 +146,28 @@ namespace SupervisorMobility.Client.Services.HRIServices
                 return string.Empty;
             }
             return result.Data ?? string.Empty;
+        }
+
+        public async Task<byte[]?> GetImageContentAsync(string path)
+        {
+            try
+            {
+                // Llamada al endpoint con query string
+                var response = await _httpClient.GetAsync($"api/HRIImages/content?path={Uri.EscapeDataString(path)}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Manejo de errores: 404, 400, etc.
+                    return null;
+                }
+
+                // Leer el contenido como byte[]
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

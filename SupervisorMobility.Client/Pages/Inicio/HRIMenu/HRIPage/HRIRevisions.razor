@@ -1,10 +1,15 @@
 ﻿@page "/hri/revisions"
 @page "/hri/revisions/{hriID:int}"
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos
 @using SupervisorMobility.Client.Data.Entities.Dtos.HRIRevisionItemsDtos
 @inject IHRIService HRIService
+@inject IHRIRevisionCyclesService RevisionCyclesService
+@inject IHRIHourmeterRevisionService HourmeterRevisionService
+@inject IHRICyclesService HRICyclesService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
+@inject IDialogService DialogService
 
 @if(!_loading)
 {
@@ -40,15 +45,25 @@
 
                     @* GALERÍA SOLO LECTURA *@
                     <div class="d-flex gap-3 overflow-x-auto py-2 px-1 custom-scrollbar" style="width: 100%; min-height: 160px; align-items: center;">
-                        @foreach (var entry in UploadedImages)
+                        @if(_currentHRI.Images != null && _currentHRI.Images.Count > 0)
                         {
-                            <div class="flex-shrink-0 rounded-lg overflow-hidden mud-elevation-2"
-                                 style="height: 150px; border: 1px solid var(--mud-palette-lines-default);">
-                                <MudImage Src="@entry.Value.Uri"
-                                          Height="150"
-                                          ObjectFit="ObjectFit.Cover"
-                                          Style="width: auto; display: block;"
-                                          Alt="@entry.Key" />
+                            foreach (var entry in _currentHRI.Images)
+                            {
+                                <div class="flex-shrink-0 rounded-lg overflow-hidden mud-elevation-2"
+                                     style="height: 150px; border: 1px solid var(--mud-palette-lines-default);">
+                                    <MudImage Src="@GetImageSrc(entry.ImageUrl)"
+                                              Height="150"
+                                              ObjectFit="ObjectFit.Cover"
+                                              Style="width: auto; display: block;"
+                                              Alt="@entry.ImageType" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column align-center justify-center" style="width: 100%; padding: 40px 0; border: 2px dashed #ccc; border-radius: 8px;">
+                                <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported" Size="Size.Large" Color="Color.Secondary" />
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">No hay imágenes disponibles</MudText>
                             </div>
                         }
                     </div>
@@ -136,9 +151,9 @@
                                             {
                                                 <td rowspan="@NumeroCiclos" class="text-center border-right">@p.ItemId</td>
                                                 <td rowspan="@NumeroCiclos" class="border-right"><b>@p.RevisionPoint</b></td>
-                                                <td rowspan="@NumeroCiclos" class="border-right"><MudText Typo="Typo.caption">@p.Veredict</MudText></td>
+                                                <td rowspan="@NumeroCiclos" class="border-right"><MudText Typo="Typo.caption">@p.Veredict.Description</MudText></td>
                                             }
-                                            <td class="text-center border-right" style="background-color: #fafafa;"><b>@c</b></td>
+                                            <td class="text-center border-right" style="background-color: #fafafa;"><b>@c.Cycle</b></td>
 
                                             @for (int d = 1; d <= diasEnMes; d++)
                                             {
@@ -148,9 +163,10 @@
                                                     {
                                                         <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
                                                             @{
+                                                                int currentDay = d;
                                                                 // Buscamos si existe una revisión para el día "d" en el ciclo actual
                                                                 var revisionExistente = c.DailyRevisions?
-                                                                                        .FirstOrDefault(r => r.Day == d);
+                                                                                        .FirstOrDefault(r => r.Day == currentDay);
                                                             }
 
                                                             @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
@@ -178,7 +194,7 @@
                                                                         color: #333;
                                                                         outline: none;
                                                                         transition: border-color 0.2s;"
-                                                                        @onchange="@(e => AddItemDailyRevision(d, c.RevisionCycleId, e.Value.ToString()))">
+                                                                        @onchange="@(e => AddItemDailyRevision(currentDay, c.RevisionCycleId, e.Value.ToString()))">
                                                                 <option value=""></option>
                                                                 <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
                                                                 <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
@@ -245,9 +261,10 @@
                                         {
                                             <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
                                                 @{
+                                                    int currentDay = d;
                                                     // Buscamos si existe una revisión para el día "d" en el ciclo actual
                                                     var revisionExistente = _currentHRI.HourmeterRevision?.DailyRevisions?
-                                                                            .FirstOrDefault(r => r.Day == d);
+                                                                            .FirstOrDefault(r => r.Day == currentDay);
                                                 }
 
                                                 @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
@@ -275,7 +292,7 @@
                                                                 color: #333;
                                                                 outline: none;
                                                                 transition: border-color 0.2s;"
-                                                                @onchange="@(e => AddHourmeterDailyRevision(d, _currentHRI.HourmeterRevision?.Id ?? 0, e.Value.ToString()))">>
+                                                                @onchange="@(e => AddHourmeterDailyRevision(currentDay, _currentHRI.HourmeterRevision?.Id ?? 0, e.Value.ToString()))">>
                                                         <option value=""></option>
                                                         <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
                                                         <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
@@ -307,9 +324,10 @@
                                             {
                                                 <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
                                                     @{
+                                                        int currentDay = d;
                                                         // Buscamos si existe una revisión para el día "d" en el ciclo actual
                                                         var revisionExistente = cycle.DailyRevisions?
-                                                                                .FirstOrDefault(r => r.Day == d && r.UserId == cycle.Operator?.UserId);
+                                                                                .FirstOrDefault(r => r.Day == currentDay && r.UserId == cycle.Operator?.UserId);
                                                     }
 
                                                     @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
@@ -337,7 +355,7 @@
                                                                     color: #333;
                                                                     outline: none;
                                                                     transition: border-color 0.2s;"
-                                                                    @onchange="@(e => AddCyclesDailyRevision(d, cycle.CycleId, cycle.Operator?.UserId ?? 0, e.Value.ToString()))">
+                                                                    @onchange="@(e => AddCyclesDailyRevision(currentDay, cycle.CycleId, cycle.Operator?.UserId ?? 0, e.Value.ToString()))">
                                                             <option value=""></option>
                                                             <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
                                                             <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
@@ -363,9 +381,10 @@
                                             {
                                                 <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
                                                     @{
+                                                        int currentDay = d;
                                                         // Buscamos si existe una revisión para el día "d" en el ciclo actual
                                                         var revisionExistente = cycle.DailyRevisions?
-                                                                                .FirstOrDefault(r => r.Day == d && r.UserId == cycle.Supervisor?.UserId);
+                                                                                .FirstOrDefault(r => r.Day == currentDay && r.UserId == cycle.Supervisor?.UserId);
                                                     }
 
                                                     @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
@@ -393,7 +412,7 @@
                                                                     color: #333;
                                                                     outline: none;
                                                                     transition: border-color 0.2s;"
-                                                                    @onchange="@(e => AddCyclesDailyRevision(d, cycle.CycleId, cycle.Supervisor?.UserId ?? 0, e.Value.ToString()))">>
+                                                                    @onchange="@(e => AddCyclesDailyRevision(currentDay, cycle.CycleId, cycle.Supervisor?.UserId ?? 0, e.Value.ToString()))">>
                                                             <option value=""></option>
                                                             <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
                                                             <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
@@ -442,7 +461,7 @@
                                     <MudChip Size="Size.Small" Color="Color.Tertiary" Variant="Variant.Text"><b>SSV</b></MudChip>
                                 </td>
                                 <td class="border-right">
-                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">Roberto G. (Planta 2)</MudText>
+                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">@_currentHRI.SSV.Name</MudText>
                                 </td>
 
                                 @{
@@ -456,38 +475,39 @@
                                         }
                                         else
                                         {
-                                            // Calculamos cuántos días hábiles seguidos hay hasta el próximo fin de semana o fin de mes
                                             int inicioBloque = diaCorriente;
                                             int span = 0;
+                
+                                            // Identificamos el número de semana de este bloque
+                                            int numeroSemana = GetWeekOfMonth(inicioBloque);
+
                                             while (diaCorriente <= diasEnMes && !EsFinDeSemana(diaCorriente))
                                             {
                                                 span++;
                                                 diaCorriente++;
                                             }
 
-                                            // Celda combinada para la semana
-                                            <td colspan="@span" class="pa-0">
-                                                <select style=" width: 100%; 
-                                                                height: 100%; 
-                                                                cursor: pointer; 
-                                                                appearance: none; 
-                                                                -webkit-appearance: none; 
-                                                                -moz-appearance: none; 
-                                                                border: 1px solid #ccc;
-                                                                border-radius: 4px;
-                                                                background-color: #f9f9f9;
-                                                                text-align: center;
-                                                                padding: 0;
-                                                                font-size: 12px;
-                                                                color: #333;
-                                                                outline: none;
-                                                                transition: border-color 0.2s;">
-                                                    <option value=""></option>
-                                                    <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                    <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                    <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                </select>
-                                            </td>
+                                            // Buscamos si ya existe una revisión guardada para esta semana
+                                            var revisionExistente = _currentHRI.WeeklyRevisions?
+                                                .FirstOrDefault(w => w.Week == numeroSemana && w.Month == mesActual);
+
+                                            if(revisionExistente != null && revisionExistente?.RevisionId != 0)
+                                            {
+                                                <td colspan="@span" class="pa-0" style="text-align: center;">@revisionExistente.Status</td>
+                                            }
+                                            else
+                                            {
+                                                <td colspan="@span" class="pa-0">
+                                                    <select @onchange="(e) => OnWeeklyStatusChanged(e.Value.ToString(), numeroSemana)"
+                                                            style="width: 100%; height: 100%; border: 1px solid #ccc; text-align: center;">
+                        
+                                                        <option value=""></option>
+                                                        <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                        <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                        <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                    </select>
+                                                </td>                                                    
+                                            }
                                         }
                                     }
                                 }
@@ -501,12 +521,39 @@
         <MudItem xs="12">
             <div class="d-flex justify-end gap-2 mt-2">
                 <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Print">Descargar Excel</MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit">Guardar Cambios</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="SaveChanges">Guardar Cambios</MudButton>
             </div>
         </MudItem>
 
     </MudGrid>
 </MudContainer>
+}
+else
+{
+    <div class="loading-overlay">
+        <div class="loading-content">
+            <div class="logo-container">
+                <MudIcon Icon="@Icons.Material.Filled.SettingsSuggest" Color="Color.Primary" Style="font-size: 5rem;" />
+                <div class="pulse-ring"></div>
+            </div>
+
+            <MudText Typo="Typo.h5" Class="mt-4 fw-bold" Style="color: #444; letter-spacing: 1px;">
+                CARGANDO INFORMACIÓN
+            </MudText>
+            
+            <MudText Typo="Typo.body2" Class="mb-4" Style="color: #888;">
+                Por favor, espera un momento.
+            </MudText>
+
+            <div style="width: 250px;">
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Height="6" Buffer="true" Class="rounded-pill" />
+            </div>
+
+            <MudText Typo="Typo.caption" Class="mt-6" Style="opacity: 0.6; font-family: monospace;">
+                Estatus del sistema: Obteniendo...
+            </MudText>
+        </div>
+    </div>
 }
 
 <style>
@@ -590,6 +637,67 @@
         overflow-x: auto;
         max-width: 100%;
     }
+
+    /* Estilos para el overlay de carga */
+    .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.loading-content {
+    background: white;
+    padding: 3rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.logo-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Animación de anillo pulsante */
+.pulse-ring {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 4px solid var(--mud-palette-primary);
+    border-radius: 50%;
+    animation: pulse-animation 2s infinite;
+}
+
+@@keyframes pulse-animation {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+.fw-bold {
+    font-weight: 700;
+}
 </style>
 
 @code{
@@ -607,12 +715,20 @@
     private List<CreateDailyRevisionDto> ItemsDailyrevisions = new List<CreateDailyRevisionDto>();
     private List<CreateDailyRevisionDto> HourmeterDailyrevisions = new List<CreateDailyRevisionDto>();
     private List<CreateDailyRevisionDto> CyclesDailyrevisions = new List<CreateDailyRevisionDto>();
+    private List<CreateWeeklyRevisionDto> WeeklyRevisions = new List<CreateWeeklyRevisionDto>();
 
     private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
         _loading = true;
+        await GetUserAsync();
+
         if (hriID.HasValue)
         {
             var response = await HRIService.GetHRIById(hriID.Value);
@@ -631,17 +747,6 @@
         diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
         mesTexto = fechaHoy.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
 
-        // Llenamos el diccionario con las imágenes de la carpeta TempHRI
-        for (int i = 1; i <= 9; i++)
-        {
-            string imageName = $"{i}.png"; // Ajusta la extensión si son .png
-            string imageId = Guid.NewGuid().ToString(); // Generamos un ID único como llave
-
-            // La Uri debe apuntar a la ruta relativa desde wwwroot para que el navegador la encuentre
-            string relativePath = $"Images/TempHRI/{imageName}";
-
-            UploadedImages.Add(imageId, ("image/png", relativePath));
-        }
         _loading = false;
     }
 
@@ -664,6 +769,20 @@
 
     private async Task<bool> HasPropertyAsync()
         => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
+
+    private string GetImageSrc(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var apiBase = "https://localhost:10201/";
+        
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var encoded = Uri.EscapeDataString(url);
+        return $"{apiBase}api/HRImages/content?path={encoded}";
+    }
 
     private bool EsFinDeSemana(int dia) {
         DateTime fecha = new DateTime(añoActual, mesActual, dia);
@@ -712,7 +831,7 @@
     private void AddItemDailyRevision(int dia, int cycle, string value)
     {
         var revision = new CreateDailyRevisionDto();
-        revision.EntityRelationId = _currentHRI.HriCycles?.FirstOrDefault(c => c.Cycle == cycle)?.CycleId;
+        revision.EntityRelationId = cycle;
         revision.Day = dia;
         revision.Month = mesActual;
         revision.Status = value;
@@ -746,5 +865,138 @@
         revision.UserType = GetUserTypeLabel(user.UserType);
 
         CyclesDailyrevisions.Add(revision);
+    }
+
+    private void OnWeeklyStatusChanged(string value, int weekNumber)
+    {
+        // Buscamos si ya existe este cambio en nuestra lista temporal de "pendientes por guardar"
+        var existingChange = WeeklyRevisions.FirstOrDefault(x => x.Week == weekNumber);
+
+        if (string.IsNullOrEmpty(value))
+        {
+            if (existingChange != null) WeeklyRevisions.Remove(existingChange);
+            return;
+        }
+
+        if (existingChange != null)
+        {
+            // Si el DTO no tiene propiedad Status, asegúrate de agregarla 
+            // o mapearla a IsActive según tu lógica de negocio
+            // existingChange.Status = newValue; 
+        }
+        else
+        {
+            WeeklyRevisions.Add(new CreateWeeklyRevisionDto
+            {
+                HriId = _currentHRI.HriId,
+                UserId = user.UserId,
+                Month = mesActual,
+                Week = weekNumber,
+                IsActive = true,
+                Status = value
+            });
+        }
+    }
+
+    private int GetWeekOfMonth(int day)
+    {
+        DateTime date = new DateTime(añoActual, mesActual, day);
+        // Lógica simple: (Día + (Día del primer día del mes - 1)) / 7 + 1
+        return (day + (int)new DateTime(date.Year, date.Month, 1).DayOfWeek - 1) / 7 + 1;
+    }
+
+    private bool ValidateSave() => ItemsDailyrevisions.Any() || HourmeterDailyrevisions.Any() || CyclesDailyrevisions.Any() || WeeklyRevisions.Any();
+
+    private async Task SaveChanges()
+    {
+        if (!ValidateSave())
+        {
+            Snackbar.Add("No hay cambios para guardar.", Severity.Warning);
+            return;
+        }
+
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Guardar Cambios" },
+                { "ContentText", "¿Estás seguro de que deseas guardar las revisiones realizadas?" },
+                { "ButtonText", "Guardar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.Save },
+                { "IconColor", Color.Tertiary }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Guardar Cambios", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) return;
+
+        // Enviar las revisiones de Items al backend
+        if (ItemsDailyrevisions.Any())
+        {
+            foreach (var revision in ItemsDailyrevisions)
+            {
+                var response = await RevisionCyclesService.CreateNewDailyRevision(revision);
+                if (!response.Success)
+                {
+                    Snackbar.Add($"Error al guardar revisión del día {revision.Day} para el ciclo: {response.Message}", Severity.Error);
+                    return;
+                }
+            }
+
+            Snackbar.Add("Se guardaron correctamente las revisiones para los items revisados", Severity.Success);
+            StateHasChanged();
+        }
+
+        // Enviar las revisiones de Horómetro al backend
+        if(HourmeterDailyrevisions.Any())
+        {
+            foreach (var revision in HourmeterDailyrevisions)
+            {
+                var response = await HourmeterRevisionService.AddDailyRevisionToHourmeterRevision(revision);
+                if (!response.Success)
+                {
+                    Snackbar.Add($"Error al guardar revisión del día {revision.Day} para el horómetro: {response.Message}", Severity.Error);
+                    return;
+                }
+            }
+
+            Snackbar.Add("Se guardaron correctamente las revisiones para el Horómetro", Severity.Success);
+            StateHasChanged();
+        }
+
+        // Enviar las revisiones de Cycles al backend
+        if(CyclesDailyrevisions.Any())
+        {
+            foreach (var revision in CyclesDailyrevisions)
+            {
+                var response = await HRICyclesService.CreateNewDailyRevision(revision);
+                if (!response.Success)
+                {
+                    Snackbar.Add($"Error al guardar revisión del día {revision.Day} para el ciclo: {response.Message}", Severity.Error);
+                    return;
+                }
+            }
+
+            Snackbar.Add("Se guardaron correctamente las revisiones para los usuarios en turno", Severity.Success);
+            StateHasChanged();
+        }
+
+        // Enviar las revisiones semanales al backend
+        if(WeeklyRevisions.Any())
+        {
+            var response = await HRIService.CreateNewWeeklyRevision(WeeklyRevisions);
+            if (!response.Success)
+            {
+                Snackbar.Add($"Error al guardar las revisiones semanales: {response.Message}", Severity.Error);
+                return;
+            }
+
+            Snackbar.Add("Se guardaron correctamente las revisiones semanales", Severity.Success);
+            StateHasChanged();
+        }
+
+        await LoadData();
     }
 }

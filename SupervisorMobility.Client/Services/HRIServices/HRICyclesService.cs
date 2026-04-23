@@ -1,5 +1,6 @@
 ﻿using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRICyclesDtos;
+using SupervisorMobility.Client.Data.Entities.Dtos.HRIRevisionItemsDtos;
 using System.Net.Http.Json;
 
 namespace SupervisorMobility.Client.Services.HRIServices
@@ -65,6 +66,24 @@ namespace SupervisorMobility.Client.Services.HRIServices
             }
         }
 
+        public async Task<ServiceResponse<bool>> CreateNewDailyRevision(CreateDailyRevisionDto createDaily)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync("HRICycles/CreateNewDailyRevision", createDaily);
+                return await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Message = $"An error occurred: {ex.Message}",
+                    Data = false
+                };
+            }
+        }
+
         public async Task<ServiceResponse<bool>> DeleteHRICycle(int id)
         {
             try
@@ -82,6 +101,5 @@ namespace SupervisorMobility.Client.Services.HRIServices
                 };
             }
         }
-
     }
 }

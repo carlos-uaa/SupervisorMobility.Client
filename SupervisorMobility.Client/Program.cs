@@ -151,6 +151,8 @@ builder.Services.AddScoped<IHRIRevisionItemsService, HRIRevisionItemsService>();
 builder.Services.AddScoped<IHRICyclesService, HRICyclesService>();
 builder.Services.AddScoped<IUserCoursesService, UserCoursesService>();
 builder.Services.AddScoped<IHRIService, HRIService>();
+builder.Services.AddScoped<IHRIRevisionCyclesService, HRIRevisionCyclesService>();
+builder.Services.AddScoped<IHRIHourmeterRevisionService, HRIHourmeterRevisionService>();
 
 //For testing video uploads
 builder.Services.AddScoped<ITestService, TestService>();
