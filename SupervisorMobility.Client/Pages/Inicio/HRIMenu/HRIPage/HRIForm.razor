@@ -770,8 +770,19 @@
         disableCreateButton = true;
         StateHasChanged();
 
-
         // Validate Form
+        var validationErrors = ValidateForm();
+        if (validationErrors.Any())
+        {
+            foreach (var error in validationErrors)
+            {
+                Snackbar.Add(error, Severity.Warning);
+            }
+
+            disableCreateButton = false;
+            StateHasChanged();
+            return;
+        }
 
 
         var itemsRevised = hriRevisionItems
@@ -833,5 +844,62 @@
             disableCreateButton = false;
             StateHasChanged();
         }
+    }
+
+    private List<string> ValidateForm()
+    {
+        var errors = new List<string>();
+
+        if (SelectedHRIItemId == 0) errors.Add("Debe seleccionar un item.");
+        if (SelectedHRILineId == 0) errors.Add("Debe seleccionar una linea.");
+        if (SelectedHRIDockId == 0) errors.Add("Debe seleccionar un dock.");
+        if (SelectedPlantId == 0) errors.Add("Debe seleccionar una planta.");
+        if (SelectedAreaId == 0) errors.Add("Debe seleccionar un area.");
+        if (SelectedDepartmentId == 0) errors.Add("Debe seleccionar un departamento.");
+        if (SelectedSupervisorId == 0) errors.Add("Debe seleccionar un supervisor principal.");
+        if (SelectedSeniorSupervisorId == 0) errors.Add("Debe seleccionar un Senior Supervisor (SSV).");
+        if (string.IsNullOrWhiteSpace(controlNumber)) errors.Add("El numero de control es obligatorio.");
+
+        if (!UploadedImages.Any() && !ImagesToSave.Any())
+        {
+            errors.Add("Debe cargar al menos una imagen de evidencia.");
+        }
+
+        if (hriRevisionItems.Count == 0)
+        {
+            errors.Add("Debe agregar al menos un punto de revision.");
+        }
+        else
+        {
+            var hasInvalidRevisionPoint = hriRevisionItems.Any(x => string.IsNullOrWhiteSpace(x.RevisionPoint));
+            var hasInvalidMethod = hriRevisionItems.Any(x => !x.RevisionMethodId.HasValue);
+            var hasInvalidVeredict = hriRevisionItems.Any(x => !x.VeredictId.HasValue);
+            var hasInvalidFrequency = hriRevisionItems.Any(x => !x.FrequencyId.HasValue);
+
+            if (hasInvalidRevisionPoint) errors.Add("Todos los puntos de revision deben tener descripcion.");
+            if (hasInvalidMethod) errors.Add("Todos los puntos de revision deben tener metodo de revision.");
+            if (hasInvalidVeredict) errors.Add("Todos los puntos de revision deben tener criterio.");
+            if (hasInvalidFrequency) errors.Add("Todos los puntos de revision deben tener frecuencia.");
+        }
+
+        if (NumeroCiclos <= 0)
+        {
+            errors.Add("El numero de turnos debe ser mayor a cero.");
+        }
+
+        if (hriCycles.Count == 0)
+        {
+            errors.Add("Debe existir al menos un turno configurado.");
+        }
+        else
+        {
+            var hasCycleWithoutOperator = hriCycles.Any(x => x.OperatorUserId == 0);
+            var hasCycleWithoutSupervisor = hriCycles.Any(x => x.SupervisorUserId == 0);
+
+            if (hasCycleWithoutOperator) errors.Add("Todos los turnos deben tener operador asignado.");
+            if (hasCycleWithoutSupervisor) errors.Add("Todos los turnos deben tener supervisor asignado.");
+        }
+
+        return errors;
     }
 }
