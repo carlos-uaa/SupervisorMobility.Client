@@ -2,10 +2,13 @@
 {
     public class UpdateHRIRevisionItemDto
     {
+        public int ItemId { get; set; }
+        public int HriId { get; set; }
         public int ItemNumber { get; set; }
         public string RevisionPoint { get; set; }
-        public int? RevisionMethodId { get; set; }
+        public int? RevisionMethodId { get; set; } 
         public int? VeredictId { get; set; }
         public int? FrequencyId { get; set; }
+        public bool delete { get; set; } = false;
     }
 }
