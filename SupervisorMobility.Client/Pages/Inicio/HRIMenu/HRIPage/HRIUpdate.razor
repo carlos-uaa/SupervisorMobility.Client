@@ -161,76 +161,88 @@
 
                     <MudItem xs="12" md="2">
                         <MudSelect T="int"
-                                   Label="Dock Asignado"
-                                   Variant="Variant.Outlined"
-                                   Margin="Margin.Dense"
-                                   AnchorOrigin="Origin.BottomCenter"
-                                   @bind-Value="SelectedHRIDockId">
+                            Label="Dock Asignado"
+                            Variant="Variant.Outlined"
+                            Margin="Margin.Dense"
+                            AnchorOrigin="Origin.BottomCenter"
+                            @bind-Value="SelectedHRIDockId">
+
                             <MudSelectItem Value="0" Disabled>Seleccione un dock...</MudSelectItem>
                             @foreach (var dock in HRIDocks)
                             {
                                 <MudSelectItem Value="@dock.Key">@dock.Value</MudSelectItem>
                             }
+
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudSelect T="int"
-                                   Label="Planta"
-                                   Variant="Variant.Outlined"
-                                   Margin="Margin.Dense"
-                                   AnchorOrigin="Origin.BottomCenter"
-                                   Value="SelectedPlantId"
-                                   ValueChanged="OnPlantChanged">
+                            Label="Planta"
+                            Variant="Variant.Outlined"
+                            Margin="Margin.Dense"
+                            AnchorOrigin="Origin.BottomCenter"
+                            Value="SelectedPlantId"
+                            ValueChanged="OnPlantChanged"
+                            ReadOnly="true">
+
                             <MudSelectItem Value="0" Disabled>Seleccione una planta...</MudSelectItem>
                             @foreach (var plant in HRIPlants)
                             {
                                 <MudSelectItem Value="@plant.Key">@plant.Value</MudSelectItem>
                             }
+
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudSelect T="int"
-                                   Label="Área"
-                                   Variant="Variant.Outlined"
-                                   Margin="Margin.Dense"
-                                   AnchorOrigin="Origin.BottomCenter"
-                                   Value="SelectedAreaId"
-                                   Disabled="@(SelectedPlantId == 0)"
-                                   ValueChanged="OnAreaChanged">
+                            Label="Área"
+                            Variant="Variant.Outlined"
+                            Margin="Margin.Dense"
+                            AnchorOrigin="Origin.BottomCenter"
+                            Value="SelectedAreaId"
+                            Disabled="@(SelectedPlantId == 0)"
+                            ValueChanged="OnAreaChanged"
+                            ReadOnly="true">
+
                             <MudSelectItem Value="0" Disabled>Seleccione un área...</MudSelectItem>
                             @foreach (var area in HRIAreas)
                             {
                                 <MudSelectItem Value="@area.Key">@area.Value</MudSelectItem>
                             }
+
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudSelect T="int"
-                                   Label="Departamento"
-                                   Variant="Variant.Outlined"
-                                   Margin="Margin.Dense"
-                                   AnchorOrigin="Origin.BottomCenter"
-                                   @bind-Value="SelectedDepartmentId">
+                            Label="Departamento"
+                            Variant="Variant.Outlined"
+                            Margin="Margin.Dense"
+                            AnchorOrigin="Origin.BottomCenter"
+                            @bind-Value="SelectedDepartmentId">
+
                             <MudSelectItem Value="0" Disabled>Seleccione un departamento...</MudSelectItem>
                             @foreach (var department in HRIDepartments)
                             {
                                 <MudSelectItem Value="@department.Key">@department.Value</MudSelectItem>
                             }
+
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
                         <MudSelect T="int"
-                                   Label="Supervisor"
-                                   Variant="Variant.Outlined"
-                                   Margin="Margin.Dense"
-                                   AnchorOrigin="Origin.BottomCenter"
-                                   Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)"
-                                   @bind-Value="SelectedSupervisorId">
+                            Label="Supervisor"
+                            Variant="Variant.Outlined"
+                            Margin="Margin.Dense"
+                            AnchorOrigin="Origin.BottomCenter"
+                            Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)"
+                            @bind-Value="SelectedSupervisorId">
+
                             <MudSelectItem Value="0" Disabled>Seleccione un supervisor...</MudSelectItem>
-                            @foreach (var user in HRISupervisorsUsers)
+                            @foreach (var user in HRISSupervisorsUsers)
                             {
                                 <MudSelectItem Value="@user.Key">@user.Value</MudSelectItem>
                             }
+
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" md="2">
@@ -274,6 +286,10 @@
                     <tbody>
                         @foreach (var item in hriRevisionItems)
                         {
+                            if(item.delete)
+                            {
+                                continue;
+                            }
                             <tr>
                                 <td class="text-center">
                                     <MudChip Size="Size.Small" Variant="Variant.Text" Color="Color.Default">@item.ItemNumber</MudChip>
@@ -407,8 +423,8 @@
             <MudSpacer />
             <div class="d-flex justify-end gap-2 mt-2">
                 <MudButton Variant="Variant.Text" Color="Color.Error">Cancelar</MudButton>
-                <MudButton OnClick="SaveDocument" Disabled="@disableCreateButton" StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Color="Color.Primary">
-                    Crear Documento
+                <MudButton OnClick="UpdateDocument" Disabled="@disableUpdateButton" StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Color="Color.Primary">
+                    Actualizar Documento
                 </MudButton>
             </div>
         </MudItem>
@@ -457,7 +473,7 @@
     private int SelectedSeniorSupervisorId { get; set; }
     private string controlNumber { get; set; } = "MT-28";
 
-    private  List<CreateHRIRevisionItemDto> hriRevisionItems { get; set; } = new();
+    private  List<UpdateHRIRevisionItemDto> hriRevisionItems { get; set; } = new();
     private List<CreateHRICyclesDto> hriCycles { get; set; } = new();
 
     private List<User> SupervisorsUsers { get; set; } = new();
@@ -478,7 +494,7 @@
     private Dictionary<int, string> HRISSupervisorsUsers { get; set; } = new();
     private Dictionary<int, string> HRIOperatorsUsers { get; set; } = new();
     private List<CreateHRImageDto> ImagesToSave { get; set; } = new();
-    private bool disableCreateButton = false;
+    private bool disableUpdateButton = false;
     private bool _isLoadingForm = true;
 
     protected override async Task OnInitializedAsync()
@@ -646,8 +662,9 @@
 
         hriRevisionItems = (hri.ItemsRevised ?? new List<GetHRIRevisionItemDto>())
             .OrderBy(x => x.ItemNumber)
-            .Select(x => new CreateHRIRevisionItemDto
+            .Select(x => new UpdateHRIRevisionItemDto
             {
+                ItemId = x.ItemId,
                 HriId = hri.HriId,
                 ItemNumber = x.ItemNumber,
                 RevisionPoint = x.RevisionPoint ?? string.Empty,
@@ -684,9 +701,10 @@
     private void AddRevisionItem()
     {
         var nextItemNumber = hriRevisionItems.Count == 0 ? 1 : hriRevisionItems.Max(x => x.ItemNumber) + 1;
-        hriRevisionItems.Add(new CreateHRIRevisionItemDto
+        hriRevisionItems.Add(new UpdateHRIRevisionItemDto
         {
-            HriId = 0,
+            ItemId = 0,
+            HriId = hriID,
             ItemNumber = nextItemNumber,
             RevisionPoint = string.Empty,
             RevisionMethodId = (int?)null,
@@ -771,11 +789,16 @@
             return;
         }
 
-        hriRevisionItems.Remove(item);
+        @* hriRevisionItems.Remove(item); *@
+        item.delete = true;
 
         var counter = 1;
         foreach (var revisionItem in hriRevisionItems.OrderBy(x => x.ItemNumber))
         {
+            if(revisionItem.delete)
+            {
+                continue;
+            }
             revisionItem.ItemNumber = counter;
             counter++;
         }
@@ -826,72 +849,82 @@
         }
     }
 
-    private async Task SaveDocument()
+    private async Task UpdateDocument()
     {
-        disableCreateButton = true;
+        disableUpdateButton = true;
         StateHasChanged();
 
 
         // Validate Form
+        var validationErrors = ValidateForm();
+        if (validationErrors.Any())
+        {
+            foreach (var error in validationErrors)
+            {
+                Snackbar.Add(error, Severity.Warning);
+            }
+
+            disableUpdateButton = false;
+            StateHasChanged();
+            return;
+        }
 
 
         var itemsRevised = hriRevisionItems
             .Where(x => !string.IsNullOrWhiteSpace(x.RevisionPoint))
-            .Select(x => new CreateHRIRevisionItemDto
+            .Select(x => new UpdateHRIRevisionItemDto
             {
-                HriId = 0,
+                ItemId = x.ItemId,
+                HriId = hriID,
                 ItemNumber = x.ItemNumber,
                 RevisionPoint = x.RevisionPoint,
                 RevisionMethodId = x.RevisionMethodId,
                 VeredictId = x.VeredictId,
-                FrequencyId = x.FrequencyId
+                FrequencyId = x.FrequencyId,
+                delete = x.delete
             })
             .ToList();
 
         // Save Document Data 
-        var dto = new CreateHRIDto
+        var dto = new UpdateHRIDto
         {
             HRILinesId = SelectedHRILineId == 0 ? null : SelectedHRILineId,
-            Line = null,
             HRIItemId = SelectedHRIItemId == 0 ? null : SelectedHRIItemId,
-            NameOfItem = null,
             ControlNumber = controlNumber,
             HRIDockId = SelectedHRIDockId == 0 ? null : SelectedHRIDockId,
-            Dock = null,
             Department = SelectedDepartmentId == 0 ? null : HRIDepartments.GetValueOrDefault(SelectedDepartmentId),
-            Images = ImagesToSave,
-            ItemsRevised = itemsRevised,
+            SupervisorUserId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
+            SSVUserId = SelectedSeniorSupervisorId == 0 ? null : SelectedSeniorSupervisorId,
+            ItemsRevised = itemsRevised
+
+            @* Images = ImagesToSave,        
             WeeklyRevisions = null,
             HriCycles = hriCycles,
             IsActive = true,
             CreationDate = DateTime.Now,
-            HourmeterRevision = new CreateHourMeterRevisionDto { IsActive = true },
-            SupervisorUserId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
-            SSVUserId = SelectedSeniorSupervisorId == 0 ? null : SelectedSeniorSupervisorId,
-            PlantId = SelectedPlantId == 0 ? null : SelectedPlantId,
-            AreaId = SelectedAreaId == 0 ? null : SelectedAreaId
+            HourmeterRevision = new CreateHourMeterRevisionDto { IsActive = true }, *@
         };
         try
         {
-            var response = await HRIService.CreateHRI(dto);
+            var response = await HRIService.UpdateHRI(hriID, dto);
 
             if (response != null && response.Success)
             {
-                Snackbar.Add("Documento HRI creado correctamente. Redirigiendo...", Severity.Success);
+                Snackbar.Add("Documento HRI actualizado correctamente. Redirigiendo...", Severity.Success);
                 await Task.Delay(2000);
                 NavigationManager.NavigateTo("/hri/index");
                 return;
             }
 
-            Snackbar.Add($"No se pudo crear el documento: {response?.Message ?? "Sin respuesta del servidor."}", Severity.Error);
+            Snackbar.Add($"No se pudo actualizar el documento: {response?.Message ?? "Sin respuesta del servidor."}", Severity.Error);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error al crear el documento: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error al actualizar el documento: {ex.Message}", Severity.Error);
         }
         finally
         {
-            disableCreateButton = false;
+            disableUpdateButton = false;
             StateHasChanged();
         }
     }
@@ -908,5 +941,63 @@
 
         var encoded = Uri.EscapeDataString(url);
         return $"{apiBase}api/HRImages/content?path={encoded}";
+    }
+
+
+    private List<string> ValidateForm()
+    {
+        var errors = new List<string>();
+
+        if (SelectedHRIItemId == 0) errors.Add("Debe seleccionar un item.");
+        if (SelectedHRILineId == 0) errors.Add("Debe seleccionar una linea.");
+        if (SelectedHRIDockId == 0) errors.Add("Debe seleccionar un dock.");
+        if (SelectedPlantId == 0) errors.Add("Debe seleccionar una planta.");
+        if (SelectedAreaId == 0) errors.Add("Debe seleccionar un area.");
+        if (SelectedDepartmentId == 0) errors.Add("Debe seleccionar un departamento.");
+        if (SelectedSupervisorId == 0) errors.Add("Debe seleccionar un supervisor principal.");
+        if (SelectedSeniorSupervisorId == 0) errors.Add("Debe seleccionar un Senior Supervisor (SSV).");
+        if (string.IsNullOrWhiteSpace(controlNumber)) errors.Add("El numero de control es obligatorio.");
+
+        if (!UploadedImages.Any() && !ImagesToSave.Any())
+        {
+            errors.Add("Debe cargar al menos una imagen de evidencia.");
+        }
+
+        if (hriRevisionItems.Count == 0)
+        {
+            errors.Add("Debe agregar al menos un punto de revision.");
+        }
+        else
+        {
+            var hasInvalidRevisionPoint = hriRevisionItems.Any(x => string.IsNullOrWhiteSpace(x.RevisionPoint));
+            var hasInvalidMethod = hriRevisionItems.Any(x => !x.RevisionMethodId.HasValue);
+            var hasInvalidVeredict = hriRevisionItems.Any(x => !x.VeredictId.HasValue);
+            var hasInvalidFrequency = hriRevisionItems.Any(x => !x.FrequencyId.HasValue);
+
+            if (hasInvalidRevisionPoint) errors.Add("Todos los puntos de revision deben tener descripcion.");
+            if (hasInvalidMethod) errors.Add("Todos los puntos de revision deben tener metodo de revision.");
+            if (hasInvalidVeredict) errors.Add("Todos los puntos de revision deben tener criterio.");
+            if (hasInvalidFrequency) errors.Add("Todos los puntos de revision deben tener frecuencia.");
+        }
+
+        if (NumeroCiclos <= 0)
+        {
+            errors.Add("El numero de turnos debe ser mayor a cero.");
+        }
+
+        if (hriCycles.Count == 0)
+        {
+            errors.Add("Debe existir al menos un turno configurado.");
+        }
+        else
+        {
+            var hasCycleWithoutOperator = hriCycles.Any(x => x.OperatorUserId == 0);
+            var hasCycleWithoutSupervisor = hriCycles.Any(x => x.SupervisorUserId == 0);
+
+            if (hasCycleWithoutOperator) errors.Add("Todos los turnos deben tener operador asignado.");
+            if (hasCycleWithoutSupervisor) errors.Add("Todos los turnos deben tener supervisor asignado.");
+        }
+
+        return errors;
     }
 }
