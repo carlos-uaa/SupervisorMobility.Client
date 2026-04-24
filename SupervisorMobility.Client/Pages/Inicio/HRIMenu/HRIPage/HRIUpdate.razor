@@ -351,6 +351,10 @@
                 <MudGrid Spacing="3" Class="mb-6">
                     @foreach (var cycle in hriCycles)
                     {
+                        if(cycle.delete)
+                        {
+                            continue;
+                        }
                         <MudItem xs="12" sm="6" md="4">
                             <MudPaper Elevation="0" Outlined="true" Class="pa-4 bg-light-grey rounded-lg" Style="border-style: dashed; border-color: var(--mud-palette-lines-default);">
                                 <div class="d-flex align-center mb-3">
@@ -459,7 +463,7 @@
     }
 </style>
 
-@code {
+    @code {
     [Parameter] public int hriID { get; set; }
 
     private int NumeroCiclos { get; set; } = 3; 
@@ -474,7 +478,7 @@
     private string controlNumber { get; set; } = "MT-28";
 
     private  List<UpdateHRIRevisionItemDto> hriRevisionItems { get; set; } = new();
-    private List<CreateHRICyclesDto> hriCycles { get; set; } = new();
+    private List<UpdateHRICycleDto> hriCycles { get; set; } = new();
 
     private List<User> SupervisorsUsers { get; set; } = new();
     private List<User> SeniorSupervisorsUsers { get; set; } = new();
@@ -613,7 +617,7 @@
         SelectedHRILineId = hri.HRILinesId ?? 0;
         SelectedHRIDockId = hri.HRIDockId ?? 0;
         SelectedPlantId = hri.PlantId ?? 0;
-            
+
         SelectedSupervisorId = hri.SupervisorUserId ?? 0;
         SelectedSeniorSupervisorId = hri.SSVUserId ?? 0;
         controlNumber = hri.ControlNumber ?? string.Empty;
@@ -681,8 +685,9 @@
 
         hriCycles = (hri.HriCycles ?? new List<GetHRICyclesDto>())
             .OrderBy(x => x.Cycle)
-            .Select(x => new CreateHRICyclesDto
+            .Select(x => new UpdateHRICycleDto
             {
+                CycleId = x.CycleId,
                 HriId = hri.HriId,
                 Cycle = x.Cycle,
                 OperatorUserId = x.OperatorUserId ?? 0,
@@ -715,18 +720,41 @@
 
     private void BuildCycles()
     {
-        var existingCycles = hriCycles.ToDictionary(x => x.Cycle);
+        // var existingCycles = hriCycles.ToDictionary(x => x.Cycle);
 
-        hriCycles = Enumerable.Range(1, NumeroCiclos)
-            .Select(x => new CreateHRICyclesDto
+        foreach(var cycle in hriCycles)
+        {
+            if(cycle.delete) continue;
+            if(cycle.Cycle > NumeroCiclos)
             {
-                HriId = 0,
-                Cycle = x,
-                OperatorUserId = existingCycles.TryGetValue(x, out var existingCycle) ? existingCycle.OperatorUserId : 0,
-                SupervisorUserId = existingCycles.TryGetValue(x, out existingCycle) ? existingCycle.SupervisorUserId : 0,
-                IsActive = existingCycles.TryGetValue(x, out existingCycle) ? existingCycle.IsActive : true,
-            })
-            .ToList();
+                cycle.delete = true;
+            }
+        }
+        var aux = hriCycles.Where(x => x.delete == false).ToList();
+        var count = aux.Count;
+        if(NumeroCiclos > count)
+        {
+            for(int i = count + 1; i <= NumeroCiclos; i++)
+            {
+                var x = hriCycles.Where(x => x.Cycle == i && x.OperatorUserId != 0 && x.SupervisorUserId != 0).ToList();
+                var ope = 0;
+                var sup = 0;
+                if(x.Count > 0)
+                {
+                    ope = x[0].OperatorUserId;
+                    sup = x[0].SupervisorUserId;
+                }
+                hriCycles.Add(new UpdateHRICycleDto
+                {
+                    CycleId = 0,
+                    HriId = hriID,
+                    Cycle = i,
+                    OperatorUserId = ope,
+                    SupervisorUserId = sup,
+                    IsActive = true
+                });
+            }
+        }
     }
 
     private async Task OnPlantChanged(int plantId)
@@ -895,11 +923,10 @@
             Department = SelectedDepartmentId == 0 ? null : HRIDepartments.GetValueOrDefault(SelectedDepartmentId),
             SupervisorUserId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
             SSVUserId = SelectedSeniorSupervisorId == 0 ? null : SelectedSeniorSupervisorId,
-            ItemsRevised = itemsRevised
-
-            @* Images = ImagesToSave,        
-            WeeklyRevisions = null,
+            ItemsRevised = itemsRevised,
             HriCycles = hriCycles,
+
+            @* Images = ImagesToSave,
             IsActive = true,
             CreationDate = DateTime.Now,
             HourmeterRevision = new CreateHourMeterRevisionDto { IsActive = true }, *@
@@ -991,8 +1018,14 @@
         }
         else
         {
-            var hasCycleWithoutOperator = hriCycles.Any(x => x.OperatorUserId == 0);
-            var hasCycleWithoutSupervisor = hriCycles.Any(x => x.SupervisorUserId == 0);
+            var hasCycleWithoutOperator = hriCycles.Any(x => {
+                if(x.delete) return false;
+                return x.OperatorUserId == 0;
+            });
+            var hasCycleWithoutSupervisor = hriCycles.Any(x =>{
+                if(x.delete) return false;
+                 return x.SupervisorUserId == 0;
+            });
 
             if (hasCycleWithoutOperator) errors.Add("Todos los turnos deben tener operador asignado.");
             if (hasCycleWithoutSupervisor) errors.Add("Todos los turnos deben tener supervisor asignado.");
