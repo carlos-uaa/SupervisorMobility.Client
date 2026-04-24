@@ -110,7 +110,6 @@ namespace SupervisorMobility.Client.Services.HRIServices
             }
         }
 
-
         public async Task<ServiceResponse<List<HRIToTableDto>>> GetHRISoftInfoList()
         {
             var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HRIToTableDto>>>(
@@ -118,6 +117,30 @@ namespace SupervisorMobility.Client.Services.HRIServices
             );
 
             return response;
+        }
+
+        public async Task<ServiceResponse<bool>> UpdateHRI(int HriId, UpdateHRIDto dto)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"HRI/UpdateHRI/{HriId}", dto);
+                var result = await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+                return result ?? new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = "Empty response while updating HRI."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = $"Exception updating HRI: {ex.Message}"
+                };
+            }
         }
         
         public async Task<string> SaveImageInTempFolderAsync(IBrowserFile imageFile)
