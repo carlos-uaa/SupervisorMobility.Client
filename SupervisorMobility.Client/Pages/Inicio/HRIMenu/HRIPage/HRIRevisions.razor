@@ -172,7 +172,8 @@
                                                             @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
                                                             {
                                                                 @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
-                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"
+                                                                     class="@(c.Cycle != loggedTurn ? "cell-disabled-no-user" : "")">
                                                                     @revisionExistente.Status
                                                                 </div>
                                                             }
@@ -194,7 +195,9 @@
                                                                         color: #333;
                                                                         outline: none;
                                                                         transition: border-color 0.2s;"
-                                                                        @onchange="@(e => AddItemDailyRevision(currentDay, c.RevisionCycleId, e.Value.ToString()))">
+                                                                        @onchange="@(e => AddItemDailyRevision(currentDay, c.RevisionCycleId, e.Value.ToString()))"
+                                                                        disabled="@(c.Cycle != loggedTurn)"
+                                                                        class="@(c.Cycle != loggedTurn ? "cell-disabled-no-user" : "")">
                                                                 <option value=""></option>
                                                                 <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
                                                                 <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
@@ -333,7 +336,8 @@
                                                     @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
                                                     {
                                                         @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
-                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"
+                                                             class="@(cycle.Cycle != loggedTurn ? "cell-disabled-no-user" : "")">
                                                             @revisionExistente.Status
                                                         </div>
                                                     }
@@ -355,7 +359,9 @@
                                                                     color: #333;
                                                                     outline: none;
                                                                     transition: border-color 0.2s;"
-                                                                    @onchange="@(e => AddCyclesDailyRevision(currentDay, cycle.CycleId, cycle.Operator?.UserId ?? 0, e.Value.ToString()))">
+                                                                    @onchange="@(e => AddCyclesDailyRevision(currentDay, cycle.CycleId, cycle.Operator?.UserId ?? 0, e.Value.ToString()))"
+                                                                    disabled="@(cycle.Cycle != loggedTurn)"
+                                                                    class="@(cycle.Cycle != loggedTurn ? "cell-disabled-no-user" : "")">
                                                             <option value=""></option>
                                                             <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
                                                             <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
@@ -390,7 +396,8 @@
                                                     @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
                                                     {
                                                         @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
-                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"
+                                                             class="@(cycle.Cycle != loggedTurn ? "cell-disabled-no-user" : "")">
                                                             @revisionExistente.Status
                                                         </div>
                                                     }
@@ -412,7 +419,9 @@
                                                                     color: #333;
                                                                     outline: none;
                                                                     transition: border-color 0.2s;"
-                                                                    @onchange="@(e => AddCyclesDailyRevision(currentDay, cycle.CycleId, cycle.Supervisor?.UserId ?? 0, e.Value.ToString()))">>
+                                                                    @onchange="@(e => AddCyclesDailyRevision(currentDay, cycle.CycleId, cycle.Supervisor?.UserId ?? 0, e.Value.ToString()))"
+                                                                    disabled="@(cycle.Cycle != loggedTurn)"
+                                                                    class="@(cycle.Cycle != loggedTurn ? "cell-disabled-no-user" : "")">
                                                             <option value=""></option>
                                                             <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
                                                             <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
@@ -627,6 +636,12 @@ else
         cursor: not-allowed;
     }
 
+    .cell-disabled-no-user {
+        background-color: #dfdfdf !important;
+        background-size: 4px 4px;
+        cursor: not-allowed !important;
+    }
+
     .day-header {
         background-color: #f0f0f0;
         font-weight: bold;
@@ -712,6 +727,7 @@ else
 
     private User user = new();
     private string json;
+    private int loggedTurn = 1;
     private List<CreateDailyRevisionDto> ItemsDailyrevisions = new List<CreateDailyRevisionDto>();
     private List<CreateDailyRevisionDto> HourmeterDailyrevisions = new List<CreateDailyRevisionDto>();
     private List<CreateDailyRevisionDto> CyclesDailyrevisions = new List<CreateDailyRevisionDto>();
@@ -727,7 +743,6 @@ else
     private async Task LoadData()
     {
         _loading = true;
-        await GetUserAsync();
 
         if (hriID.HasValue)
         {
@@ -739,6 +754,8 @@ else
         }
         else
             _currentHRI = new GetHRIDto();
+
+        await GetUserAsync();
 
         var fechaHoy = DateTime.Now;
 
@@ -752,8 +769,22 @@ else
 
     private async Task GetUserAsync()
     {
-        if (!await TryGetAsync())
-            user = new();
+        await TryGetAsync();
+
+        if(_currentHRI.HriCycles != null)
+            foreach (var turn in _currentHRI.HriCycles)
+            {
+                if (turn.Operator != null && turn.Operator.UserId == user.UserId)
+                {
+                    loggedTurn = turn.Cycle;
+                    break;
+                }
+                else if (turn.Supervisor != null && turn.Supervisor.UserId == user.UserId)
+                {
+                    loggedTurn = turn.Cycle;
+                    break;
+                }
+            }            
     }
 
     private async Task<bool> TryGetAsync()
@@ -763,6 +794,10 @@ else
         {
             json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
             user = JsonSerializer.Deserialize<User>(json) ?? new();
+        }
+        else
+        {
+            user = new();
         }
         return hasProperty;
     }
