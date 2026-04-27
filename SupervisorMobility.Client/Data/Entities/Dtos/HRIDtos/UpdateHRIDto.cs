@@ -12,7 +12,7 @@ namespace SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
         public string? Department { get; set; }
         public int? SupervisorUserId { get; set; }
         public int? SSVUserId { get; set; }
-        public List<UpdateHRIRevisionItemDto> ItemsRevised { get; set; } = new List<UpdateHRIRevisionItemDto>();
-        public List<UpdateHRICycleDto> HriCycles { get; set; } = new List<UpdateHRICycleDto>();
+        public List<UpdateHRIRevisionItemDto> RevisionItems { get; set; } = new List<UpdateHRIRevisionItemDto>();
+        public List<UpdateHRICycleDto> HRICycles { get; set; } = new List<UpdateHRICycleDto>();
     }
 }
