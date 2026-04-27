@@ -16,6 +16,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto);
         Task<ServiceResponse<bool>> DeleteHRI(int id);
         Task<ServiceResponse<List<HRIToTableDto>>> GetHRISoftInfoList();
+        Task<ServiceResponse<bool>> UpdateHRI(int HriId, UpdateHRIDto dto);
 
         // Weekly Revisions
         Task<ServiceResponse<bool>> CreateNewWeeklyRevision(List<CreateWeeklyRevisionDto> weeklyRevisions);
