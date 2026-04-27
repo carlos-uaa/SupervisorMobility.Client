@@ -286,7 +286,7 @@
                     <tbody>
                         @foreach (var item in hriRevisionItems)
                         {
-                            if(item.delete)
+                            if(item.Deleted)
                             {
                                 continue;
                             }
@@ -351,7 +351,7 @@
                 <MudGrid Spacing="3" Class="mb-6">
                     @foreach (var cycle in hriCycles)
                     {
-                        if(cycle.delete)
+                        if(cycle.Deleted)
                         {
                             continue;
                         }
@@ -724,13 +724,13 @@
 
         foreach(var cycle in hriCycles)
         {
-            if(cycle.delete) continue;
+            if(cycle.Deleted) continue;
             if(cycle.Cycle > NumeroCiclos)
             {
-                cycle.delete = true;
+                cycle.Deleted = true;
             }
         }
-        var aux = hriCycles.Where(x => x.delete == false).ToList();
+        var aux = hriCycles.Where(x => x.Deleted == false).ToList();
         var count = aux.Count;
         if(NumeroCiclos > count)
         {
@@ -818,12 +818,12 @@
         }
 
         @* hriRevisionItems.Remove(item); *@
-        item.delete = true;
+        item.Deleted = true;
 
         var counter = 1;
         foreach (var revisionItem in hriRevisionItems.OrderBy(x => x.ItemNumber))
         {
-            if(revisionItem.delete)
+            if(revisionItem.Deleted)
             {
                 continue;
             }
@@ -909,7 +909,7 @@
                 RevisionMethodId = x.RevisionMethodId,
                 VeredictId = x.VeredictId,
                 FrequencyId = x.FrequencyId,
-                delete = x.delete
+                Deleted = x.Deleted
             })
             .ToList();
 
@@ -923,8 +923,8 @@
             Department = SelectedDepartmentId == 0 ? null : HRIDepartments.GetValueOrDefault(SelectedDepartmentId),
             SupervisorUserId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
             SSVUserId = SelectedSeniorSupervisorId == 0 ? null : SelectedSeniorSupervisorId,
-            ItemsRevised = itemsRevised,
-            HriCycles = hriCycles,
+            RevisionItems = itemsRevised,
+            HRICycles = hriCycles,
 
             @* Images = ImagesToSave,
             IsActive = true,
@@ -1019,11 +1019,11 @@
         else
         {
             var hasCycleWithoutOperator = hriCycles.Any(x => {
-                if(x.delete) return false;
+                if(x.Deleted) return false;
                 return x.OperatorUserId == 0;
             });
             var hasCycleWithoutSupervisor = hriCycles.Any(x =>{
-                if(x.delete) return false;
+                if(x.Deleted) return false;
                  return x.SupervisorUserId == 0;
             });
 
