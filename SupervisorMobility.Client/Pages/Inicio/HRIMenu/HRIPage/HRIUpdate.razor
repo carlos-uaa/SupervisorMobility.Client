@@ -5,6 +5,7 @@
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionItemsDtos
 @using SupervisorMobility.Client.Services.HRIServices;
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRICyclesDtos;
+@inject IDialogService DialogService;
 @inject IHRIService HRIService;
 @inject IHRIItemsService HRIItemsService;
 @inject IHRILinesService HRILinesService;
@@ -896,6 +897,30 @@
             StateHasChanged();
             return;
         }
+
+
+
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Guardar Cambios" },
+                { "ContentText", "¿Estás seguro de que deseas guardar los cambios realizadas?" },
+                { "ButtonText", "Guardar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.Save },
+                { "IconColor", Color.Tertiary }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Guardar Cambios", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) {
+            disableUpdateButton = false;
+            StateHasChanged();
+            return;
+        }
+
 
 
         var itemsRevised = hriRevisionItems

@@ -6,6 +6,7 @@
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionItemsDtos
 @using SupervisorMobility.Client.Services.HRIServices;
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRICyclesDtos;
+@inject IDialogService DialogService;
 @inject IHRIService HRIService;
 @inject IHRIItemsService HRIItemsService;
 @inject IHRILinesService HRILinesService;
@@ -158,7 +159,7 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" md="4">
-                            <MudTextField @bind-Value="controlNumber" Label="Número de Control" ReadOnly="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            <MudTextField @bind-Value="controlNumber" Label="Número de Control" Variant="Variant.Outlined" Margin="Margin.Dense" />
                         </MudItem>
 
                         <MudItem xs="12" md="2">
@@ -456,7 +457,7 @@
     private int SelectedAreaId { get; set; }
     private int SelectedSupervisorId { get; set; }
     private int SelectedSeniorSupervisorId { get; set; }
-    private string controlNumber { get; set; } = "MT-28";
+    private string controlNumber { get; set; } = "";
 
     private  List<CreateHRIRevisionItemDto> hriRevisionItems { get; set; } = new();
     private List<CreateHRICyclesDto> hriCycles { get; set; } = new();
@@ -779,6 +780,27 @@
                 Snackbar.Add(error, Severity.Warning);
             }
 
+            disableCreateButton = false;
+            StateHasChanged();
+            return;
+        }
+
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Crear HRI" },
+                { "ContentText", "¿Estás seguro de que deseas crear el documento?" },
+                { "ButtonText", "Guardar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.Save },
+                { "IconColor", Color.Tertiary }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Crear HRI", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) {
             disableCreateButton = false;
             StateHasChanged();
             return;
