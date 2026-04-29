@@ -1,6 +1,7 @@
 ﻿@page "/hri/revisions"
 @page "/hri/revisions/{hriID:int}"
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionCycles
 @using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos
 @using SupervisorMobility.Client.Data.Entities.Dtos.HRIRevisionItemsDtos
 @inject IHRIService HRIService
@@ -941,7 +942,45 @@ else
     }
 
     private bool ValidateSave() => ItemsDailyrevisions.Any() || HourmeterDailyrevisions.Any() || CyclesDailyrevisions.Any() || WeeklyRevisions.Any();
-
+    private string ValidateNG()
+    {
+        var message = string.Empty;
+        if(ItemsDailyrevisions.Any(r => r.Status == "NG"))
+        {
+            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
+            // Manejar el caso de revisiones con estado "NG"
+            var itemsNG = ItemsDailyrevisions.Where(r => r.Status == "NG").ToList();
+            itemsNG.ForEach(r => 
+            {
+                // Items
+                var cycle =  _currentHRI.ItemsRevised.SelectMany(c => c.RevisionCycles).FirstOrDefault(c => c.RevisionCycleId == r.EntityRelationId);
+                var item = _currentHRI.ItemsRevised.FirstOrDefault(i => i.ItemId == cycle.HRIRevisionItemsId);
+                message += $"- Revisión del día {r.Day} para el punto de revisión: \n   {item.RevisionPoint}.\n\n";
+            });
+        }
+        if(HourmeterDailyrevisions.Any(r => r.Status == "NG"))
+        {
+            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
+            // Manejar el caso de revisiones con estado "NG"
+            var hourmeterNG = HourmeterDailyrevisions.Where(r => r.Status == "NG").ToList();
+             // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
+        }
+        if(CyclesDailyrevisions.Any(r => r.Status == "NG"))
+        {
+            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
+            // Manejar el caso de revisiones con estado "NG"
+            var cyclesNG = CyclesDailyrevisions.Where(r => r.Status == "NG").ToList();
+             // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
+        }
+        if(WeeklyRevisions.Any(r => r.Status == "NG"))
+        {
+            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
+            // Manejar el caso de revisiones con estado "NG"    
+            var weeklyNG = WeeklyRevisions.Where(r => r.Status == "NG").ToList();
+            // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
+        }
+        return message;
+    }
     private async Task SaveChanges()
     {
         if (!ValidateSave())
@@ -949,6 +988,48 @@ else
             Snackbar.Add("No hay cambios para guardar.", Severity.Warning);
             return;
         }
+
+        var ng = ItemsDailyrevisions.Any(r => r.Status == "NG") || HourmeterDailyrevisions.Any(r => r.Status == "NG") || CyclesDailyrevisions.Any(r => r.Status == "NG") || WeeklyRevisions.Any(r => r.Status == "NG");
+        if (ng)
+        {
+            var messageNG = ValidateNG();
+            @* await DialogService.ShowMessageBox("Revisiones NG detectadas", mensajeNG, "Entendido"); *@
+            // Dialog para crear notificación
+            var notificationDialogOptions = new DialogOptions() 
+            { 
+                CloseButton = false, 
+                MaxWidth = MaxWidth.Small, 
+                FullWidth = true, 
+                DisableBackdropClick = true 
+            };
+            var notificationDialogParameters = new DialogParameters
+            {
+                { "DialogTitle", "Crear Notificación" },
+                { "Title", "Revisiones NG detectadas" },
+                { "ContentText", messageNG }
+            };
+            var notificationDialog = await DialogService.ShowAsync<NotificationDialog>("Crear Notificación", notificationDialogParameters, notificationDialogOptions);
+            var notificationResult = await notificationDialog.Result;
+
+            if (!notificationResult.Canceled)
+            {
+                // La notificación se creó exitosamente
+                var notificationData = notificationResult.Data as NotificationDialog.NotificationModel;
+                var subject = notificationData.Subject;
+                var message = notificationData.Message;
+                var type = notificationData.Type;
+                var isUrgent = notificationData.IsUrgent;
+
+                foreach (var revision in ItemsDailyrevisions)
+                {
+                    revision.Notification = true;
+                    revision.Title = subject;
+                    revision.Message = message;
+                    revision.To = _currentHRI.SupervisorUserId;
+                }
+                @* Snackbar.Add("Notificación creada exitosamente", Severity.Success); *@
+            }
+        }    
 
         // Llamar dialogo de confirmacion antes de realizar las acciones
         var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };

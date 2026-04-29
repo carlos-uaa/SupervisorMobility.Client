@@ -1,0 +1,117 @@
+<style>
+    .header {
+        display: flex;
+        align-items: center;
+    }
+    
+    .input-section {
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudItem Class="header">
+            <MudIcon Icon="@Icons.Material.Filled.Notifications" Color="Color.Info" Class="me-2"/>
+            <MudText Typo="Typo.h6">@DialogTitle</MudText>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <div class="input-section">
+            <MudTextField 
+                @bind-Value="_notificationModel.Subject"
+                Label="Título"
+                Placeholder="Ingresa el título de la notificación"
+                Variant="Variant.Outlined"
+                FullWidth="true"
+                Clearable="true"
+                MaxLength="100" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                @(_notificationModel.Subject?.Length ?? 0)/100
+            </MudText>
+        </div>
+
+        <div class="input-section">
+            <MudTextField 
+                @bind-Value="_notificationModel.Message"
+                Label="Texto"
+                Placeholder="Ingresa el texto de la notificación"
+                Variant="Variant.Outlined"
+                FullWidth="true"
+                Clearable="true"
+                MultiLine="true"
+                Lines="4"
+                MaxLength="500" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                @(_notificationModel.Message?.Length ?? 0)/500
+            </MudText>
+        </div>
+
+        <div class="input-section">
+            <MudSelect 
+                @bind-Value="_notificationModel.Type"
+                Label="Tipo de Notificación"
+                Variant="Variant.Outlined"
+                FullWidth="true">
+                <MudSelectItem Value="@("info")">Información</MudSelectItem>
+                <MudSelectItem Value="@("warning")">Advertencia</MudSelectItem>
+                <MudSelectItem Value="@("error")">Error</MudSelectItem>
+                <MudSelectItem Value="@("success")">Éxito</MudSelectItem>
+            </MudSelect>
+        </div>
+
+        <MudCheckBox @bind-Checked="_notificationModel.IsUrgent" Label="Marcar como urgente" Color="Color.Warning" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancelar</MudButton>
+        <MudButton 
+            Color="Color.Primary" 
+            Variant="Variant.Filled" 
+            OnClick="Submit"
+            Disabled="@(!IsFormValid())">
+            Crear Notificación
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string DialogTitle { get; set; } = "Crear Notificación";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string ContentText { get; set; } = "";
+
+    private NotificationModel _notificationModel = new NotificationModel();
+
+    protected override void OnInitialized()
+    {
+        _notificationModel.Subject = Title;
+        _notificationModel.Message = ContentText;
+    }
+
+    public class NotificationModel
+    {
+        public string Subject { get; set; } = "";
+        public string Message { get; set; } = "";
+        public string Type { get; set; } = "info";
+        public bool IsUrgent { get; set; } = false;
+    }
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(_notificationModel.Subject) &&
+               !string.IsNullOrWhiteSpace(_notificationModel.Message);
+    }
+
+    private void Submit()
+    {
+        if (IsFormValid())
+        {
+            MudDialog.Close(DialogResult.Ok(_notificationModel));
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}
