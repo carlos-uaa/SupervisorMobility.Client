@@ -78,9 +78,9 @@
                                     <MudIcon Icon="@Icons.Material.Filled.PhotoLibrary" Size="Size.Small" Color="Color.Default"/>
                                 </MudBadge>
                             </MudTooltip>
-                            <MudTooltip Text="Revisiones Semanales">
-                                <MudBadge Content="0" Color="Color.Secondary" Overlap="true" Bordered="true" Class="ml-4">
-                                    <MudIcon Icon="@Icons.Material.Filled.DateRange" Size="Size.Small" Color="Color.Default"/>
+                            <MudTooltip Text="Items revisados">
+                                <MudBadge Content="@context.Item.RevisedItemsCount" Color="Color.Tertiary" Overlap="true" Bordered="true" Class="ml-4">
+                                    <MudIcon Icon="@Icons.Material.Filled.FactCheck" Size="Size.Small" Color="Color.Default"/>
                                 </MudBadge>
                             </MudTooltip>
                         </MudStack>
@@ -100,10 +100,11 @@
 
                 <TemplateColumn Title="Acciones" HeaderStyle="text-align:right;" CellStyle="text-align:right;">
                     <CellTemplate>
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" OnClick="@(() => EditHRI(context.Item))">Editar</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.History" OnClick="@(() => ViewHistory(context.Item))">Ver Ciclos</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.DateRange" OnClick="@(() => Revisions(context.Item))">Revisiones</MudMenuItem>
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true">
+                            <MudMenuItem Icon="@Icons.Material.Filled.FileOpen" IconColor="Color.Info" OnClick="@(() => DetailsHRI(context.Item))">Detalles</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Primary" OnClick="@(() => EditHRI(context.Item))">Editar</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.History" IconColor="Color.Tertiary" OnClick="@(() => ViewHistory(context.Item))">Ver Ciclos</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.DateRange" IconColor="Color.Success" OnClick="@(() => Revisions(context.Item))">Revisiones</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.History" OnClick="@(() => History(context.Item))">Historial</MudMenuItem>
                             <MudDivider DividerType="DividerType.Middle" Class="my-2"/>
                             <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Eliminar</MudMenuItem>
@@ -117,16 +118,13 @@
                 <MudCard Elevation="0" Class="ma-4 mud-bg-alternating rounded-lg border-dashed">
                     <MudCardContent>
                         <MudTabs Elevation="0" Outlined="false" Color="Color.Primary" Rounded="true">
-                            <MudTabPanel Text="Items Revisados" Icon="@Icons.Material.Filled.List">
+                            <MudTabPanel Text="Items Revisados" Icon="@Icons.Material.Filled.List" >
                                 <MudList T="string" Dense="true">
                                     @* @foreach (var rev in context.Item.ItemsRevised ?? new())
                                     {
                                         <MudListItem Text="@rev.RevisionPoint" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" />
                                     } *@
                                 </MudList>
-                            </MudTabPanel>
-                            <MudTabPanel Text="Resumen de Ciclos" Icon="@Icons.Material.Filled.Loop">
-                                @* <MudText Class="pa-4">Oportunidad de agregar algun gráfico para @context.Item.HriCycles?.Count ciclos.</MudText> *@
                             </MudTabPanel>
                         </MudTabs>
                     </MudCardContent>
@@ -180,6 +178,7 @@
     };
 
     private void CreateNewHRI() { /* Lógica para abrir diálogo complejo */ }
+    private void DetailsHRI(HRIToTableDto item) { NavigationManager.NavigateTo($"/hri/details/{item.HriId}"); }
     private void EditHRI(HRIToTableDto item) { NavigationManager.NavigateTo($"/hri/form/{item.HriId}"); }
     private void ViewHistory(HRIToTableDto item) { /* Lógica para ver historial de ciclos */ }
     private void Revisions(HRIToTableDto item) 
