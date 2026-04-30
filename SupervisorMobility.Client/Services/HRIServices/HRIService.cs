@@ -4,6 +4,7 @@ using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos;
 using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos;
 using SupervisorMobility.Client.Data.Entities.Hri;
+using SupervisorMobility.Clinet.Data.Entities.Dtos.HRIHistory;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using static System.Net.WebRequestMethods;
@@ -190,6 +191,32 @@ namespace SupervisorMobility.Client.Services.HRIServices
             catch (Exception)
             {
                 return null;
+            }
+        }
+
+        public async Task<ServiceResponse<List<GetHRIHistoryActionDto>>> GetHistoryByHRIId(int hriId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<GetHRIHistoryActionDto>>>(
+                    $"HRI/GetHRIHistory/{hriId}"
+                );
+
+                return response ?? new ServiceResponse<List<GetHRIHistoryActionDto>>
+                {
+                    Success = false,
+                    Data = new List<GetHRIHistoryActionDto>(),
+                    Message = "Empty response while fetching HRI history."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<List<GetHRIHistoryActionDto>>
+                {
+                    Success = false,
+                    Data = new List<GetHRIHistoryActionDto>(),
+                    Message = $"Exception fetching HRI history: {ex.Message}"
+                };
             }
         }
     }

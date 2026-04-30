@@ -5,6 +5,7 @@ using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos;
 using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos;
 using SupervisorMobility.Client.Data.Entities.Hri;
+using SupervisorMobility.Clinet.Data.Entities.Dtos.HRIHistory;
 
 namespace SupervisorMobility.Client.Services.HRIServices
 {
@@ -24,5 +25,8 @@ namespace SupervisorMobility.Client.Services.HRIServices
         // Images
         Task<string> SaveImageInTempFolderAsync(IBrowserFile imageFile);
         Task<byte[]?> GetImageContentAsync(string path);
+
+        // History
+        Task<ServiceResponse<List<GetHRIHistoryActionDto>>> GetHistoryByHRIId(int hriId);
     }
 }
