@@ -1,9 +1,4 @@
-﻿using SupervisorMobility.Client.Data.Entites.Dtos.HRICyclesDtos;
-using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionItemsDtos;
-using SupervisorMobility.Client.Data.Entities.Dtos;
-using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos;
-using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIHourmeterRevisionDto;
-using SupervisorMobility.Client.Data.Entities.Hri;
+﻿using SupervisorMobility.Client.Data.Entities.Hri;
 
 namespace SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
 {
@@ -14,6 +9,7 @@ namespace SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
         public HRIItem? NameOfItem { get; set; }
         public string? ControlNumber { get; set; }
         public string? Department { get; set; }
+        public int RevisedItemsCount { get; set; }
         public int ImagesCount { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreationDate { get; set; }

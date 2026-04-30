@@ -1,15 +1,7 @@
-﻿@page "/hri/revisions/{hriID:int}"
+﻿@page "/hri/details/{hriID:int}"
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
-@using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionCycles
-@using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos
-@using SupervisorMobility.Client.Data.Entities.Dtos.HRIRevisionItemsDtos
 @inject IHRIService HRIService
-@inject IHRIRevisionCyclesService RevisionCyclesService
-@inject IHRIHourmeterRevisionService HourmeterRevisionService
-@inject IHRICyclesService HRICyclesService
-@inject ISnackbar Snackbar
-@inject IJSRuntime JSRuntime
-@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
 
 @if(!_loading)
 {
@@ -161,7 +153,7 @@
                                                 <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                                     @if (!inhabíl)
                                                     {
-                                                        <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                        <div style="height: 100%; width: 100%; overflow: hidden;">
                                                             @{
                                                                 int currentDay = d;
                                                                 // Buscamos si existe una revisión para el día "d" en el ciclo actual
@@ -172,37 +164,14 @@
                                                             @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
                                                             {
                                                                 @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
-                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"
-                                                                     class="@(c.Cycle != loggedTurn || currentDay != hoy ? "cell-disabled-no-user" : "")">
+                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
                                                                     @revisionExistente.Status
                                                                 </div>
                                                             }
                                                             else
                                                             {
-                                                                @* Si no existe, mostramos el select para que el usuario pueda capturar *@
-                                                                <select style=" width: 100%; 
-                                                                        height: 100%; 
-                                                                        cursor: pointer; 
-                                                                        appearance: none; 
-                                                                        -webkit-appearance: none; 
-                                                                        -moz-appearance: none; 
-                                                                        border: 1px solid #ccc;
-                                                                        border-radius: 4px;
-                                                                        background-color: #f9f9f9;
-                                                                        text-align: center;
-                                                                        padding: 0;
-                                                                        font-size: 12px;
-                                                                        color: #333;
-                                                                        outline: none;
-                                                                        transition: border-color 0.2s;"
-                                                                        @onchange="@(e => AddItemDailyRevision(currentDay, c.RevisionCycleId, e.Value.ToString()))"
-                                                                        disabled="@(c.Cycle != loggedTurn || currentDay != hoy)"
-                                                                        class="@(c.Cycle != loggedTurn || currentDay != hoy ? "cell-disabled-no-user" : "")">
-                                                                <option value=""></option>
-                                                                <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                                <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                                <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                            </select>
+                                                                @* Si no existe, mostramos *@
+                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"> </div>
                                                             }
                                                         </div>
                                                     }
@@ -262,7 +231,7 @@
                                     <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                         @if (!inhabíl)
                                         {
-                                            <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                            <div style="height: 100%; width: 100%; overflow: hidden;">
                                                 @{
                                                     int currentDay = d;
                                                     // Buscamos si existe una revisión para el día "d" en el ciclo actual
@@ -273,37 +242,14 @@
                                                 @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
                                                 {
                                                     @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
-                                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"
-                                                         class="@(currentDay != hoy ? "cell-disabled-no-user" : "")">
+                                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
                                                         @revisionExistente.Status
                                                     </div>
                                                 }
                                                 else
                                                 {
-                                                    @* Si no existe, mostramos el select para que el usuario pueda capturar *@
-                                                    <select style=" width: 100%; 
-                                                                height: 100%; 
-                                                                cursor: pointer; 
-                                                                appearance: none; 
-                                                                -webkit-appearance: none; 
-                                                                -moz-appearance: none; 
-                                                                border: 1px solid #ccc;
-                                                                border-radius: 4px;
-                                                                background-color: #f9f9f9;
-                                                                text-align: center;
-                                                                padding: 0;
-                                                                font-size: 12px;
-                                                                color: #333;
-                                                                outline: none;
-                                                                transition: border-color 0.2s;"
-                                                                @onchange="@(e => AddHourmeterDailyRevision(currentDay, _currentHRI.HourmeterRevision?.Id ?? 0, e.Value.ToString()))"
-                                                                disabled="@(currentDay != hoy)"
-                                                                class="@(currentDay != hoy ? "cell-disabled-no-user" : "")">
-                                                        <option value=""></option>
-                                                        <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                        <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                        <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                    </select>
+                                                    @* Si no existe, mostramos el div vacío *@
+                                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"></div>
                                                 }
                                             </div>
                                         }
@@ -328,7 +274,7 @@
                                         <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                             @if (!inhabíl)
                                             {
-                                                <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                <div style="height: 100%; width: 100%; overflow: hidden;">
                                                     @{
                                                         int currentDay = d;
                                                         // Buscamos si existe una revisión para el día "d" en el ciclo actual
@@ -339,37 +285,14 @@
                                                     @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
                                                     {
                                                         @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
-                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"
-                                                             class="@(cycle.Cycle != loggedTurn || currentDay != hoy ? "cell-disabled-no-user" : "")">
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
                                                             @revisionExistente.Status
                                                         </div>
                                                     }
                                                     else
                                                     {
-                                                        @* Si no existe, mostramos el select para que el usuario pueda capturar *@
-                                                        <select style=" width: 100%; 
-                                                                    height: 100%; 
-                                                                    cursor: pointer; 
-                                                                    appearance: none; 
-                                                                    -webkit-appearance: none; 
-                                                                    -moz-appearance: none; 
-                                                                    border: 1px solid #ccc;
-                                                                    border-radius: 4px;
-                                                                    background-color: #f9f9f9;
-                                                                    text-align: center;
-                                                                    padding: 0;
-                                                                    font-size: 12px;
-                                                                    color: #333;
-                                                                    outline: none;
-                                                                    transition: border-color 0.2s;"
-                                                                    @onchange="@(e => AddCyclesDailyRevision(currentDay, cycle.CycleId, cycle.Operator?.UserId ?? 0, e.Value.ToString()))"
-                                                                    disabled="@(cycle.Cycle != loggedTurn || currentDay != hoy)"
-                                                                    class="@(cycle.Cycle != loggedTurn || currentDay != hoy ? "cell-disabled-no-user" : "")">
-                                                            <option value=""></option>
-                                                            <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                            <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                            <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                        </select>
+                                                        @* Si no existe, mostramos el div vacío *@
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"></div>
                                                     }
                                                 </div>
                                             }
@@ -388,7 +311,7 @@
                                         <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
                                             @if (!inhabíl)
                                             {
-                                                <div style="cursor: pointer; height: 100%; width: 100%; overflow: hidden;">
+                                                <div style="height: 100%; width: 100%; overflow: hidden;">
                                                     @{
                                                         int currentDay = d;
                                                         // Buscamos si existe una revisión para el día "d" en el ciclo actual
@@ -399,37 +322,14 @@
                                                     @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
                                                     {
                                                         @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
-                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"
-                                                             class="@(cycle.Cycle != loggedTurn || currentDay != hoy ? "cell-disabled-no-user" : "")">
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
                                                             @revisionExistente.Status
                                                         </div>
                                                     }
                                                     else
                                                     {
-                                                        @* Si no existe, mostramos el select para que el usuario pueda capturar *@
-                                                        <select style=" width: 100%; 
-                                                                    height: 100%; 
-                                                                    cursor: pointer; 
-                                                                    appearance: none; 
-                                                                    -webkit-appearance: none; 
-                                                                    -moz-appearance: none; 
-                                                                    border: 1px solid #ccc;
-                                                                    border-radius: 4px;
-                                                                    background-color: #f9f9f9;
-                                                                    text-align: center;
-                                                                    padding: 0;
-                                                                    font-size: 12px;
-                                                                    color: #333;
-                                                                    outline: none;
-                                                                    transition: border-color 0.2s;"
-                                                                    @onchange="@(e => AddCyclesDailyRevision(currentDay, cycle.CycleId, cycle.Supervisor?.UserId ?? 0, e.Value.ToString()))"
-                                                                    disabled="@(cycle.Cycle != loggedTurn || currentDay != hoy)"
-                                                                    class="@(cycle.Cycle != loggedTurn || currentDay != hoy ? "cell-disabled-no-user" : "")">
-                                                            <option value=""></option>
-                                                            <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                            <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                            <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                        </select>
+                                                        @* Si no existe, mostramos el div vacío *@
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"></div>
                                                     }
                                                 </div>
                                             }
@@ -490,7 +390,6 @@
                                             int inicioBloque = diaCorriente;
                                             int span = 0;
                 
-                                            // Identificamos el número de semana de este bloque
                                             int numeroSemana = GetWeekOfMonth(inicioBloque);
 
                                             while (diaCorriente <= diasEnMes && !EsFinDeSemana(diaCorriente))
@@ -509,17 +408,7 @@
                                             }
                                             else
                                             {
-                                                <td colspan="@span" class="pa-0">
-                                                    <select @onchange="(e) => OnWeeklyStatusChanged(e.Value.ToString(), numeroSemana)"
-                                                            disabled="@(numeroSemana != estaSemana)"
-                                                            style="width: 100%; height: 100%; border: 1px solid #ccc; text-align: center;">
-                        
-                                                        <option value=""></option>
-                                                        <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                        <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                        <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                    </select>
-                                                </td>                                                    
+                                                <td colspan="@span" class="pa-0" style="text-align: center;"></td>                                                    
                                             }
                                         }
                                     }
@@ -533,10 +422,7 @@
 
         <MudItem xs="12">
             <div class="d-flex justify-end gap-2 mt-2">
-                <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Print" Href="/hri/index">Cancel</MudButton>
-                <MudSpacer />
-                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Print">Descargar Excel</MudButton>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="SaveChanges">Guardar Cambios</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetBack">Regresar</MudButton>
             </div>
         </MudItem>
 
@@ -639,13 +525,11 @@ else
         background-color: var(--mud-palette-action-default) !important;
         background-image: stripe(45deg, #e0e0e0 25%, transparent 25%, transparent 50%, #e0e0e0 50%, #e0e0e0 75%, transparent 75%, transparent);
         background-size: 4px 4px;
-        cursor: not-allowed;
     }
 
     .cell-disabled-no-user {
         background-color: #dfdfdf !important;
         background-size: 4px 4px;
-        cursor: not-allowed !important;
     }
 
     .day-header {
@@ -721,26 +605,16 @@ else
 }
 </style>
 
-@code{
+@code
+{
     [Parameter] public int? hriID { get; set; }
     private Dictionary<string, (string ContentType, string Uri)> UploadedImages { get; set; } = new();
     private int NumeroCiclos { get; set; } = 3;
     private int añoActual;
     private int mesActual;
     private int diasEnMes;
-    private int hoy;
-    private int estaSemana;
     private string mesTexto;
     private GetHRIDto _currentHRI = new GetHRIDto();
-
-    private User user = new();
-    private string json;
-    private int loggedTurn = 1;
-    private List<CreateDailyRevisionDto> ItemsDailyrevisions = new List<CreateDailyRevisionDto>();
-    private List<CreateDailyRevisionDto> HourmeterDailyrevisions = new List<CreateDailyRevisionDto>();
-    private List<CreateDailyRevisionDto> CyclesDailyrevisions = new List<CreateDailyRevisionDto>();
-    private List<CreateWeeklyRevisionDto> WeeklyRevisions = new List<CreateWeeklyRevisionDto>();
-
     private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
@@ -763,57 +637,15 @@ else
         else
             _currentHRI = new GetHRIDto();
 
-        await GetUserAsync();
-
         var fechaHoy = DateTime.Now;
 
         añoActual = fechaHoy.Year;
         mesActual = fechaHoy.Month;
         diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
         mesTexto = fechaHoy.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
-        hoy = fechaHoy.Day;
-        estaSemana = GetWeekOfMonth(hoy);
 
         _loading = false;
     }
-
-    private async Task GetUserAsync()
-    {
-        await TryGetAsync();
-
-        if(_currentHRI.HriCycles != null)
-            foreach (var turn in _currentHRI.HriCycles)
-            {
-                if (turn.Operator != null && turn.Operator.UserId == user.UserId)
-                {
-                    loggedTurn = turn.Cycle;
-                    break;
-                }
-                else if (turn.Supervisor != null && turn.Supervisor.UserId == user.UserId)
-                {
-                    loggedTurn = turn.Cycle;
-                    break;
-                }
-            }            
-    }
-
-    private async Task<bool> TryGetAsync()
-    {
-        bool hasProperty = await HasPropertyAsync();
-        if (hasProperty)
-        {
-            json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "user");
-            user = JsonSerializer.Deserialize<User>(json) ?? new();
-        }
-        else
-        {
-            user = new();
-        }
-        return hasProperty;
-    }
-
-    private async Task<bool> HasPropertyAsync()
-        => await JSRuntime.InvokeAsync<bool>("localStorage.hasOwnProperty", "user");
 
     private string GetImageSrc(string url)
     {
@@ -834,88 +666,6 @@ else
         return fecha.DayOfWeek == DayOfWeek.Saturday || fecha.DayOfWeek == DayOfWeek.Sunday;
     }
 
-    private string GetUserTypeLabel(int userType) => userType switch
-    {
-        1 => "A",
-        2 => "SSV",
-        3 => "S",
-        4 => "O",
-        5 => "M",
-        6 => "LS",
-        7 => "HC",
-        8 => "RTC",
-        _ => "Invalid"
-    };
-
-    private void UpsertRevision(List<CreateDailyRevisionDto> targetList, int dia, int relationId, string value, int? overrideUserId = null)
-    {
-        var existingRevision = targetList.FirstOrDefault(r => r.Day == dia && r.EntityRelationId == relationId);
-
-        if (existingRevision != null)
-        {
-            existingRevision.Status = value;
-            existingRevision.UserId = overrideUserId ?? user.UserId;
-        }
-        else
-        {
-            targetList.Add(new CreateDailyRevisionDto
-            {
-                EntityRelationId = relationId,
-                Day = dia,
-                Month = mesActual,
-                Status = value,
-                UserId = overrideUserId ?? user.UserId,
-                UserType = GetUserTypeLabel(user.UserType)
-            });
-        }
-    }
-
-    private void AddItemDailyRevision(int dia, int cycle, string value)
-    {
-        UpsertRevision(ItemsDailyrevisions, dia, cycle, value);
-    }
-
-    private void AddHourmeterDailyRevision(int dia, int relation, string value)
-    {
-        UpsertRevision(HourmeterDailyrevisions, dia, relation, value);
-    }
-
-    private void AddCyclesDailyRevision(int dia, int relation, int userId, string value)
-    {
-        UpsertRevision(CyclesDailyrevisions, dia, relation, value, userId);
-    }
-
-    private void OnWeeklyStatusChanged(string value, int weekNumber)
-    {
-        // Buscamos si ya existe este cambio en nuestra lista temporal de "pendientes por guardar"
-        var existingChange = WeeklyRevisions.FirstOrDefault(x => x.Week == weekNumber);
-
-        if (string.IsNullOrEmpty(value))
-        {
-            if (existingChange != null) WeeklyRevisions.Remove(existingChange);
-            return;
-        }
-
-        if (existingChange != null)
-        {
-            // Si el DTO no tiene propiedad Status, asegúrate de agregarla 
-            // o mapearla a IsActive según tu lógica de negocio
-            // existingChange.Status = newValue; 
-        }
-        else
-        {
-            WeeklyRevisions.Add(new CreateWeeklyRevisionDto
-            {
-                HriId = _currentHRI.HriId,
-                UserId = user.UserId,
-                Month = mesActual,
-                Week = weekNumber,
-                IsActive = true,
-                Status = value
-            });
-        }
-    }
-
     private int GetWeekOfMonth(int day)
     {
         DateTime date = new DateTime(añoActual, mesActual, day);
@@ -923,178 +673,8 @@ else
         return (day + (int)new DateTime(date.Year, date.Month, 1).DayOfWeek - 1) / 7 + 1;
     }
 
-    private bool ValidateSave() => ItemsDailyrevisions.Any() || HourmeterDailyrevisions.Any() || CyclesDailyrevisions.Any() || WeeklyRevisions.Any();
-    private string ValidateNG()
+    private void GetBack()
     {
-        var message = string.Empty;
-        if(ItemsDailyrevisions.Any(r => r.Status == "NG"))
-        {
-            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
-            // Manejar el caso de revisiones con estado "NG"
-            var itemsNG = ItemsDailyrevisions.Where(r => r.Status == "NG").ToList();
-            itemsNG.ForEach(r => 
-            {
-                // Items
-                var cycle =  _currentHRI.ItemsRevised.SelectMany(c => c.RevisionCycles).FirstOrDefault(c => c.RevisionCycleId == r.EntityRelationId);
-                var item = _currentHRI.ItemsRevised.FirstOrDefault(i => i.ItemId == cycle.HRIRevisionItemsId);
-                message += $"- Revisión del día {r.Day} para el punto de revisión: \n   {item.RevisionPoint}.\n\n";
-            });
-        }
-        if(HourmeterDailyrevisions.Any(r => r.Status == "NG"))
-        {
-            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
-            // Manejar el caso de revisiones con estado "NG"
-            var hourmeterNG = HourmeterDailyrevisions.Where(r => r.Status == "NG").ToList();
-             // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
-        }
-        if(CyclesDailyrevisions.Any(r => r.Status == "NG"))
-        {
-            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
-            // Manejar el caso de revisiones con estado "NG"
-            var cyclesNG = CyclesDailyrevisions.Where(r => r.Status == "NG").ToList();
-             // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
-        }
-        if(WeeklyRevisions.Any(r => r.Status == "NG"))
-        {
-            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
-            // Manejar el caso de revisiones con estado "NG"    
-            var weeklyNG = WeeklyRevisions.Where(r => r.Status == "NG").ToList();
-            // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
-        }
-        return message;
-    }
-    private async Task SaveChanges()
-    {
-        if (!ValidateSave())
-        {
-            Snackbar.Add("No hay cambios para guardar.", Severity.Warning);
-            return;
-        }
-
-        var ng = ItemsDailyrevisions.Any(r => r.Status == "NG") || HourmeterDailyrevisions.Any(r => r.Status == "NG") || CyclesDailyrevisions.Any(r => r.Status == "NG") || WeeklyRevisions.Any(r => r.Status == "NG");
-        if (ng)
-        {
-            var messageNG = ValidateNG();
-            @* await DialogService.ShowMessageBox("Revisiones NG detectadas", mensajeNG, "Entendido"); *@
-            // Dialog para crear notificación
-            var notificationDialogOptions = new DialogOptions() 
-            { 
-                CloseButton = false, 
-                MaxWidth = MaxWidth.Small, 
-                FullWidth = true, 
-                DisableBackdropClick = true 
-            };
-            var notificationDialogParameters = new DialogParameters
-            {
-                { "DialogTitle", "Crear Notificación" },
-                { "Title", "Revisiones NG detectadas" },
-                { "ContentText", messageNG }
-            };
-            var notificationDialog = await DialogService.ShowAsync<NotificationDialog>("Crear Notificación", notificationDialogParameters, notificationDialogOptions);
-            var notificationResult = await notificationDialog.Result;
-
-            if (!notificationResult.Canceled)
-            {
-                // La notificación se creó exitosamente
-                var notificationData = notificationResult.Data as NotificationDialog.NotificationModel;
-                var subject = notificationData.Subject;
-                var message = notificationData.Message;
-                var type = notificationData.Type;
-                var isUrgent = notificationData.IsUrgent;
-
-                foreach (var revision in ItemsDailyrevisions)
-                {
-                    revision.Notification = true;
-                    revision.Title = subject;
-                    revision.Message = message;
-                    revision.To = _currentHRI.SupervisorUserId;
-                }
-                @* Snackbar.Add("Notificación creada exitosamente", Severity.Success); *@
-            }
-        }    
-
-        // Llamar dialogo de confirmacion antes de realizar las acciones
-        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
-        var dialogParameters = new DialogParameters
-            {
-                { "Title", "Guardar Cambios" },
-                { "ContentText", "¿Estás seguro de que deseas guardar las revisiones realizadas?" },
-                { "ButtonText", "Guardar" },
-                { "CancelText", "Cancelar" },
-                { "Color", Color.Primary },
-                { "Icon", @Icons.Material.Outlined.Save },
-                { "IconColor", Color.Tertiary }
-            };
-        var dialog = await DialogService.ShowAsync<Confirmation>("Guardar Cambios", dialogParameters, dialogOptions);
-        var dialogResult = await dialog.Result;
-
-        if (dialogResult.Canceled) return;
-
-        // Enviar las revisiones de Items al backend
-        if (ItemsDailyrevisions.Any())
-        {
-            foreach (var revision in ItemsDailyrevisions)
-            {
-                var response = await RevisionCyclesService.CreateNewDailyRevision(revision);
-                if (!response.Success)
-                {
-                    Snackbar.Add($"Error al guardar revisión del día {revision.Day} para el ciclo: {response.Message}", Severity.Error);
-                    return;
-                }
-            }
-
-            Snackbar.Add("Se guardaron correctamente las revisiones para los items revisados", Severity.Success);
-            StateHasChanged();
-        }
-
-        // Enviar las revisiones de Horómetro al backend
-        if(HourmeterDailyrevisions.Any())
-        {
-            foreach (var revision in HourmeterDailyrevisions)
-            {
-                var response = await HourmeterRevisionService.AddDailyRevisionToHourmeterRevision(revision);
-                if (!response.Success)
-                {
-                    Snackbar.Add($"Error al guardar revisión del día {revision.Day} para el horómetro: {response.Message}", Severity.Error);
-                    return;
-                }
-            }
-
-            Snackbar.Add("Se guardaron correctamente las revisiones para el Horómetro", Severity.Success);
-            StateHasChanged();
-        }
-
-        // Enviar las revisiones de Cycles al backend
-        if(CyclesDailyrevisions.Any())
-        {
-            foreach (var revision in CyclesDailyrevisions)
-            {
-                var response = await HRICyclesService.CreateNewDailyRevision(revision);
-                if (!response.Success)
-                {
-                    Snackbar.Add($"Error al guardar revisión del día {revision.Day} para el ciclo: {response.Message}", Severity.Error);
-                    return;
-                }
-            }
-
-            Snackbar.Add("Se guardaron correctamente las revisiones para los usuarios en turno", Severity.Success);
-            StateHasChanged();
-        }
-
-        // Enviar las revisiones semanales al backend
-        if(WeeklyRevisions.Any())
-        {
-            var response = await HRIService.CreateNewWeeklyRevision(WeeklyRevisions);
-            if (!response.Success)
-            {
-                Snackbar.Add($"Error al guardar las revisiones semanales: {response.Message}", Severity.Error);
-                return;
-            }
-
-            Snackbar.Add("Se guardaron correctamente las revisiones semanales", Severity.Success);
-            StateHasChanged();
-        }
-
-        await LoadData();
+        NavigationManager.NavigateTo("/hri/index");
     }
 }
