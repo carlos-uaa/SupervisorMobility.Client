@@ -9,6 +9,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         // Revision Items
         Task<ServiceResponse<List<GetHRIRevisionItemDto>>> GetAllHRIRevisionItems();
         Task<ServiceResponse<GetHRIRevisionItemDto>> GetHRIRevisionItemById(int id);
+        Task<ServiceResponse<List<GetHRIRevisionItemDto>>> GetHRIRevisionItemsByHRIId(int id);
         Task<ServiceResponse<GetHRIRevisionItemDto>> CreateHRIRevisionItem(CreateHRIRevisionItemDto dto);
         Task<ServiceResponse<GetHRIRevisionItemDto>> UpdateHRIRevisionItem(int id, UpdateHRIRevisionItemDto dto);
         Task<ServiceResponse<bool>> DeleteHRIRevisionItem(int id);

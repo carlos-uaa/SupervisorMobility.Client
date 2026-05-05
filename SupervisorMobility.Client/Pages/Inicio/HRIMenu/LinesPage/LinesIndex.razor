@@ -177,7 +177,34 @@
     };
 
     // Métodos para botones de acción (Implementar navegación o diálogos aquí)
-    private void DeleteItem(HRILines item) => Console.WriteLine($"Eliminando: {item.Id}");
+    private async Task DeleteItem(HRILines item)
+    {
+        // Dialogo de confirmación antes de eliminar
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Eliminar Linea" },
+                { "ContentText", "¿Estás seguro de que deseas eliminar esta Linea?" },
+                { "ButtonText", "Eliminar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Eliminar Linea", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) return;
+
+        // Llamada al servicio para eliminar la Linea
+        var response = await LinesService.DeleteHRILineAsync(item.Id);
+        if (response.Success)
+            Snackbar.Add("Linea eliminada correctamente.", Severity.Success);
+        else
+            Snackbar.Add("Error al eliminar la Linea.", Severity.Error);
+
+        StateHasChanged();        
+    }
 
     private async Task CreateNew()
     {

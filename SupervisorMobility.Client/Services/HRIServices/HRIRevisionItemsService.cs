@@ -34,6 +34,9 @@ namespace SupervisorMobility.Client.Services.HRIServices
         public async Task<ServiceResponse<GetHRIRevisionItemDto>> GetHRIRevisionItemById(int id) =>
             await _http.GetFromJsonAsync<ServiceResponse<GetHRIRevisionItemDto>>($"HRIRevisionItem/GetHRIRevisionItemById/{id}");
 
+        public async Task<ServiceResponse<List<GetHRIRevisionItemDto>>> GetHRIRevisionItemsByHRIId(int id) =>
+            await _http.GetFromJsonAsync<ServiceResponse<List<GetHRIRevisionItemDto>>>($"HRIRevisionItem/GetHRIRevisionItemsByHRIId/{id}");
+
         public async Task<ServiceResponse<GetHRIRevisionItemDto>> CreateHRIRevisionItem(CreateHRIRevisionItemDto dto)
         {
             var response = await _http.PostAsJsonAsync("HRIRevisionItem/CreateHRIRevisionItem", dto);

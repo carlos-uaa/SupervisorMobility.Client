@@ -151,13 +151,13 @@
     private async Task LoadVeredictsAsync()
     {
         _loading = true;
-        
+
         var response  = await RevisionService.GetAllVeredicts();
         if(response.Success)
             _veredicts = response.Data;
         else
             Snackbar.Add("No se encontraron o no existen los veredictos", Severity.Error);
-        
+
         _loading = false;
     }
 
@@ -177,7 +177,34 @@
     };
 
     // Métodos para botones de acción (Implementar navegación o diálogos aquí)
-    private void DeleteItem(Veredict item) => Console.WriteLine($"Eliminando: {item.Id}");
+    private async Task DeleteItem(Veredict item)
+    {
+        // Dialogo de confirmación antes de eliminar
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Eliminar Criterio" },
+                { "ContentText", "¿Estás seguro de que deseas eliminar este criterio?" },
+                { "ButtonText", "Eliminar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Eliminar Criterio", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) return;
+
+        // Llamada al servicio para eliminar el Criterio
+        var response = await RevisionService.DeleteVeredict(item.Id);
+        if (response.Success)
+            Snackbar.Add("Criterio eliminado correctamente.", Severity.Success);
+        else
+            Snackbar.Add("Error al eliminar el Criterio.", Severity.Error);
+
+        StateHasChanged();
+    }
 
     private async Task CreateNew()
     {

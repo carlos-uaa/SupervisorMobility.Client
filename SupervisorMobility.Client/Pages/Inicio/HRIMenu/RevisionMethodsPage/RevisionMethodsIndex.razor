@@ -146,13 +146,13 @@
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        
+
         var response  = await RevisionService.GetAllRevisionMethods();
         if(response.Success)
             _hriMethods = response.Data;
         else
             Snackbar.Add("Error al cargar los métodos de revisión", Severity.Error);
-        
+
         _loading = false;
     }
 
@@ -172,7 +172,34 @@
     };
 
     // Métodos para botones de acción (Implementar navegación o diálogos aquí)
-    private void DeleteItem(RevisionMethod item) => Console.WriteLine($"Eliminando: {item.Id}");
+    private async Task DeleteItem(RevisionMethod item)
+    {
+        // Dialogo de confirmación antes de eliminar
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Eliminar Metodo de Revision" },
+                { "ContentText", "¿Estás seguro de que deseas eliminar este Metodo de Revision?" },
+                { "ButtonText", "Eliminar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Eliminar Metodo de Revision", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) return;
+
+        // Llamada al servicio para eliminar el Metodo de Revision
+        var response = await RevisionService.DeleteRevisionMethodAsync(item.Id);
+        if (response.Success)
+            Snackbar.Add("Metodo de Revision eliminado correctamente.", Severity.Success);
+        else
+            Snackbar.Add("Error al eliminar el Metodo de Revision.", Severity.Error);
+
+        StateHasChanged();
+    }
 
     private async Task CreateNew()
     {

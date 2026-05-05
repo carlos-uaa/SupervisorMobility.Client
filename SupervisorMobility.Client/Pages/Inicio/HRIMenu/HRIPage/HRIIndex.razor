@@ -1,8 +1,11 @@
 ﻿@page "/hri/index"
 @using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionItemsDtos
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject IHRIService HRIService
+@inject IHRIRevisionItemsService HRIRevisionItemsService
+@inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
@@ -54,7 +57,7 @@
             
             <Columns>
                 @* Columna de Expansión para ver detalles rápidos *@
-                <HierarchyColumn T="HRIToTableDto" InitiallyExpandedFunc="@( (HRIToTableDto item) => false )" />
+                <HierarchyColumn T="HRIToTableDto"  InitiallyExpandedFunc="@( (HRIToTableDto item) => false )" />
 
                 <PropertyColumn Property="x => x.ControlNumber" Title="Nº Control" />
 
@@ -103,11 +106,10 @@
                         <MudMenu Icon="@Icons.Material.Filled.MoreVert" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Dense="true">
                             <MudMenuItem Icon="@Icons.Material.Filled.FileOpen" IconColor="Color.Info" OnClick="@(() => DetailsHRI(context.Item))">Detalles</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Primary" OnClick="@(() => EditHRI(context.Item))">Editar</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.History" IconColor="Color.Tertiary" OnClick="@(() => ViewHistory(context.Item))">Ver Ciclos</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.DateRange" IconColor="Color.Success" OnClick="@(() => Revisions(context.Item))">Revisiones</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.History" OnClick="@(() => History(context.Item))">Historial</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.History" IconColor="Color.Tertiary" OnClick="@(() => History(context.Item))">Historial</MudMenuItem>
                             <MudDivider DividerType="DividerType.Middle" Class="my-2"/>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error">Eliminar</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="@(() => DeleteHRI(context.Item))">Eliminar</MudMenuItem>
                         </MudMenu>
                     </CellTemplate>
                 </TemplateColumn>
@@ -117,16 +119,41 @@
             <ChildRowContent>
                 <MudCard Elevation="0" Class="ma-4 mud-bg-alternating rounded-lg border-dashed">
                     <MudCardContent>
-                        <MudTabs Elevation="0" Outlined="false" Color="Color.Primary" Rounded="true">
-                            <MudTabPanel Text="Items Revisados" Icon="@Icons.Material.Filled.List" >
-                                <MudList T="string" Dense="true">
-                                    @* @foreach (var rev in context.Item.ItemsRevised ?? new())
-                                    {
-                                        <MudListItem Text="@rev.RevisionPoint" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Success" />
-                                    } *@
-                                </MudList>
-                            </MudTabPanel>
-                        </MudTabs>
+                        @* Lógica Provisional: Si no hay items y no está cargando, llamamos al endpoint *@
+                        @{
+                            CheckAndLoadDetails(context.Item);
+                        }
+
+                        @if (_loadingItemDetails)
+                        {
+                            <div class="d-flex align-center pa-4">
+                                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+                                <MudText Class="ms-3">Cargando ítems desde el servidor...</MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <MudTabs Elevation="0" Outlined="false" Color="Color.Primary" Rounded="true">
+                                <MudTabPanel Text="Items Revisados" Icon="@Icons.Material.Filled.List">
+                                    <MudList T="string" Dense="true">
+                                        @if (_hriItemsList != null && _hriItemsList.Any())
+                                        {
+                                            @foreach (var rev in _hriItemsList)
+                                            {
+                                                <MudListItem Text="@rev.RevisionPoint" 
+                                                             Icon="@Icons.Material.Filled.CheckCircle" 
+                                                             IconColor="Color.Success" />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <MudListItem Text="No se encontraron registros para esta inspección." 
+                                                         Icon="@Icons.Material.Filled.Info" />
+                                        }
+                                    </MudList>
+                                </MudTabPanel>
+                            </MudTabs>
+                        }
                     </MudCardContent>
                 </MudCard>
             </ChildRowContent>
@@ -153,13 +180,15 @@
 
 @code {
     private bool _loading = true;
+    private bool _loadingItemDetails = true;
     private string _searchString = "";
     private List<HRIToTableDto> _hriList = new();
+    private List<GetHRIRevisionItemDto> _hriItemsList = new();
 
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        
+
         var response = await HRIService.GetHRISoftInfoList();
         if (response.Success)
             _hriList = response.Data;
@@ -177,18 +206,56 @@
                (x.NameOfItem?.Name?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false);
     };
 
-    private void CreateNewHRI() { /* Lógica para abrir diálogo complejo */ }
+    private void CreateNewHRI() { NavigationManager.NavigateTo("/hri/form"); }
     private void DetailsHRI(HRIToTableDto item) { NavigationManager.NavigateTo($"/hri/details/{item.HriId}"); }
     private void EditHRI(HRIToTableDto item) { NavigationManager.NavigateTo($"/hri/form/{item.HriId}"); }
     private void ViewHistory(HRIToTableDto item) { /* Lógica para ver historial de ciclos */ }
-    private void Revisions(HRIToTableDto item) 
-    { 
-        // Navigate to revision page
-        NavigationManager.NavigateTo($"/hri/revisions/{item.HriId}");
+    private void Revisions(HRIToTableDto item) { NavigationManager.NavigateTo($"/hri/revisions/{item.HriId}"); }
+    private void History(HRIToTableDto item) { NavigationManager.NavigateTo($"/hri/history/{item.HriId}"); }
+    private async Task DeleteHRI(HRIToTableDto item)
+    {
+        // Dialogo de confirmación antes de eliminar
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Eliminar HRI" },
+                { "ContentText", "¿Estás seguro de que deseas eliminar esta HRI?" },
+                { "ButtonText", "Eliminar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Eliminar HRI", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) return;
+
+        // Llamada al servicio para eliminar la HRI
+        var response = await HRIService.DeleteHRI(item.HriId);
+        if (response.Success)
+            Snackbar.Add("HRI eliminada correctamente.", Severity.Success);
+        else
+            Snackbar.Add("Error al eliminar la HRI.", Severity.Error);
+
+        StateHasChanged();
     }
-    private void History(HRIToTableDto item) 
-    { 
-        // Navigate to revision page
-        NavigationManager.NavigateTo($"/hri/history/{item.HriId}");
+
+    private async Task CheckAndLoadDetails(HRIToTableDto item)
+    {
+        _loadingItemDetails = true;
+
+        // Obtener la lista de items revisados para este HRI
+        var response = await HRIRevisionItemsService.GetHRIRevisionItemsByHRIId(item.HriId);
+        if (response.Success && response.Data != null)
+            _hriItemsList = response.Data;
+        else
+        {
+            Snackbar.Add("Error al cargar los ítems revisados para esta inspección.", Severity.Error);
+            _hriItemsList = new List<GetHRIRevisionItemDto>(); // Aseguramos que la lista esté vacía para evitar errores en la UI
+        }
+
+        _loadingItemDetails = false;
+        StateHasChanged();
     }
 }
