@@ -942,21 +942,21 @@ else
         }
         if(HourmeterDailyrevisions.Any(r => r.Status == "NG"))
         {
-            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
+            message = "Se han detectado revisiones en el hourometro con estado NG. Por favor, revisa los siguientes puntos:\n\n";
             // Manejar el caso de revisiones con estado "NG"
             var hourmeterNG = HourmeterDailyrevisions.Where(r => r.Status == "NG").ToList();
              // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
         }
         if(CyclesDailyrevisions.Any(r => r.Status == "NG"))
         {
-            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
+            message = "Se han detectado revisiones en los ciclos con estado NG. Por favor, revisa los siguientes puntos:\n\n";
             // Manejar el caso de revisiones con estado "NG"
             var cyclesNG = CyclesDailyrevisions.Where(r => r.Status == "NG").ToList();
              // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
         }
         if(WeeklyRevisions.Any(r => r.Status == "NG"))
         {
-            message = "Se han detectado revisiones con estado NG. Por favor, revisa los siguientes puntos:\n\n";
+            message = "Se han detectado revisiones semanales con estado NG. Por favor, revisa los siguientes puntos:\n\n";
             // Manejar el caso de revisiones con estado "NG"    
             var weeklyNG = WeeklyRevisions.Where(r => r.Status == "NG").ToList();
             // Aquí puedes mostrar un mensaje, resaltar las filas, o cualquier otra acción que consideres necesaria
@@ -975,7 +975,6 @@ else
         if (ng)
         {
             var messageNG = ValidateNG();
-            @* await DialogService.ShowMessageBox("Revisiones NG detectadas", mensajeNG, "Entendido"); *@
             // Dialog para crear notificación
             var notificationDialogOptions = new DialogOptions() 
             { 
@@ -1008,8 +1007,35 @@ else
                     revision.Title = subject;
                     revision.Message = message;
                     revision.To = _currentHRI.SupervisorUserId;
+                    revision.IsUrgent = isUrgent;
                 }
-                @* Snackbar.Add("Notificación creada exitosamente", Severity.Success); *@
+
+                foreach (var revision in HourmeterDailyrevisions)
+                {
+                    revision.Notification = true;
+                    revision.Title = subject;
+                    revision.Message = message;
+                    revision.To = _currentHRI.SupervisorUserId;
+                    revision.IsUrgent = isUrgent;
+                }
+
+                foreach (var revision in CyclesDailyrevisions)
+                {
+                    revision.Notification = true;
+                    revision.Title = subject;
+                    revision.Message = message;
+                    revision.To = _currentHRI.SupervisorUserId;
+                    revision.IsUrgent = isUrgent;
+                }
+
+                foreach (var revision in WeeklyRevisions)
+                {
+                    revision.Notification = true;
+                    revision.Title = subject;
+                    revision.Message = message;
+                    revision.To = _currentHRI.SupervisorUserId;
+                    revision.IsUrgent = isUrgent;
+                }
             }
         }    
 

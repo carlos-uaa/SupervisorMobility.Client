@@ -8,5 +8,10 @@
         public int Week { get; set; }
         public bool? IsActive { get; set; } = true;
         public string? Status { get; set; }
+        public bool? Notification { get; set; }
+        public string? Title { get; set; }
+        public string? Message { get; set; }
+        public int? To { get; set; }
+        public bool IsUrgent { get; set; }
     }
 }
