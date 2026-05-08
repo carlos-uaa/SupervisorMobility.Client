@@ -100,15 +100,37 @@
         @* II. PUNTOS DE REVISIÓN - MODO REGISTRO MENSUAL *@
         <MudItem xs="12">
             <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-warning)">
-                <div class="d-flex align-center mb-4">
-                    <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
-                        <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Small" />
-                    </MudAvatar>
+                <div class="d-flex justify-space-between align-center mb-4">
                     <div>
-                        <MudText Typo="Typo.h6" Style="font-weight: 600;">II. Registro de Realización de Revisión</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            MES: @mesTexto | AÑO: @añoActual
-                        </MudText>
+                        <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                            <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Small" />
+                        </MudAvatar>
+                        <div>
+                            <MudText Typo="Typo.h6" Style="font-weight: 600;">II. Registro de Realización de Revisión</MudText>
+
+                            <div class="d-flex align-center" Style="gap: 10px;">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="PreviousMonth">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowBackIos" Size="Size.Small" Class="mr-1" />
+                                </MudButton>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Style="font-size: 15px; text-transform: capitalize;">
+                                    MES: @mesTexto | AÑO: @añoActual
+                                </MudText>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="NextMonth">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" Class="mr-1" />
+                                </MudButton>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="width: 200px;">
+                        <MudDatePicker 
+                            DateChanged="OnDateChanged"
+                            Label="Seleccionar Mes/Año" 
+                            Variant="Variant.Outlined" 
+                            Size="Size.Small"
+                            DateFormat="MMMM yyyy"
+                            OpenTo="OpenTo.Year"
+                            Placeholder="Mes/Año" />
                     </div>
                 </div>
 
@@ -615,14 +637,19 @@ else
     private int diasEnMes;
     private string mesTexto;
     private GetHRIDto _currentHRI = new GetHRIDto();
+
+    // Variables para manejo de fechas y generación dinámica de la tabla
+    private DateTime fechaHRI = DateTime.Now;
+
     private bool _loading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+        var fechaHoy = DateTime.Now;
+        await LoadData(fechaHoy);
     }
 
-    private async Task LoadData()
+    private async Task LoadData(DateTime fechaHoy)
     {
         _loading = true;
 
@@ -637,7 +664,7 @@ else
         else
             _currentHRI = new GetHRIDto();
 
-        var fechaHoy = DateTime.Now;
+        
 
         añoActual = fechaHoy.Year;
         mesActual = fechaHoy.Month;
@@ -676,5 +703,53 @@ else
     private void GetBack()
     {
         NavigationManager.NavigateTo("/hri/index");
+    }
+
+
+    private async Task OnDateChanged(DateTime? date)
+    {
+        if (date == null) return;
+        fechaHRI = date.Value;
+        // Recargar los datos del nuevo mes
+        await LoadDataForMonth(fechaHRI.Month, fechaHRI.Year);
+    }
+
+    private async Task PreviousMonth()
+    {
+        var m = mesActual == 1 ? 12 : mesActual - 1;
+        var y = mesActual == 1 ? añoActual - 1 : añoActual;
+        fechaHRI = new DateTime(y, m, 1);
+        await LoadDataForMonth(m, y);
+    }
+    private async Task NextMonth()
+    {
+        var m = mesActual == 12 ? 1 : mesActual + 1;
+        var y = mesActual == 12 ? añoActual + 1 : añoActual;
+        fechaHRI = new DateTime(y, m, 1);
+        await LoadDataForMonth(m, y);
+    }
+
+    private async Task LoadDataForMonth(int month, int year)
+    {
+        _loading = true;
+
+        // Año del HRI
+        añoActual = fechaHRI.Year;
+
+        // Mes del HRI
+        mesActual = fechaHRI.Month;
+        mesTexto = fechaHRI.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
+        diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
+
+        var response = await HRIService.GetDailyByMonthAndYear(hriID.Value, month, year);
+        if (response != null && response.Data != null)
+        {
+            _currentHRI.ItemsRevised = response.Data.ItemsRevised;
+            _currentHRI.HourmeterRevision = response.Data.HourmeterRevision;
+            _currentHRI.HriCycles = response.Data.HriCycles;
+            _currentHRI.WeeklyRevisions = response.Data.WeeklyRevisions;
+        }
+
+        _loading = false;
     }
 }

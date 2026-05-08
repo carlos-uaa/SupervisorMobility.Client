@@ -108,15 +108,37 @@
         @* II. PUNTOS DE REVISIÓN - MODO REGISTRO MENSUAL *@
         <MudItem xs="12">
             <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-warning)">
-                <div class="d-flex align-center mb-4">
-                    <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
-                        <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Small" />
-                    </MudAvatar>
+                <div class="d-flex justify-space-between align-center mb-4">
                     <div>
-                        <MudText Typo="Typo.h6" Style="font-weight: 600;">II. Registro de Realización de Revisión</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            MES: @mesTexto | AÑO: @añoActual
-                        </MudText>
+                        <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                            <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Small" />
+                        </MudAvatar>
+                        <div>
+                            <MudText Typo="Typo.h6" Style="font-weight: 600;">II. Registro de Realización de Revisión</MudText>
+
+                            <div class="d-flex align-center" Style="gap: 10px;">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="PreviousMonth">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowBackIos" Size="Size.Small" Class="mr-1" />
+                                </MudButton>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Style="font-size: 15px; text-transform: capitalize;">
+                                    MES: @mesTexto | AÑO: @añoActual
+                                </MudText>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="NextMonth">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" Class="mr-1" />
+                                </MudButton>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="width: 200px;">
+                        <MudDatePicker 
+                            DateChanged="OnDateChanged"
+                            Label="Seleccionar Mes/Año" 
+                            Variant="Variant.Outlined" 
+                            Size="Size.Small"
+                            DateFormat="MMMM yyyy"
+                            OpenTo="OpenTo.Year"
+                            Placeholder="Mes/Año" />
                     </div>
                 </div>
 
@@ -128,7 +150,7 @@
                                 <th rowspan="2" style="min-width: 220px;" class="border-right">Puntos de Revisión</th>
                                 <th rowspan="2" style="min-width: 130px;" class="border-right">Criterio</th>
                                 <th rowspan="2" class="text-center border-right">Turno</th>
-                                <th colspan="@diasEnMes" class="text-center">
+                                <th colspan="@diasEnMes" class="text-center" Style="text-transform: capitalize;">
                                     Días del Mes (@mesTexto @añoActual)
                                 </th>
                             </tr>
@@ -173,7 +195,7 @@
                                                             {
                                                                 @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
                                                                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"
-                                                                     class="@(c.Cycle != loggedTurn || currentDay != hoy ? "cell-disabled-no-user" : "")">
+                                                                     class="@(c.Cycle != loggedTurn || (currentDay != hoy) ? "cell-disabled-no-user" : "")">
                                                                     @revisionExistente.Status
                                                                 </div>
                                                             }
@@ -196,13 +218,13 @@
                                                                         outline: none;
                                                                         transition: border-color 0.2s;"
                                                                         @onchange="@(e => AddItemDailyRevision(currentDay, c.RevisionCycleId, e.Value.ToString()))"
-                                                                        disabled="@(c.Cycle != loggedTurn || currentDay != hoy)"
-                                                                        class="@(c.Cycle != loggedTurn || currentDay != hoy ? "cell-disabled-no-user" : "")">
-                                                                <option value=""></option>
-                                                                <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
-                                                                <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
-                                                                <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
-                                                            </select>
+                                                                        disabled="@(c.Cycle != loggedTurn || currentDay != hoy || fechaHRI.Month != mes || fechaHRI.Year != año)"
+                                                                        class="@(c.Cycle != loggedTurn || currentDay != hoy || fechaHRI.Month != mes || fechaHRI.Year != año ? "cell-disabled-no-user" : "")">
+                                                                    <option value=""></option>
+                                                                    <option value="Ok" style="background-color: #fff; color: #28a745;">Ok</option>
+                                                                    <option value="NG" style="background-color: #fff; color: #dc3545;">NG</option>
+                                                                    <option value="NA" style="background-color: #fff; color: #6c757d;">N/A</option>
+                                                                </select>
                                                             }
                                                         </div>
                                                     }
@@ -725,12 +747,6 @@ else
     [Parameter] public int? hriID { get; set; }
     private Dictionary<string, (string ContentType, string Uri)> UploadedImages { get; set; } = new();
     private int NumeroCiclos { get; set; } = 3;
-    private int añoActual;
-    private int mesActual;
-    private int diasEnMes;
-    private int hoy;
-    private int estaSemana;
-    private string mesTexto;
     private GetHRIDto _currentHRI = new GetHRIDto();
 
     private User user = new();
@@ -743,17 +759,55 @@ else
 
     private bool _loading = true;
 
+    // Fecha para detectar día actual
+    private readonly DateTime fechaHoy = DateTime.Now;
+    private int hoy;
+    private int mes;
+    private int año;
+    private int estaSemana;
+
+    // Variables para manejo de fechas y generación dinámica de la tabla
+    private DateTime fechaHRI = DateTime.Now;
+    private int añoActual;
+    private int mesActual;
+    private int diasEnMes;
+    private string mesTexto;
+    private DateTime? fechaSeleccionada;
+
+
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+        fechaHRI = DateTime.Now;
+
+        // Variables para detectar el día actual y la semana actual
+        hoy = fechaHoy.Day;
+        mes = fechaHoy.Month;
+        año = fechaHoy.Year;
+        
+        await LoadData(fechaHRI);
     }
 
-    private async Task LoadData()
+    private async Task LoadData(DateTime fechaHRI)
     {
         _loading = true;
 
+        // Año del HRI
+        añoActual = fechaHRI.Year;
+
+        // Mes del HRI
+        mesActual = fechaHRI.Month;
+        mesTexto = fechaHRI.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
+        diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
+
+        // Selecciona el mes en el input de fecha
+        fechaSeleccionada = new DateTime(fechaHRI.Year, fechaHRI.Month, 1);
+
+        estaSemana = GetWeekOfMonth(hoy);
+
         if (hriID.HasValue)
         {
+            // TODO Agregar el mes y año de consulta
             var response = await HRIService.GetHRIById(hriID.Value);
             if (response != null && response.Data != null)
                 _currentHRI = response.Data;
@@ -763,17 +817,8 @@ else
         else
             _currentHRI = new GetHRIDto();
 
+
         await GetUserAsync();
-
-        var fechaHoy = DateTime.Now;
-
-        añoActual = fechaHoy.Year;
-        mesActual = fechaHoy.Month;
-        diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
-        mesTexto = fechaHoy.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
-        hoy = fechaHoy.Day;
-        estaSemana = GetWeekOfMonth(hoy);
-
         _loading = false;
     }
 
@@ -1121,6 +1166,60 @@ else
             StateHasChanged();
         }
 
-        await LoadData();
+        await LoadData(fechaHoy);
+    }
+
+    private async Task OnDateChanged(DateTime? date)
+    {
+        if (date == null) return;
+        fechaHRI = date.Value;
+        
+        // Limpiar las listas de revisiones ya que cambiamos de mes
+        ItemsDailyrevisions.Clear();
+        HourmeterDailyrevisions.Clear();
+        CyclesDailyrevisions.Clear();
+        WeeklyRevisions.Clear();
+        
+        // Recargar los datos del nuevo mes
+        await LoadDataForMonth(fechaHRI.Month, fechaHRI.Year);
+    }
+
+    private async Task PreviousMonth()
+    {
+        var m = mesActual == 1 ? 12 : mesActual - 1;
+        var y = mesActual == 1 ? añoActual - 1 : añoActual;
+        fechaHRI = new DateTime(y, m, 1);
+        await OnDateChanged(fechaHRI);
+    }
+    private async Task NextMonth()
+    {
+        var m = mesActual == 12 ? 1 : mesActual + 1;
+        var y = mesActual == 12 ? añoActual + 1 : añoActual;
+        fechaHRI = new DateTime(y, m, 1);
+        await OnDateChanged(fechaHRI);
+    }
+
+    private async Task LoadDataForMonth(int month, int year)
+    {
+        _loading = true;
+
+        // Año del HRI
+        añoActual = fechaHRI.Year;
+
+        // Mes del HRI
+        mesActual = fechaHRI.Month;
+        mesTexto = fechaHRI.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
+        diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
+
+        var response = await HRIService.GetDailyByMonthAndYear(hriID.Value, month, year);
+        if (response != null && response.Data != null)
+        {
+            _currentHRI.ItemsRevised = response.Data.ItemsRevised;
+            _currentHRI.HourmeterRevision = response.Data.HourmeterRevision;
+            _currentHRI.HriCycles = response.Data.HriCycles;
+            _currentHRI.WeeklyRevisions = response.Data.WeeklyRevisions;
+        }
+
+        _loading = false;
     }
 }

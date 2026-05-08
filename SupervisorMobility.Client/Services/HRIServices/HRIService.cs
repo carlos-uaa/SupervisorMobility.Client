@@ -39,6 +39,15 @@ namespace SupervisorMobility.Client.Services.HRIServices
             return response;
         }
 
+        public async Task<ServiceResponse<GetHRIDto>> GetDailyByMonthAndYear(int hriId, int month, int year)
+        {
+            var response = await _httpClient.GetFromJsonAsync<ServiceResponse<GetHRIDto>>(
+                $"HRI/GetDailyByMonthAndYear/{hriId}/{month}/{year}"
+            );
+
+            return response;
+        }
+
         public async Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto)
         {
             try

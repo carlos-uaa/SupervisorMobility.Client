@@ -14,6 +14,7 @@ namespace SupervisorMobility.Client.Services.HRIServices
         // HRI
         Task<ServiceResponse<List<GetHRIDto>>> GetAllHRI();
         Task<ServiceResponse<GetHRIDto>> GetHRIById(int id);
+        Task<ServiceResponse<GetHRIDto>> GetDailyByMonthAndYear(int hriId, int month, int year);
         Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto);
         Task<ServiceResponse<bool>> DeleteHRI(int id);
         Task<ServiceResponse<List<HRIToTableDto>>> GetHRISoftInfoList();
