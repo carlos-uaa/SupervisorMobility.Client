@@ -1,5 +1,6 @@
 ﻿using SupervisorMobility.Client.Data.Entites.Dtos.HRICyclesDtos;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionItemsDtos;
+using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIImagesDtos;
 
 namespace SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
 {
@@ -14,5 +15,6 @@ namespace SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
         public int? SSVUserId { get; set; }
         public List<UpdateHRIRevisionItemDto> RevisionItems { get; set; } = new List<UpdateHRIRevisionItemDto>();
         public List<UpdateHRICycleDto> HRICycles { get; set; } = new List<UpdateHRICycleDto>();
+        public List<UpdateHRImageDto>? Images { get; set; }
     }
 }
