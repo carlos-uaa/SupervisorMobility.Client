@@ -29,5 +29,9 @@ namespace SupervisorMobility.Client.Services.HRIServices
 
         // History
         Task<ServiceResponse<List<GetHRIHistoryActionDto>>> GetHistoryByHRIId(int hriId);
+
+
+        // Excel Report
+        Task<byte[]> GetExcelReport(int hriId, int month, int year);
     }
 }

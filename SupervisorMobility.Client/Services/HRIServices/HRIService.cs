@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
+using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos;
 using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos;
@@ -9,16 +10,20 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using static System.Net.WebRequestMethods;
 
+
+
 namespace SupervisorMobility.Client.Services.HRIServices
 {
     public class HRIService: IHRIService
     {
         private const long MaxImageUploadBytes = 10 * 1024 * 1024; // 10 MB
         private readonly HttpClient _httpClient;
+        private readonly IJSRuntime _jsRuntime;
 
-        public HRIService(HttpClient httpClient)
+        public HRIService(HttpClient httpClient, IJSRuntime jsRuntime)
         {
             _httpClient = httpClient;
+            _jsRuntime = jsRuntime;
         }
 
         public async Task<ServiceResponse<List<GetHRIDto>>> GetAllHRI()
@@ -226,6 +231,28 @@ namespace SupervisorMobility.Client.Services.HRIServices
                     Data = new List<GetHRIHistoryActionDto>(),
                     Message = $"Exception fetching HRI history: {ex.Message}"
                 };
+            }
+        }
+
+        public async Task<byte[]> GetExcelReport(int hriId, int month, int year)
+        {
+            try
+            {
+                using var response = await _httpClient.GetAsync($"HRI/GetExcelHriFile/{hriId}/{month}/{year}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    await _jsRuntime.InvokeVoidAsync("console.log", $"Excel report request failed with status {(int)response.StatusCode}");
+                    return Array.Empty<byte>();
+                }
+
+                var bytes = await response.Content.ReadAsByteArrayAsync();
+                return bytes;
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("console.log", $"Error fetching Excel report: {ex.Message}");
+                return Array.Empty<byte>();
             }
         }
     }

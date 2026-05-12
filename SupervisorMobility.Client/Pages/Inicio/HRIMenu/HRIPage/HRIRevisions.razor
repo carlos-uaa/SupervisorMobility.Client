@@ -557,7 +557,7 @@
             <div class="d-flex justify-end gap-2 mt-2">
                 <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Print" Href="/hri/index">Cancel</MudButton>
                 <MudSpacer />
-                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Print">Descargar Excel</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Print" OnClick="DownloadExcel">Descargar Excel</MudButton>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Edit" OnClick="SaveChanges">Guardar Cambios</MudButton>
             </div>
         </MudItem>
@@ -1222,5 +1222,32 @@ else
         }
 
         _loading = false;
+    }
+
+    private async Task DownloadExcel()
+    {
+        var response = await HRIService.GetExcelReport(hriID.Value, fechaHRI.Month, fechaHRI.Year);
+        if (response == null || response.Length == 0)
+        {
+            Snackbar.Add("No se encontró el reporte Excel para descargar.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            var bytes = response;
+            var base64 = Convert.ToBase64String(bytes);
+            var fileName = $"HRI_{_currentHRI.HriId}_{mesActual}_{añoActual}.xlsx";
+
+            // Definimos una función JS ligera (si no existe) para descargar desde base64 y la invocamos
+            await JSRuntime.InvokeVoidAsync("eval",
+                "(function(){if(!window.downloadFileFromBase64){window.downloadFileFromBase64=(fileName, base64)=>{const link=document.createElement('a');link.href='data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'+base64;link.download=fileName;document.body.appendChild(link);link.click();document.body.removeChild(link);}}})();");
+
+            await JSRuntime.InvokeVoidAsync("downloadFileFromBase64", fileName, base64);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al descargar el reporte: {ex.Message}", Severity.Error);
+        }
     }
 }
