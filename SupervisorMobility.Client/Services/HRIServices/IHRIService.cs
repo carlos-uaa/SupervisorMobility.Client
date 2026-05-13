@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos;
 using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos;
+using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIMetricsDtos;
 using SupervisorMobility.Client.Data.Entities.Hri;
 using SupervisorMobility.Clinet.Data.Entities.Dtos.HRIHistory;
 
@@ -29,6 +30,12 @@ namespace SupervisorMobility.Client.Services.HRIServices
 
         // History
         Task<ServiceResponse<List<GetHRIHistoryActionDto>>> GetHistoryByHRIId(int hriId);
+
+        // Endpoints para el Dashboard del HRI
+        Task<ServiceResponse<HriKpis>> GetHriKPIs();
+        Task<ServiceResponse<LinesChartData>> GetLinesChartData(int areaId);
+        Task<ServiceResponse<GeneralStatusChartData>> GetGeneralStatusChartData(int areaId);
+        Task<ServiceResponse<List<HriRecentRevisionsDto>>> GetRecentRevisions(int areaId, string? filter = null);
 
 
         // Excel Report
