@@ -14,5 +14,6 @@
         public string? Message { get; set; }
         public int? To { get; set; }
         public bool IsUrgent { get; set; }
+        public string? CCPEmails { get; set; }
     }
 }

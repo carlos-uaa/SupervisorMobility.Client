@@ -60,7 +60,40 @@
             </MudSelect>
         </div>
 
-        <MudCheckBox @bind-Checked="_notificationModel.IsUrgent" Label="Marcar como urgente" Color="Color.Warning" />
+        <MudCheckBox @bind-Value="_notificationModel.IsUrgent" Label="Marcar como urgente" Color="Color.Warning" />
+
+        @if (_notificationModel.IsUrgent)
+        {
+            <div>
+                @foreach (var email in _notificationModel.CCPEmails?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>())
+                {
+                    <MudChip Color="Color.Secondary" Variant="Variant.Outlined" Class="me-1 mb-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Email" Class="me-1"/>
+                        @email
+                    </MudChip>
+                }
+            </div>
+            <div class="input-section">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <MudTextField
+                        T="string"
+                        Value="ccpEmail"
+                        ValueChanged="@((string val) => ccpEmail = val)"
+                        Label="Correo en copia (CC)"
+                        Placeholder="Ej: correo1@dominio.com"
+                        Variant="Variant.Outlined"
+                        FullWidth="true"
+                        Clearable="true"
+                        MaxLength="1000"
+                        @onkeydown="HandleKeyDown"/>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddCcpEmail">Agregar</MudButton>
+                </div>
+                
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                    Agrega uno correo y confirma que se va a notificar agregandolo.
+                </MudText>
+            </div>
+        }
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel" Variant="Variant.Text">Cancelar</MudButton>
@@ -80,6 +113,8 @@
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public string ContentText { get; set; } = "";
 
+    private string ccpEmail = "";
+
     private NotificationModel _notificationModel = new NotificationModel();
 
     protected override void OnInitialized()
@@ -94,6 +129,7 @@
         public string Message { get; set; } = "";
         public string Type { get; set; } = "info";
         public bool IsUrgent { get; set; } = false;
+        public string? CCPEmails { get; set; }
     }
 
     private bool IsFormValid()
@@ -113,5 +149,29 @@
     private void Cancel()
     {
         MudDialog.Cancel();
+    }
+
+    private void AddCcpEmail()
+    {
+        if (!string.IsNullOrWhiteSpace(ccpEmail))
+        {
+            if (string.IsNullOrEmpty(_notificationModel.CCPEmails))
+            {
+                _notificationModel.CCPEmails = ccpEmail;
+            }
+            else
+            {
+                _notificationModel.CCPEmails += ";" + ccpEmail;
+            }
+            ccpEmail = "";
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            AddCcpEmail();
+        }
     }
 }
