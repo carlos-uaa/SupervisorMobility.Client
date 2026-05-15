@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using SupervisorMobility.Client.Data;
 using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos;
 using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos;
+using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIMetricsDtos;
 using SupervisorMobility.Client.Data.Entities.Hri;
 using SupervisorMobility.Clinet.Data.Entities.Dtos.HRIHistory;
 using System.Net.Http.Headers;
@@ -230,6 +231,99 @@ namespace SupervisorMobility.Client.Services.HRIServices
                     Success = false,
                     Data = new List<GetHRIHistoryActionDto>(),
                     Message = $"Exception fetching HRI history: {ex.Message}"
+                };
+            }
+        }
+
+        // Endpoints para el Dashboard del HRI
+        public async Task<ServiceResponse<HriKpis>> GetHriKPIs()
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<HriKpis>>("HRI/GetHriKPIs");
+                return response ?? new ServiceResponse<HriKpis>
+                {
+                    Success = false,
+                    Message = "No data returned from GetHriKPIs."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<HriKpis>
+                {
+                    Success = false,
+                    Message = $"Exception in GetHriKPIs: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<LinesChartData>> GetLinesChartData(int areaId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<LinesChartData>>(
+                    $"HRI/GetLinesChartData/{areaId}"
+                );
+                return response ?? new ServiceResponse<LinesChartData>
+                {
+                    Success = false,
+                    Message = "No data returned from GetLinesChartData."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<LinesChartData>
+                {
+                    Success = false,
+                    Message = $"Exception in GetLinesChartData: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<GeneralStatusChartData>> GetGeneralStatusChartData(int areaId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<GeneralStatusChartData>>(
+                    $"HRI/GetGeneralStatusChartData/{areaId}"
+                );
+                return response ?? new ServiceResponse<GeneralStatusChartData>
+                {
+                    Success = false,
+                    Message = "No data returned from GetGeneralStatusChartData."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<GeneralStatusChartData>
+                {
+                    Success = false,
+                    Message = $"Exception in GetGeneralStatusChartData: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<List<HriRecentRevisionsDto>>> GetRecentRevisions(int areaId, string? filter = null)
+        {
+            try
+            {
+                var url = string.IsNullOrEmpty(filter)
+                    ? $"HRI/GetRecentRevisions/{areaId}"
+                    : $"HRI/GetRecentRevisions/{areaId}?filter={filter}";
+
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HriRecentRevisionsDto>>>(url);
+                return response ?? new ServiceResponse<List<HriRecentRevisionsDto>>
+                {
+                    Success = false,
+                    Message = "No data returned from GetRecentRevisions."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<List<HriRecentRevisionsDto>>
+                {
+                    Success = false,
+                    Message = $"Exception in GetRecentRevisions: {ex.Message}"
                 };
             }
         }

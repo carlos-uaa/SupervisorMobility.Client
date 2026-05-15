@@ -1,0 +1,298 @@
+﻿@page "/reports/hri"
+@using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIMetricsDtos
+@inject NavigationManager NavigationManager
+@inject IHRIService HRIService
+@inject ISnackbar Snackbar
+
+@if(_loadingPage)
+{
+    <div class="loading-overlay">
+        <div class="loading-content">
+            <div class="logo-container">
+                <MudIcon Icon="@Icons.Material.Filled.SettingsSuggest" Color="Color.Primary" Style="font-size: 5rem;" />
+                <div class="pulse-ring"></div>
+            </div>
+
+            <MudText Typo="Typo.h5" Class="mt-4 fw-bold" Style="color: #444; letter-spacing: 1px;">
+                CARGANDO INFORMACIÓN
+            </MudText>
+            
+            <MudText Typo="Typo.body2" Class="mb-4" Style="color: #888;">
+                Por favor, espera un momento.
+            </MudText>
+
+            <div style="width: 250px;">
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Height="6" Buffer="true" Class="rounded-pill" />
+            </div>
+
+            <MudText Typo="Typo.caption" Class="mt-6" Style="opacity: 0.6; font-family: monospace;">
+                Estatus del sistema: Obteniendo...
+            </MudText>
+        </div>
+    </div>
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.False" Class="hri-page px-0">
+        <MudGrid Spacing="2" Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="hri-kpi-card hri-kpi-primary pa-4" Elevation="0">
+                    <div class="hri-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Assessment" Color="Color.Primary"/>
+                        <MudText Typo="Typo.caption">HRI Totales</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">@_KPIs.TotalHri</MudText>
+                    <MudText Typo="Typo.caption" Class="hri-kpi-sub mt-1">Registros consolidados generales</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="hri-kpi-card hri-kpi-info pa-4" Elevation="0">
+                    <div class="hri-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Insights" Color="Color.Tertiary"/>
+                        <MudText Typo="Typo.caption">Revisiones</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">@_KPIs.TodayRevisions</MudText>
+                    <MudText Typo="Typo.caption" Class="hri-kpi-sub mt-1">Registros acumulados de hoy</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="hri-kpi-card hri-kpi-success pa-4" Elevation="0">
+                    <div class="hri-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.Timer" Color="Color.Warning"/>
+                        <MudText Typo="Typo.caption">Turno Crítico</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">@_KPIs.CriticCycle</MudText>
+                    <MudText Typo="Typo.caption" Class="hri-kpi-sub mt-1">Turno con mayor tasa de problemas registrados</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="hri-kpi-card hri-kpi-warn pa-4" Elevation="0">
+                    <div class="hri-kpi-head">
+                        <MudIcon Icon="@Icons.Material.Filled.MonitorHeart" Color="Color.Error"/>
+                        <MudText Typo="Typo.caption">Salud Global</MudText>
+                    </div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold mt-2">@_KPIs.GlobalHealth.ToString("F2") %</MudText>
+                    <MudText Typo="Typo.caption" Class="hri-kpi-sub mt-1">Procentaje de revisiones correctas</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+
+        <MudGrid>
+            @* Encabezado Dinámico *@
+            @* <MudItem xs="12">
+                <MudPaper Class="d-flex align-center justify-space-between pa-4" Elevation="3" Style="border-left: 8px solid var(--mud-palette-primary);">
+                    <div>
+                        <MudText Typo="Typo.h4" Color="Color.Primary"><b>HRI Asset Intelligence</b></MudText>
+                        <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Monitoreo Universal de Inspecciones Digitalizadas</MudText>
+                    </div>
+                    <div class="d-flex gap-4">
+                        <MudSelect T="string" Label="Filtrar Departamento" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width: 250px;">
+                            <MudSelectItem Value="@("Todos")">Todos los Activos</MudSelectItem>
+                            <MudSelectItem Value="@("Montacargas")">Montacargas</MudSelectItem>
+                            <MudSelectItem Value="@("Brazos Robóticos")">Brazos Robóticos</MudSelectItem>
+                            <MudSelectItem Value="@("Plataformas")">Plataformas</MudSelectItem>
+                        </MudSelect>
+                        <MudDateRangePicker Label="Periodo de Revisión" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </div>
+                </MudPaper>
+            </MudItem> *@
+
+            @* Gráficos Dinámicos *@
+            <MudItem xs="12" md="8">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-4">Distribución de Fallas por Linea</MudText>
+                    <MudChart ChartType="ChartType.Bar" ChartSeries="@LinesChart.Series" XAxisLabels="@LinesChart.Labels" Width="100%" Height="300px" ChartOptions="@_chartOptions" />
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.h6" Class="mb-4">Estado General</MudText>
+                    <MudChart ChartType="ChartType.Donut" InputData="@GeneralStatusChart.Data" InputLabels="@GeneralStatusChart.Labels" Width="100%" Height="300px" />
+                </MudPaper>
+            </MudItem>
+
+            @* Tabla de Registros Recientes (Efecto Digitalización) *@
+            <MudItem xs="12">
+                <MudTable Items="@_Revisiones" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="2" Class="mt-4">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6">Últimas revisiones en HRI registradas</MudText>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_searchString" Placeholder="Buscar por HRI o Línea..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>HRI</MudTh>
+                        <MudTh>Punto de Revision</MudTh>
+                        <MudTh>linea</MudTh>
+                        <MudTh>Turno</MudTh>
+                        <MudTh>Día</MudTh>
+                        <MudTh>Mes</MudTh>
+                        <MudTh>Estado</MudTh>
+                        <MudTh>Acción</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="ID">@context.HRIName</MudTd>
+                        <MudTd DataLabel="Tipo">@context.RevisionPointName</MudTd>
+                        <MudTd DataLabel="Área">@context.Line</MudTd>
+                        <MudTd DataLabel="Turno">@context.Cycle</MudTd>
+                        <MudTd DataLabel="Críticos">
+                            <MudText Color="Color.Primary" Typo="Typo.body2">@context.Day</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Críticos">
+                            <MudText Color="Color.Primary" Typo="Typo.body2">@context.Month</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Estado">
+                            <MudIcon Icon=@GetIcon(context.Status) Color=@GetColor(context.Status) />
+                        </MudTd>
+                        <MudTd>
+                            <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.FileOpen" Color="Color.Primary" Size="Size.Small" OnClick="@(() => GoToDetails(context.HriId))">
+                                Ver HRI
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+}
+
+<style>
+    /* Estilos para el overlay de carga */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .loading-content {
+        background: white;
+        padding: 3rem;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .logo-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    /* Estilos para KPIs*/
+    .hri-kpi-card {
+        border-radius: 14px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(130deg, #f8fafc 0%, #ffffff 100%);
+    }
+    .hri-kpi-primary { background: linear-gradient(130deg, #f8fafc 0%, #ffffff 100%); border-left: 4px solid var(--mud-palette-primary); }
+    .hri-kpi-info { border-left: 4px solid var(--mud-palette-tertiary); }
+    .hri-kpi-success { border-left: 4px solid var(--mud-palette-warning); }
+    .hri-kpi-warn { border-left: 4px solid var(--mud-palette-error); }
+    .hri-kpi-head { display: flex; align-items: center; gap: 0.45rem; color: rgba(0, 0, 0, 0.72); }
+    .hri-kpi-sub { color: rgba(0, 0, 0, 0.62); }
+</style>
+
+@code {
+    private List<HriRecentRevisionsDto> _Revisiones { get; set; } = new();
+    private HriKpis _KPIs { get; set; } = new();
+    private LinesChartData LinesChart { get; set; } = new();
+    private GeneralStatusChartData GeneralStatusChart { get; set; } = new();
+
+    private bool _loadingPage = true;
+    private string _searchString = "";
+    private int _areaId = 0;
+    private readonly ChartOptions _chartOptions = new() { YAxisTicks = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loadingPage = true;
+        await GetHriKpis();
+        await GetLinesChartData();
+        await GetGeneralStatusChartData();
+        await GetRecentRevisions();
+        _loadingPage = false;
+    }
+
+    private async Task GetHriKpis()
+    {
+        var response = await HRIService.GetHriKPIs();
+        if (response.Success)
+            _KPIs = response.Data;
+        else
+            Snackbar.Add("Error al obtener KPIs de HRI: " + response.Message, Severity.Error);
+    }
+
+    private async Task GetLinesChartData()
+    {
+        var response = await HRIService.GetLinesChartData(_areaId);
+        if (response.Success)
+            LinesChart = response.Data;
+        else
+            Snackbar.Add("Error al obtener datos para gráfico de líneas: " + response.Message, Severity.Error);
+
+        if(LinesChart.Labels.Contains(null))
+            LinesChart.Labels = LinesChart.Labels
+                .Select(label => label ?? "Nulo")
+                .ToArray();
+    }
+
+    private async Task GetGeneralStatusChartData()
+    {
+        var response = await HRIService.GetGeneralStatusChartData(_areaId);
+        if (response.Success)
+            GeneralStatusChart = response.Data;
+        else
+            Snackbar.Add("Error al obtener datos para gráfico de estado general: " + response.Message, Severity.Error);
+    }
+
+    private async Task GetRecentRevisions()
+    {
+        var response = await HRIService.GetRecentRevisions(_areaId, null);
+        if (response.Success)
+            _Revisiones = response.Data;
+        else
+            Snackbar.Add("Error al obtener revisiones recientes: " + response.Message, Severity.Error);
+    }
+
+    private string GetIcon(string estado) => estado.ToUpper() switch
+    {
+        "OK" => Icons.Material.Filled.CheckCircle,
+        "NG" => Icons.Material.Filled.Error,
+        "NA" => Icons.Material.Filled.RemoveCircle,
+        _    => Icons.Material.Filled.Help // fallback opcional
+    };
+
+    private Color GetColor(string estado) => estado.ToUpper() switch
+    {
+        "OK" => Color.Success,
+        "NG" => Color.Error,
+        "NA" => Color.Info,
+        _    => Color.Default // fallback opcional
+    };
+
+    private void GoToDetails(int HriId)
+    {
+        NavigationManager.NavigateTo($"/hri/details/{HriId}");
+    }
+}
