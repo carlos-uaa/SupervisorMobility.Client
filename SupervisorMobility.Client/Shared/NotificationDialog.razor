@@ -7,6 +7,16 @@
     .input-section {
         margin-bottom: 1.5rem;
     }
+    .chip-delete {
+        opacity: 0;
+        transition: opacity 150ms ease-in-out;
+        margin-left: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+    }
+    .chip-hoverable:hover .chip-delete {
+        opacity: 1;
+    }
 </style>
 
 <MudDialog>
@@ -65,13 +75,14 @@
         @if (_notificationModel.IsUrgent)
         {
             <div>
-                @foreach (var email in _notificationModel.CCPEmails?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>())
-                {
-                    <MudChip Color="Color.Secondary" Variant="Variant.Outlined" Class="me-1 mb-1">
-                        <MudIcon Icon="@Icons.Material.Filled.Email" Class="me-1"/>
-                        @email
-                    </MudChip>
-                }
+                    @foreach (var email in _notificationModel.CCPEmails?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>())
+                    {
+                        <MudChip Color="Color.Secondary" Variant="Variant.Outlined" Class="me-1 mb-1 chip-hoverable" OnClick="@(async (e) => { EditCcpEmail(email); })">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Class="me-1"/>
+                            <span>@email</span>
+                            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="chip-delete" OnClick="@(async (e) => { RemoveCcpEmail(email); })" />
+                        </MudChip>
+                    }
             </div>
             <div class="input-section">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -164,6 +175,27 @@
                 _notificationModel.CCPEmails += ";" + ccpEmail;
             }
             ccpEmail = "";
+        }
+    }
+
+    private void RemoveCcpEmail(string email)
+    {
+        if (!string.IsNullOrEmpty(_notificationModel.CCPEmails))
+        {
+            var emails = _notificationModel.CCPEmails.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+            emails.Remove(email);
+            _notificationModel.CCPEmails = string.Join(";", emails);
+        }
+    }
+
+    private void EditCcpEmail(string email)
+    {
+        if (!string.IsNullOrEmpty(_notificationModel.CCPEmails))
+        {
+            var emails = _notificationModel.CCPEmails.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+            emails.Remove(email);
+            _notificationModel.CCPEmails = string.Join(";", emails);
+            ccpEmail = email;
         }
     }
 
