@@ -8,12 +8,25 @@ using SupervisorMobility.Clinet.Data.Entities.Dtos.HRIHistory;
 
 namespace TestSupervisorMobility.Client.Services
 {
-    public sealed class FakeHRIService : IHRIService
+    public class FakeHRIService : IHRIService
     {
+        public bool CreateHriCalled { get; private set; }
+        public CreateHRIDto? LastCreateDto { get; private set; }
+
         public Task<ServiceResponse<List<GetHRIDto>>> GetAllHRI() => throw new NotImplementedException();
         public Task<ServiceResponse<GetHRIDto>> GetHRIById(int id) => throw new NotImplementedException();
         public Task<ServiceResponse<GetHRIDto>> GetDailyByMonthAndYear(int hriId, int month, int year) => throw new NotImplementedException();
-        public Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto) => throw new NotImplementedException();
+        public virtual Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto)
+        {
+            CreateHriCalled = true;
+            LastCreateDto = dto;
+
+            return Task.FromResult(new ServiceResponse<GetHRIDto>
+            {
+                Success = true,
+                Data = new GetHRIDto()
+            });
+        }
         public Task<ServiceResponse<bool>> DeleteHRI(int id) => throw new NotImplementedException();
         public Task<ServiceResponse<List<HRIToTableDto>>> GetHRISoftInfoList() => throw new NotImplementedException();
         public Task<ServiceResponse<bool>> UpdateHRI(int HriId, UpdateHRIDto dto) => throw new NotImplementedException();
