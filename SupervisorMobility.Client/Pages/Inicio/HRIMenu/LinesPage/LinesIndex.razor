@@ -1,4 +1,7 @@
 ﻿@page "/hri/lines"
+@inject IDialogService DialogService
+@inject IHRILinesService LinesService
+@inject ISnackbar Snackbar
 
 @* Contenedor principal con padding y fondo suave *@
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
@@ -42,7 +45,7 @@
                            StartIcon="@Icons.Material.Filled.Add" 
                            OnClick="CreateNew"
                            Class="rounded-pill px-6"
-                           Size="Size.Large">
+                           Size="Size.Small">
                     Nuevo Registro
                 </MudButton>
             </MudItem>
@@ -50,7 +53,7 @@
 
         @* DataGrid Principal con Estilizado Avanzado *@
         <MudDataGrid Items="@_hriLines" 
-                     T="HRILine"
+                     T="HRILines"
                      Hover="true" 
                      Striped="false"
                      Bordered="false"
@@ -75,11 +78,11 @@
                     <CellTemplate>
                         @if (context.Item.IsActive)
                         {
-                            <MudChip T="string" Color="Color.Success" Variant="Variant.Text" Size="Size.Small" Class="font-weight-bold rounded-pill mud-bg-success-light">ACTIVO</MudChip>
+                            <MudChip Color="Color.Success" Variant="Variant.Text" Size="Size.Small" Class="font-weight-bold rounded-pill mud-bg-success-light">ACTIVO</MudChip>
                         }
                         else
                         {
-                            <MudChip T="string" Color="Color.Warning" Variant="Variant.Text" Size="Size.Small" Class="font-weight-bold rounded-pill mud-bg-warning-light">INACTIVO</MudChip>
+                            <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small" Class="font-weight-bold rounded-pill mud-bg-warning-light">INACTIVO</MudChip>
                         }
                     </CellTemplate>
                 </TemplateColumn>
@@ -103,14 +106,13 @@
             </Columns>
             
             <PagerContent>
-                <MudDataGridPager T="HRILine" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
+                <MudDataGridPager T="HRILines" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
             </PagerContent>
         </MudDataGrid>
 
     </MudPaper>
 </MudContainer>
 
-@* Estilos CSS específicos para esta página (puedes moverlos a tu .css principal) *@
 <style>
     .modern-grid-header th {
         background-color: var(--mud-palette-background-grey) !important;
@@ -138,29 +140,29 @@
 @code {
     private bool _loading = true;
     private string _searchString = "";
-    private List<HRILine> _hriLines = new();
-    private MudDataGrid<HRILine> _dataGrid = null!;
+    private List<HRILines> _hriLines = new();
+    private MudDataGrid<HRILines> _dataGrid = null!;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadLinesAsync();
+    }
+
+    private async Task LoadLinesAsync()
+    {
         _loading = true;
-        // Simulación de carga de datos (API)
-        await Task.Delay(1000); 
-        
-        _hriLines = new List<HRILine>
-        {
-            new() { Id = 1, Code = "HR-L-001", LineName = "Northern Distribution", IsActive = true },
-            new() { Id = 2, Code = "HR-L-002", LineName = "Southern Processing", IsActive = true },
-            new() { Id = 3, Code = "HR-L-003", LineName = "Maintenance Line A (Inactive)", IsActive = false },
-            new() { Id = 4, Code = "HR-L-004", LineName = "Western Logistics", IsActive = true },
-            new() { Id = 5, Code = "HR-L-005", LineName = "Eastern Operations", IsActive = false },
-        };
-        
+        var response = await LinesService.GetAllHRILinesAsync();
+
+        if (response != null && response.Success && response.Data != null)
+            _hriLines = response.Data;
+        else
+            _hriLines = new List<HRILines>();
+
         _loading = false;
     }
 
     // Lógica de búsqueda rápida del DataGrid
-    private Func<HRILine, bool> QuickFilter => x =>
+    private Func<HRILines, bool> QuickFilter => x =>
     {
         if (string.IsNullOrWhiteSpace(_searchString))
             return true;
@@ -175,17 +177,96 @@
     };
 
     // Métodos para botones de acción (Implementar navegación o diálogos aquí)
-    private void CreateNew() => Console.WriteLine("Navegar a creación de HRI Line");
-    private void ViewDetails(HRILine item) => Console.WriteLine($"Viendo detalles de: {item.Code}");
-    private void EditItem(HRILine item) => Console.WriteLine($"Editando: {item.Code}");
-    private void DeleteItem(HRILine item) => Console.WriteLine($"Eliminando: {item.Id}");
-
-    // Definición de la Entidad
-    public class HRILine
+    private async Task DeleteItem(HRILines item)
     {
-        public int Id { get; set; }
-        public string Code { get; set; } = string.Empty;
-        public string LineName { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
+        // Dialogo de confirmación antes de eliminar
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Eliminar Linea" },
+                { "ContentText", "¿Estás seguro de que deseas eliminar esta Linea?" },
+                { "ButtonText", "Eliminar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Eliminar Linea", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) return;
+
+        // Llamada al servicio para eliminar la Linea
+        var response = await LinesService.DeleteHRILineAsync(item.Id);
+        if (response.Success)
+            Snackbar.Add("Linea eliminada correctamente.", Severity.Success);
+        else
+            Snackbar.Add("Error al eliminar la Linea.", Severity.Error);
+
+        StateHasChanged();        
+    }
+
+    private async Task CreateNew()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Model", new HRILines() { IsActive = true } }, // Valores por defecto
+            { "Mode", LinesFormDialog.FormMode.Create }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, ClassBackground = "modern-dialog-bg" };
+        var dialog = await DialogService.ShowAsync<LinesFormDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is HRILines newRecord)
+        {
+            var response = await LinesService.CreateHRILineAsync(newRecord);
+            if (response != null && response.Success)
+            {
+                await LoadLinesAsync();
+                Snackbar.Add("Registro creado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al crear el registro: " + response?.Message, Severity.Error);
+        }
+    }
+
+    private async Task EditItem(HRILines item)
+    {
+        var itemToEdit = new HRILines { Id = item.Id, Code = item.Code, LineName = item.LineName, IsActive = item.IsActive };
+
+        var parameters = new DialogParameters<LinesFormDialog>
+        {
+            { "Model", itemToEdit },
+            { "Mode", LinesFormDialog.FormMode.Edit }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<LinesFormDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is HRILines updatedRecord)
+        {
+            var response = await LinesService.UpdateHRILineAsync(updatedRecord);
+            if (response != null && response.Success)
+            {
+                updatedRecord = response.Data;
+                Snackbar.Add("Registro actualizado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al actualizar el registro: " + response?.Message, Severity.Error);
+        }
+    }
+
+    private void ViewDetails(HRILines item)
+    {
+        var parameters = new DialogParameters<LinesFormDialog>
+        {
+            { "Model", item },
+            { "Mode", LinesFormDialog.FormMode.View }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<LinesFormDialog>("", parameters, options);
     }
 }

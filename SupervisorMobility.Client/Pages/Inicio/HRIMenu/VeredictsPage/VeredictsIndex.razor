@@ -1,0 +1,273 @@
+﻿@page "/hri/veredicts"
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IHRIRevisionItemsService RevisionService
+
+@* Contenedor principal con padding y fondo suave *@
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
+    
+    @* Encabezado de la página fuera de la tarjeta para un look moderno *@
+    <MudGrid Class="mb-6" Justify="Justify.FlexStart" AlignItems="AlignItems.Center">
+        <MudItem>
+            <MudIcon Icon="@Icons.Material.Filled.AppSettingsAlt" Color="Color.Primary" Size="Size.Large" Class="mr-3"/>
+        </MudItem>
+        <MudItem>
+            <MudText Typo="Typo.h4" Class="mud-text-primary">HRI Lines</MudText>
+            <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Administración & Gestión</MudText>
+        </MudItem>
+    </MudGrid>
+
+    @* Tarjeta principal que contiene los controles y la grilla *@
+    <MudPaper Elevation="4" Class="pa-6 rounded-lg mb-8">
+        
+        @* Panel de Control Superior (Búsqueda y Nuevo) *@
+        <MudGrid Class="mb-6" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudItem xs="12" sm="8" md="6">
+                <MudTextField @bind-Value="_searchString" 
+                              Placeholder="Buscar por Código o Nombre de Línea..." 
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" 
+                              IconSize="Size.Medium" 
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Class="mt-0"
+                              FullWidth="true"
+                              Clearable="true">
+                </MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="4" md="3" Class="d-flex justify-sm-end">
+                <MudTooltip Text="Administrar Columnas">
+                    <MudIconButton Icon="@Icons.Material.Filled.ViewColumn" 
+                                   OnClick="@(() => _dataGrid.ShowColumnsPanel())" />
+                </MudTooltip>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Tertiary" 
+                           StartIcon="@Icons.Material.Filled.Add" 
+                           OnClick="CreateNew"
+                           Class="rounded-pill px-6"
+                           Size="Size.Small">
+                    Nuevo Registro
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+
+        @* DataGrid Principal con Estilizado Avanzado *@
+        <MudDataGrid Items="@_veredicts" 
+                     T="Veredict"
+                     Hover="true" 
+                     Striped="false"
+                     Bordered="false"
+                     HeaderClass="modern-grid-header"
+                     RowClassFunc="@((item, index) => index % 2 == 0 ? "" : "mud-bg-alternating")"
+                     Filterable="true" 
+                     QuickFilter="@QuickFilter"
+                     Hideable="true"
+                     FixedHeader="true"
+                     Height="calc(100vh - 350px)"
+                     Loading="@_loading"
+                     Class="modern-datagrid rounded"
+                     @ref="_dataGrid">
+            
+            <Columns>
+                <PropertyColumn Property="x => x.Id" Title="ID" Sortable="true" InitialSortDirection="SortDirection.Ascending" />
+                <PropertyColumn Property="x => x.Code" Title="Código" Sortable="true" />
+                <PropertyColumn Property="x => x.Description" Title="Descripción" Sortable="true" />
+                
+                @* Columna de Estado Personalizada con Chips Modernos *@
+                <TemplateColumn Title="Estado" Sortable="true" SortBy="x => x.IsActive">
+                    <CellTemplate>
+                        @if (context.Item.IsActive)
+                        {
+                            <MudChip Color="Color.Success" Variant="Variant.Text" Size="Size.Small" Class="font-weight-bold rounded-pill mud-bg-success-light">ACTIVO</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small" Class="font-weight-bold rounded-pill mud-bg-warning-light">INACTIVO</MudChip>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                
+                @* Columna de Acciones con Botones Estilizados *@
+                <TemplateColumn Title="Acciones" HeaderStyle="text-align:right;" CellStyle="text-align:right;" Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row="true" Spacing="1" Justify="Justify.FlexEnd">
+                            <MudTooltip Text="Ver Detalles">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" OnClick="@(() => ViewDetails(context.Item))" Class="rounded-lg mud-bg-info-light"/>
+                            </MudTooltip>
+                            <MudTooltip Text="Editar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small" OnClick="@(() => EditItem(context.Item))" Class="rounded-lg mud-bg-warning-light"/>
+                            </MudTooltip>
+                            <MudTooltip Text="Eliminar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item))" Class="rounded-lg mud-bg-error-light"/>
+                            </MudTooltip>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            
+            <PagerContent>
+                <MudDataGridPager T="Veredict" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
+            </PagerContent>
+        </MudDataGrid>
+
+    </MudPaper>
+</MudContainer>
+
+<style>
+    .modern-grid-header th {
+        background-color: var(--mud-palette-background-grey) !important;
+        color: var(--mud-palette-text-primary) !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+
+    .mud-bg-alternating {
+        background-color: #fcfcfc;
+    }
+
+    /* Colores de fondo suaves para botones de acción y chips */
+    .mud-bg-success-light { background-color: rgba(76, 175, 80, 0.1); }
+    .mud-bg-warning-light { background-color: rgba(255, 152, 0, 0.1); }
+    .mud-bg-info-light { background-color: rgba(33, 150, 243, 0.1); }
+    .mud-bg-error-light { background-color: rgba(244, 67, 54, 0.1); }
+    
+    .modern-datagrid .mud-table-container {
+        border: 1px solid var(--mud-palette-divider);
+    }
+</style>
+
+@code {
+    private bool _loading = true;
+    private string _searchString = "";
+    private List<Veredict> _veredicts = new();
+    private MudDataGrid<Veredict> _dataGrid = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVeredictsAsync();
+    }
+
+    private async Task LoadVeredictsAsync()
+    {
+        _loading = true;
+
+        var response  = await RevisionService.GetAllVeredicts();
+        if(response.Success)
+            _veredicts = response.Data;
+        else
+            Snackbar.Add("No se encontraron o no existen los veredictos", Severity.Error);
+
+        _loading = false;
+    }
+
+    // Lógica de búsqueda rápida del DataGrid
+    private Func<Veredict, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.Code.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Description.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    // Métodos para botones de acción (Implementar navegación o diálogos aquí)
+    private async Task DeleteItem(Veredict item)
+    {
+        // Dialogo de confirmación antes de eliminar
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Eliminar Criterio" },
+                { "ContentText", "¿Estás seguro de que deseas eliminar este criterio?" },
+                { "ButtonText", "Eliminar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Eliminar Criterio", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) return;
+
+        // Llamada al servicio para eliminar el Criterio
+        var response = await RevisionService.DeleteVeredict(item.Id);
+        if (response.Success)
+            Snackbar.Add("Criterio eliminado correctamente.", Severity.Success);
+        else
+            Snackbar.Add("Error al eliminar el Criterio.", Severity.Error);
+
+        StateHasChanged();
+    }
+
+    private async Task CreateNew()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Model", new Veredict() { IsActive = true } }, // Valores por defecto
+            { "Mode", VeredictsFormDialog.FormMode.Create }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, ClassBackground = "modern-dialog-bg" };
+        var dialog = await DialogService.ShowAsync<VeredictsFormDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is Veredict newRecord)
+        {
+            var response = await RevisionService.CreateVeredict(newRecord);
+            if (response != null && response.Success)
+            {
+                newRecord = response.Data;
+                await LoadVeredictsAsync();
+                Snackbar.Add("Registro creado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al crear el registro: " + response?.Message, Severity.Error);
+        }
+    }
+
+    private async Task EditItem(Veredict item)
+    {
+        var itemToEdit = new Veredict { Id = item.Id, Code = item.Code, Description = item.Description, IsActive = item.IsActive };
+
+        var parameters = new DialogParameters<VeredictsFormDialog>
+        {
+            { "Model", itemToEdit },
+            { "Mode", VeredictsFormDialog.FormMode.Edit }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<VeredictsFormDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is Veredict updatedRecord)
+        {
+            var response = await RevisionService.UpdateVeredict(updatedRecord.Id, updatedRecord);
+            if (response != null && response.Success)
+            {
+                updatedRecord = response.Data;
+                Snackbar.Add("Registro actualizado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al actualizar el registro: " + response?.Message, Severity.Error);
+        }
+    }
+
+    private void ViewDetails(Veredict item)
+    {
+        var parameters = new DialogParameters<VeredictsFormDialog>
+        {
+            { "Model", item },
+            { "Mode", VeredictsFormDialog.FormMode.View }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<VeredictsFormDialog>("", parameters, options);
+    }
+}

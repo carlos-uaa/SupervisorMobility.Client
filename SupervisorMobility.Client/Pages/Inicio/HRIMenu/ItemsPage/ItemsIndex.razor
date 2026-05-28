@@ -1,0 +1,273 @@
+﻿@page "/hri/items"
+@inject IDialogService DialogService
+@inject IHRIItemsService ItemsService
+@inject ISnackbar Snackbar
+
+@* Contenedor principal con padding y fondo suave *@
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-8">
+    
+    @* Encabezado de la página fuera de la tarjeta para un look moderno *@
+    <MudGrid Class="mb-6" Justify="Justify.FlexStart" AlignItems="AlignItems.Center">
+        <MudItem>
+            <MudIcon Icon="@Icons.Material.Filled.AppSettingsAlt" Color="Color.Primary" Size="Size.Large" Class="mr-3"/>
+        </MudItem>
+        <MudItem>
+            <MudText Typo="Typo.h4" Class="mud-text-primary">HRI Items</MudText>
+            <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Administración & Gestión</MudText>
+        </MudItem>
+    </MudGrid>
+
+    @* Tarjeta principal que contiene los controles y la grilla *@
+    <MudPaper Elevation="4" Class="pa-6 rounded-lg mb-8">
+        
+        @* Panel de Control Superior (Búsqueda y Nuevo) *@
+        <MudGrid Class="mb-6" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudItem xs="12" sm="8" md="6">
+                <MudTextField @bind-Value="_searchString" 
+                              Placeholder="Buscar por Código o Nombre de Item..." 
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" 
+                              IconSize="Size.Medium" 
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Class="mt-0"
+                              FullWidth="true"
+                              Clearable="true">
+                </MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="4" md="3" Class="d-flex justify-sm-end">
+                <MudTooltip Text="Administrar Columnas">
+                    <MudIconButton Icon="@Icons.Material.Filled.ViewColumn" 
+                                   OnClick="@(() => _dataGrid.ShowColumnsPanel())" />
+                </MudTooltip>
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Tertiary" 
+                           StartIcon="@Icons.Material.Filled.Add" 
+                           OnClick="CreateNew"
+                           Class="rounded-pill px-6"
+                           Size="Size.Small">
+                    Nuevo Registro
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+
+        @* DataGrid Principal con Estilizado Avanzado *@
+        <MudDataGrid Items="@_hriItems" 
+                     T="HRIItem"
+                     Hover="true" 
+                     Striped="false"
+                     Bordered="false"
+                     HeaderClass="modern-grid-header"
+                     RowClassFunc="@((item, index) => index % 2 == 0 ? "" : "mud-bg-alternating")"
+                     Filterable="true" 
+                     QuickFilter="@QuickFilter"
+                     Hideable="true"
+                     FixedHeader="true"
+                     Height="calc(100vh - 350px)"
+                     Loading="@_loading"
+                     Class="modern-datagrid rounded"
+                     @ref="_dataGrid">
+            
+            <Columns>
+                <PropertyColumn Property="x => x.Id" Title="ID" Sortable="true" InitialSortDirection="SortDirection.Ascending" />
+                <PropertyColumn Property="x => x.ControlNumber" Title="Numero de Control" Sortable="true" />
+                <PropertyColumn Property="x => x.Name" Title="Nombre de Item" Sortable="true" />
+                
+                @* Columna de Estado Personalizada con Chips Modernos *@
+                <TemplateColumn Title="Estado" Sortable="true" SortBy="x => x.IsActive">
+                    <CellTemplate>
+                        @if (context.Item.IsActive)
+                        {
+                            <MudChip Color="Color.Success" Variant="Variant.Text" Size="Size.Small" Class="font-weight-bold rounded-pill mud-bg-success-light">ACTIVO</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip Color="Color.Warning" Variant="Variant.Text" Size="Size.Small" Class="font-weight-bold rounded-pill mud-bg-warning-light">INACTIVO</MudChip>
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+                
+                @* Columna de Acciones con Botones Estilizados *@
+                <TemplateColumn Title="Acciones" HeaderStyle="text-align:right;" CellStyle="text-align:right;" Sortable="false">
+                    <CellTemplate>
+                        <MudStack Row="true" Spacing="1" Justify="Justify.FlexEnd">
+                            <MudTooltip Text="Ver Detalles">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Variant="Variant.Filled" Size="Size.Small" OnClick="@(() => ViewDetails(context.Item))" Class="rounded-lg mud-bg-info-light"/>
+                            </MudTooltip>
+                            <MudTooltip Text="Editar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Variant="Variant.Filled" Size="Size.Small" OnClick="@(() => EditItem(context.Item))" Class="rounded-lg mud-bg-warning-light"/>
+                            </MudTooltip>
+                            <MudTooltip Text="Eliminar">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" Size="Size.Small" OnClick="@(() => DeleteItem(context.Item))" Class="rounded-lg mud-bg-error-light"/>
+                            </MudTooltip>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            
+            <PagerContent>
+                <MudDataGridPager T="HRIItem" InfoFormat="Mostrando {first_item}-{last_item} de {all_items}" RowsPerPageString="Filas:" />
+            </PagerContent>
+        </MudDataGrid>
+
+    </MudPaper>
+</MudContainer>
+
+<style>
+    .modern-grid-header th {
+        background-color: var(--mud-palette-background-grey) !important;
+        color: var(--mud-palette-text-primary) !important;
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+
+    .mud-bg-alternating {
+        background-color: #fcfcfc;
+    }
+
+    /* Colores de fondo suaves para botones de acción y chips */
+    .mud-bg-success-light { background-color: rgba(76, 175, 80, 0.1); }
+    .mud-bg-warning-light { background-color: rgba(255, 152, 0, 0.1); }
+    .mud-bg-info-light { background-color: rgba(33, 150, 243, 0.1); }
+    .mud-bg-error-light { background-color: rgba(244, 67, 54, 0.1); }
+    
+    .modern-datagrid .mud-table-container {
+        border: 1px solid var(--mud-palette-divider);
+    }
+</style>
+
+@code {
+    private bool _loading = true;
+    private string _searchString = "";
+    private List<HRIItem> _hriItems = new();
+    private MudDataGrid<HRIItem> _dataGrid = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItemsAsync();
+    }
+
+    private async Task LoadItemsAsync()
+    {
+        _loading = true;
+        var response = await ItemsService.GetAllHRIItemsAsync();
+
+        if (response != null && response.Success && response.Data != null)
+            _hriItems = response.Data;
+        else
+            _hriItems = new List<HRIItem>();
+
+        _loading = false;
+    }
+
+    // Lógica de búsqueda rápida del DataGrid
+    private Func<HRIItem, bool> QuickFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (x.ControlNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    // Métodos para botones de acción (Implementar navegación o diálogos aquí)
+    private async Task DeleteItem(HRIItem item)
+    {
+        // Dialogo de confirmación antes de eliminar
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Eliminar Item" },
+                { "ContentText", "¿Estás seguro de que deseas eliminar este Item?" },
+                { "ButtonText", "Eliminar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Error },
+                { "Icon", @Icons.Material.Outlined.Delete },
+                { "IconColor", Color.Error }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Eliminar Item", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) return;
+
+        // Llamada al servicio para eliminar el Item
+        var response = await ItemsService.DeleteHRIItemAsync(item.Id);
+        if (response.Success)
+            Snackbar.Add("Item eliminado correctamente.", Severity.Success);
+        else
+            Snackbar.Add("Error al eliminar el Item.", Severity.Error);
+
+        StateHasChanged();        
+    }
+
+    private async Task CreateNew()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Model", new HRIItem() { IsActive = true } }, // Valores por defecto
+            { "Mode", ItemsFormDialog.FormMode.Create }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true, ClassBackground = "modern-dialog-bg" };
+        var dialog = await DialogService.ShowAsync<ItemsFormDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is HRIItem newRecord)
+        {
+            var response = await ItemsService.CreateHRIItemAsync(newRecord);
+            if (response != null && response.Success)
+            {
+                await LoadItemsAsync();
+                Snackbar.Add("Registro creado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al crear el registro: " + response?.Message, Severity.Error);
+        }
+    }
+
+    private async Task EditItem(HRIItem item)
+    {
+        // Importante: Clonar el objeto para no editar la fila directamente antes de darle "Guardar"
+        var itemToEdit = new HRIItem { Id = item.Id, ControlNumber = item.ControlNumber, Name = item.Name, IsActive = item.IsActive };
+
+        var parameters = new DialogParameters<ItemsFormDialog>
+        {
+            { "Model", itemToEdit },
+            { "Mode", ItemsFormDialog.FormMode.Edit }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<ItemsFormDialog>("", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is HRIItem updatedRecord)
+        {
+            var response = await ItemsService.UpdateHRIItemAsync(updatedRecord);
+            if (response != null && response.Success)
+            {
+                updatedRecord = response.Data;
+                Snackbar.Add("Registro actualizado exitosamente", Severity.Success);
+            }
+            else
+                Snackbar.Add("Error al actualizar el registro: " + response?.Message, Severity.Error);
+        }
+    }
+
+    private void ViewDetails(HRIItem item)
+    {
+        var parameters = new DialogParameters<ItemsFormDialog>
+        {
+            { "Model", item },
+            { "Mode", ItemsFormDialog.FormMode.View }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<ItemsFormDialog>("", parameters, options);
+    }
+}

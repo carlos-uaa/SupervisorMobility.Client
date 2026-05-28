@@ -1,0 +1,360 @@
+@page "/hri/history"
+@page "/hri/history/{hriID:int}"
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@using SupervisorMobility.Clinet.Data.Entities.Dtos.HRIHistory
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IHRIService HRIService
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-10">
+
+    <div class="d-flex justify-space-between align-center mb-8 px-2">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 700;">
+                Historial de Acciones
+            </MudText>
+            <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mt-1">
+                Registro detallado de todas las acciones realizadas en el documento
+            </MudText>
+        </div>
+    </div>
+
+    <MudGrid Spacing="4">
+        @* FILTROS Y BÚSQUEDA *@
+        <MudItem xs="12">
+            <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-info)">
+                <div class="d-flex align-center mb-4">
+                    <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.FilterList" Size="Size.Small" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h6" Style="font-weight: 600;">Filtros de Búsqueda</MudText>
+                </div>
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudTextField T="string" 
+                                      @bind-Value="_searchString" 
+                                      Label="Buscar por acción o usuario" 
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Clearable="true"
+                                      
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudDatePicker T="DateTime?" 
+                                       @bind-Date="_filterDateFrom"
+                                       Label="Desde"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                        />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudDatePicker T="DateTime?" 
+                                       @bind-Date="_filterDateTo"
+                                       Label="Hasta"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                        />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                        <div class="d-flex gap-2 justify-end">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ClearFilters">
+                                Limpiar Filtros
+                            </MudButton>
+                        </div>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        @* TABLA DE HISTORIAL *@
+        <MudItem xs="12">
+            <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-warning)">
+                <div class="d-flex align-center mb-4">
+                    <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Small" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h6" Style="font-weight: 600;">Registro de Actividades</MudText>
+                    <MudSpacer />
+                    <MudChip Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">
+                        Total: @_filteredHistory.Count registros
+                    </MudChip>
+                </div>
+
+                @if (_isLoading)
+                {
+                    <div class="d-flex flex-column align-center justify-center py-10">
+                        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="mb-4" />
+                        <MudText Typo="Typo.body1" Class="mud-text-secondary">Cargando historial...</MudText>
+                    </div>
+                }
+                else if (_filteredHistory.Count == 0)
+                {
+                    <div class="d-flex flex-column align-center justify-center py-10" style="border: 2px dashed #ccc; border-radius: 8px;">
+                        <MudIcon Icon="@Icons.Material.Filled.HistoryToggleOff" Size="Size.Large" Color="Color.Secondary" Class="mb-3" />
+                        <MudText Typo="Typo.body1" Color="Color.Secondary" Style="font-weight: 500;">
+                            No hay registros de historial disponibles
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                            Intente ajustar los filtros de búsqueda
+                        </MudText>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-container-scroll rounded-lg border">
+                        <MudSimpleTable Dense="true" Hover="true" Elevation="0" Class="mud-width-full">
+                            <thead>
+                                <tr style="background-color: #f5f5f5;">
+                                    <th style="width: 60px; text-align: center;">#</th>
+                                    <th style="width: 100px;">Fecha</th>
+                                    <th style="width: 100px;">Hora</th>
+                                    <th style="min-width: 350px;">Acción / Mensaje</th>
+                                    <th style="min-width: 200px;">Usuario</th>
+                                    <th style="width: 120px;">Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in _filteredHistory)
+                                {
+                                    <tr>
+                                        <td class="text-center">
+                                            <MudChip Size="Size.Small" Variant="Variant.Text" Color="Color.Default">
+                                                @item.HistoryId
+                                            </MudChip>
+                                        </td>
+                                        <td>
+                                            <MudText Typo="Typo.body2">@item.ActionDate.ToString("dd/MM/yyyy")</MudText>
+                                        </td>
+                                        <td>
+                                            <MudText Typo="Typo.body2">@item.ActionDate.ToString("HH:mm:ss")</MudText>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-center gap-2">
+                                                <MudIcon Icon="@GetIconForActionType(item.ActionType)" Size="Size.Small" Color="@GetColorForActionType(item.ActionType)" />
+                                                <MudText Typo="Typo.body2">@item.Action</MudText>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-center gap-2">
+                                                <MudAvatar Size="Size.Small" Color="Color.Primary" Variant="Variant.Text">
+                                                    @GetInitials(item.Responsible.Name)
+                                                </MudAvatar>
+                                                <MudText Typo="Typo.body2">@item.Responsible.Name</MudText>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <MudChip Size="Size.Small" 
+                                                Color="@GetChipColorForActionType(item.ActionType)" 
+                                                Variant="Variant.Filled" 
+                                                Text="@GetActionTypeLabel(item.ActionType)" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    </div>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+</MudContainer>
+
+<style>
+    .table-container-scroll {
+        overflow-x: auto;
+    }
+    
+    .mud-table-cell {
+        vertical-align: middle !important;
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+    }
+</style>
+
+@code {
+    [Parameter] public int hriID { get; set; }
+
+    private bool _isLoading = true;
+    private string _searchString = string.Empty;
+    private DateTime? _filterDateFrom;
+    private DateTime? _filterDateTo;
+
+    private List<GetHRIHistoryActionDto> _history = new();
+    private List<GetHRIHistoryActionDto> _filteredHistory = new();
+
+    private HistoryStatistics _statistics = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistory();
+    }
+
+    private async Task LoadHistory()
+    {
+        _isLoading = true;
+        try
+        {
+            // Aquí iría la lógica para cargar el historial desde un servicio
+            var response = await HRIService.GetHistoryByHRIId(hriID);
+            if (response.Success)
+            {
+                _history = response.Data;
+            }
+            else
+            {
+                Snackbar.Add($"No se pudo cargar el historial: {response.Message}", Severity.Error);
+                _history = new List<GetHRIHistoryActionDto>();
+            }
+            // Por ahora, usamos datos de ejemplo
+            @* _history = GenerateSampleHistory(); *@
+            ApplyFilters();
+            CalculateStatistics();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar el historial: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private List<HistoryItem> GenerateSampleHistory()
+    {
+        return new List<HistoryItem>
+        {
+            new() { Index = 1, ActionDate = DateTime.Now.AddDays(-5), ActionMessage = "Documento creado", UserName = "Juan García", ActionType = "CREATE" },
+            new() { Index = 2, ActionDate = DateTime.Now.AddDays(-4), ActionMessage = "Se agregaron imágenes de evidencia", UserName = "María López", ActionType = "UPDATE" },
+            new() { Index = 3, ActionDate = DateTime.Now.AddDays(-3), ActionMessage = "Se configuraron puntos de revisión", UserName = "Juan García", ActionType = "UPDATE" },
+            new() { Index = 4, ActionDate = DateTime.Now.AddDays(-2), ActionMessage = "Documento enviado para aprobación", UserName = "Carlos Rodríguez", ActionType = "SUBMIT" },
+            new() { Index = 5, ActionDate = DateTime.Now.AddDays(-1), ActionMessage = "Documento aprobado", UserName = "Ana Martínez", ActionType = "APPROVE" },
+            new() { Index = 6, ActionDate = DateTime.Now.AddHours(-12), ActionMessage = "Se actualizó información del supervisor", UserName = "Juan García", ActionType = "UPDATE" },
+            new() { Index = 7, ActionDate = DateTime.Now.AddHours(-6), ActionMessage = "Documento archivado", UserName = "Sistema", ActionType = "SYSTEM" },
+        };
+    }
+
+    private void ApplyFilters()
+    {
+        _filteredHistory = _history
+            .Where(h => FilterBySearch(h) && FilterByDate(h))
+            .ToList();
+    }
+
+    private bool FilterBySearch(GetHRIHistoryActionDto item)
+    {
+        if (string.IsNullOrEmpty(_searchString))
+            return true;
+
+        var searchLower = _searchString.ToLower();
+        return item.Action.ToLower().Contains(searchLower) || 
+               item.Responsible.Name.ToLower().Contains(searchLower);
+    }
+
+    private bool FilterByDate(GetHRIHistoryActionDto item)
+    {
+        if (_filterDateFrom.HasValue && item.ActionDate.Date < _filterDateFrom.Value.Date)
+            return false;
+
+        if (_filterDateTo.HasValue && item.ActionDate.Date > _filterDateTo.Value.Date)
+            return false;
+
+        return true;
+    }
+
+    private void ClearFilters()
+    {
+        _searchString = string.Empty;
+        _filterDateFrom = null;
+        _filterDateTo = null;
+        ApplyFilters();
+    }
+
+    private void CalculateStatistics()
+    {
+        _statistics = new()
+        {
+            Modifications = _filteredHistory.Count(h => h.ActionType == "UPDATE"),
+            Approvals = _filteredHistory.Count(h => h.ActionType == "APPROVE"),
+            Rejections = _filteredHistory.Count(h => h.ActionType == "REJECT"),
+            UniqueUsers = _filteredHistory.Select(h => h.Responsible.Name).Distinct().Count()
+        };
+    }
+
+    private string GetIconForActionType(string actionType) => actionType switch
+    {
+        "CREATE" => Icons.Material.Filled.CreateNewFolder,
+        "UPDATE" => Icons.Material.Filled.Edit,
+        "DELETE" => Icons.Material.Filled.DeleteOutline,
+        "APPROVE" => Icons.Material.Filled.CheckCircle,
+        "REJECT" => Icons.Material.Filled.CancelScheduleSend,
+        "SUBMIT" => Icons.Material.Filled.SendToMobile,
+        "SYSTEM" => Icons.Material.Filled.Settings,
+        _ => Icons.Material.Filled.Info
+    };
+
+    private Color GetColorForActionType(string actionType) => actionType switch
+    {
+        "CREATE" => Color.Success,
+        "UPDATE" => Color.Info,
+        "DELETE" => Color.Error,
+        "APPROVE" => Color.Success,
+        "REJECT" => Color.Error,
+        "SUBMIT" => Color.Warning,
+        "SYSTEM" => Color.Secondary,
+        _ => Color.Default
+    };
+
+    private Color GetChipColorForActionType(string actionType) => actionType switch
+    {
+        "CREATE" => Color.Success,
+        "UPDATE" => Color.Info,
+        "DELETE" => Color.Error,
+        "APPROVE" => Color.Success,
+        "REJECT" => Color.Error,
+        "SUBMIT" => Color.Warning,
+        "SYSTEM" => Color.Secondary,
+        _ => Color.Default
+    };
+
+    private string GetActionTypeLabel(string actionType) => actionType switch
+    {
+        "CREATE" => "Creación",
+        "UPDATE" => "Modificación",
+        "DELETE" => "Eliminación",
+        "APPROVE" => "Aprobación",
+        "REJECT" => "Rechazo",
+        "SUBMIT" => "Envío",
+        "SYSTEM" => "Sistema",
+        _ => "Otra"
+    };
+
+    private string GetInitials(string userName)
+    {
+        var parts = userName.Split(' ');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        return userName.Length > 0 ? userName[0].ToString().ToUpper() : "?";
+    }
+
+    public class HistoryItem
+    {
+        public int Index { get; set; }
+        public DateTime ActionDate { get; set; }
+        public string ActionMessage { get; set; }
+        public string UserName { get; set; }
+        public string ActionType { get; set; }
+    }
+
+    public class HistoryStatistics
+    {
+        public int Modifications { get; set; }
+        public int Approvals { get; set; }
+        public int Rejections { get; set; }
+        public int UniqueUsers { get; set; }
+    }
+}
