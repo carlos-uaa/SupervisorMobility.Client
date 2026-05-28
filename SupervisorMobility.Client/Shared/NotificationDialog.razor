@@ -1,0 +1,209 @@
+<style>
+    .header {
+        display: flex;
+        align-items: center;
+    }
+    
+    .input-section {
+        margin-bottom: 1.5rem;
+    }
+    .chip-delete {
+        opacity: 0;
+        transition: opacity 150ms ease-in-out;
+        margin-left: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+    }
+    .chip-hoverable:hover .chip-delete {
+        opacity: 1;
+    }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudItem Class="header">
+            <MudIcon Icon="@Icons.Material.Filled.Notifications" Color="Color.Info" Class="me-2"/>
+            <MudText Typo="Typo.h6">@DialogTitle</MudText>
+        </MudItem>
+    </TitleContent>
+    <DialogContent>
+        <div class="input-section">
+            <MudTextField 
+                @bind-Value="_notificationModel.Subject"
+                Label="Título"
+                Placeholder="Ingresa el título de la notificación"
+                Variant="Variant.Outlined"
+                FullWidth="true"
+                Clearable="true"
+                MaxLength="100" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                @(_notificationModel.Subject?.Length ?? 0)/100
+            </MudText>
+        </div>
+
+        <div class="input-section">
+            <MudTextField 
+                @bind-Value="_notificationModel.Message"
+                Label="Texto"
+                Placeholder="Ingresa el texto de la notificación"
+                Variant="Variant.Outlined"
+                FullWidth="true"
+                Clearable="true"
+                MultiLine="true"
+                Lines="4"
+                MaxLength="500" />
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                @(_notificationModel.Message?.Length ?? 0)/500
+            </MudText>
+        </div>
+
+        <div class="input-section">
+            <MudSelect 
+                @bind-Value="_notificationModel.Type"
+                Label="Tipo de Notificación"
+                Variant="Variant.Outlined"
+                FullWidth="true">
+                <MudSelectItem Value="@("info")">Información</MudSelectItem>
+                <MudSelectItem Value="@("warning")">Advertencia</MudSelectItem>
+                <MudSelectItem Value="@("error")">Error</MudSelectItem>
+                <MudSelectItem Value="@("success")">Éxito</MudSelectItem>
+            </MudSelect>
+        </div>
+
+        <MudCheckBox @bind-Value="_notificationModel.IsUrgent" Label="Marcar como urgente" Color="Color.Warning" />
+
+        @if (_notificationModel.IsUrgent)
+        {
+            <div>
+                    @foreach (var email in _notificationModel.CCPEmails?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>())
+                    {
+                        <MudChip Color="Color.Secondary" Variant="Variant.Outlined" Class="me-1 mb-1 chip-hoverable" OnClick="@(async (e) => { EditCcpEmail(email); })">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Class="me-1"/>
+                            <span>@email</span>
+                            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" Color="Color.Error" Class="chip-delete" OnClick="@(async (e) => { RemoveCcpEmail(email); })" />
+                        </MudChip>
+                    }
+            </div>
+            <div class="input-section">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <MudTextField
+                        T="string"
+                        Value="ccpEmail"
+                        ValueChanged="@((string val) => ccpEmail = val)"
+                        Label="Correo en copia (CC)"
+                        Placeholder="Ej: correo1@dominio.com"
+                        Variant="Variant.Outlined"
+                        FullWidth="true"
+                        Clearable="true"
+                        MaxLength="1000"
+                        @onkeydown="HandleKeyDown"/>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddCcpEmail">Agregar</MudButton>
+                </div>
+                
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                    Agrega uno correo y confirma que se va a notificar agregandolo.
+                </MudText>
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Text">Cancelar</MudButton>
+        <MudButton 
+            Color="Color.Primary" 
+            Variant="Variant.Filled" 
+            OnClick="Submit"
+            Disabled="@(!IsFormValid())">
+            Crear Notificación
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public string DialogTitle { get; set; } = "Crear Notificación";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string ContentText { get; set; } = "";
+
+    private string ccpEmail = "";
+
+    private NotificationModel _notificationModel = new NotificationModel();
+
+    protected override void OnInitialized()
+    {
+        _notificationModel.Subject = Title;
+        _notificationModel.Message = ContentText;
+    }
+
+    public class NotificationModel
+    {
+        public string Subject { get; set; } = "";
+        public string Message { get; set; } = "";
+        public string Type { get; set; } = "info";
+        public bool IsUrgent { get; set; } = false;
+        public string? CCPEmails { get; set; }
+    }
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(_notificationModel.Subject) &&
+               !string.IsNullOrWhiteSpace(_notificationModel.Message);
+    }
+
+    private void Submit()
+    {
+        if (IsFormValid())
+        {
+            MudDialog.Close(DialogResult.Ok(_notificationModel));
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void AddCcpEmail()
+    {
+        if (!string.IsNullOrWhiteSpace(ccpEmail))
+        {
+            if (string.IsNullOrEmpty(_notificationModel.CCPEmails))
+            {
+                _notificationModel.CCPEmails = ccpEmail;
+            }
+            else
+            {
+                _notificationModel.CCPEmails += ";" + ccpEmail;
+            }
+            ccpEmail = "";
+        }
+    }
+
+    private void RemoveCcpEmail(string email)
+    {
+        if (!string.IsNullOrEmpty(_notificationModel.CCPEmails))
+        {
+            var emails = _notificationModel.CCPEmails.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+            emails.Remove(email);
+            _notificationModel.CCPEmails = string.Join(";", emails);
+        }
+    }
+
+    private void EditCcpEmail(string email)
+    {
+        if (!string.IsNullOrEmpty(_notificationModel.CCPEmails))
+        {
+            var emails = _notificationModel.CCPEmails.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList();
+            emails.Remove(email);
+            _notificationModel.CCPEmails = string.Join(";", emails);
+            ccpEmail = email;
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            AddCcpEmail();
+        }
+    }
+}

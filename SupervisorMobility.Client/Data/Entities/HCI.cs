@@ -18,6 +18,7 @@ namespace SupervisorMobility.Client.Data.Entities
         public List<UserCareerPath>? CareerPaths { get; set; }
 
         public List<Commentary>? Commentaries { get; set; }
+        public List<LocalUserCourses>? Courses { get; set; }
         public bool? IsActive { get; set; }
     }
 }

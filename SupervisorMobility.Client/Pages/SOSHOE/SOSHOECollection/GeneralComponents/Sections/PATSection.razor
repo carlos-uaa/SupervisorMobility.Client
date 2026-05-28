@@ -1,0 +1,325 @@
+﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@using System.Text.Json
+@inject ISOSHubService SOSHubServices
+@inject IUserService UsersService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<style>
+    .mud-background-gray {
+        background-color: #f8f9fa;
+    }
+
+    .border-radius-lg {
+        border-radius: 12px;
+    }
+
+    .list-container-small {
+        min-height: 150px;
+        max-height: 300px;
+        overflow-y: auto;
+        background-color: #fdfdfd;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+    }
+
+    .user-card {
+        background: white;
+        border: 1px solid #f0f0f0;
+        border-radius: 4px;
+        min-width: 250px; /* Tamaño fijo para que parezcan tarjetas reales */
+        flex: 1 1 250px; /* Responsividad: crecen y se encogen */
+    }
+
+    .border-l-primary {
+        border-left: 4px solid var(--mud-palette-primary) !important;
+    }
+
+    .empty-state-dashed {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: calc(100% - 16px);
+        width: calc(100% - 16px);
+        border: 2px dashed #e0e0e0;
+        margin: 8px;
+        border-radius: 8px;
+    }
+
+    .dialog-scroll-fix {
+        overflow-x: hidden !important;
+        padding: 4px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .bg-white { background-color: white !important; }
+</style>
+
+<MudGrid Spacing="3" Class="ma-0">
+
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="pa-5 mud-background-gray border-radius-lg">
+            <div class="d-flex align-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.SettingsSuggest" Color="Color.Primary" Class="mr-2" />
+                <MudText Typo="Typo.h6" Style="font-weight: 800;">Configuración de Nuevo Análisis</MudText>
+            </div>
+
+            <MudGrid Spacing="2">
+                @* Campos Editables de Identificación *@
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@(State.Hub?.Plant != null ? $"{State.Hub.Plant.Code} | {State.Hub.Plant.Description}" : "Sin Planta")"
+                                  Label="Planta"
+                                  ReadOnly="true"
+                                  Variant="Variant.Filled"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudTextField Value="@(State.Hub?.Area != null ? $"{State.Hub.Area.Code} | {State.Hub.Area.Description}" : "Sin Área")"
+                                  Label="Área"
+                                  ReadOnly="true"
+                                  Variant="Variant.Filled"
+                                  Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    @* DatePicker configurado solo para Años *@
+                    <MudDatePicker Label="Fecha de Aplicación"
+                                    @bind-Date="_pat.AplicationDate"
+                                    OpenTo="OpenTo.Year"
+                                    DateFormat="yyyy"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    Disabled="@IsPATEditDisabled()"
+                                    FixDay="1" FixMonth="1" Class="bg-white" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+    @* --- Supervisores --- *@
+    <MudItem xs="12">
+        <MudText Typo="Typo.subtitle2" Class="ml-1 mb-1" Color="Color.Primary">Añadir Supervisores</MudText>
+        <div class="d-flex gap-2">
+            <MudAutocomplete T="User"
+                             Label="Buscar Supervisor"
+                             @bind-Value="_userSearch"
+                             SearchFunc="@SearchUsers"
+                             ToStringFunc="@(u => u == null ? "" : $"{u.Name} ({GetUserType(u.UserType)})")"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             Disabled="@IsPATEditDisabled()"
+                             AdornmentIcon="@Icons.Material.Filled.Search" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="AddSupervisor"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Disabled="@IsPATEditDisabled()"
+                       Style="height: 40px;">
+                Añadir
+            </MudButton>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12" md="12">
+        <div class="d-flex align-center mb-2 px-1">
+            <MudIcon Icon="@Icons.Material.Outlined.Groups" Color="Color.Primary" Size="Size.Small" Class="mr-2" />
+            <MudText Typo="Typo.subtitle2" Style="font-weight:700">Supervisores</MudText>
+            <MudSpacer />
+            <MudBadge Content="@(AddedSupervisors.Count)" Color="Color.Primary" Overlap="false" Bordered="true" Class="mr-4" />
+        </div>
+        <div class="list-container-small mt-2 pa-2">
+            @if (AddedSupervisors.Any())
+            {
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var user in AddedSupervisors)
+                    {
+                        <MudPaper Elevation="0" Class="user-card pa-2 d-flex align-center border-l-primary">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@user.Name[0]</MudAvatar>
+                            <div class="flex-grow-1">
+                                <MudText Typo="Typo.body2" Style="font-weight: 600;">@user.Name</MudText>
+                                <MudText Typo="Typo.caption" Class="mud-text-secondary">Tipo de usuario: @GetUserType(user.UserType)</MudText>
+                            </div>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           Disabled="@IsPATEditDisabled()"
+                                           OnClick="@(() => RemoveSupervisor(user))" />
+                        </MudPaper>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state-dashed">
+                    <MudIcon Icon="@Icons.Material.Outlined.GroupAdd" Style="opacity:0.3" Size="Size.Large" />
+                    <MudText Typo="Typo.caption">No hay supervisores asignados</MudText>
+                </div>
+            }
+        </div>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter] public SOSState State { get; set; }
+    [Parameter] public EventCallback OnNotify { get; set; }
+
+    private PAT _pat = new PAT();
+
+    private User _userSearch; 
+    private List<User> AddedSupervisors = new();
+    private List<User> _allUsers = new();
+    private List<User> _supervisors = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener todos los usuarios
+        _allUsers = (await UsersService.GetUsers(false, false)).ToList();
+
+        // Load SVs (type 3) and SSVs (type 2) by plant
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            var svs = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, false);
+            var ssvs = await UsersService.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            
+            _supervisors = new List<User>();
+            _supervisors.AddRange(svs);
+            _supervisors.AddRange(ssvs);
+            _supervisors = _supervisors.OrderBy(s => s.Name).ToList();
+        }
+        else
+        {
+            // Fallback: Filtrar solo SSV (type 2) y SV (type 3) de todos los usuarios
+            _supervisors = _allUsers
+                .Where(u => u.UserType == 2 || u.UserType == 3)
+                .OrderBy(s => s.Name)
+                .ToList();
+        }
+
+        // Inicializar el objeto local
+        if (State?.Hub?.PATs == null || State.Hub.PATs.Count == 0)
+            _pat = new PAT();
+        else
+        {
+            _pat = State.Hub.PATs.First();
+            // Cargar los supervisores existentes del PAT
+            if (_pat.Supervisors != null && _pat.Supervisors.Any())
+            {
+                AddedSupervisors = _pat.Supervisors.ToList();
+            }
+        }
+    }
+
+    private async Task<IEnumerable<User>> SearchUsers(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return _supervisors;
+
+        return _supervisors.Where(x =>
+            x.Name.Contains(value, StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
+    private void AddSupervisor()
+    {
+        if (_userSearch == null)
+        {
+            Snackbar.Add("Selecciona un usuario válido antes de añadir.", Severity.Warning);
+            return;
+        }
+
+        if (AddedSupervisors.Any(u => u.UserId == _userSearch.UserId))
+        {
+            Snackbar.Add($"{_userSearch.Name} ya ha sido añadido a la lista.", Severity.Info);
+        }
+        else
+        {
+            AddedSupervisors.Add(_userSearch);
+            Snackbar.Add("Supervisor añadido correctamente.", Severity.Success);
+        }
+
+        _userSearch = null;
+    }
+
+    private void RemoveSupervisor(User user)
+    {
+        if (AddedSupervisors.Contains(user))
+        {
+            AddedSupervisors.Remove(user);
+            Snackbar.Add("Usuario removido de la selección.", Severity.Normal);
+        }
+    }
+
+    public async Task GeneratePat()
+    {
+        try
+        {
+            // Crear el objeto PAT con la información del Hub
+            _pat.SOSHubId = State.Hub.SOSHubId;
+            _pat.PlantId = State.Hub.PlantId.Value;
+            _pat.AreaId = State.Hub.AreaId.Value;
+
+            // Si es creación (nuevo PAT)
+            if (_pat.PATid == 0)
+            {
+                _pat.Status = 1;
+                _pat.AplicationYear = _pat.AplicationDate.HasValue ? _pat.AplicationDate.Value.Year : DateTime.Now.Year;
+            }
+
+            // Asignar los supervisores seleccionados
+            _pat.Supervisors = AddedSupervisors;
+
+            Console.WriteLine(JsonSerializer.Serialize(_pat));
+
+            // Llamar a SOSHubServices.GeneratePat() que devuelve el ID
+            var result = await SOSHubServices.GeneratePat(State.Hub.SOSHubId, _pat);
+
+            if (result != null)
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add("New PAT Created", Severity.Success);
+
+                // Actualizar el estado del Hub
+                await OnNotify.InvokeAsync();
+
+                // Navegar al PAT creado
+                NavigationManager.NavigateTo($"/PAT/{result}");
+            }
+            else
+            {
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                Snackbar.Add("Error generating PAT", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error generating PAT: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private string GetUserType(int userType) => userType switch
+    {
+        1 => "Administrador",
+        2 => "SSV",
+        3 => "SV",
+        4 => "Operador",
+        5 => "Manager",
+        6 => "Line Support",
+        7 => "Head Count",
+        8 => "Users RTC",
+        _ => "Desconocido"
+    };
+
+    private bool IsPATEditDisabled()
+    {
+        // Si no hay PAT, es editable (nuevo)
+        if (State?.Hub?.PATs?.Count == 0)
+            return false;
+
+        // Si hay un PAT guardado, es readonly
+        return true;
+    }
+}

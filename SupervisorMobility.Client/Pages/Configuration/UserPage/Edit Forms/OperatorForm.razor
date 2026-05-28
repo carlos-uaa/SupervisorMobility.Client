@@ -1,0 +1,527 @@
+@* OperatorForm.razor - Para Operador (tipo 4) *@
+@* Incluye: Planta (readonly), Área, Departamento, Grupo (readonly), Distribución, Management, Process, BirthDate, Superior (Supervisor) *@
+
+@using SupervisorMobility.Client.Data.Entities
+
+@inject IAreaService AreaServices
+@inject IDepartmentService DepartmentServices
+@inject IUserService UsersServices
+@inject IDistributionService DistributionsServices
+@inject IStringLocalizer<Resource1> Localizer
+@inject IStringLocalizer<Resource> Localizer1
+
+@* 📋 SECCIÓN 1: INFORMACIÓN BÁSICA *@
+<MudPaper Elevation="2" Class="pa-6 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudText Typo="Typo.h6" Class="mb-4" Style="color: #546e7a;">
+        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+        Información Básica
+    </MudText>
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="plantInfo" Label="@Localizer["UsersPlant"]" ReadOnly="true" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="grupInfo" Label="@Localizer["UsersGroup"]" ReadOnly="true" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12">
+            @if (_departments != null)
+            {
+                <MudSelect T="int" Label="@Localizer["departmentLabel"]" Variant="Variant.Outlined" Placeholder="@Localizer["selectDepartment"]" AnchorOrigin="Origin.BottomCenter" Value="@auxDepa" ValueChanged="@((int value) => OnDepartmentChangedHandler(value))">
+                    <MudSelectItem Disabled="true" Value="0">@Localizer["selectDepartment"]</MudSelectItem>
+                    @foreach (var type in _departments)
+                    {
+                        <MudSelectItem Value="type.DepartmentId">@($"{type.Code}-{type.Description}")</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    @Localizer["noDepartmentsFound"]
+                </MudAlert>
+            }
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@* 🏭 SECCIÓN 2: ÁREAS MANEJADAS *@
+<MudPaper Elevation="2" Class="pa-6 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudText Typo="Typo.h6" Class="mb-4" Style="color: #546e7a;">
+        <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+        @Localizer["UsersManageAreas"]
+    </MudText>
+
+    @if (auxPlant != 0)
+    {
+        <MudGrid Spacing="2" Class="mb-3">
+            <MudItem xs="12" md="9">
+                <MudSelect T="Area" 
+                           Label="@Localizer["UsersLabelArea"]" 
+                           ValueChanged="@OnSelectedAreaToManageFunction" 
+                           Placeholder="@Localizer["UsersPHArea"]" 
+                           Value="@selectedAreaOfList" 
+                           Variant="Variant.Outlined" 
+                           AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Disabled="true" Value="selectedAreaOfList">@Localizer["UsersPHArea"]</MudSelectItem>
+                    @if (User.Superior != null && User.Superior.Areas != null && User.Superior.Areas.Count > 0)
+                    {
+                        @foreach (var areaItem in User.Superior.Areas)
+                        {
+                            <MudSelectItem Value="areaItem">@($"{areaItem.Code} - {areaItem.Description}")</MudSelectItem>
+                        }
+                    }
+                    else if (_areas != null && _areas.Count > 0)
+                    {
+                        @foreach (var areaItem in _areas)
+                        {
+                            <MudSelectItem Value="areaItem">@($"{areaItem.Code} - {areaItem.Description}")</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="3" Class="d-flex align-center">
+                <MudButton Disabled="@ActiveAddArea" 
+                           OnClick="@(() => AddAreaToUserList(selectedAreaOfList))" 
+                           Variant="Variant.Filled" 
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.Add" 
+                           FullWidth="true"> 
+                    @Localizer["UsersAddArea"] 
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    }
+
+    @* Lista de Áreas Asignadas *@
+    @switch (User.Areas?.Count)
+    {
+        case null:
+        case 0:
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                @if (auxPlant == 0)
+                {
+                    <text>@Localizer["UsersFirstPlant"]</text>
+                }
+                else
+                {
+                    <text>@Localizer["UsersFirstAddArea"]</text>
+                }
+            </MudAlert>
+            break;
+        default:
+            <MudGrid Spacing="2">
+                @foreach (var itemArea in User.Areas)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Elevation="1" Style="border-radius: 8px; border: 1px solid #e0e0e0;">
+                            <MudCardHeader Style="padding: 12px; background-color: #f5f5f5; border-bottom: 1px solid #e0e0e0;">
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.body2" Style="color: #546e7a;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Small" /> 
+                                        ID: @itemArea.AreaId
+                                    </MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                   Color="Color.Error" 
+                                                   Size="Size.Small"
+                                                   @onclick="() => DeleteAreaFromUserList(itemArea)" />
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent Class="py-3">
+                                <MudText Typo="Typo.body2" Class="mb-1">
+                                    <strong>@Localizer["UsersCode"]:</strong> @itemArea.Code
+                                </MudText>
+                                <MudText Typo="Typo.body2">
+                                    <strong>@Localizer["UsersDescription"]:</strong> @itemArea.Description
+                                </MudText>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+            break;
+    }
+</MudPaper>
+
+@* 📊 SECCIÓN 3: INFORMACIÓN LABORAL *@
+@if (User.Superior != null)
+{
+    <MudPaper Elevation="2" Class="pa-6 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+        <MudText Typo="Typo.h6" Class="mb-4" Style="color: #546e7a;">
+            <MudIcon Icon="@Icons.Material.Filled.Work" Class="mr-2" />
+            Información Laboral
+        </MudText>
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudAutocomplete ResetValueOnEmptyText 
+                                 Clearable 
+                                 MaxItems="null" 
+                                 T="Distribution" 
+                                 Label="@Localizer["UsersDistribution"]" 
+                                 ToStringFunc="@(e=> e.Description == null || e.Description == "" ? $"{Localizer["UsersPHDistribution"]}" : $"{e.Code} {e.Description}")" 
+                                 SearchFunc="@SearchDistribution" 
+                                 Variant="Variant.Outlined" 
+                                 ShowProgressIndicator="true" 
+                                 ValueChanged="@((item) => SetDistribution(item))" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="User.Management" 
+                              Label="@Localizer1["Management"]" 
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="User.Process" 
+                              Label="@Localizer1["SectionProcess"]" 
+                              Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="User.BirthDate" 
+                               Label="@Localizer1["BirthDate"]" 
+                               Variant="Variant.Outlined" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
+
+@* 👤 SECCIÓN 4: JERARQUÍA - SUPERIOR *@
+<MudPaper Elevation="2" Class="pa-6 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudText Typo="Typo.h6" Class="mb-4" Style="color: #546e7a;">
+        <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Class="mr-2" />
+        @Localizer["UsersHT"]
+    </MudText>
+
+    @if (User.Superior != null)
+    {
+        @* Superior Asignado *@
+        <MudText Typo="Typo.subtitle1" Class="mb-3">@Localizer["UsersSuperior"]</MudText>
+        <MudCard Elevation="1" Style="border-radius: 8px; max-width: 600px; border: 1px solid #e0e0e0;">
+            <MudCardHeader Style="padding: 16px; background-color: #f5f5f5; border-bottom: 1px solid #e0e0e0;">
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6" Style="color: #546e7a;">
+                        @switch (User.Superior.UserType)
+                        {
+                            case 2:
+                            case 3:
+                                <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Size="Size.Medium" />
+                                break;
+                            case 4:
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Medium" />
+                                break;
+                        }
+                        @User.Superior?.Name
+                    </MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    @switch (User.Superior.UserType)
+                    {
+                        case 1:
+                        case 2:
+                        case 3:
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                           Color="Color.Error" 
+                                           OnClick="@(() => RemoveSuperiorUser())" />
+                            break;
+                    }
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent Class="pa-4">
+                @switch (User.Superior.UserType)
+                {
+                    case 2:
+                    case 3:
+                        @if (User.Superior?.Areas != null && User.Superior?.Areas.Count > 0)
+                        {
+                            <MudText Typo="Typo.body2" Class="mb-2">
+                                <strong>@Localizer["UsersAreasManage"]:</strong>
+                            </MudText>
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 100%;">
+                                @foreach (var area in User.Superior?.Areas)
+                                {
+                                    <MudChip Icon="@Icons.Material.Filled.Business" 
+                                             Color="Color.Info" 
+                                             Size="Size.Small" 
+                                             Variant="Variant.Outlined">
+                                        @area.Code - @area.Description
+                                    </MudChip>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Default">@Localizer["UsersNoAreasSSV"]</MudText>
+                        }
+                        break;
+                }
+
+                <MudDivider Class="my-3" />
+
+                <MudStack Row="true" Justify="Justify.FlexStart">
+                    @switch (User.Superior?.UserType)
+                    {
+                        case 1:
+                            <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" Size="Size.Small">@Localizer["UsersAdmin"]</MudChip>
+                            break;
+                        case 2:
+                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Size="Size.Small">@Localizer["UsersSeniorSupervisor"]</MudChip>
+                            break;
+                        case 3:
+                            <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Size="Size.Small">@Localizer["UsersSupervisor"]</MudChip>
+                            break;
+                        case 4:
+                            <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark" Size="Size.Small">@Localizer["UsersOperator"]</MudChip>
+                            break;
+                        case 5:
+                            <MudChip Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Warning" Size="Size.Small">@Localizer["UsersManager"]</MudChip>
+                            break;
+                    }
+                </MudStack>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        @* Sin Superior - Selector *@
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3">
+            @Localizer["UsersFirstSuperior"]
+        </MudAlert>
+
+        @if (Supervisors.Count > 0)
+        {
+            <MudAutocomplete ResetValueOnEmptyText 
+                             Clearable 
+                             MaxItems="null" 
+                             T="User" 
+                             Label="@Localizer["UsersSupervisor"]" 
+                             ToStringFunc="@(e=> e.Name == null || e.Name == "" ? $"{Localizer["UsersPHSupervisor"]}" : $"{e.Name}-{e.Area?.Description}-{e.Group?.Description})")" 
+                             For="@(() => User.Superior)" 
+                             SearchFunc="@SearchSV" 
+                             Variant="Variant.Outlined" 
+                             ShowProgressIndicator="true" 
+                             ValueChanged="@(item => SetSuperiorToUser(item))">
+                <ItemTemplate Context="e">
+                    <MudStack Spacing="2" Class="pa-2">
+                        <MudStack Row="true" Justify="Justify.FlexStart" AlignItems="AlignItems.Center">
+                            @switch (e.UserType)
+                            {
+                                case 1:
+                                    <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" Size="Size.Small">@Localizer["UsersAdmin"]</MudChip>
+                                    break;
+                                case 2:
+                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Size="Size.Small">@Localizer["UsersSeniorSupervisor"]</MudChip>
+                                    break;
+                                case 3:
+                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Size="Size.Small">@Localizer["UsersSupervisor"]</MudChip>
+                                    break;
+                                case 4:
+                                    <MudChip Icon="@Icons.Material.Filled.PersonOutline" Color="Color.Dark" Size="Size.Small">@Localizer["UsersOperator"]</MudChip>
+                                    break;
+                                case 5:
+                                    <MudChip Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Warning" Size="Size.Small">@Localizer["UsersManager"]</MudChip>
+                                    break;
+                            }
+                        </MudStack>
+                        <MudText Typo="Typo.body2">
+                            <strong>@Localizer["UserId"]:</strong> @e.UserId | <strong>@Localizer["UsersName"]:</strong> @e.Name
+                        </MudText>
+                        @if (e.UserType == 2 || e.UserType == 3)
+                        {
+                            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1">
+                                @if (e.Areas != null)
+                                {
+                                    @foreach (var area in e.Areas)
+                                    {
+                                        <MudChip Icon="@Icons.Material.Filled.Business" Color="Color.Info" Size="Size.Small" Variant="Variant.Text">@area.Code - @area.Description</MudChip>
+                                    }
+                                }
+                            </MudStack>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2">
+                                <strong>@Localizer["UsersArea"]:</strong> @e.Area?.Description
+                            </MudText>
+                        }
+                    </MudStack>
+                </ItemTemplate>
+            </MudAutocomplete>
+        }
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public User User { get; set; } = new();
+    [Parameter] public User LogedUser { get; set; } = new();
+    [Parameter] public List<Department> Departments { get; set; } = new();
+    [Parameter] public int InitialPlantId { get; set; }
+    [Parameter] public int InitialAreaId { get; set; }
+    [Parameter] public int InitialDepartmentId { get; set; }
+    [Parameter] public EventCallback<int> OnDepartmentChanged { get; set; }
+
+    private List<User> Supervisors = new();
+    private List<Area> _areas = new();
+    private List<Department> _departments = new();
+    private List<Distribution> _distributions = new();
+
+    private int auxPlant = 0;
+    private int auxArea = 0;
+    private int auxDepa = 0;
+    private Area selectedAreaOfList = null;
+    private bool ActiveAddArea = true;
+
+    private string plantInfo = "First select a superior";
+    private string grupInfo = "First select a superior";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _departments = Departments;
+        auxPlant = InitialPlantId;
+        // auxArea = InitialAreaId; // No longer used directly
+        auxDepa = InitialDepartmentId;
+
+        await LoadData();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        // Cargar Supervisores (tipo 3)
+        if (LogedUser.UserType == 1)
+        {
+            Supervisors = await UsersServices.GetUsersByType(3, true, false);
+        }
+        else if (auxPlant != 0)
+        {
+            Supervisors = await UsersServices.GetUsersByUserTypeInPlant(auxPlant, 3, true, false);
+        }
+
+        // Cargar áreas si hay planta
+        if (auxPlant != 0)
+        {
+            _areas = await AreaServices.GetAreas(auxPlant);
+        }
+
+        // Cargar distribuciones
+        await LoadDistributionsForManagedAreas();
+
+        // Actualizar info de planta/grupo
+        UpdatePlantGroupInfo();
+
+        // Remover al propio usuario
+        Supervisors.RemoveAll(s => s.UserId == User.UserId);
+    }
+
+    private void UpdatePlantGroupInfo()
+    {
+        if (User.Superior != null)
+        {
+            plantInfo = User.Superior.Plant?.Description ?? "N/A";
+            grupInfo = User.Superior.Group?.Description ?? "N/A";
+        }
+    }
+
+    private async Task SetSuperiorToUser(User? ItemSelected)
+    {
+        if (ItemSelected == null) return;
+
+        User.Superior = ItemSelected;
+        User.SuperiorId = ItemSelected.UserId;
+        User.PlantId = ItemSelected.PlantId;
+        User.GroupId = ItemSelected.GroupId;
+        auxPlant = ItemSelected.PlantId ?? 0;
+
+        // Actualizar áreas disponibles
+        if (auxPlant != 0)
+        {
+            _areas = await AreaServices.GetAreas(auxPlant);
+        }
+
+        UpdatePlantGroupInfo();
+        StateHasChanged();
+    }
+
+    private void RemoveSuperiorUser()
+    {
+        User.Superior = null;
+        User.SuperiorId = null;
+        plantInfo = "First select a superior";
+        grupInfo = "First select a superior";
+    }
+
+    private void OnSelectedAreaToManageFunction(Area item)
+    {
+        selectedAreaOfList = item;
+        ActiveAddArea = item == null;
+    }
+
+    private async void AddAreaToUserList(Area selection)
+    {
+        if (User.Areas == null) User.Areas = new List<Area>();
+
+        if (selectedAreaOfList != null && !User.Areas.Any(x => x.AreaId == selection.AreaId))
+        {
+            User.Areas.Add(selection);
+            selectedAreaOfList = null;
+            ActiveAddArea = true;
+            await LoadDistributionsForManagedAreas();
+            StateHasChanged();
+        }
+    }
+
+    private async void DeleteAreaFromUserList(Area item)
+    {
+        User.Areas?.Remove(item);
+        await LoadDistributionsForManagedAreas();
+        StateHasChanged();
+    }
+
+    private async Task LoadDistributionsForManagedAreas()
+    {
+         _distributions = new List<Distribution>();
+         if (User.Areas != null && auxPlant != 0)
+         {
+             foreach (var area in User.Areas)
+             {
+                 var dists = await DistributionsServices.GetDistributions(auxPlant, area.AreaId);
+                 _distributions.AddRange(dists);
+             }
+             _distributions = _distributions.GroupBy(x => x.DistributionId).Select(g => g.First()).ToList();
+         }
+    }
+
+    private void SetDistribution(Distribution? item)
+    {
+        if (item != null)
+        {
+            User.Distribution = item;
+            User.DistributionId = item.DistributionId;
+        }
+    }
+
+    private async Task OnDepartmentChangedHandler(int value)
+    {
+        auxDepa = value;
+        if (OnDepartmentChanged.HasDelegate)
+        {
+            await OnDepartmentChanged.InvokeAsync(value);
+        }
+    }
+
+    private async Task<IEnumerable<User>> SearchSV(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return Supervisors;
+        return Supervisors.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task<IEnumerable<Distribution>> SearchDistribution(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return _distributions;
+        return _distributions.Where(x => x.Description.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+}

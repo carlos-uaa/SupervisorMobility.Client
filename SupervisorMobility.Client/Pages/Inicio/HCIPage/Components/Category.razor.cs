@@ -45,12 +45,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         {
             ExistingCategories = await DepartmentService.GetDepartments() ?? new();
             if (!CategoryTable.Any())
-            {
-                for (int i = 0; i < 5; i++)
-                {
                     CategoryTable.Add( new());
-                }
-            }
             dataloaded = true;
         }
 

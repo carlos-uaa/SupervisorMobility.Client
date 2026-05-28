@@ -42,10 +42,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
         {
             if (!QualificationsTable.Any())
             {
-                for (int i = 0; i < 5; i++)
-                {
-                    QualificationsTable.Add(new HCITransaction { Type = 3, IsActive = true });
-                }
+                QualificationsTable.Add(new HCITransaction { Type = 3, IsActive = true });
             }
         }
 

@@ -1,0 +1,755 @@
+﻿@page "/hri/details/{hriID:int}"
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@inject IHRIService HRIService
+@inject NavigationManager NavigationManager
+
+@if(!_loading)
+{
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-10">
+
+    <div class="d-flex justify-space-between align-center mb-8 px-2">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 700;">
+                Detalles de Hoja de Revisión Inicial
+            </MudText>
+            @* <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mt-1">
+                ID Documento: #REV-2026-0041 | Fecha de Creación: 01/04/2026
+            </MudText> *@
+        </div>
+        <MudChip Color="Color.Success" Variant="Variant.Filled" Size="Size.Large">ACTIVO</MudChip>
+    </div>
+
+    <MudGrid Spacing="4">
+        @* I. INFORMACIÓN GENERAL Y EVIDENCIA *@
+        <MudItem xs="12">
+            <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-info)">
+                <div class="d-flex align-center mb-4">
+                    <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Small" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h6" Style="font-weight: 600;">I. Información General y Evidencia</MudText>
+                </div>
+
+                <div class="mb-6">
+                    <MudText Typo="Typo.subtitle2" Class="mb-2" Color="Color.Tertiary" Style="font-weight: 600; text-transform: uppercase;">
+                        LAY OUT:
+                    </MudText>
+
+                    @* GALERÍA SOLO LECTURA *@
+                    <div class="d-flex gap-3 overflow-x-auto py-2 px-1 custom-scrollbar" style="width: 100%; min-height: 160px; align-items: center;">
+                        @if(_currentHRI.Images != null && _currentHRI.Images.Count > 0)
+                        {
+                            foreach (var entry in _currentHRI.Images)
+                            {
+                                <div class="flex-shrink-0 rounded-lg overflow-hidden mud-elevation-2"
+                                     style="height: 150px; border: 1px solid var(--mud-palette-lines-default);">
+                                    <MudImage Src="@GetImageSrc(entry.ImageUrl)"
+                                              Height="150"
+                                              ObjectFit="ObjectFit.Cover"
+                                              Style="width: auto; display: block;"
+                                              Alt="@entry.ImageType" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column align-center justify-center" style="width: 100%; padding: 40px 0; border: 2px dashed #ccc; border-radius: 8px;">
+                                <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported" Size="Size.Large" Color="Color.Secondary" />
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">No hay imágenes disponibles</MudText>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <MudDivider Class="mb-6" />
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" md="4">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Nombre de Item</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.NameOfItem?.Name ?? "")</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Nombre de Línea</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.Line?.LineName ?? "")</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="4">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Número de Control</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.ControlNumber ?? "")</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" md="3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Dock Asignado</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.Dock?.DockName ?? "")</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Departamento</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.Department ?? "")</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Supervisor Encargado</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@(_currentHRI.Supervisor?.Name ?? "")</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="3">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Numero de Turnos</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight: 500;">3 Turnos</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        @* II. PUNTOS DE REVISIÓN - MODO REGISTRO MENSUAL *@
+        <MudItem xs="12">
+            <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-warning)">
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <div>
+                        <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                            <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Small" />
+                        </MudAvatar>
+                        <div>
+                            <MudText Typo="Typo.h6" Style="font-weight: 600;">II. Registro de Realización de Revisión</MudText>
+
+                            <div class="d-flex align-center" Style="gap: 10px;">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="PreviousMonth">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowBackIos" Size="Size.Small" Class="mr-1" />
+                                </MudButton>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Style="font-size: 15px; text-transform: capitalize;">
+                                    MES: @mesTexto | AÑO: @añoActual
+                                </MudText>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="NextMonth">
+                                    <MudIcon Icon="@Icons.Material.Filled.ArrowForwardIos" Size="Size.Small" Class="mr-1" />
+                                </MudButton>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="width: 200px;">
+                        <MudDatePicker 
+                            DateChanged="OnDateChanged"
+                            Label="Seleccionar Mes/Año" 
+                            Variant="Variant.Outlined" 
+                            Size="Size.Small"
+                            DateFormat="MMMM yyyy"
+                            OpenTo="OpenTo.Year"
+                            Placeholder="Mes/Año" />
+                    </div>
+                </div>
+
+                <div class="table-container-scroll rounded-lg border">
+                    <MudSimpleTable Dense="true" Hover="false" Striped="false" Elevation="0">
+                        <thead>
+                            <tr style="background-color: #f5f5f5;">
+                                <th rowspan="2" class="border-right">#</th>
+                                <th rowspan="2" style="min-width: 220px;" class="border-right">Puntos de Revisión</th>
+                                <th rowspan="2" style="min-width: 130px;" class="border-right">Criterio</th>
+                                <th rowspan="2" class="text-center border-right">Turno</th>
+                                <th colspan="@diasEnMes" class="text-center">
+                                    Días del Mes (@mesTexto @añoActual)
+                                </th>
+                            </tr>
+                            <tr style="background-color: #f5f5f5;">
+                                @for (int d = 1; d <= diasEnMes; d++)
+                                {
+                                    <th class="day-cell day-header @(EsFinDeSemana(d) ? "cell-disabled" : "")">@d</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(_currentHRI.ItemsRevised != null)
+                            {
+                                foreach (var p in _currentHRI.ItemsRevised)
+                                {
+                                    foreach (var c in p.RevisionCycles)
+                                    {
+                                        <tr>
+                                            @if (c.Cycle == 1)
+                                            {
+                                                <td rowspan="@NumeroCiclos" class="text-center border-right">@p.ItemId</td>
+                                                <td rowspan="@NumeroCiclos" class="border-right"><b>@p.RevisionPoint</b></td>
+                                                <td rowspan="@NumeroCiclos" class="border-right"><MudText Typo="Typo.caption">@p.Veredict.Description</MudText></td>
+                                            }
+                                            <td class="text-center border-right" style="background-color: #fafafa;"><b>@c.Cycle</b></td>
+
+                                            @for (int d = 1; d <= diasEnMes; d++)
+                                            {
+                                                bool inhabíl = EsFinDeSemana(d);
+                                                <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
+                                                    @if (!inhabíl)
+                                                    {
+                                                        <div style="height: 100%; width: 100%; overflow: hidden;">
+                                                            @{
+                                                                int currentDay = d;
+                                                                // Buscamos si existe una revisión para el día "d" en el ciclo actual
+                                                                var revisionExistente = c.DailyRevisions?
+                                                                                        .FirstOrDefault(r => r.Day == currentDay);
+                                                            }
+
+                                                            @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
+                                                            {
+                                                                @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
+                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                                    @revisionExistente.Status
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                @* Si no existe, mostramos *@
+                                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"> </div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                    <tr style="height: 2px; background-color: var(--mud-palette-divider);">
+                                        <td colspan="@(diasEnMes + 4)"></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        @* III. ASIGNACIÓN DE PERSONAL *@
+        <MudItem xs="12">
+            <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-success)">
+                <div class="d-flex align-center mb-4">
+                    <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Size="Size.Small" />
+                    </MudAvatar>
+                    <MudText Typo="Typo.h6" Style="font-weight: 600;">III. Revisiones de Personal</MudText>
+                </div>
+
+                <div class="table-container-scroll rounded-lg border">
+                    <MudSimpleTable Dense="true" Hover="false" Elevation="0">
+                        <thead>
+                            <tr style="background-color: #f5f5f5;">
+                                <th class="border-right" style="width: 80px;">Turno</th>
+                                <th class="border-right" style="min-width: 150px;">Rol</th>
+                                <th class="border-right" style="min-width: 200px;">Personal Asignado</th>
+                                @for (int d = 1; d <= diasEnMes; d++)
+                                {
+                                    <th class="day-cell day-header @(EsFinDeSemana(d) ? "cell-disabled" : "")">@d</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="mud-table-row" style="background-color: rgba(var(--mud-palette-info-rgb), 0.05);">
+                                <td class="text-center border-right">
+                                    <MudIcon Icon="@Icons.Material.Filled.Speed" Size="Size.Small" Color="Color.Info" />
+                                </td>
+                                <td class="border-right">
+                                    <MudText Typo="Typo.caption" Style="font-weight: 700;" Color="Color.Info">HORÓMETRO</MudText>
+                                </td>
+                                <td class="border-right">
+                                    <MudText Typo="Typo.body2" Style="font-weight: 500;">Medición de Horómetro General</MudText>
+                                </td>
+                                @for (int d = 1; d <= diasEnMes; d++)
+                                {
+                                    bool inhabíl = EsFinDeSemana(d);
+
+                                    <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
+                                        @if (!inhabíl)
+                                        {
+                                            <div style="height: 100%; width: 100%; overflow: hidden;">
+                                                @{
+                                                    int currentDay = d;
+                                                    // Buscamos si existe una revisión para el día "d" en el ciclo actual
+                                                    var revisionExistente = _currentHRI.HourmeterRevision?.DailyRevisions?
+                                                                            .FirstOrDefault(r => r.Day == currentDay);
+                                                }
+
+                                                @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
+                                                {
+                                                    @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
+                                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                        @revisionExistente.Status
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    @* Si no existe, mostramos el div vacío *@
+                                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"></div>
+                                                }
+                                            </div>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                            @foreach (var cycle in _currentHRI.HriCycles)
+                            {
+                                @* Fila para el Operador *@
+                                <tr>
+                                    <td rowspan="2" class="text-center border-right" style="background-color: #fafafa; font-weight: bold;">
+                                        <MudIcon Icon="@Icons.Material.Filled.Loop" Size="Size.Small" Color="Color.Primary" /><br />
+                                        @cycle.Cycle
+                                    </td>
+                                    <td class="border-right"><MudText Typo="Typo.caption" Style="font-weight: 600;">OPERADOR</MudText></td>
+                                    <td class="border-right"><MudText Typo="Typo.body2">@cycle.Operator?.Name</MudText></td>
+                            
+                                    @for (int d = 1; d <= diasEnMes; d++)
+                                    {
+                                        bool inhabíl = EsFinDeSemana(d);
+
+                                        <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
+                                            @if (!inhabíl)
+                                            {
+                                                <div style="height: 100%; width: 100%; overflow: hidden;">
+                                                    @{
+                                                        int currentDay = d;
+                                                        // Buscamos si existe una revisión para el día "d" en el ciclo actual
+                                                        var revisionExistente = cycle.DailyRevisions?
+                                                                                .FirstOrDefault(r => r.Day == currentDay && r.UserId == cycle.Operator?.UserId);
+                                                    }
+
+                                                    @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
+                                                    {
+                                                        @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                            @revisionExistente.Status
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        @* Si no existe, mostramos el div vacío *@
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"></div>
+                                                    }
+                                                </div>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                                @* Fila para el Supervisor *@
+                                <tr class="border-bottom">
+                                    <td class="border-right"><MudText Typo="Typo.caption" Style="font-weight: 600;">SUPERVISOR</MudText></td>
+                                    <td class="border-right"><MudText Typo="Typo.body2">@cycle.Supervisor?.Name</MudText></td>
+                            
+                                    @for (int d = 1; d <= diasEnMes; d++)
+                                    {
+                                        bool inhabíl = EsFinDeSemana(d);
+
+                                        <td class="day-cell @(inhabíl ? "cell-disabled" : "")">
+                                            @if (!inhabíl)
+                                            {
+                                                <div style="height: 100%; width: 100%; overflow: hidden;">
+                                                    @{
+                                                        int currentDay = d;
+                                                        // Buscamos si existe una revisión para el día "d" en el ciclo actual
+                                                        var revisionExistente = cycle.DailyRevisions?
+                                                                                .FirstOrDefault(r => r.Day == currentDay && r.UserId == cycle.Supervisor?.UserId);
+                                                    }
+
+                                                    @if (revisionExistente != null && !string.IsNullOrEmpty(revisionExistente.Status))
+                                                    {
+                                                        @* Si ya existe la revisión, mostramos el valor como texto o un span con estilo *@
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;">
+                                                            @revisionExistente.Status
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        @* Si no existe, mostramos el div vacío *@
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 12px; font-weight: bold;"></div>
+                                                    }
+                                                </div>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" Class="mt-4">
+            <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-secondary)">
+                <div class="d-flex align-center mb-4">
+                    <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Small" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.h6" Style="font-weight: 600;">IV. Validación Senior Supervisor (SSV)</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Revisiones semanales de cumplimiento</MudText>
+                    </div>
+                </div>
+
+                <div class="table-container-scroll rounded-lg border">
+                    <MudSimpleTable Dense="true" Hover="false" Elevation="0">
+                        <thead>
+                            <tr style="background-color: #f5f5f5;">
+                                <th class="border-right" style="min-width: 150px;">Nivel</th>
+                                <th class="border-right" style="min-width: 200px;">Senior Supervisor</th>
+                                @for (int d = 1; d <= diasEnMes; d++)
+                                {
+                                    <th class="day-cell day-header @(EsFinDeSemana(d) ? "cell-disabled" : "")">@d</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border-right" style="background-color: #fafafa;">
+                                    <MudChip Size="Size.Small" Color="Color.Tertiary" Variant="Variant.Text"><b>SSV</b></MudChip>
+                                </td>
+                                <td class="border-right">
+                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">@_currentHRI.SSV.Name</MudText>
+                                </td>
+
+                                @{
+                                    int diaCorriente = 1;
+                                    while (diaCorriente <= diasEnMes)
+                                    {
+                                        if (EsFinDeSemana(diaCorriente))
+                                        {
+                                            <td class="day-cell cell-disabled"></td>
+                                            diaCorriente++;
+                                        }
+                                        else
+                                        {
+                                            int inicioBloque = diaCorriente;
+                                            int span = 0;
+                
+                                            int numeroSemana = GetWeekOfMonth(inicioBloque);
+
+                                            while (diaCorriente <= diasEnMes && !EsFinDeSemana(diaCorriente))
+                                            {
+                                                span++;
+                                                diaCorriente++;
+                                            }
+
+                                            // Buscamos si ya existe una revisión guardada para esta semana
+                                            var revisionExistente = _currentHRI.WeeklyRevisions?
+                                                .FirstOrDefault(w => w.Week == numeroSemana && w.Month == mesActual);
+
+                                            if(revisionExistente != null && revisionExistente?.RevisionId != 0)
+                                            {
+                                                <td colspan="@span" class="pa-0" style="text-align: center;">@revisionExistente.Status</td>
+                                            }
+                                            else
+                                            {
+                                                <td colspan="@span" class="pa-0" style="text-align: center;"></td>                                                    
+                                            }
+                                        }
+                                    }
+                                }
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12">
+            <div class="d-flex justify-end gap-2 mt-2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetBack">Regresar</MudButton>
+            </div>
+        </MudItem>
+
+    </MudGrid>
+</MudContainer>
+}
+else
+{
+    <div class="loading-overlay">
+        <div class="loading-content">
+            <div class="logo-container">
+                <MudIcon Icon="@Icons.Material.Filled.SettingsSuggest" Color="Color.Primary" Style="font-size: 5rem;" />
+                <div class="pulse-ring"></div>
+            </div>
+
+            <MudText Typo="Typo.h5" Class="mt-4 fw-bold" Style="color: #444; letter-spacing: 1px;">
+                CARGANDO INFORMACIÓN
+            </MudText>
+            
+            <MudText Typo="Typo.body2" Class="mb-4" Style="color: #888;">
+                Por favor, espera un momento.
+            </MudText>
+
+            <div style="width: 250px;">
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Height="6" Buffer="true" Class="rounded-pill" />
+            </div>
+
+            <MudText Typo="Typo.caption" Class="mt-6" Style="opacity: 0.6; font-family: monospace;">
+                Estatus del sistema: Obteniendo...
+            </MudText>
+        </div>
+    </div>
+}
+
+<style>
+    .bg-light-grey {
+        background-color: var(--mud-palette-background-grey);
+    }
+    .mud-table-cell {
+        vertical-align: middle !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: var(--mud-palette-background-grey); 
+        border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: var(--mud-palette-lines-default); 
+        border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--mud-palette-text-secondary); 
+    }
+
+    .day-cell {
+        min-width: 30px !important;
+        width: 30px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        text-align: center !important;
+        border: 1px solid var(--mud-palette-lines-default) !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .day-header {
+        background-color: var(--mud-palette-action-default);
+        font-weight: bold;
+        font-size: 0.7rem;
+    }
+
+    .cycle-label {
+        font-weight: bold;
+        background-color: var(--mud-palette-background-grey);
+        width: 40px;
+        text-align: center;
+    }
+
+    /* Contenedor con scroll para no romper el layout */
+    .table-container-scroll {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .day-cell {
+        min-width: 32px !important;
+        width: 32px !important;
+        height: 32px !important;
+        padding: 0 !important;
+        text-align: center !important;
+        border: 1px solid var(--mud-palette-lines-default) !important;
+    }
+    
+    /* Clase para días inhábiles (Sábado y Domingo) */
+    .cell-disabled {
+        background-color: var(--mud-palette-action-default) !important;
+        background-image: stripe(45deg, #e0e0e0 25%, transparent 25%, transparent 50%, #e0e0e0 50%, #e0e0e0 75%, transparent 75%, transparent);
+        background-size: 4px 4px;
+    }
+
+    .cell-disabled-no-user {
+        background-color: #dfdfdf !important;
+        background-size: 4px 4px;
+    }
+
+    .day-header {
+        background-color: #f0f0f0;
+        font-weight: bold;
+        font-size: 0.75rem;
+    }
+
+    .table-container-scroll {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    /* Estilos para el overlay de carga */
+    .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.loading-content {
+    background: white;
+    padding: 3rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.logo-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Animación de anillo pulsante */
+.pulse-ring {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 4px solid var(--mud-palette-primary);
+    border-radius: 50%;
+    animation: pulse-animation 2s infinite;
+}
+
+@@keyframes pulse-animation {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+.fw-bold {
+    font-weight: 700;
+}
+</style>
+
+@code
+{
+    [Parameter] public int? hriID { get; set; }
+    private Dictionary<string, (string ContentType, string Uri)> UploadedImages { get; set; } = new();
+    private int NumeroCiclos { get; set; } = 3;
+    private int añoActual;
+    private int mesActual;
+    private int diasEnMes;
+    private string mesTexto;
+    private GetHRIDto _currentHRI = new GetHRIDto();
+
+    // Variables para manejo de fechas y generación dinámica de la tabla
+    private DateTime fechaHRI = DateTime.Now;
+
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var fechaHoy = DateTime.Now;
+        await LoadData(fechaHoy);
+    }
+
+    private async Task LoadData(DateTime fechaHoy)
+    {
+        _loading = true;
+
+        if (hriID.HasValue)
+        {
+            var response = await HRIService.GetHRIById(hriID.Value);
+            if (response != null && response.Data != null)
+                _currentHRI = response.Data;
+            else
+                _currentHRI = new GetHRIDto();
+        }
+        else
+            _currentHRI = new GetHRIDto();
+
+        
+
+        añoActual = fechaHoy.Year;
+        mesActual = fechaHoy.Month;
+        diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
+        mesTexto = fechaHoy.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
+
+        _loading = false;
+    }
+
+    private string GetImageSrc(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var apiBase = "https://localhost:10201/";
+        
+        if (string.IsNullOrWhiteSpace(url))
+            return string.Empty;
+
+        var encoded = Uri.EscapeDataString(url);
+        return $"{apiBase}api/HRImages/content?path={encoded}";
+    }
+
+    private bool EsFinDeSemana(int dia) {
+        DateTime fecha = new DateTime(añoActual, mesActual, dia);
+        return fecha.DayOfWeek == DayOfWeek.Saturday || fecha.DayOfWeek == DayOfWeek.Sunday;
+    }
+
+    private int GetWeekOfMonth(int day)
+    {
+        DateTime date = new DateTime(añoActual, mesActual, day);
+        // Lógica simple: (Día + (Día del primer día del mes - 1)) / 7 + 1
+        return (day + (int)new DateTime(date.Year, date.Month, 1).DayOfWeek - 1) / 7 + 1;
+    }
+
+    private void GetBack()
+    {
+        NavigationManager.NavigateTo("/hri/index");
+    }
+
+
+    private async Task OnDateChanged(DateTime? date)
+    {
+        if (date == null) return;
+        fechaHRI = date.Value;
+        // Recargar los datos del nuevo mes
+        await LoadDataForMonth(fechaHRI.Month, fechaHRI.Year);
+    }
+
+    private async Task PreviousMonth()
+    {
+        var m = mesActual == 1 ? 12 : mesActual - 1;
+        var y = mesActual == 1 ? añoActual - 1 : añoActual;
+        fechaHRI = new DateTime(y, m, 1);
+        await LoadDataForMonth(m, y);
+    }
+    private async Task NextMonth()
+    {
+        var m = mesActual == 12 ? 1 : mesActual + 1;
+        var y = mesActual == 12 ? añoActual + 1 : añoActual;
+        fechaHRI = new DateTime(y, m, 1);
+        await LoadDataForMonth(m, y);
+    }
+
+    private async Task LoadDataForMonth(int month, int year)
+    {
+        _loading = true;
+
+        // Año del HRI
+        añoActual = fechaHRI.Year;
+
+        // Mes del HRI
+        mesActual = fechaHRI.Month;
+        mesTexto = fechaHRI.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
+        diasEnMes = DateTime.DaysInMonth(añoActual, mesActual);
+
+        var response = await HRIService.GetDailyByMonthAndYear(hriID.Value, month, year);
+        if (response != null && response.Data != null)
+        {
+            _currentHRI.ItemsRevised = response.Data.ItemsRevised;
+            _currentHRI.HourmeterRevision = response.Data.HourmeterRevision;
+            _currentHRI.HriCycles = response.Data.HriCycles;
+            _currentHRI.WeeklyRevisions = response.Data.WeeklyRevisions;
+        }
+
+        _loading = false;
+    }
+}

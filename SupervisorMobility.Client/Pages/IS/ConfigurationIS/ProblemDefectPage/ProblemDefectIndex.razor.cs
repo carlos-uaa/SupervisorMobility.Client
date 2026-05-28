@@ -97,20 +97,72 @@ namespace SupervisorMobility.Client.Pages.IS.ConfigurationIS.ProblemDefectPage
 
 
         // Create CreateProblemDefects
-        void CreateProblemDefects()
+        async Task CreateProblemDefects()
         {
-            NavigationManager.NavigateTo($"configurationIS/ProblemDefect/Create");
+            var parameters = new DialogParameters<ProblemDefectForm>();
+            parameters.Add(x => x.ProblemDefectId, 0);
+            parameters.Add(x => x.Type, "Create");
+
+            var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true
+            };
+
+            var dialog = await DialogService.ShowAsync<ProblemDefectForm>("", parameters, options);
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+                StateHasChanged();
         }
+
         // Details CreateProblemDefects
-        void ProblemDefectsDetails(int ProblemDefectsId)
+        async void ProblemDefectsDetails(int ProblemDefectsId)
         {
-            NavigationManager.NavigateTo($"configurationIS/ProblemDefect/Details/{ProblemDefectsId}");
+            var parameters = new DialogParameters<ProblemDefectForm>();
+            parameters.Add(x => x.ProblemDefectId, ProblemDefectsId);
+            parameters.Add(x => x.Type, "Details");
+
+            var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true
+            };
+
+            var dialog = await DialogService.ShowAsync<ProblemDefectForm>("", parameters, options);
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+                StateHasChanged();
         }
 
         // Update category
-        void ProblemDefectUpdate(int ProblemDefectsId)
+        async void ProblemDefectUpdate(int ProblemDefectsId)
         {
-            NavigationManager.NavigateTo($"configurationIS/ProblemDefect/Update/{ProblemDefectsId}");
+            var parameters = new DialogParameters<ProblemDefectForm>();
+            parameters.Add(x => x.ProblemDefectId, ProblemDefectsId);
+            parameters.Add(x => x.Type, "Update");
+
+            var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true
+            };
+
+            var dialog = await DialogService.ShowAsync<ProblemDefectForm>("", parameters, options);
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+                StateHasChanged();
         }
 
         async Task DeleteProblemDefects(int ProblemDefectsId)

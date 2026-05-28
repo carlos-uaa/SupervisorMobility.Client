@@ -1,0 +1,928 @@
+﻿@page "/hri/form"
+@using Microsoft.JSInterop
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos
+@using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIHourmeterRevisionDto
+@using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIImagesDtos
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRIRevisionItemsDtos
+@using SupervisorMobility.Client.Services.HRIServices;
+@using SupervisorMobility.Client.Data.Entites.Dtos.HRICyclesDtos;
+@inject IDialogService DialogService;
+@inject IHRIService HRIService;
+@inject IHRIItemsService HRIItemsService;
+@inject IHRILinesService HRILinesService;
+@inject IHRIDocksService HRIDocksService;
+@inject IDepartmentService DepartmentService;
+@inject IHRIRevisionItemsService HRIRevisionItemsService;
+@inject IUserService UsersService;
+@inject IJSRuntime JS
+@inject IPlantService PlantService;
+@inject IAreaService AreaService;
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-10">
+
+    <div class="d-flex justify-space-between align-center mb-8 px-2">
+        <div>
+            <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 700;">
+                Creación de Hoja de Revisión Inicial 
+            </MudText>
+            <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mt-1">
+                Configuración inicial de parámetros y puntos de revisión
+            </MudText>
+        </div>
+    </div>
+
+    @if (_isLoadingForm)
+    {
+        <MudPaper Class="pa-8 d-flex flex-column align-center justify-center" Outlined="true">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="mb-4" />
+            <MudText Typo="Typo.subtitle1" Class="mud-text-secondary">Cargando informacion del HRI...</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid Spacing="4">
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-info)">
+                    <div class="d-flex align-center mb-4">
+                        <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                            <MudIcon Icon="@Icons.Material.Filled.DisplaySettings" Size="Size.Small" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6" Style="font-weight: 600;">I. Información General y Evidencia</MudText>
+                    </div>
+
+                    <div class="mb-6">
+                        <MudText Typo="Typo.subtitle2" Class="mb-2" Color="Color.Tertiary" Style="font-weight: 600; text-transform: uppercase;">
+                            LAY OUT:
+                        </MudText>
+
+                        @if (UploadedImages == null || !UploadedImages.Any())
+                        {
+                            <MudPaper Elevation="0" Outlined="true" Class="d-flex flex-column align-center justify-center py-10 rounded-lg bg-light-grey" Style="border-style: dashed; border-color: var(--mud-palette-lines-default);">
+                                <MudIcon Icon="@Icons.Material.Filled.ImageNotSupported" Size="Size.Large" Color="Color.Default" Class="mb-3 opacity-50" />
+                                <MudText Typo="Typo.body1" Color="Color.Default" Class="mb-4" Style="font-weight: 500;">
+                                    No se han cargado imágenes de evidencia
+                                </MudText>
+                
+                                <MudFileUpload T="IReadOnlyList<IBrowserFile>" 
+                                            OnFilesChanged="UploadFiles" 
+                                            AppendMultipleFiles="true"
+                                            Accept=".jpg, .jpeg, .png"
+                                            Hidden="true"
+                                            InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20 opacity-0"
+                                            InputStyle="cursor: pointer;">
+                                    <ButtonTemplate Context="fileContext">
+                                        <MudButton HtmlTag="label"
+                                                Variant="Variant.Outlined"
+                                                Color="Color.Primary"
+                                                for="@fileContext"
+                                                StartIcon="@Icons.Material.Filled.CloudUpload">
+                                            Cargar Imágenes
+                                        </MudButton>
+                                    </ButtonTemplate>
+                                </MudFileUpload>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            <div class="d-flex gap-3 overflow-x-auto py-2 px-1 custom-scrollbar" style="width: 100%; min-height: 160px; align-items: center;">
+                
+                                @foreach (var entry in UploadedImages)
+                                {
+                                    <div class="position-relative d-inline-block shrink-0 rounded-lg overflow-hidden mud-elevation-2" 
+                                        style="height: 150px; border: 1px solid var(--mud-palette-lines-default);">
+            
+                                        <MudImage Src="@entry.Value.Uri" 
+                                                Height="150" 
+                                                ObjectFit="ObjectFit.Cover" 
+                                                Style="width: auto; display: block;" 
+                                                Alt="@entry.Key" />
+            
+                                        <div class="position-absolute top-0 right-0 ma-1" style="z-index: 10;">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                        Color="Color.Error" 
+                                                        Variant="Variant.Filled" 
+                                                        Size="Size.Small" 
+                                                        Class="pa-1"
+                                                        Style="background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(2px); border-radius: 4px;"
+                                                        OnClick="() => RemoveImage(entry.Key)" />
+                                        </div>
+                                    </div>
+                                }
+
+                                <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".jpg, .jpeg, .png" Multiple="true" OnFilesChanged="UploadFiles" Class="shrink-0 mt-0">
+                                    <ButtonTemplate Context="fileContext2">
+                                        <MudButton HtmlTag="label"
+                                                Variant="Variant.Outlined" 
+                                                Color="Color.Primary" 
+                                                Style="height: 150px; border-style: dashed; border-width: 2px;" 
+                                                for="@fileContext2"
+                                                StartIcon="@Icons.Material.Filled.AddPhotoAlternate">
+                                            Agregar
+                                        </MudButton>
+                                    </ButtonTemplate>
+                                </MudFileUpload>
+                            </div>
+                        }
+                    </div>
+
+                    <MudDivider Class="mb-6" />
+
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="int"
+                                    Label="Nombre de Item"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    AnchorOrigin="Origin.BottomCenter"
+                                    @bind-Value="SelectedHRIItemId"
+                                    id="selectedHRIItemId">
+                                <MudSelectItem Value="0" Disabled>Seleccione un item...</MudSelectItem>
+                                @foreach (var item in HRIItems)
+                                {
+                                    <MudSelectItem Value="@item.Key">@item.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudSelect T="int"
+                                    Label="Nombre de Línea"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    AnchorOrigin="Origin.BottomCenter"
+                                    @bind-Value="SelectedHRILineId">
+                                <MudSelectItem Value="0" Disabled>Seleccione una línea...</MudSelectItem>
+                                @foreach (var line in HRILines)
+                                {
+                                    <MudSelectItem Value="@line.Key">@line.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField @bind-Value="controlNumber" Label="Número de Control" Variant="Variant.Outlined" Margin="Margin.Dense" id="controlNumber" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int"
+                                    Label="Dock Asignado"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    AnchorOrigin="Origin.BottomCenter"
+                                    @bind-Value="SelectedHRIDockId">
+                                <MudSelectItem Value="0" Disabled>Seleccione un dock...</MudSelectItem>
+                                @foreach (var dock in HRIDocks)
+                                {
+                                    <MudSelectItem Value="@dock.Key">@dock.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int"
+                                    Label="Planta"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    AnchorOrigin="Origin.BottomCenter"
+                                    Value="SelectedPlantId"
+                                    ValueChanged="OnPlantChanged">
+                                <MudSelectItem Value="0" Disabled>Seleccione una planta...</MudSelectItem>
+                                @foreach (var plant in HRIPlants)
+                                {
+                                    <MudSelectItem Value="@plant.Key">@plant.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int"
+                                    Label="Área"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    AnchorOrigin="Origin.BottomCenter"
+                                    Disabled="@(SelectedPlantId == 0)"
+                                    ValueChanged="OnAreaChanged">
+                                <MudSelectItem Value="0" Disabled>Seleccione un área...</MudSelectItem>
+                                @foreach (var area in HRIAreas)
+                                {
+                                    <MudSelectItem Value="@area.Key">@area.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int"
+                                    Label="Departamento"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    AnchorOrigin="Origin.BottomCenter"
+                                    @bind-Value="SelectedDepartmentId">
+                                <MudSelectItem Value="0" Disabled>Seleccione un departamento...</MudSelectItem>
+                                @foreach (var department in HRIDepartments)
+                                {
+                                    <MudSelectItem Value="@department.Key">@department.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int"
+                                Label="Supervisor"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                AnchorOrigin="Origin.BottomCenter"
+                                @bind-Value="SelectedSupervisorId">
+
+                                <MudSelectItem Value="0" Disabled>Seleccione un supervisor...</MudSelectItem>
+                                @foreach (var user in HRISSupervisorsUsers)
+                                {
+                                    <MudSelectItem Value="@user.Key">@user.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudNumericField T="int"
+                                @bind-Value="NumeroCiclos"
+                                @bind-Value:after="BuildCycles"
+                                Label="Turnos"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Min="1"
+                                Max="10" />
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-warning)">
+                    <div class="d-flex align-center mb-4">
+                        <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Checklist" Size="Size.Small" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6" Style="font-weight: 600;">II. Puntos de Revisión</MudText>
+                        <MudSpacer />
+                        <MudButton OnClick="AddRevisionItem" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Success" Size="Size.Small">
+                            Agregar Punto
+                        </MudButton>
+                    </div>
+
+                    <MudSimpleTable Dense="true" Hover="true" Elevation="0" Class="mud-width-full border-all border-solid mud-border-lines-default rounded-lg overflow-hidden">
+                        <thead>
+                            <tr class="bg-light-grey">
+                                <th style="width: 60px; text-align:center;">#</th>
+                                <th style="min-width: 250px;">Puntos de revisión</th>
+                                <th style="width: 200px;">Método de Revisión</th>
+                                <th style="min-width: 200px;">Criterio</th>
+                                <th style="width: 150px;">Frecuencia</th>
+                                <th style="width: 60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in hriRevisionItems)
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        <MudChip Size="Size.Small" Variant="Variant.Text" Color="Color.Default">@item.ItemNumber</MudChip>
+                                    </td>
+                                    <td>
+                                        <MudTextField T="string" @bind-Value="item.RevisionPoint" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Descripción del punto..." Class="bg-white" />
+                                    </td>
+                                    <td>
+                                        <MudSelect T="int?" @bind-Value="item.RevisionMethodId" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="bg-white">
+                                            <MudSelectItem T="int?" Value="@((int?)null)">Seleccione...</MudSelectItem>
+                                            @foreach (var revisionMethod in HRIRevisionMethods)
+                                            {
+                                                <MudSelectItem T="int?" Value="@((int?)revisionMethod.Key)">@revisionMethod.Value</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </td>
+                                    <td>
+                                        <MudSelect T="int?"
+                                                Variant="Variant.Outlined"
+                                                Margin="Margin.Dense"
+                                                Dense="true"
+                                                Class="bg-white"
+                                                @bind-Value="item.VeredictId">
+                                            <MudSelectItem T="int?" Value="@((int?)null)">Seleccione un criterio...</MudSelectItem>
+                                            @foreach (var veredict in HRIVeredicts)
+                                            {
+                                                <MudSelectItem T="int?" Value="@((int?)veredict.Key)">@veredict.Value</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </td>
+                                    <td>
+                                        <MudSelect T="int?" @bind-Value="item.FrequencyId" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="bg-white">
+                                            <MudSelectItem T="int?" Value="@((int?)null)">Seleccione...</MudSelectItem>
+                                            @foreach (var frequency in HRIFrequencies)
+                                            {
+                                                <MudSelectItem T="int?" Value="@((int?)frequency.Key)">@frequency.Value</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </td>
+                                    <td>
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveRevisionItem(item.ItemNumber))" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-success)">
+                    <div class="d-flex align-center mb-4">
+                        <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                            <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Size="Size.Small" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6" Style="font-weight: 600;">III. Asignación de Personal</MudText>
+                    </div>
+
+                    <MudGrid Spacing="3" Class="mb-6">
+                        @foreach (var cycle in hriCycles)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudPaper Elevation="0" Outlined="true" Class="pa-4 bg-light-grey rounded-lg" Style="border-style: dashed; border-color: var(--mud-palette-lines-default);">
+                                    <div class="d-flex align-center mb-3">
+                                        <MudIcon Icon="@Icons.Material.Filled.Loop" Size="Size.Small" Color="Color.Secondary" Class="mr-2"/>
+                                        <MudText Typo="Typo.subtitle2" Color="Color.Primary" Style="font-weight: 600;">Turno @cycle.Cycle</MudText>
+                                    </div>
+                                    
+                                    <MudSelect 
+                                        T="int" 
+                                        @bind-Value="cycle.OperatorUserId" 
+                                        Label="Operador" 
+                                        Variant="Variant.Outlined" 
+                                        Margin="Margin.Dense" 
+                                        Dense="true" 
+                                        Class="mb-3 bg-white"
+                                        Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)">
+                                        <MudSelectItem Value="0" Disabled>Select Operator...</MudSelectItem>
+                                        @foreach (var user in HRIOperatorsUsers)
+                                        {
+                                            <MudSelectItem Value="@user.Key">@user.Value</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    
+                                    <MudSelect 
+                                        T="int" 
+                                        @bind-Value="cycle.SupervisorUserId" 
+                                        Label="Supervisor" 
+                                        Variant="Variant.Outlined" 
+                                        Margin="Margin.Dense" 
+                                        Dense="true" 
+                                        Class="bg-white"
+                                        Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)">
+                                        <MudSelectItem Value="0" Disabled>Select Supervisor...</MudSelectItem>
+                                        @foreach (var user in HRISupervisorsUsers)
+                                        {
+                                            <MudSelectItem Value="@user.Key">@user.Value</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudPaper>
+                            </MudItem>
+                        }
+                    </MudGrid>
+
+                    <MudDivider Class="mb-6" />
+
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Warning" Class="mr-3" />
+                                <MudSelect 
+                                    T="int" 
+                                    @bind-Value="SelectedSeniorSupervisorId" 
+                                    Label="Senior Supervisor (SSV) para revisiones semanales" 
+                                    Variant="Variant.Outlined" 
+                                    Margin="Margin.Dense"
+                                    Disabled="@(SelectedAreaId == 0 || SelectedPlantId == 0)">
+                                    <MudSelectItem Value="0" Disabled>Select SSV...</MudSelectItem>
+                                    @foreach (var user in HRISSupervisorsUsers)
+                                    {
+                                        <MudSelectItem Value="@user.Key">@user.Value</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSpacer />
+                <div class="d-flex justify-end gap-2 mt-2">
+                    <MudButton Variant="Variant.Text" Color="Color.Error">Cancelar</MudButton>
+                    <MudButton OnClick="SaveDocument" Disabled="@disableCreateButton" StartIcon="@Icons.Material.Filled.Save" Variant="Variant.Filled" Color="Color.Primary">
+                        Crear Documento
+                    </MudButton>
+                </div>
+            </MudItem>
+
+        </MudGrid>
+    }
+
+</MudContainer>
+
+<style>
+    .bg-light-grey {
+        background-color: var(--mud-palette-background-grey);
+    }
+    .mud-table-cell {
+        vertical-align: middle !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: var(--mud-palette-background-grey); 
+        border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: var(--mud-palette-lines-default); 
+        border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--mud-palette-text-secondary); 
+    }
+</style>
+
+@code {
+    private bool _isLoadingForm { get; set; } = true;
+    private int NumeroCiclos { get; set; } = 3; 
+    private int SelectedHRIItemId { get; set; }
+    private int SelectedHRILineId { get; set; }
+    private int SelectedHRIDockId { get; set; }
+    private int SelectedDepartmentId { get; set; }
+    private int SelectedPlantId { get; set; }
+    private int SelectedAreaId { get; set; }
+    private int SelectedSupervisorId { get; set; }
+    private int SelectedSeniorSupervisorId { get; set; }
+    private string controlNumber { get; set; } = "";
+
+    private  List<CreateHRIRevisionItemDto> hriRevisionItems { get; set; } = new();
+    private List<CreateHRICyclesDto> hriCycles { get; set; } = new();
+
+    private List<User> SupervisorsUsers { get; set; } = new();
+    private List<User> SeniorSupervisorsUsers { get; set; } = new();
+    private List<User> OperatorsUsers { get; set; } = new();
+    private Dictionary<string, (string ContentType, string Uri)> UploadedImages { get; set; } = new();
+    private Dictionary<int, string> HRIItems { get; set; } = new();
+    private Dictionary<int, string> HRILines { get; set; } = new();
+    private Dictionary<int, string> HRIDocks { get; set; } = new();
+    private Dictionary<int, string> HRIDepartments { get; set; } = new();
+    private Dictionary<int, string> HRIPlants { get; set; } = new();
+    private Dictionary<int, string> HRIAreas { get; set; } = new();
+    private Dictionary<int, string> HRIRevisionMethods { get; set; } = new();
+    private Dictionary<int, string> HRIFrequencies { get; set; } = new();
+    private Dictionary<int, string> HRIVeredicts { get; set; } = new();
+    private Dictionary<int, string> HRIUsers { get; set; } = new();
+    private Dictionary<int, string> HRISupervisorsUsers { get; set; } = new();
+    private Dictionary<int, string> HRISSupervisorsUsers { get; set; } = new();
+    private Dictionary<int, string> HRIOperatorsUsers { get; set; } = new();
+    private List<CreateHRImageDto> ImagesToSave { get; set; } = new();
+    private bool disableCreateButton = false;
+    private User? LoggedUser { get; set; }
+    private string? LoggedUserObjectId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLoggedUserAsync();
+
+        var response = await HRIItemsService.GetAllHRIItemsAsync();
+        var lineResponse = await HRILinesService.GetAllHRILinesAsync();
+        var dockResponse = await HRIDocksService.GetAllHRIDocksAsync();
+        var departmentResponse = await DepartmentService.GetDepartments();
+        var plantsResponse = await PlantService.GetPlants();
+        var revisionMethodsResponse = await HRIRevisionItemsService.GetAllRevisionMethods();
+        var frequenciesResponse = await HRIRevisionItemsService.GetAllFrequencies();
+        var veredictsResponse = await HRIRevisionItemsService.GetAllVeredicts();
+        var usersResponse = await UsersService.GetUsers(true, false);
+
+        if (response != null && response.Success && response.Data != null)
+        {
+            HRIItems = response.Data
+                .Where(x => x.IsActive)
+                .ToDictionary(x => x.Id, x => x.Name);
+        }
+
+        if (lineResponse != null && lineResponse.Success && lineResponse.Data != null)
+        {
+            HRILines = lineResponse.Data
+                .Where(x => x.IsActive)
+                .ToDictionary(x => x.Id, x => x.LineName);
+        }
+
+        if (dockResponse != null && dockResponse.Success && dockResponse.Data != null)
+        {
+            HRIDocks = dockResponse.Data
+                .Where(x => x.IsActive)
+                .ToDictionary(x => x.Id, x => x.DockName);
+        }
+
+        if (departmentResponse != null)
+        {
+            HRIDepartments = departmentResponse
+                .Where(x => x.IsActive == true)
+                .ToDictionary(x => x.DepartmentId, x => x.Description);
+        }
+
+        if (plantsResponse != null)
+        {
+            HRIPlants = plantsResponse
+                .Where(x => x.IsActive == true)
+                .ToDictionary(x => x.PlantId, x => x.Description);
+        }
+
+        if (revisionMethodsResponse != null && revisionMethodsResponse.Success && revisionMethodsResponse.Data != null)
+        {
+            HRIRevisionMethods = revisionMethodsResponse.Data
+                .Where(x => x.IsActive)
+                .ToDictionary(x => x.Id, x => x.Description);
+        }
+
+        if (frequenciesResponse != null && frequenciesResponse.Success && frequenciesResponse.Data != null)
+        {
+            HRIFrequencies = frequenciesResponse.Data
+                .Where(x => x.IsActive)
+                .ToDictionary(x => x.Id, x => x.Description);
+        }
+
+        if (veredictsResponse != null && veredictsResponse.Success && veredictsResponse.Data != null)
+        {
+            HRIVeredicts = veredictsResponse.Data
+                .Where(x => x.IsActive)
+                .ToDictionary(x => x.Id, x => x.Description);
+        }
+
+        if (usersResponse != null)
+        {
+            SupervisorsUsers = usersResponse
+                .Where(x => x.IsActive == true && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
+                .OrderBy(x => x.Name)
+                .ToList();
+            HRISupervisorsUsers = SupervisorsUsers
+                .ToDictionary(x => x.UserId, x => x.Name);
+
+            SeniorSupervisorsUsers = usersResponse
+                .Where(x => x.IsActive == true && x.UserType == 2 && !string.IsNullOrWhiteSpace(x.Name))
+                .OrderBy(x => x.Name)
+                .ToList();
+            HRISSupervisorsUsers = SeniorSupervisorsUsers
+                .ToDictionary(x => x.UserId, x => x.Name);
+
+
+            OperatorsUsers = usersResponse
+                .Where(x => x.IsActive == true && x.UserType == 4 && !string.IsNullOrWhiteSpace(x.Name))
+                .OrderBy(x => x.Name)
+                .ToList();
+            HRIOperatorsUsers = OperatorsUsers
+                .ToDictionary(x => x.UserId, x => x.Name);
+        }
+
+        if (hriRevisionItems.Count == 0)
+        {
+            AddRevisionItem();
+        }
+
+        // Check if the logged-in user is a senior supervisor and pre-select them if so
+        if(LoggedUser == null)
+        {
+            // Return at before page 
+            Snackbar.Add("No se pudo cargar la información del usuario. Por favor, asegúrese de haber iniciado sesión correctamente.", Severity.Error);
+            await JS.InvokeVoidAsync("history.back");
+            return;
+        }
+        if(HRISSupervisorsUsers.ContainsKey(LoggedUser.UserId))
+        {
+            SelectedSupervisorId = LoggedUser.UserId;
+            SelectedSeniorSupervisorId = LoggedUser.UserId;
+        }
+
+        BuildCycles();
+
+        _isLoadingForm = false;
+    }
+
+    private async Task LoadLoggedUserAsync()
+    {
+        try
+        {
+            var userJson = await JS.InvokeAsync<string>("localStorage.getItem", "user");
+            if (string.IsNullOrWhiteSpace(userJson))
+            {
+                return;
+            }
+
+            LoggedUser = JsonSerializer.Deserialize<User>(userJson);
+            if (LoggedUser is null)
+            {
+                return;
+            }
+
+            LoggedUserObjectId = LoggedUser.ObjectId;
+        }
+        catch
+        {
+            // Keep form functional even if localStorage parsing fails.
+        }
+    }
+
+    private void AddRevisionItem()
+    {
+        var nextItemNumber = hriRevisionItems.Count == 0 ? 1 : hriRevisionItems.Max(x => x.ItemNumber) + 1;
+        hriRevisionItems.Add(new CreateHRIRevisionItemDto
+        {
+            HriId = 0,
+            ItemNumber = nextItemNumber,
+            RevisionPoint = string.Empty,
+            RevisionMethodId = (int?)null,
+            VeredictId = (int?)null,
+            FrequencyId = (int?)null
+        });
+    }
+
+    private void BuildCycles()
+    {
+        var existingCycles = hriCycles.ToDictionary(x => x.Cycle);
+
+        hriCycles = Enumerable.Range(1, NumeroCiclos)
+            .Select(x => new CreateHRICyclesDto
+            {
+                HriId = 0,
+                Cycle = x,
+                OperatorUserId = existingCycles.TryGetValue(x, out var existingCycle) ? existingCycle.OperatorUserId : 0,
+                SupervisorUserId = existingCycles.TryGetValue(x, out existingCycle) ? existingCycle.SupervisorUserId : 0,
+                IsActive = existingCycles.TryGetValue(x, out existingCycle) ? existingCycle.IsActive : true,
+            })
+            .ToList();
+    }
+
+    private async Task OnPlantChanged(int plantId)
+    {
+        SelectedPlantId = plantId;
+        SelectedAreaId = 0;
+        HRIAreas = new Dictionary<int, string>();
+
+        if (SelectedPlantId == 0)
+        {
+            return;
+        }
+
+        var areasResponse = await AreaService.GetAreas(SelectedPlantId);
+        if (areasResponse != null)
+        {
+            HRIAreas = areasResponse
+                .Where(x => x.IsActive == true)
+                .ToDictionary(x => x.AreaId, x => x.Description);
+        }
+    }
+    private async Task OnAreaChanged(int areaId)
+    {
+        SelectedAreaId = areaId;
+
+        // Filter supervisors based on selected plant and area
+        HRISupervisorsUsers = SupervisorsUsers
+            .Where(x => x.PlantId == SelectedPlantId && IsInSelectedArea(x) && x.UserType == 3 && !string.IsNullOrWhiteSpace(x.Name))
+            .OrderBy(x => x.Name)
+            .ToDictionary(x => x.UserId, x => x.Name);
+
+        // Filter senior supervisors based on selected plant and area
+        HRISSupervisorsUsers = SeniorSupervisorsUsers
+            .Where(x => x.PlantId == SelectedPlantId && IsInSelectedArea(x) && x.UserType == 2 && !string.IsNullOrWhiteSpace(x.Name))
+            .OrderBy(x => x.Name)
+            .ToDictionary(x => x.UserId, x => x.Name);
+
+        // Filter operators based on selected plant and area
+        HRIOperatorsUsers = OperatorsUsers
+            .Where(x => x.PlantId == SelectedPlantId && IsInSelectedArea(x) && x.UserType == 4 && !string.IsNullOrWhiteSpace(x.Name))
+            .OrderBy(x => x.Name)
+            .ToDictionary(x => x.UserId, x => x.Name);
+    }
+
+    private bool IsInSelectedArea(User user)
+    {
+        return user.Areas?.Any(a => a.AreaId == SelectedAreaId) ?? false;
+    }
+
+    private void RemoveRevisionItem(int itemNumber)
+    {
+        var item = hriRevisionItems.FirstOrDefault(x => x.ItemNumber == itemNumber);
+        if (item is null)
+        {
+            return;
+        }
+
+        hriRevisionItems.Remove(item);
+
+        var counter = 1;
+        foreach (var revisionItem in hriRevisionItems.OrderBy(x => x.ItemNumber))
+        {
+            revisionItem.ItemNumber = counter;
+            counter++;
+        }
+    }
+
+    private async void UploadFiles(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            if (!file.ContentType.StartsWith("image/"))
+                continue;
+
+            if (!UploadedImages.ContainsKey(file.Name))
+            {
+                using (Stream mediaStream = file.OpenReadStream(file.Size))
+                {
+                    using MemoryStream ms = new();
+                    await mediaStream.CopyToAsync(ms);
+                    string base64String = Convert.ToBase64String(ms.ToArray());
+                    string fullUri = $"data:{file.ContentType};base64,{base64String}";
+
+                    UploadedImages.Add(file.Name, (file.ContentType, fullUri));
+                }
+            }
+
+            var result = await HRIService.SaveImageInTempFolderAsync(file);
+            if (!string.IsNullOrEmpty(result))
+            {
+                ImagesToSave.Add(new CreateHRImageDto
+                {
+                    HriId = 0,
+                    ImageUrl = result,
+                    ImageType = file.ContentType
+                });
+            }
+
+        }
+
+        StateHasChanged();
+    }
+
+    private void RemoveImage(string fileName)
+    {
+        if (UploadedImages.ContainsKey(fileName))
+        {
+            UploadedImages.Remove(fileName);
+        }
+    }
+
+    private async Task SaveDocument()
+    {
+        disableCreateButton = true;
+        StateHasChanged();
+
+        // Validate Form
+        var validationErrors = ValidateForm();
+        if (validationErrors.Any())
+        {
+            foreach (var error in validationErrors)
+            {
+                Snackbar.Add(error, Severity.Warning);
+            }
+
+            disableCreateButton = false;
+            StateHasChanged();
+            return;
+        }
+
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+            {
+                { "Title", "Crear HRI" },
+                { "ContentText", "¿Estás seguro de que deseas crear el documento?" },
+                { "ButtonText", "Guardar" },
+                { "CancelText", "Cancelar" },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.Save },
+                { "IconColor", Color.Tertiary }
+            };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Crear HRI", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled) {
+            disableCreateButton = false;
+            StateHasChanged();
+            return;
+        }
+
+
+        var itemsRevised = hriRevisionItems
+            .Where(x => !string.IsNullOrWhiteSpace(x.RevisionPoint))
+            .Select(x => new CreateHRIRevisionItemDto
+            {
+                HriId = 0,
+                ItemNumber = x.ItemNumber,
+                RevisionPoint = x.RevisionPoint,
+                RevisionMethodId = x.RevisionMethodId,
+                VeredictId = x.VeredictId,
+                FrequencyId = x.FrequencyId
+            })
+            .ToList();
+
+        // Save Document Data 
+        var dto = new CreateHRIDto
+        {
+            HRILinesId = SelectedHRILineId == 0 ? null : SelectedHRILineId,
+            Line = null,
+            HRIItemId = SelectedHRIItemId == 0 ? null : SelectedHRIItemId,
+            NameOfItem = null,
+            ControlNumber = controlNumber,
+            HRIDockId = SelectedHRIDockId == 0 ? null : SelectedHRIDockId,
+            Dock = null,
+            Department = SelectedDepartmentId == 0 ? null : HRIDepartments.GetValueOrDefault(SelectedDepartmentId),
+            Images = ImagesToSave,
+            ItemsRevised = itemsRevised,
+            WeeklyRevisions = null,
+            HriCycles = hriCycles,
+            IsActive = true,
+            CreationDate = DateTime.Now,
+            HourmeterRevision = new CreateHourMeterRevisionDto { IsActive = true },
+            SupervisorUserId = SelectedSupervisorId == 0 ? null : SelectedSupervisorId,
+            SSVUserId = SelectedSeniorSupervisorId == 0 ? null : SelectedSeniorSupervisorId,
+            PlantId = SelectedPlantId == 0 ? null : SelectedPlantId,
+            AreaId = SelectedAreaId == 0 ? null : SelectedAreaId
+        };
+        try
+        {
+            var response = await HRIService.CreateHRI(dto);
+
+            if (response != null && response.Success)
+            {
+                Snackbar.Add("Documento HRI creado correctamente. Redirigiendo...", Severity.Success);
+                await Task.Delay(2000);
+                NavigationManager.NavigateTo("/hri/index");
+                return;
+            }
+
+            Snackbar.Add($"No se pudo crear el documento: {response?.Message ?? "Sin respuesta del servidor."}", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al crear el documento: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            disableCreateButton = false;
+            StateHasChanged();
+        }
+    }
+
+    private List<string> ValidateForm()
+    {
+        var errors = new List<string>();
+
+        if (SelectedHRIItemId == 0) errors.Add("Debe seleccionar un item.");
+        if (SelectedHRILineId == 0) errors.Add("Debe seleccionar una linea.");
+        if (SelectedHRIDockId == 0) errors.Add("Debe seleccionar un dock.");
+        if (SelectedPlantId == 0) errors.Add("Debe seleccionar una planta.");
+        if (SelectedAreaId == 0) errors.Add("Debe seleccionar un area.");
+        if (SelectedDepartmentId == 0) errors.Add("Debe seleccionar un departamento.");
+        if (SelectedSupervisorId == 0) errors.Add("Debe seleccionar un supervisor principal.");
+        if (SelectedSeniorSupervisorId == 0) errors.Add("Debe seleccionar un Senior Supervisor (SSV).");
+        if (string.IsNullOrWhiteSpace(controlNumber)) errors.Add("El numero de control es obligatorio.");
+
+        if (!UploadedImages.Any() && !ImagesToSave.Any())
+        {
+            errors.Add("Debe cargar al menos una imagen de evidencia.");
+        }
+
+        if (hriRevisionItems.Count == 0)
+        {
+            errors.Add("Debe agregar al menos un punto de revision.");
+        }
+        else
+        {
+            var hasInvalidRevisionPoint = hriRevisionItems.Any(x => string.IsNullOrWhiteSpace(x.RevisionPoint));
+            var hasInvalidMethod = hriRevisionItems.Any(x => !x.RevisionMethodId.HasValue);
+            var hasInvalidVeredict = hriRevisionItems.Any(x => !x.VeredictId.HasValue);
+            var hasInvalidFrequency = hriRevisionItems.Any(x => !x.FrequencyId.HasValue);
+
+            if (hasInvalidRevisionPoint) errors.Add("Todos los puntos de revision deben tener descripcion.");
+            if (hasInvalidMethod) errors.Add("Todos los puntos de revision deben tener metodo de revision.");
+            if (hasInvalidVeredict) errors.Add("Todos los puntos de revision deben tener criterio.");
+            if (hasInvalidFrequency) errors.Add("Todos los puntos de revision deben tener frecuencia.");
+        }
+
+        if (NumeroCiclos <= 0)
+        {
+            errors.Add("El numero de turnos debe ser mayor a cero.");
+        }
+
+        if (hriCycles.Count == 0)
+        {
+            errors.Add("Debe existir al menos un turno configurado.");
+        }
+        else
+        {
+            var hasCycleWithoutOperator = hriCycles.Any(x => x.OperatorUserId == 0);
+            var hasCycleWithoutSupervisor = hriCycles.Any(x => x.SupervisorUserId == 0);
+
+            if (hasCycleWithoutOperator) errors.Add("Todos los turnos deben tener operador asignado.");
+            if (hasCycleWithoutSupervisor) errors.Add("Todos los turnos deben tener supervisor asignado.");
+        }
+
+        return errors;
+    }
+}

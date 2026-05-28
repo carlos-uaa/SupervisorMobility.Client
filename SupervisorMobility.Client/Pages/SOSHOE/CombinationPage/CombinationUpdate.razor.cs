@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using MudBlazor;
 using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.Drawing;
+using SupervisorMobility.Client.Shared;
 
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
@@ -229,27 +230,55 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.CombinationPage
 
         }
 
+        private async Task<bool> ConfirmUpdate()
+        {
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Confirmation Update" },
+                { "ContentText", "Are you sure you want to update the Combination information?" },
+                { "ButtonText", "Update!" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.PlayCircle },
+                { "IconColor", Color.Tertiary }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>("Confirmation Update", dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            return !dialogResult.Canceled;
+        }
+
         private async Task UpdateCombination()
         {
-            Snackbar.Clear();
-            UpdateButton = true;
+            if (!await ConfirmUpdate())
+                return;
 
-            var result = await SOSCombinationServices.UpdateSOSCombination(_sosCombination);
-
-            if (result != null)
+            try
             {
-                Snackbar.Add($"Combination Updated!", Severity.Info);
+                Snackbar.Clear();
+                UpdateButton = true;
 
-                _sosCombination = result;
-                _ = await UploadEvidence();
+                var result = await SOSCombinationServices.UpdateSOSCombination(_sosCombination);
 
-                NavigationManager.NavigateTo("/SOSHOE/Combination");
+                if (result != null)
+                {
+                    Snackbar.Add($"Combination Updated!", Severity.Info);
+
+                    _sosCombination = result;
+                    _ = await UploadEvidence();
+
+                    NavigationManager.NavigateTo("/SOSHOE/Combination");
+                }
+                else
+                    Snackbar.Add("Error al actualizar!", Severity.Error);
             }
-            else
-                await JSRuntime.InvokeVoidAsync("alert", "Error al actualizar!");
-
-            UpdateButton = false;
-
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message} \n Inner: {ex.InnerException}");
+                UpdateButton = false;
+            }
         }
 
         #region EditImage

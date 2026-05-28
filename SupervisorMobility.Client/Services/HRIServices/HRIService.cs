@@ -1,0 +1,353 @@
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Http;
+using Microsoft.JSInterop;
+using SupervisorMobility.Client.Data;
+using SupervisorMobility.Client.Data.Entites.Dtos.HRIDtos;
+using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos;
+using SupervisorMobility.Client.Data.Entities.Dtos.HRIDtos.HRIMetricsDtos;
+using SupervisorMobility.Client.Data.Entities.Hri;
+using SupervisorMobility.Clinet.Data.Entities.Dtos.HRIHistory;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using static System.Net.WebRequestMethods;
+
+
+
+namespace SupervisorMobility.Client.Services.HRIServices
+{
+    public class HRIService: IHRIService
+    {
+        private const long MaxImageUploadBytes = 10 * 1024 * 1024; // 10 MB
+        private readonly HttpClient _httpClient;
+        private readonly IJSRuntime _jsRuntime;
+
+        public HRIService(HttpClient httpClient, IJSRuntime jsRuntime)
+        {
+            _httpClient = httpClient;
+            _jsRuntime = jsRuntime;
+        }
+
+        public async Task<ServiceResponse<List<GetHRIDto>>> GetAllHRI()
+        {
+            var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<GetHRIDto>>>(
+                "HRI/GetAllHRI"
+            );
+
+            return response;
+        }
+
+        public async Task<ServiceResponse<GetHRIDto>> GetHRIById(int id)
+        {
+            var response = await _httpClient.GetFromJsonAsync<ServiceResponse<GetHRIDto>>(
+                $"HRI/GetHRIById/{id}"
+            );
+
+            return response;
+        }
+
+        public async Task<ServiceResponse<GetHRIDto>> GetDailyByMonthAndYear(int hriId, int month, int year)
+        {
+            var response = await _httpClient.GetFromJsonAsync<ServiceResponse<GetHRIDto>>(
+                $"HRI/GetDailyByMonthAndYear/{hriId}/{month}/{year}"
+            );
+
+            return response;
+        }
+
+        public async Task<ServiceResponse<GetHRIDto>> CreateHRI(CreateHRIDto dto)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("HRI/CreateHRI", dto);
+                var result = await response.Content.ReadFromJsonAsync<ServiceResponse<GetHRIDto>>();
+                return result ?? new ServiceResponse<GetHRIDto>
+                {
+                    Success = false,
+                    Data = new GetHRIDto(),
+                    Message = "Empty response while creating HRI."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<GetHRIDto>
+                {
+                    Success = false,
+                    Data = new GetHRIDto(),
+                    Message = $"Exception creating HRI: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<bool>> DeleteHRI(int id)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"HRI/DeleteHRI/{id}");
+                var result = await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+                return result ?? new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = "Empty response while deleting HRI."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = $"Exception deleting HRI: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<bool>> CreateNewWeeklyRevision(List<CreateWeeklyRevisionDto> weeklyRevisions)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("HRI/CreateNewWeeklyRevision", weeklyRevisions);
+                var result = await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+                return result ?? new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = "Empty response while creating weekly revision."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = $"Exception creating weekly revision: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<List<HRIToTableDto>>> GetHRISoftInfoList()
+        {
+            var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HRIToTableDto>>>(
+                "HRI/GetHRISoftInfoList"
+            );
+
+            return response;
+        }
+
+        public async Task<ServiceResponse<bool>> UpdateHRI(int HriId, UpdateHRIDto dto)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"HRI/UpdateHRI/{HriId}", dto);
+                var result = await response.Content.ReadFromJsonAsync<ServiceResponse<bool>>();
+                return result ?? new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = "Empty response while updating HRI."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = $"Exception updating HRI: {ex.Message}"
+                };
+            }
+        }
+        
+        public async Task<string> SaveImageInTempFolderAsync(IBrowserFile imageFile)
+        {
+            if (imageFile is null || imageFile.Size == 0 || imageFile.Size > MaxImageUploadBytes)
+            {
+                return string.Empty;
+            }
+
+            var streamContent = new StreamContent(imageFile.OpenReadStream(MaxImageUploadBytes));
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(imageFile.ContentType);
+
+            var response = await _httpClient.PostAsync("HRImages/SaveImageInTempFolderAsync", new MultipartFormDataContent
+            {
+                { streamContent, "image", imageFile.Name }
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return string.Empty;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<ServiceResponse<string>>();
+            if (result is null || !result.Success)
+            {
+                return string.Empty;
+            }
+            return result.Data ?? string.Empty;
+        }
+
+        public async Task<byte[]?> GetImageContentAsync(string path)
+        {
+            try
+            {
+                // Llamada al endpoint con query string
+                var response = await _httpClient.GetAsync($"api/HRIImages/content?path={Uri.EscapeDataString(path)}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Manejo de errores: 404, 400, etc.
+                    return null;
+                }
+
+                // Leer el contenido como byte[]
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<ServiceResponse<List<GetHRIHistoryActionDto>>> GetHistoryByHRIId(int hriId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<GetHRIHistoryActionDto>>>(
+                    $"HRI/GetHRIHistory/{hriId}"
+                );
+
+                return response ?? new ServiceResponse<List<GetHRIHistoryActionDto>>
+                {
+                    Success = false,
+                    Data = new List<GetHRIHistoryActionDto>(),
+                    Message = "Empty response while fetching HRI history."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<List<GetHRIHistoryActionDto>>
+                {
+                    Success = false,
+                    Data = new List<GetHRIHistoryActionDto>(),
+                    Message = $"Exception fetching HRI history: {ex.Message}"
+                };
+            }
+        }
+
+        // Endpoints para el Dashboard del HRI
+        public async Task<ServiceResponse<HriKpis>> GetHriKPIs()
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<HriKpis>>("HRI/GetHriKPIs");
+                return response ?? new ServiceResponse<HriKpis>
+                {
+                    Success = false,
+                    Message = "No data returned from GetHriKPIs."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<HriKpis>
+                {
+                    Success = false,
+                    Message = $"Exception in GetHriKPIs: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<LinesChartData>> GetLinesChartData(int areaId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<LinesChartData>>(
+                    $"HRI/GetLinesChartData/{areaId}"
+                );
+                return response ?? new ServiceResponse<LinesChartData>
+                {
+                    Success = false,
+                    Message = "No data returned from GetLinesChartData."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<LinesChartData>
+                {
+                    Success = false,
+                    Message = $"Exception in GetLinesChartData: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<GeneralStatusChartData>> GetGeneralStatusChartData(int areaId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<GeneralStatusChartData>>(
+                    $"HRI/GetGeneralStatusChartData/{areaId}"
+                );
+                return response ?? new ServiceResponse<GeneralStatusChartData>
+                {
+                    Success = false,
+                    Message = "No data returned from GetGeneralStatusChartData."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<GeneralStatusChartData>
+                {
+                    Success = false,
+                    Message = $"Exception in GetGeneralStatusChartData: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ServiceResponse<List<HriRecentRevisionsDto>>> GetRecentRevisions(int areaId, string? filter = null)
+        {
+            try
+            {
+                var url = string.IsNullOrEmpty(filter)
+                    ? $"HRI/GetRecentRevisions/{areaId}"
+                    : $"HRI/GetRecentRevisions/{areaId}?filter={filter}";
+
+                var response = await _httpClient.GetFromJsonAsync<ServiceResponse<List<HriRecentRevisionsDto>>>(url);
+                return response ?? new ServiceResponse<List<HriRecentRevisionsDto>>
+                {
+                    Success = false,
+                    Message = "No data returned from GetRecentRevisions."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<List<HriRecentRevisionsDto>>
+                {
+                    Success = false,
+                    Message = $"Exception in GetRecentRevisions: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<byte[]> GetExcelReport(int hriId, int month, int year)
+        {
+            try
+            {
+                using var response = await _httpClient.GetAsync($"HRI/GetExcelHriFile/{hriId}/{month}/{year}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    await _jsRuntime.InvokeVoidAsync("console.log", $"Excel report request failed with status {(int)response.StatusCode}");
+                    return Array.Empty<byte>();
+                }
+
+                var bytes = await response.Content.ReadAsByteArrayAsync();
+                return bytes;
+            }
+            catch (Exception ex)
+            {
+                await _jsRuntime.InvokeVoidAsync("console.log", $"Error fetching Excel report: {ex.Message}");
+                return Array.Empty<byte>();
+            }
+        }
+    }
+}

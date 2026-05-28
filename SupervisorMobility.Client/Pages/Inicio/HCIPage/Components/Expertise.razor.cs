@@ -25,40 +25,29 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 
         private List<ILULevel> _LevelsILU { get; set; } = new();
         private ILURegister _newIlu { get; set; } = new();
-
+        private List<ILURegister> _expertiseItems = new List<ILURegister>();
 
         private List<int> _idsAreas { get; set; } = new();
         private List<Area> _ExistAreas { get; set; } = new();
         protected async override Task OnInitializedAsync()
         {
-            if (!ExpertiseTable.Any())
-            {
-                for (int i = 0; i < 5; i++)
-                {
-                    ExpertiseTable.Add( new());
-                }
-            }
             _LevelsILU = await ILUServices.GetLevelsILU();
-
             _idsAreas = ExpertiseTable.Where(e => e.Distribution != null).Select(e => e.Distribution.AreaId).Distinct().ToList();
-
             _ExistAreas = await AreaServices.GetAreasByIds(_idsAreas);
+            _expertiseItems = GetGroupedExpertiseTable();
 
             Task<List<Plant>> plantsTask = null;
             Task<List<Area>> areasTask = null;
             if (user.UserType == 3)
             {
                 plantId = (int)user.PlantId;
-                areaId = (int)user.AreaId;
+                areaId = user.Areas != null && user.Areas.Count > 0 ? user.Areas.FirstOrDefault().AreaId : 0;
                 _distributions = await DistributionService.GetDistributionsWithCollections(plantId, areaId);
             }
             else
             {
                 if (user.UserType == 1 || user.UserType == 5)
-                {
                     plantsTask = PlantServices.GetPlants();
-                }
-
                 if (user.UserType == 2 || user.UserType == 5)
                 {
                     plantId = (int)user.PlantId;
@@ -67,14 +56,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             }
 
             if (plantsTask != null)
-            {
                 _plants = (await plantsTask).OrderBy(p => p.Description).ToList();
-            }
-
             if (areasTask != null)
-            {
                 _areas = (await areasTask).OrderBy(a => a.Description).ToList();
-            }
 
             StateHasChanged();
             await base.OnInitializedAsync();
@@ -86,27 +70,16 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             ExpertiseTable[index].EndDate = range.End;
             Upd.InvokeAsync((ExpertiseTable[index], index));
         }
-        //private void TextChanged(string val, int idx)
-        //{
-        //    ExpertiseTable[idx].Description = val;
-        //    Upd.InvokeAsync((ExpertiseTable[idx], idx));
-        //}
-        //private void LevelChanged(string val, int idx)
-        //{
-        //    ExpertiseTable[idx].ILULevelId = val;
-        //    Upd.InvokeAsync((ExpertiseTable[idx], idx));
-        //}
+
 
         private void Delete(int index)
         {
-            //KnowledgeTable.RemoveAt(index);
             Del.InvokeAsync(index);
         }
 
         private void AddHere()
         {
             ILURegister newILU = new ILURegister();
-            //KnowledgeTable.Add(niu);
             Add.InvokeAsync(newILU);
         }
 
@@ -117,7 +90,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 
         private List<ILURegister> GetGroupedExpertiseTable()
         {
-            var query = ExpertiseTable.Where(e => e.isActive);
+            var query = ExpertiseTable.Where(e => e.isActive && e.EndDate != null);
 
             if (plantId != 0)
             {
@@ -191,13 +164,13 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                 }
 
                 query = query.Where(e =>
-                    // ID o código
+                    // ID o cï¿½digo
                     e.ILURegisterid.ToString().Contains(term) ||
                     (e.DistributionId?.ToString().Contains(term) ?? false) ||
                     (e.Distribution?.Code?.ToLower().Contains(term) ?? false) ||
                     (e.Distribution?.Description?.ToLower().Contains(term) ?? false) ||
 
-                    // Datos de Área
+                    // Datos de ï¿½rea
                     (e.Distribution != null &&
                     _ExistAreas.Any(a => a.AreaId == e.Distribution.AreaId && ((a.Description?.ToLower().Contains(term) ?? false) || (a.Code?.ToLower().Contains(term) ?? false)))) ||
 
@@ -218,7 +191,7 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                 );
             }
 
-            // Agrupar por DistributionId y categoría ILU
+            // Agrupar por DistributionId y categorï¿½a ILU
             if(statusId != 0)
             {
                 query = query.Where(e => e.ILULevel.ILULevelId != null && e.ILULevel.ILULevelId == statusId);
@@ -245,6 +218,20 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
                 "L" or "LLeader" or "UTrainee" or "ULeaderTrainee" => "LGroup",
                 "U" or "ULeader" => "UGroup",
                 _ => "Other"
+            };
+        }
+
+        private string GetIluImage(int? levelId)
+        {
+            var level = _LevelsILU.FirstOrDefault(x => x.ILULevelId == levelId);
+            if (level == null) return "Images/default.png";
+
+            return level.ILULevelCode switch
+            {
+                "ITrainee" or "I" or "ILeader" or "LTrainee" or "LTraineeLeader" => "Images/I.png",
+                "L" or "LLeader" or "UTrainee" or "ULeaderTrainee" => "Images/L.png",
+                "U" or "ULeader" => "Images/U.png",
+                _ => "Images/default.png"
             };
         }
 
@@ -307,25 +294,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
             filters = !filters;
             searchString = ""; 
 
-            //idFilter = new();
-            //distributionId = new();
-            //operationFlag = false;
-            //operationId = new();
-            //filterDate = null;
-            //operatorId = new();
-            //statusId = new();
-
-            //SelectTableEvent0.ReloadServerData();
-
             if (color == Color.Info)
-            {
                 color = Color.Default;
-            }
             else
-            {
                 color = Color.Info;
-            }
-
         }
 
 

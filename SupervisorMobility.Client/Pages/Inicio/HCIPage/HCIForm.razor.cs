@@ -22,6 +22,7 @@ using BlazorCameraStreamer;
 using Blazored.SessionStorage;
 using Blazorise.Extensions;
 using SupervisorMobility.Client.Data.Entities;
+using Blazorise.Utilities;
 
 namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
 {
@@ -45,6 +46,10 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         public List<ILURegister> expertise = new();
         public List<HCICategory> categories = new();
         public List<Commentary> comments = new();
+        private List<UserCourse> courses = new();
+        public List<LocalUserCourses> newCourses = new();
+
+        private List<Area> _areas = new();
 
 
         //User
@@ -103,18 +108,11 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                     _hci.Categories = new List<HCICategory>();
                     _hci.Commentaries = new List<Commentary>();
                     _hci.CareerPaths = new List<UserCareerPath>();
+                    _hci.Courses = new List<LocalUserCourses>();
                     if (_hci.User.ILURegisers.Any())
-                    {
                         expertise = _hci.ILUs = _hci.User.ILURegisers.ToList();
-                    }
                     else
-                    {
                         _hci.ILUs = new List<ILURegister>();
-                    }
-                }
-                else
-                {
-                    //redirect or sumthin'
                 }
             }
             else 
@@ -127,9 +125,56 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
                 expertise = _hci.ILUs ?? new();
                 categories = _hci.Categories ?? new();
                 comments = _hci.Commentaries ?? new();
+                newCourses = _hci.Courses ?? new();
             }
 
+            if(user != null && !string.IsNullOrEmpty(_hci.User?.Payroll.ToString()))
+            {
+                var coursesResponse = await UserCoursesService.GetUserCoursesAsync(_hci.User?.Payroll.ToString());
+                if (coursesResponse.Success)
+                    courses = coursesResponse.Data;
+                else
+                {
+                    Snackbar.Add($"Error loading courses: {coursesResponse.Message}", Severity.Error);
+                    courses = new List<UserCourse>();
+                }    
+            }
+
+            var areasIds = expertise.Where(e => e.Distribution != null).Select(e => e.Distribution.AreaId).Distinct().ToList();
+            if(areasIds != null && areasIds.Count > 0)
+                _areas = await AreaServices.GetAreasByIds(areasIds);
+
+            GetCareerPath();
+
+
             dataloaded = true;
+        }
+
+        private void GetCareerPath()
+        {
+            if(expertise == null || expertise.Count == 0)
+                return;
+
+            int careerPathNo = 0;
+
+            foreach (var career in expertise)
+            {
+                careerPathNo++;
+                if (careers.Any(c => c.CareerPathNo == careerPathNo))
+                    continue;
+                careers.Add(
+                    new UserCareerPath
+                    {
+                        CareerPathNo = careerPathNo,
+                        ChangeDate = career.AcquisitionDate,
+                        EndDate = career.EndDate,
+                        Department = _areas.FirstOrDefault(a => a.AreaId == career.Distribution?.AreaId)?.Code ?? "",
+                        Process = career.Distribution?.Code ?? "",
+                        OperationDescription = career.Distribution?.Description ?? "",
+                        IsActive = true
+                    }
+                );
+            }
         }
 
         private async void Complete()
@@ -142,30 +187,22 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             _hci.ILUs = expertise;
             _hci.Categories = categories;
             _hci.Commentaries = comments;
+            _hci.Courses = newCourses;
 
             if (HCIID == null)
             {
                 _hci.ILUs = new();
                 if (await HCIService.CreateHCI(_hci))
-                {
                     Snackbar.Add("Created succesfully", Severity.Success);
-                }
                 else
-                {
                     Snackbar.Add("Error", Severity.Error);
-                }
             }
             else
-            {
                 if(await HCIService.UpdateHCI(_hci))
-                {
                     Snackbar.Add("Updated succesfully", Severity.Success);
-                }
                 else
-                {
                     Snackbar.Add("Error", Severity.Error);
-                }
-            }
+
             NavManager.NavigateTo("/HCI");
         }
 
@@ -245,13 +282,9 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
         public async void RemoveCareer(int idx)
         {
             if (careers[idx].UserCareerPathId == 0)
-            {
                 careers.RemoveAt(idx);
-            }
             else
-            {
                 careers[idx].IsActive = false;
-            }
             if (!careers.Where(p => p.IsActive == true).Any())
                 careers.Add(new UserCareerPath { CareerPathNo = 1, IsActive = true });
         }
@@ -346,20 +379,32 @@ namespace SupervisorMobility.Client.Pages.Inicio.HCIPage
             titles.RemoveAll(p => p.Description.IsNullOrEmpty() && p.HCITransactionId == 0);
 
             careers.RemoveAll(p=>p.OperationDescription.IsNullOrEmpty() && p.UserCareerPathId == 0);
-            //Add expertise validations
-            //for (int i = 0; i < expertise.Count; i++)
-            //{
-            //    if (checkExpertise(expertise[i])) expertise.RemoveAt(i);
-            //}
-            //expertise.RemoveAll(p=>p.Description.IsNullOrEmpty() && p.ID == 0);
             categories.RemoveAll(p=>p.ChosenCategoryDepartmentId == 0 && p.HCICategoryId == 0);
             comments.RemoveAll(p => p.Comment.IsNullOrEmpty() && p.CommentaryId == 0);
         }
 
-
         private async void DownloadExcel()
         {
             await Exportation.ExportHCIToExcel(_hci.HCIId);
+        }
+
+        public async void addCourse(LocalUserCourses course)
+        {
+            if (course == null)
+                return;
+
+            newCourses.Add(course);
+            Snackbar.Add("Course added", Severity.Info);
+            newCourses = newCourses.ToList();
+            StateHasChanged();
+        }
+
+        public async void removeCourse(LocalUserCourses course)
+        {
+            newCourses.Remove(course);
+            Snackbar.Add("Course removed", Severity.Info);
+            newCourses = newCourses.ToList();
+            StateHasChanged();
         }
     }
 }

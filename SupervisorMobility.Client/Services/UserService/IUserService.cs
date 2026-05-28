@@ -1,4 +1,8 @@
-﻿using SupervisorMobility.Client.Data.Entities;
+﻿using Microsoft.AspNetCore.Mvc;
+using SupervisorMobility.Client.Data;
+using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Data.Entities.Dtos;
+using SupervisorMobility.Client.Data.SPModels;
 
 namespace SupervisorMobility.Client.Services.UserService
 {
@@ -40,11 +44,16 @@ namespace SupervisorMobility.Client.Services.UserService
         Task DownloadSupervisorsFormat();
         Task DownloadOperatorsFormat();
 
+        //UsersInfoWFM
+        Task<ServiceResponse<WFMInfoSP>> GetPersonalInfoByPersonalNumber(int personalNumber);
+
 
         //Users Not Found
         Task<List<UserNotFound>> GetUsersNotFound();
         Task<UserNotFound> CreateUnregisteredUser(UserNotFound _newUser);
         Task<bool> UpdateUnregisteredUser(int UserId, UserNotFound _newUser);
 
+        // User Update Areas
+        Task<ServiceResponse<UpdateUsersAreasResult>> UpdateUsersAreas(List<UpdateAreasForSuperiorDto> _usersList);
     }
 }

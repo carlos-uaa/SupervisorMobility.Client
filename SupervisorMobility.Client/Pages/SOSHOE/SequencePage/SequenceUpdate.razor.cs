@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Headers;
+using SupervisorMobility.Client.Shared;
 
 namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
 {
@@ -460,9 +461,31 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SequencePage
         }
         #endregion
 
+        private async Task<bool> ConfirmUpdate()
+        {
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Confirmation Update" },
+                { "ContentText", "Are you sure you want to update the Sequence information?" },
+                { "ButtonText", "Update!" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Outlined.PlayCircle },
+                { "IconColor", Color.Tertiary }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>("Confirmation Update", dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            return !dialogResult.Canceled;
+        }
 
         private async Task UpdateSequence()
         {
+            if (!await ConfirmUpdate())
+                return;
+
             Snackbar.Clear();
             UpdateButton = true;
             await GenerateSOSHUBCommentaries();

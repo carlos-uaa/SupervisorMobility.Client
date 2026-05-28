@@ -1,0 +1,250 @@
+﻿@inject IStringLocalizer<Resource1> Localizer
+@inject IDistributionService DistributionsServices
+@inject IAreaService AreaServices
+@using System.ComponentModel.DataAnnotations
+
+@* Sección: Información Básica *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudItem Class="mb-3">
+        <MudText Typo="Typo.h6" Style="color: #546e7a; font-weight: 500;">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+            Información Básica
+        </MudText>
+    </MudItem>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" 
+                          HelperText="E.g. user@compasdcpcs.local" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" 
+                          RequiredError="Email is required!" Variant="Variant.Outlined"
+                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@* Sección: Información del Empleado *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudItem Class="mb-3">
+        <MudText Typo="Typo.h6" Style="color: #546e7a; font-weight: 500;">
+            <MudIcon Icon="@Icons.Material.Filled.Work" Class="mr-2" />
+            @Localizer["UsersEmployeInfo"]
+        </MudText>
+    </MudItem>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudAutocomplete T="Plant"
+                             Label="@Localizer["UsersLabelPlant"]"
+                             Variant="Variant.Outlined"
+                             Placeholder="@Localizer["UsersPHPlant"]"
+                             AnchorOrigin="Origin.BottomCenter"
+                             ValueChanged="ShowAreasInvokeByPlantSelector"
+                             ToStringFunc="@(p => p == null ? string.Empty : $"{p.Code}-{p.Description}")"
+                             SearchFunc="SearchPlants"
+                             Clearable="true"
+                             Dense="true" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@* Sección: Jerarquía *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudItem Class="mb-3">
+        <MudText Typo="Typo.h6" Style="color: #546e7a; font-weight: 500;">
+            <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="mr-2" />
+            Jerarquía
+        </MudText>
+    </MudItem>
+
+    <MudItem Class="mb-4">
+        <MudText Typo="Typo.subtitle2" Style="color: #616161; font-weight: 500;">
+            @Localizer["UsersSubordinates"]
+        </MudText>
+    </MudItem>
+
+    @*Seccion de Selector Subordinados *@
+    <MudGrid Class="mb-3">
+        <MudAutocomplete T="User"
+                        Label="@Localizer["UsersSeniorSupervisor"]"
+                        Variant="Variant.Outlined"
+                        Placeholder="@Localizer["UsersPHSubordinate"]"
+                        AnchorOrigin="Origin.BottomCenter"
+                        ValueChanged="OnSelectedSubordinatedFunction"
+                        ToStringFunc="@(u => u == null ? string.Empty : $"{u.Name}-{u.Area?.Description}-{u.Group?.Description}")"
+                        SearchFunc="@(value => Task.FromResult(SeniorsSupervisors.Where(ss => 
+                            ss.Name.Contains(value, StringComparison.OrdinalIgnoreCase) || 
+                            (ss.Area != null && ss.Area.Description.Contains(value, StringComparison.OrdinalIgnoreCase)) || 
+                            (ss.Group != null && ss.Group.Description.Contains(value, StringComparison.OrdinalIgnoreCase)))))"
+                        Clearable="true"
+                        Dense="true" />
+        <MudItem xs="12" md="6">
+        </MudItem>
+        <MudItem xs="12" md="6" Class="d-flex align-center">
+            <MudButton Disabled="@ActiveAddSubordinated" 
+                       OnClick="@(() => AddSeniorSupervisorToSubordinateList(selectedSeniorSupervisorOfList))" 
+                       Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"> 
+                Agregar subordinado 
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
+    @if (_user.Subordinates is not null && _user.Subordinates?.ToList().Count > 0)
+    {
+        <MudGrid>
+            @foreach (var item in _user.Subordinates)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="1" Style="border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <MudCardHeader Style="background-color: #f5f5f5; padding: 12px;">
+                            <CardHeaderContent>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" 
+                                               OnClick="@(() => DeleteSeniorSupervisorFromSubordinateList(item))" />
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2" Class="mb-1"><b>@Localizer["UsersName"]:</b> @item.Name</MudText>
+                            <MudText Typo="Typo.body2"><b>@Localizer["UsersGroup"]:</b> @item.Group?.Description</MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            @switch (item.UserType)
+                            {
+                                case 1:
+                                    <MudChip Icon="@Icons.Material.Filled.AdminPanelSettings" 
+                                             Variant="Variant.Filled" 
+                                             Color="Color.Primary" 
+                                             Size="Size.Small"> 
+                                        @Localizer["UsersAdmin"] 
+                                    </MudChip>
+                                    break;
+                                case 2:
+                                    <MudChip Icon="@Icons.Material.Filled.SupervisorAccount" 
+                                             Variant="Variant.Filled" 
+                                             Color="Color.Secondary" 
+                                             Size="Size.Small"> 
+                                        @Localizer["UsersSeniorSupervisor"] 
+                                    </MudChip>
+                                    break;
+                            }
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudPaper>
+
+<MudItem Class="d-flex justify-end mt-3">
+    @if (_user.UserType != 0)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitUser">@Localizer["UsersNew"]</MudButton>
+    }
+    <MudButton Href="/usersmanagement" Variant="Variant.Outlined" Class="ml-4">@Localizer["Cancel"]</MudButton>
+</MudItem>
+
+@code {
+    [Parameter] public User _user { get; set; }
+    [Parameter] public User LogedUser { get; set; }
+    [Parameter] public List<User> _allUsers { get; set; }
+    [Parameter] public List<Plant> _plants { get; set; }
+    [Parameter] public List<User> SeniorsSupervisors { get; set; } = new List<User>();
+    [Parameter] public EventCallback<UserManagmentFormDto> OnUserChanged { get; set; }
+
+    private int auxPlant = 0;
+
+    private User selectedSeniorSupervisorOfList = new User();
+    private bool ActiveAddSubordinated = true;
+
+    public List<UpdateAreasForSuperiorDto> SubordinatesToUpdate { get; set; } = new List<UpdateAreasForSuperiorDto>();
+
+    private async Task SubmitUser()
+    {
+        UserManagmentFormDto userManagmentFormDto = new UserManagmentFormDto
+        {
+            User = _user,
+            Subordinates = SubordinatesToUpdate
+        };
+        await OnUserChanged.InvokeAsync(userManagmentFormDto);
+    }
+
+    private async void ShowAreasInvokeByPlantSelector(Plant selectedPlant)
+    {
+        SeniorsSupervisors.Clear();
+        _user.Plant = selectedPlant;
+        _user.PlantId = auxPlant = selectedPlant.PlantId;
+        await SegregateAllUsers(_allUsers);
+
+        StateHasChanged();
+    }
+
+    private async Task SegregateAllUsers(List<User> users)
+    {
+        foreach (User item in users)
+        {
+            switch (item.UserType)
+            {
+                case 2:
+                    if (LogedUser.UserType == 1)
+                        SeniorsSupervisors.Add(item);
+                    else if (item.PlantId == auxPlant)
+                        SeniorsSupervisors.Add(item);
+                    break;
+            }
+        }
+    }
+
+    private async void OnSelectedSubordinatedFunction(User selectedSubordinate)
+    {
+        selectedSeniorSupervisorOfList = selectedSubordinate;
+        if (selectedSeniorSupervisorOfList != new User())
+            ActiveAddSubordinated = false;
+        else
+            ActiveAddSubordinated = true;
+    }
+
+    private void AddSeniorSupervisorToSubordinateList(User selection)
+    {
+        if (_user.Subordinates == null)
+        {
+            _user.Subordinates = new List<User>();
+        }
+
+        if (selectedSeniorSupervisorOfList != null && !_user.Subordinates.Contains(selection))
+        {
+            _user.Subordinates.Add(selection);
+            SeniorsSupervisors.Remove(selection);
+            selectedSeniorSupervisorOfList = null;
+            ActiveAddSubordinated = true;
+        }
+        StateHasChanged();
+    }
+
+    private void DeleteSeniorSupervisorFromSubordinateList(User subordinate)
+    {
+        if (_user.Subordinates != null && _user.Subordinates.Contains(subordinate))
+        {
+            _user.Subordinates.Remove(subordinate);
+            SeniorsSupervisors.Add(subordinate);
+        }
+        StateHasChanged();
+    }
+
+    private async Task<IEnumerable<Plant>> SearchPlants(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return _plants;
+
+        return _plants.Where(p =>
+            p.Code.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+            p.Description.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+}

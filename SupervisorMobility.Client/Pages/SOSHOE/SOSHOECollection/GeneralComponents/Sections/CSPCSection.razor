@@ -1,0 +1,460 @@
+﻿@using SupervisorMobility.Client.Data.Entities.SOS_Process
+@inject ISynopticControlPointsService ControlPointsService
+@inject ISOSHubService SOSHubService
+@inject IUserService UsersServices
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Resource> Localizer
+
+<style>
+    .mud-background-gray { background-color: #f8f9fa; }
+    .border-radius-lg { border-radius: 12px; }
+    .bg-white { background-color: white !important; }
+    .dialog { backdrop-filter: blur(10px); }
+</style>
+
+<MudGrid Spacing="3" Class="ma-0">
+    
+    @* HEADER CON INFORMACIÓN GENERAL *@
+    <MudItem xs="12">
+        <MudPaper Elevation="0" Class="pa-5 mud-background-gray border-radius-lg">
+            <div class="d-flex align-center mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.ChecklistRtl" Color="Color.Primary" Class="mr-2"/>
+                <MudText Typo="Typo.h6" Style="font-weight: 800;">Configuración de Nuevo Cuadro Sinóptico de Puntos de Control</MudText>
+            </div>
+
+            <MudGrid Spacing="2">
+                @* Primera fila: PROCESO, MODELOS *@
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_sosControlPoints.ProcessName"
+                                  Label="Proceso"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Disabled="@IsCSPCEditDisabled()" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <div style="padding-top: 8px;">
+                        <MudText Typo="Typo.caption" Style="display: block; margin-bottom: 4px;">Modelos</MudText>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            @if (State.Hub?.AppliedModels?.Count > 0)
+                            {
+                                @foreach (var model in State.Hub.AppliedModels)
+                                {
+                                    <MudChip Color="Color.Secondary" Icon="@Icons.Material.Filled.DirectionsCar" Size="Size.Small">
+                                        @model.Description
+                                    </MudChip>
+                                }
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Style="opacity: 0.6;">Sin modelos asignados</MudText>
+                            }
+                        </div>
+                    </div>
+                </MudItem>
+
+                @* Segunda fila: MES, PLANTA *@
+                <MudItem xs="12" md="6">
+                    <MudDatePicker @bind-Date="_sosControlPoints.CreatedAt"
+                                   Label="Mes"
+                                   Variant="Variant.Filled"
+                                   Margin="Margin.Dense"
+                                   ReadOnly="true"
+                                   Editable="false"
+                                   Style="background-color: #e9ecef;" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Value="@State.Hub?.Plant?.Description"
+                                  Label="Planta"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  ReadOnly="true" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+
+    @* SELECCIÓN DE USUARIOS *@
+    <MudItem xs="12">
+        <MudDivider Class="my-2" />
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Elaborador"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="OwnerControlPointsId"
+                                 AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 Disabled="@IsCSPCEditDisabled()"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => _approveUsers?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchOwnerUsers" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Revisor Responsable"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="ReviewerControlPointsId"
+                                 AdornmentIcon="@Icons.Material.Filled.PersonSearch"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 Disabled="@IsCSPCEditDisabled()"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => _reviewUsers.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchReviewUsers" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudAutocomplete T="int"
+                                 Label="Aprobador Final"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 @bind-Value="ApproverControlPointsId"
+                                 AdornmentIcon="@Icons.Material.Filled.VerifiedUser"
+                                 AdornmentColor="Color.Default"
+                                 Clearable
+                                 ResetValueOnEmptyText
+                                 Disabled="@IsCSPCEditDisabled()"
+                                 ShowProgressIndicator="true"
+                                 ProgressIndicatorColor="Color.Info"
+                                 ToStringFunc="@(s => _approveUsers?.FirstOrDefault(x => x.UserId == s)?.Name)"
+                                 SearchFunc="SearchApproveUsers" />
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+
+</MudGrid>
+
+@code {
+    [Parameter] public SOSState State { get; set; }
+    [Parameter] public AnalysisSequencesDto AnalysysSequences { get; set; }
+    [Parameter] public EventCallback OnNotify { get; set; }
+
+    private SOSSynopticTableofControlPoints _sosControlPoints = new();
+    private List<User> _supervisors = new();
+    private List<User> _reviewUsers = new();  // SVs (tipo 3) filtrados por planta
+    private List<User> _approveUsers = new(); // SSVs (tipo 2) filtrados por planta
+
+    private int OwnerControlPointsId = 0;
+    private int ReviewerControlPointsId = 0;
+    private int ApproverControlPointsId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargar usuarios filtrados por planta y tipo usando el servicio
+        if (State?.Hub?.PlantId.HasValue == true)
+        {
+            // _reviewUsers = SVs (tipo 3) de la planta
+            _reviewUsers = await UsersServices.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 3, false, true);
+            _reviewUsers = _reviewUsers.OrderBy(s => s.Name).ToList();
+
+            // _approveUsers = SSVs (tipo 2) de la planta  
+            _approveUsers = await UsersServices.GetUsersByUserTypeInPlant(State.Hub.PlantId.Value, 2, false, false);
+            _approveUsers = _approveUsers.OrderBy(s => s.Name).ToList();
+        }
+        else
+        {
+            _reviewUsers = new List<User>();
+            _approveUsers = new List<User>();
+        }
+        
+        // También cargar todos los supervisores (para compatibilidad si es necesario)
+        var allUsers = (await UsersServices.GetUsers(false, true)).ToList();
+        _supervisors = allUsers.Where(x => x.UserType == 3).ToList();
+
+        // Si ya existe un registro, cargarlo
+        if (State?.SynopticTableOfControlPoints?.Any() == true)
+        {
+            _sosControlPoints = State.SynopticTableOfControlPoints.First();
+            
+            
+            Console.WriteLine($"[CSPC OnInit] Loaded CSPC ID={_sosControlPoints.SOSSynopticTableofControlPointsId}");
+            Console.WriteLine($"[CSPC OnInit] ProcessName='{_sosControlPoints.ProcessName}'");
+            Console.WriteLine($"[CSPC OnInit] Analyses={_sosControlPoints.Analyses?.Count() ?? 0}, Sequences={_sosControlPoints.Sequences?.Count() ?? 0}");
+            Console.WriteLine($"[CSPC OnInit] CreatorId={_sosControlPoints.CreatorId}, ReviewerId={_sosControlPoints.ReviewerId}, ApproverId={_sosControlPoints.ApproverId}");
+            
+            // NOTA: No necesitamos cargar manualmente los Analyses/Sequences en AnalysysSequences aquí
+            // GenerateComponent.LoadInitialSelections() ya se encarga de eso cuando abre el diálogo
+            // y OnParametersSetAsync() lo actualiza cuando se cambia de sección
+            
+            // Cargar los usuarios asignados si existen logbooks
+            if (_sosControlPoints.SynopticPointsLogbooks != null && _sosControlPoints.SynopticPointsLogbooks.Any())
+            {
+                var lastLogbook = _sosControlPoints.SynopticPointsLogbooks.LastOrDefault();
+                if (lastLogbook != null)
+                {
+                    ApproverControlPointsId = lastLogbook.ApproverId ?? 0;
+                }
+            }
+            
+            // Cargar CreatorId y ReviewerId desde el documento principal
+            if (_sosControlPoints.CreatorId.HasValue && _sosControlPoints.CreatorId.Value > 0)
+            {
+                OwnerControlPointsId = _sosControlPoints.CreatorId.Value;
+            }
+            
+            if (_sosControlPoints.ReviewerId.HasValue && _sosControlPoints.ReviewerId.Value > 0)
+            {
+                ReviewerControlPointsId = _sosControlPoints.ReviewerId.Value;
+            }
+        }
+        else
+        {
+            Console.WriteLine($"[CSPC OnInit] No existing CSPC found, creating new");
+            _sosControlPoints = new SOSSynopticTableofControlPoints
+            {
+                CreatedAt = DateTime.Now
+            };
+        }
+    }
+
+    private bool IsCSPCEditDisabled()
+    {
+        // Si no hay registro, es editable (nuevo)
+        if (State?.SynopticTableOfControlPoints?.Count == 0)
+            return false;
+
+        // Si hay un registro pero no tiene logbooks, es editable
+        if (_sosControlPoints?.SynopticPointsLogbooks?.Count == 0)
+            return false;
+
+        // Si hay un logbook guardado (no temporal), es readonly
+        var lastLogbook = _sosControlPoints?.SynopticPointsLogbooks?.LastOrDefault();
+        return lastLogbook?.SOSSynopticPointsLogbookId != 0;
+    }
+
+    private Task<IEnumerable<int>> SearchOwnerUsers(string searchString)
+    {
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = _approveUsers?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+        else
+            result = _approveUsers?
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
+
+        return Task.FromResult(result);
+    }
+
+    private Task<IEnumerable<int>> SearchReviewUsers(string searchString)
+    {
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = _reviewUsers?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+        else
+            result = _reviewUsers?
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
+
+        return Task.FromResult(result);
+    }
+
+    private Task<IEnumerable<int>> SearchApproveUsers(string searchString)
+    {
+        IEnumerable<int> result;
+
+        if (string.IsNullOrEmpty(searchString))
+            result = _approveUsers?.Select(x => x.UserId) ?? Enumerable.Empty<int>();
+        else
+            result = _approveUsers?
+                .Where(x => x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.UserId) ?? Enumerable.Empty<int>();
+
+        return Task.FromResult(result);
+    }
+
+    public async Task GenerateControlPoints()
+    {
+        if (string.IsNullOrEmpty(_sosControlPoints.ProcessName))
+        {
+            Snackbar.Add("Es necesario agregar el Nombre del proceso", Severity.Warning);
+            return;
+        }
+
+        // Llamar dialogo de confirmacion antes de realizar las acciones
+        var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+        var dialogParameters = new DialogParameters
+        {
+            { "Title", "Confirm Create" },
+            { "ContentText", "Are you sure you want to Create this Synoptic Table of Control Points?" },
+            { "ButtonText", "Create!" },
+            { "CancelText", Localizer["Cancel"].Value },
+            { "Color", Color.Success },
+            { "Icon", @Icons.Material.Outlined.Add },
+            { "IconColor", Color.Primary }
+        };
+        var dialog = await DialogService.ShowAsync<Confirmation>("Confirm creation", dialogParameters, dialogOptions);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult.Canceled)
+            return;
+
+        if (State.Hub.SOSSynopticControlPoints != null && State.Hub.SOSSynopticControlPoints.Count > 0)
+        {
+            if (ApproverControlPointsId == 0)
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                   "Warning",
+                   ApproverControlPointsId == 0 ? "Es necesario el aprobador" : "Es necesario seleccionar el editor (elaboro)!",
+                   yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+                return;
+            }
+
+            var copySequences = _sosControlPoints.Sequences;
+            var copyAnalyses = _sosControlPoints.Analyses;
+
+            _sosControlPoints = State.Hub.SOSSynopticControlPoints.First();
+
+            if (_sosControlPoints.SynopticPointsLogbooks != null && _sosControlPoints.SynopticPointsLogbooks.First().SOSSynopticPointsLogbookId == 0)
+                _sosControlPoints.SynopticPointsLogbooks.Clear();
+
+            // Guardar las selecciones de análisis y secuencias desde AnalysysSequences
+            if (AnalysysSequences?.AnalysisSelected != null && AnalysysSequences.AnalysisSelected.Any())
+            {
+                _sosControlPoints.Analyses = AnalysysSequences.AnalysisSelected.ToList();
+                Console.WriteLine($"CSPC Update: Assigned {_sosControlPoints.Analyses.Count()} analyses");
+            }
+            else
+            {
+                _sosControlPoints.Analyses = new List<SOSAnalysis>();
+                Console.WriteLine("CSPC Update: No analyses to assign");
+            }
+
+            if (AnalysysSequences?.SequencesSelected != null && AnalysysSequences.SequencesSelected.Any())
+            {
+                _sosControlPoints.Sequences = AnalysysSequences.SequencesSelected.ToList();
+                Console.WriteLine($"CSPC Update: Assigned {_sosControlPoints.Sequences.Count()} sequences");
+            }
+            else
+            {
+                _sosControlPoints.Sequences = new List<SOSSequence>();
+                Console.WriteLine("CSPC Update: No sequences to assign");
+            }
+
+            SOSSynopticPointsLogbook logGenerateSynopticControlPoints = new SOSSynopticPointsLogbook();
+
+            logGenerateSynopticControlPoints.NoRevision = _sosControlPoints.SynopticPointsLogbooks?.Count();
+            logGenerateSynopticControlPoints.ApproverId = ApproverControlPointsId;
+            logGenerateSynopticControlPoints.Date = System.DateTime.Now;
+            logGenerateSynopticControlPoints.Status = 1;
+            logGenerateSynopticControlPoints.IsActive = true;
+            if (_sosControlPoints.SynopticPointsLogbooks == null)
+                _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>();
+
+            _sosControlPoints.SynopticPointsLogbooks.Add(logGenerateSynopticControlPoints);
+
+
+
+            var Gen_SOSSynopticRequirements = await SOSHubService.GenerateSynopticControlPoints(State.Hub.SOSHubId, _sosControlPoints);
+
+            Snackbar.Clear();
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            if (Gen_SOSSynopticRequirements != 0)
+            {
+                Snackbar.Add($"{Localizer["_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Info);
+                NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{_sosControlPoints.SOSSynopticTableofControlPointsId}");
+                _sosControlPoints = new SOSSynopticTableofControlPoints();
+                //Pregutar si quiere ver el analisis generado
+            }
+            else
+                Snackbar.Add($"{Localizer["Fail_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Error);
+
+            StateHasChanged();
+
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(_sosControlPoints.ProcessName) || OwnerControlPointsId == 0)
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                  "Warning",
+                   OwnerControlPointsId == 0 ? "Es necesario el elaborador" : "Es necesario el nombre de processo!",
+                  yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+            }
+            else if (ApproverControlPointsId == 0 || ReviewerControlPointsId == 0)
+            {
+                bool? result = await DialogService.ShowMessageBox(
+                  "Warning",
+                  ApproverControlPointsId == 0 ? "Es necesario el aprovador" : "Es necesario seleccionar el editor!",
+                  yesText: "Ok!");
+                var state = result == null ? "Canceled" : "Deleted!";
+                StateHasChanged();
+            }
+            else
+            {
+                _sosControlPoints.SOSHubId = State.Hub.SOSHubId;
+                _sosControlPoints.ReviewerId = ReviewerControlPointsId;
+                _sosControlPoints.ApproverId = ApproverControlPointsId;
+                _sosControlPoints.CreatorId = OwnerControlPointsId;
+
+                // Guardar las selecciones de análisis y secuencias desde AnalysysSequences
+                if (AnalysysSequences?.AnalysisSelected != null && AnalysysSequences.AnalysisSelected.Any())
+                {
+                    _sosControlPoints.Analyses = AnalysysSequences.AnalysisSelected.ToList();
+                    Console.WriteLine($"CSPC: Assigned {_sosControlPoints.Analyses.Count()} analyses");
+                }
+                else
+                {
+                    _sosControlPoints.Analyses = new List<SOSAnalysis>();
+                    Console.WriteLine("CSPC: No analyses to assign");
+                }
+
+                if (AnalysysSequences?.SequencesSelected != null && AnalysysSequences.SequencesSelected.Any())
+                {
+                    _sosControlPoints.Sequences = AnalysysSequences.SequencesSelected.ToList();
+                    Console.WriteLine($"CSPC: Assigned {_sosControlPoints.Sequences.Count()} sequences");
+                }
+                else
+                {
+                    _sosControlPoints.Sequences = new List<SOSSequence>();
+                    Console.WriteLine("CSPC: No sequences to assign");
+                }
+
+                SOSSynopticPointsLogbook logGenerateSynopticControlPoints = new SOSSynopticPointsLogbook();
+
+                logGenerateSynopticControlPoints.NoRevision = 0;
+                logGenerateSynopticControlPoints.ApproverId = ApproverControlPointsId;
+                logGenerateSynopticControlPoints.Date = System.DateTime.Now;
+                logGenerateSynopticControlPoints.Status = 1;
+                logGenerateSynopticControlPoints.IsActive = true;
+                if (_sosControlPoints.SynopticPointsLogbooks == null)
+                    _sosControlPoints.SynopticPointsLogbooks = new List<SOSSynopticPointsLogbook>();
+
+                _sosControlPoints.SynopticPointsLogbooks.Add(logGenerateSynopticControlPoints);
+
+
+                if (_sosControlPoints.SOSSynopticRequirementsOperationSequence == null)
+                    _sosControlPoints.SOSSynopticRequirementsOperationSequence = new List<SOSSynopticRequirementsOperationSequence>();
+
+
+                var Gen_sosControlPoints = await SOSHubService.GenerateSynopticControlPoints(State.Hub.SOSHubId, _sosControlPoints);
+
+                Snackbar.Clear();
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+                if (Gen_sosControlPoints != 0)
+                {
+                    Snackbar.Add($"{Localizer["_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Info);
+                    NavigationManager.NavigateTo($"/soshoe/SynopticControlPoints/Details/{Gen_sosControlPoints}");
+                    _sosControlPoints = new SOSSynopticTableofControlPoints();
+                }
+                else
+                    Snackbar.Add($"{Localizer["Fail_SOSSynopticControlPointsGeneratedSuccess"]}", Severity.Error);
+
+                StateHasChanged();
+            }
+        }
+    }
+}

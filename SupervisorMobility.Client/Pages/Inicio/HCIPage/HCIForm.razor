@@ -4,117 +4,136 @@
 @using SupervisorMobility.Client.Pages.Inicio.HCIPage.Components
 @inject NavigationManager NavManager
 @inject IUserService UsrsService
+@inject IUserCoursesService UserCoursesService
 @inject IHCIService HCIService
 @inject ISnackbar Snackbar
 @inject IStringLocalizer<Resource> Localizer
 @inject IExportationService Exportation
 @inject IJSRuntime JSRuntime
+@inject IAreaService AreaServices
 
-
-@if (dataloaded) {
-<h3>@Localizer["HCITitle"]</h3>
-<MudExpansionPanels MultiExpansion Class="d-flex flex-column justify-center" Style="align-items: center;">
-    <MudExpansionPanel Style="min-width:100%;" IsInitiallyExpanded=true>
-        <TitleContent>
-            <div Style="align-items: center; display: flex;">
-                    <MudText>@Localizer["HCIGeneralInfo"]</MudText>
-            </div>
-        </TitleContent>
-        <ChildContent>
-                <GeneralInfo _hci="_hci" image="/Images/profile picture.png" />
-        </ChildContent>
-    </MudExpansionPanel>
-    <MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
-        <TitleContent>
-            <div Style="align-items: center; display: flex;">
-                <MudText>I.- @Localizer["Expertise"]</MudText>
-            </div>
-        </TitleContent>
-        <ChildContent>
-            <!--<MudExpansionPanels>-->
-                <Knwoledge Title="@Localizer["ExpTitle1"]" KnowledgeTable="manualCap" type="1"
-                 Add="AddManual" Del="RemoveManual" Upd="@((args)=>ModifyManualEntry(args.Item1, args.Item2))" details="Details"
-                />
-                <Knwoledge Title="@Localizer["ExpTitle2"]" KnowledgeTable="companyCap" type="2"
-                Add="AddCompany" Del="RemoveCompany" Upd="@((args)=>ModifyCompanyEntry(args.Item1, args.Item2))" details="Details"
-                />
-            <!--</MudExpansionPanels>-->
-        </ChildContent>
-    </MudExpansionPanel>
-    <MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
-        <TitleContent>
-            <div Style="align-items: center; display: flex;">
-                <MudText>II.- @Localizer["Titles"]</MudText>
-            </div>
-        </TitleContent>
-        <ChildContent>
-            <Quialifications QualificationsTable="titles" 
-                Add="AddQualif" Del="RemoveQualif" Upd="@((args)=>ModifyQualifEntry(args.Item1, args.Item2))" details="Details"
-                />
-        </ChildContent>
-    </MudExpansionPanel>
-    <MudExpansionPanel Style="min-width: 100%;" IsInitiallyExpanded=true>
-        <TitleContent>
-            <div Style="align-items: center; display: flex;">
-                <MudText>III.- @Localizer["TechnicalSkill"]</MudText>
-            </div>
-        </TitleContent>
-        <ChildContent>
-            <Trajectory TrajectoryTable="careers"
-                Add="AddCareer" Del="RemoveCareer" Upd="@((args)=>ModifyCareerEntry(args.Item1, args.Item2))" details="Details"/>
-                <Expertise ExpertiseTable="expertise" user="user"
-                Add="AddExpert" Del="RemoveExpert" Upd="@((args)=>ModifyExpertEntry(args.Item1, args.Item2))" details="Details"/>
-        </ChildContent>
-    </MudExpansionPanel>
-    <MudExpansionPanel Style="min-width: 55%;" IsInitiallyExpanded=true>
-        <TitleContent>
-            <div Style="align-items: center; display: flex;">
-                <MudText>@Localizer["CategoryTitle"]</MudText>
-            </div>
-        </TitleContent>
-        <ChildContent>
-            <Category CategoryTable="categories" 
-                Add="AddCateg" Del="RemoveCateg" Upd="@((args)=>ModifyCategEntry(args.Item1, args.Item2))" details="Details"/>
-        </ChildContent>
-    </MudExpansionPanel>
-    <MudExpansionPanel Style="min-width: 80%;" IsInitiallyExpanded=true>
-        <TitleContent>
-            <div Style="align-items: center; display: flex;">
-                <MudText>@Localizer["SpNotes"]</MudText>
-            </div>
-        </TitleContent>
-        <ChildContent>
-            <Notes NotesTable="comments"
-                Add="AddNote" Del="RemoveNote" Upd="@((args)=>ModifyNoteEntry(args.Item1, args.Item2))" details="Details"/>
-        </ChildContent>
-    </MudExpansionPanel>
-</MudExpansionPanels>
-@if(!Details){
-    <MudCardActions>
-        <MudItem Class="ml-auto mt-4">
-                <MudButton StartIcon="@Icons.Material.Filled.StopCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => Complete())">
-                    @if (HCIID == null)
-                    {
-                        <span>Create </span>
-                    }
-                    else
-                    {
-                        <span>Update </span>
-                    } HCI
-                </MudButton>
-                @* <MudButton StartIcon="@Icons.Material.Filled.IncompleteCircle" Variant="Variant.Filled" Color="Color.Info" Class="ml-4" @onclick="(() => UnderReviewJobObservation())">@Localizer["underReview"]</MudButton>
-            <MudButton Variant="Variant.Filled" Class="ml-4" @onclick="(() => CancelCreateJobObservation())">@Localizer["cancel"]</MudButton> *@
-        </MudItem>
-    </MudCardActions>
-}
-else
+@if (dataloaded)
 {
-    <MudCardActions>
-        <MudItem Class="ml-auto mt-4">
-            <MudButton Color="Color.Success" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" Size="Size.Small" OnClick="DownloadExcel" Class="ml-5 my-2">Export</MudButton>
-        </MudItem>
-    </MudCardActions>
-}
-}
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-10">
 
+        <div class="d-flex justify-space-between align-center mb-8 px-2">
+            <div>
+                <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 700;">
+                    @Localizer["HCITitle"]
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mt-1">
+                    @(HCIID == null ? "Creación de un nuevo registro profesional" : "Gestión y visualización de perfil profesional")
+                </MudText>
+            </div>
 
+            @if (Details)
+            {
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Success"
+                           StartIcon="@Icons.Custom.FileFormats.FileExcel"
+                           OnClick="DownloadExcel"
+                           Class="rounded-lg">Exportar</MudButton>
+            }
+        </div>
+
+        <MudGrid Spacing="4">
+            
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4" Style="border-left: 5px solid var(--mud-palette-primary)">
+                    <div class="d-flex align-center mb-4">
+                        <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6">@Localizer["HCIGeneralInfo"]</MudText>
+                    </div>
+                    <GeneralInfo _hci="_hci" image="/Images/profile picture.png" />
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <MudStack Spacing="4">
+                    <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4">
+                        <div class="d-flex align-center mb-4">
+                            <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                                <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Small" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h6">I. Professional Development and Courses</MudText>
+                        </div>
+                        <Knwoledge Courses="courses" _pendingCourses="newCourses" 
+                            onAddCourse="addCourse" onRemoveCourse="removeCourse" isDetails="Details"/>
+                    </MudPaper>
+
+                    <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4">
+                        <div class="d-flex align-center mb-2">
+                            <MudAvatar Color="Color.Warning" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                                <MudIcon Icon="@Icons.Material.Filled.Build" Size="Size.Small" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h6">III. @Localizer["TechnicalSkill"]</MudText>
+                        </div>
+                        <div style="width: 100%">
+                            <Trajectory TrajectoryTable="careers" details="Details"/>
+                            <Expertise ExpertiseTable="expertise" user="user"
+                                        Add="AddExpert" Del="RemoveExpert" Upd="@((args)=>ModifyExpertEntry(args.Item1, args.Item2))" details="Details" />
+                        </div>
+                    </MudPaper>
+
+                </MudStack>
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <MudStack Spacing="4">
+
+                    <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4">
+                        <div class="d-flex align-center mb-4">
+                            <MudAvatar Color="Color.Tertiary" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                                <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Size="Size.Small" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h6">II. @Localizer["Titles"]</MudText>
+                        </div>
+                        <Quialifications QualificationsTable="titles"
+                                         Add="AddQualif" Del="RemoveQualif" Upd="@((args)=>ModifyQualifEntry(args.Item1, args.Item2))" details="Details" />
+                    </MudPaper>
+
+                    <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4">
+                         <div class="d-flex align-center mb-4">
+                            <MudAvatar Color="Color.Success" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                                <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h6">IV. @Localizer["CategoryTitle"]</MudText>
+                        </div>
+                        <Category CategoryTable="categories"
+                                  Add="AddCateg" Del="RemoveCateg" Upd="@((args)=>ModifyCategEntry(args.Item1, args.Item2))" details="Details" />
+                    </MudPaper>
+
+                    <MudPaper Elevation="0" Outlined="true" Class="rounded-xl pa-4 bg-grey-lighten-5">
+                        <div class="d-flex align-center mb-4">
+                            <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Medium" Rounded="true" Class="mr-3">
+                                <MudIcon Icon="@Icons.Material.Filled.Note" Size="Size.Small" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h6">V. @Localizer["SpNotes"]</MudText>
+                        </div>
+                        <Notes NotesTable="comments"
+                               Add="AddNote" Del="RemoveNote" Upd="@((args)=>ModifyNoteEntry(args.Item1, args.Item2))" details="Details" />
+                    </MudPaper>
+
+                </MudStack>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudSpacer />
+                <div>
+                    @if (!Details)
+                    {
+                        <MudButton Variant="Variant.Text" Color="Color.Error">Cancelar</MudButton>
+                        <MudButton StartIcon="@Icons.Material.Filled.Save"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="(() => Complete())">
+                            @(HCIID == null ? "Crear Registro" : "Guardar Cambios")
+                        </MudButton>
+                    }
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+}

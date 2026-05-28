@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
 using SupervisorMobility.Client.Data.Entities;
+using SupervisorMobility.Client.Shared;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -618,16 +619,36 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
         private async Task SaveProgress()
         {
             _sosHub.Status = "In Progress";
-            if (ValidateDraft())
-                await SaveHOE();
-            else
+            if (!ValidateDraft())
+            {
                 Snackbar.Add("You need to add at least an analysis to save the progress", Severity.Warning);
+                return;
+            }
+
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Save Progress" },
+                { "ContentText", "Area you sure you want to update the Draft? \n The changes can't be reverted" },
+                { "ButtonText", "Save" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Primary },
+                { "Icon", @Icons.Material.Filled.Save },
+                { "IconColor", Color.Secondary }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["Save Progress"].Value, dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            if (dialogResult.Canceled)
+                return;
+
+            await SaveHOE();
         }
 
         private async Task CreateNewSOSHub()
         {
             Snackbar.Clear();
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
             var validationMessage = ValidateSosHubForm();
             if (!string.IsNullOrEmpty(validationMessage))
@@ -635,6 +656,25 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
                 Snackbar.Add(validationMessage, Severity.Warning);
                 return;
             }
+
+            // Llamar dialogo de confirmacion antes de realizar las acciones
+            var dialogOptions = new DialogOptions() { CloseButton = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true, DisableBackdropClick = true, ClassBackground = "dialog" };
+            var dialogParameters = new DialogParameters
+            {
+                { "Title", "Create HOE" },
+                { "ContentText", "Area you sure you want to finish the creation of this HOE?" },
+                { "ButtonText", "Create" },
+                { "CancelText", Localizer["Cancel"].Value },
+                { "Color", Color.Success },
+                { "Icon", @Icons.Material.Filled.PostAdd },
+                { "IconColor", Color.Secondary }
+            };
+            var dialog = await DialogService.ShowAsync<Confirmation>(Localizer["Update HOE"].Value, dialogParameters, dialogOptions);
+            var dialogResult = await dialog.Result;
+
+            if (dialogResult.Canceled)
+                return;
+
             await SaveHOE();
         }
 
@@ -737,7 +777,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             if (user.UserType == 2)
             {
                 var plantId = (int)user.PlantId;
-                var areaId = (int)user.AreaId;
+                int areaId = 0;
+                if (user.Areas != null && user.Areas.Count > 0)
+                {
+                    areaId = (int)user.Areas.FirstOrDefault().AreaId;
+                }
 
                 _areas = user.Areas?.ToList();
                 _areas = _areas.OrderBy(a => a.Description).ToList();
@@ -758,7 +802,11 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             else if (user.UserType == 3)
             {
                 var plantId = (int)user.PlantId;
-                var areaId = (int)user.AreaId;
+                int areaId = 0;
+                if (user.Areas != null && user.Areas.Count > 0)
+                {
+                    areaId = (int)user.Areas.FirstOrDefault().AreaId;
+                }
 
                 _areas = await AreaServices.GetAreas(plantId);
                 _areas = _areas.OrderBy(a => a.Description).ToList();
@@ -1573,8 +1621,37 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             // Combina todos los an�lisis: los de RawAnalisis y los de las secciones
             var allAnalyses = new List<AnalysisBkup>();
 
+            List<string> IDsToDelete = new List<string>();
+
             // Agrega los de RawAnalisis
-            allAnalyses.AddRange(RawAnalisis);
+            try
+            {
+                foreach (var analysis in RawAnalisis)
+                {
+                    if (string.IsNullOrEmpty(analysis.Text) || string.IsNullOrWhiteSpace(analysis.Text))
+                    {
+                        IDsToDelete.Add(analysis.Uid);
+                        continue;
+                    }
+
+                    allAnalyses.Add(analysis);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            if (IDsToDelete.Count > 0)
+                foreach (var id in IDsToDelete)
+                {
+                    var analysisToRemove = RawAnalisis.FirstOrDefault(a => a.Uid == id);
+                    if (analysisToRemove != null)
+                        RawAnalisis.Remove(analysisToRemove);
+                    analysisToRemove = allAnalyses.FirstOrDefault(a => a.Uid == id);
+                    if (analysisToRemove != null)
+                        allAnalyses.Remove(analysisToRemove);
+                }
 
             // Agrega los de las secciones (conservando Uid y Text)
             foreach (var section in _sosHub.Sections)
@@ -1609,6 +1686,7 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
 
             StateHasChanged();
         }
+        
         
         async void RestoreBakup()
         {
@@ -1752,22 +1830,56 @@ namespace SupervisorMobility.Client.Pages.SOSHOE.SOSHOECollection
             };
             BaseText = RemoveAsterisks(text);
 
-            // Extraer todos los puntos críticos directamente
-            analysis.CriticalPoints = ExtractCriticalPoints(text);
-            analysis.Reasons = Enumerable.Repeat(string.Empty, analysis.CriticalPoints.Count).ToList();
+            // Extraer puntos críticos y razones ligadas
+            var (criticalPoints, reasons) = ExtractCriticalPointsAndReasons(text);
+
+            analysis.CriticalPoints = criticalPoints;
+            analysis.Reasons = reasons;
 
             return analysis;
         }
 
-        private List<string> ExtractCriticalPoints(string text)
+        private (List<string> CriticalPoints, List<string> Reasons) ExtractCriticalPointsAndReasons(string text)
         {
-            // Esta expresión captura *...* incluso si hay guiones dentro
+            var criticalPoints = new List<string>();
+            var reasons = new List<string>();
+
+            // Capturamos todos los puntos críticos
             var matches = Regex.Matches(text, @"\*(.*?)\*");
-            return matches.Cast<Match>()
-                          .Where(m => m.Success)
-                          .Select(m => m.Groups[1].Value.Trim())
-                          .ToList();
+
+            for (int i = 0; i < matches.Count; i++)
+            {
+                var point = matches[i].Groups[1].Value.Trim();
+                criticalPoints.Add(point);
+
+                // Determinar el segmento de texto después del punto crítico
+                int startIndex = matches[i].Index + matches[i].Length;
+                int endIndex = (i + 1 < matches.Count) ? matches[i + 1].Index : text.Length;
+
+                string segment = text.Substring(startIndex, endIndex - startIndex);
+
+                // Buscar razones entre paréntesis dentro del segmento
+                var reasonMatches = Regex.Matches(segment, @"\((.*?)\)");
+
+                if (reasonMatches.Count > 0)
+                {
+                    // Concatenar todas las razones encontradas con guion
+                    var reasonText = string.Join(" - ",
+                        reasonMatches.Cast<Match>()
+                                     .Select(m => m.Groups[1].Value.Trim()));
+
+                    reasons.Add(reasonText);
+                }
+                else
+                {
+                    // Si no hay razones, agregamos string.Empty
+                    reasons.Add(string.Empty);
+                }
+            }
+
+            return (criticalPoints, reasons);
         }
+
 
         private string RemoveAsterisks(string text)
         {

@@ -1,0 +1,44 @@
+﻿@inject IStringLocalizer<Resource1> Localizer
+@using System.ComponentModel.DataAnnotations
+
+@* Sección: Información Básica *@
+<MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-left: 3px solid #90a4ae; background-color: #fafafa;">
+    <MudItem Class="mb-3">
+        <MudText Typo="Typo.h6" Style="color: #546e7a; font-weight: 500;">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+            Información Básica
+        </MudText>
+    </MudItem>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersObject"]" @bind-value="@_user.ObjectId" For="@(() => _user.ObjectId)" 
+                          HelperText="E.g. user@compasdcpcs.local" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersName"]" @bind-Value="@_user.Name" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField Label="@Localizer["UsersPayroll"]" @bind-Value="@_user.Payroll" For="@(() => _user.Payroll)" Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudTextField T="string" Label="@Localizer["UsersEmail"]" @bind-Value="@_user.Email" For="@(() => _user.Email)" 
+                          RequiredError="Email is required!" Variant="Variant.Outlined"
+                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudItem Class="d-flex justify-end mt-3">
+    @if (_user.UserType != 0)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitUser">@Localizer["UsersNew"]</MudButton>
+    }
+    <MudButton Href="/usersmanagement" Variant="Variant.Outlined" Class="ml-4">@Localizer["Cancel"]</MudButton>
+</MudItem>
+
+@code {
+    [Parameter] public User _user {get; set; }
+    [Parameter] public EventCallback<User> OnUserChanged { get; set; }
+
+    private async Task SubmitUser() => await OnUserChanged.InvokeAsync(_user);
+}

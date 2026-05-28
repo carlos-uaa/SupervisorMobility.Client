@@ -81,143 +81,124 @@ else
 {
     @if (_HCIs.Count > 0)
     {
-        <MudTable Items="_HCIs" T="HCI" Hover="true" Class="styled-table table-striped"
-                  FixedHeader=true Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
+        <MudTable Items="_HCIs" T="HCI" Hover="true" Class="styled-table" Elevation="4" Breakpoint="Breakpoint.Sm"
+                  FixedHeader="true" Height="75vh" RowClassFunc="@SelectedRowClassFunc" @ref="SelectTableEvent" OnRowClick="RowClickEvent"
                   SortLabel="SortBy" Filter="new Func<HCI,bool>(FilterFunc1)"
                   RowsPerPage="15" HorizontalScrollbar="true" Virtualize="true">
+
             <ToolBarContent>
-                <MudText Typo="Typo.h6" Align="Align.Center">@Localizer["HCI"]</MudText>
-                <MudSpacer />
-
-                    <MudTooltip id="ToolTipSearch" Text="@Localizer["searchHCIIndex"]">
-                        <ChildContent>
-                            <div style="width:100%">
-
-                            <MudTextField FullWidth @bind-Value="@searchString" Placeholder=@Localizer["searchHCIIndex"] Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mb-5"></MudTextField>
-                            </div>
-                        </ChildContent>
-                    </MudTooltip>
-                <MudSpacer />
-
-             @*    <MudButton @onclick="(() => OpenCreateHci())">
-                    <MudText>@Localizer["create"] @Localizer["hci"]</MudText>
-                    <MudIcon Icon="@Icons.Material.Filled.Add" Color="Color.Primary"></MudIcon>
-                </MudButton> *@
+                <div class="d-flex flex-row mb-4 mt-2" style="width: 100%;">
+                    <div class="d-flex justify-space-between align-center mb-4">
+                        <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: 600;">@Localizer["HCI"]</MudText>
+                        @* Aquí podrías agregar tu botón de 'Crear' en el futuro si lo necesitas *@
+                    </div>
+                    <MudSpacer />
+                    <MudTextField FullWidth="false" @bind-Value="@searchString" Placeholder="@Localizer["searchHCIIndex"]"
+                                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                  Style="max-width: 400px;" Class="bg-transparent"></MudTextField>
+                </div>
             </ToolBarContent>
+
             <HeaderContent>
                 @if (user.UserType == 1)
                 {
-                    <MudTh>
-                        <MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.HCIId)">
-                            @Localizer["hci"] Id
-                        </MudTableSortLabel>
-                    </MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.HCIId)">@Localizer["hci"] Id</MudTableSortLabel></MudTh>
                 }
-
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Payroll)">
-                        @Localizer["payroll"]
-                    </MudTableSortLabel>
-                </MudTh>
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Name)">
-                        @Localizer["name"]
-                    </MudTableSortLabel>
-                </MudTh>
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Plant?.Code)">
-                        @Localizer["plant"]
-                    </MudTableSortLabel>
-                </MudTh>
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Area?.Description)">
-                        @Localizer["area"]
-                    </MudTableSortLabel>
-                </MudTh>
-
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.UserType)" InitialDirection="SortDirection.Ascending">
-                        @Localizer1["UserType"]
-                    </MudTableSortLabel>
-                </MudTh>
-                <MudTh>
-                    <MudText Align="Align.Center">@Localizer["actions"]</MudText>
-                </MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Payroll)">@Localizer["payroll"]</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Name)">@Localizer["name"]</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Plant?.Code)">@Localizer["plant"]</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.Area?.Description)">@Localizer["area"]</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Data.Entities.HCI, object>(x=>x.User?.UserType)" InitialDirection="SortDirection.Ascending">@Localizer1["UserType"]</MudTableSortLabel></MudTh>
+                <MudTh Style="text-align: right;"><MudText>@Localizer["actions"]</MudText></MudTh>
             </HeaderContent>
+
             <RowTemplate>
                 @if (user.UserType == 1)
                 {
                     <MudTd DataLabel="Id">
-                        <MudText Align="Align.Center">@context.HCIId</MudText>
+                        <MudText Color="Color.Default" Style="font-weight: 500;">@context.HCIId</MudText>
                     </MudTd>
                 }
                 <MudTd DataLabel=@Localizer["payroll"]>
-                    <MudText Align="Align.Center">@context.User?.Payroll</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">#@context.User?.Payroll</MudText>
                 </MudTd>
+
                 <MudTd DataLabel=@Localizer["name"]>
-                    <MudText Align="Align.Center">@context.User?.Name</MudText>
+                    <div class="d-flex align-center">
+                        <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Class="mr-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.User?.Name</MudText>
+                    </div>
                 </MudTd>
 
                 <MudTd DataLabel=@Localizer["plant"]>
-                    <MudText Align="Align.Center">@context.User?.Plant?.Code</MudText>
+                    @if(context.User != null && context.User.Plant != null)
+                    {
+                        <MudChip Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">
+                            @context.User.Plant.Code
+                        </MudChip>                    
+                    }
                 </MudTd>
+
                 <MudTd DataLabel=@Localizer["area"]>
-                    <MudText Align="Align.Center">@context.User?.Area?.Description</MudText>
+                    @if (context.User != null && context.User.Area != null)
+                    {
+                        <MudChip Size="Size.Small" Color="Color.Info" Variant="Variant.Text">
+                            @context.User.Area.Description
+                        </MudChip>                    
+                    }
                 </MudTd>
+
                 <MudTd DataLabel=@Localizer1["UserType"]>
-                    <MudItem Class="d-flex justify-center">
+                    <div class="d-flex align-center">
                         @switch (context.User?.UserType)
                         {
                             case 1:
-                                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary"></MudIcon>
-                                <MudText Class="pl-2">@Localizer["UsersAdmin"]</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" Size="Size.Small" Class="mr-2" />
+                                <MudText Typo="Typo.body2">@Localizer["UsersAdmin"]</MudText>
                                 break;
                             case 2:
-                                <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"></MudIcon>
-                                <MudText Class="pl-2">SSV</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Size="Size.Small" Class="mr-2" />
+                                <MudText Typo="Typo.body2">SSV</MudText>
                                 break;
                             case 3:
-                                <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary"></MudIcon>
-                                <MudText Class="pl-2">Supervisor</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Color="Color.Secondary" Size="Size.Small" Class="mr-2" />
+                                <MudText Typo="Typo.body2">Supervisor</MudText>
                                 break;
                             case 4:
-                                <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Dark"></MudIcon>
-                                <MudText Class="pl-2">@Localizer["UsersOperator"]</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Dark" Size="Size.Small" Class="mr-2" />
+                                <MudText Typo="Typo.body2">@Localizer["UsersOperator"]</MudText>
                                 break;
                             case 5:
-                                <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Warning"></MudIcon>
-                                <MudText Class="pl-2">@Localizer["UsersManager"]</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Warning" Size="Size.Small" Class="mr-2" />
+                                <MudText Typo="Typo.body2">@Localizer["UsersManager"]</MudText>
                                 break;
                             case 6:
-                                <MudIcon Icon="@Icons.Material.Filled.Engineering" Color="Color.Info"></MudIcon>
-                                <MudText Class="pl-2">@Localizer["lineSupport"]</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Engineering" Color="Color.Info" Size="Size.Small" Class="mr-2" />
+                                <MudText Typo="Typo.body2">@Localizer["lineSupport"]</MudText>
                                 break;
                             case 7:
-                                <MudIcon Icon="@Icons.Material.Filled.PermContactCalendar" Color="Color.Info"></MudIcon>
-                                <MudText Class="pl-2">@Localizer["headCount"]</MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.PermContactCalendar" Color="Color.Info" Size="Size.Small" Class="mr-2" />
+                                <MudText Typo="Typo.body2">@Localizer["headCount"]</MudText>
                                 break;
                         }
-                    </MudItem>
+                    </div>
                 </MudTd>
 
-                <MudTd DataLabel=@Localizer["actions"]>
-                    <MudText Align="Align.Center">
-                        <MudMenu Dense=true MaxHeight="300" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
-                            <ActivatorContent>
-                                <MudButton FullWidth=true StartIcon="@Icons.Material.Filled.Settings" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Style="background:white" Variant="Variant.Filled" Size="Size.Small"></MudButton>
-                            </ActivatorContent>
-                            <ChildContent>
-                                <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => HCIDetails( context.HCIId))" OnTouch="(() => HCIDetails(context.HCIId))">@Localizer["HCIDetails"]</MudMenuItem>
-                                @if (user.UserType == 1 || user.UserId != context.UserId)
-                                {
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateHCI(context.HCIId))" OnTouch="(() => UpdateHCI( context.HCIId))">@Localizer["editHCI"]</MudMenuItem>
-                                }
-                                <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.HCIId))" OnTouch="(() => OpenDeleteDialog(context.HCIId))">@Localizer["deleteHCI"]</MudMenuItem>
-                            </ChildContent>
-                        </MudMenu>
-                    </MudText>
+                <MudTd DataLabel=@Localizer["actions"] Style="text-align: right;">
+                    <MudMenu Icon="@Icons.Material.Filled.MoreVert" Dense="true" Size="Size.Small" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" Color="Color.Default">
+                        <MudMenuItem Icon="@Icons.Material.Filled.Info" IconColor="Color.Primary" @onclick="(() => HCIDetails(context.HCIId))">@Localizer["HCIDetails"]</MudMenuItem>
+                        @if (user.UserType == 1 || user.UserId != context.UserId)
+                        {
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Info" @onclick="(() => UpdateHCI(context.HCIId))">@Localizer["editHCI"]</MudMenuItem>
+                        }
+                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" @onclick="(() => OpenDeleteDialog(context.HCIId))">@Localizer["deleteHCI"]</MudMenuItem>
+                    </MudMenu>
                 </MudTd>
             </RowTemplate>
+
             <PagerContent>
                 <MudTablePager PageSizeOptions="new int[] { 15, 25, 50, 100, int.MaxValue }" />
             </PagerContent>

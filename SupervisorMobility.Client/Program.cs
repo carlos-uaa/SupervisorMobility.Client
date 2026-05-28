@@ -86,6 +86,9 @@ using SupervisorMobility.Client;
 using AutoMapper;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
+using SupervisorMobility.Client.Data.Entities.Dtos;
+using SupervisorMobility.Client.Services.UserCoursesService;
+using SupervisorMobility.Client.Services.HRIServices;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -99,6 +102,7 @@ builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddMudServices();
 builder.Services.AddSingleton<GlobalDataService>();
 builder.Services.AddSingleton<SignatureImageService>();
+builder.Services.AddScoped<SOSState>();
 builder.Services.AddScoped<IBreadcrumbService, BreadcrumbService>();
 builder.Services.AddScoped<ITreeService, TreeService>();
 builder.Services.AddScoped<IPlantService, PlantService>();
@@ -139,6 +143,16 @@ builder.Services.AddScoped<IPartServices, PartServices>();
 builder.Services.AddScoped<IExportationService, ExportationService>();
 builder.Services.AddScoped<ICalendarProductiveService, CalendarProductiveService>();
 builder.Services.AddScoped<IMetricsService, MetricsService>();
+builder.Services.AddScoped<IMetricsService, MetricsService>();
+builder.Services.AddScoped<IHRILinesService, HRILinesService>();
+builder.Services.AddScoped<IHRIItemsService, HRIItemsService>();
+builder.Services.AddScoped<IHRIDocksService, HRIDocksService>();
+builder.Services.AddScoped<IHRIRevisionItemsService, HRIRevisionItemsService>();
+builder.Services.AddScoped<IHRICyclesService, HRICyclesService>();
+builder.Services.AddScoped<IUserCoursesService, UserCoursesService>();
+builder.Services.AddScoped<IHRIService, HRIService>();
+builder.Services.AddScoped<IHRIRevisionCyclesService, HRIRevisionCyclesService>();
+builder.Services.AddScoped<IHRIHourmeterRevisionService, HRIHourmeterRevisionService>();
 
 //For testing video uploads
 builder.Services.AddScoped<ITestService, TestService>();
@@ -166,15 +180,13 @@ builder.Services.AddScoped<IMaterialService, MaterialService>();
 
 
 // Connection to API
-var env = builder.HostEnvironment;
-if (env.IsDevelopment())
-{
-    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:10201/api/"), Timeout = TimeSpan.FromMinutes(15) }); ;
-}
-else
-{
-    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://10.91.117.12:10201/api/"), Timeout = TimeSpan.FromMinutes(10) });
-}
+var apiUrl = builder.Configuration["ApiUrl"] ?? "https://localhost:10201/api/";
+builder.Services.AddScoped(sp => new HttpClient 
+{ 
+    BaseAddress = new Uri(apiUrl), 
+    Timeout = TimeSpan.FromMinutes(15) 
+});
+
 
 
 
